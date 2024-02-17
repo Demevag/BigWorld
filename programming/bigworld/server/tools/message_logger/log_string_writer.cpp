@@ -1,63 +1,58 @@
 #include "log_string_writer.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-LogStringWriter::LogStringWriter( FileStream &blobFile ) :
-	isGood_( false ),
-	blobFile_( blobFile )
-{ }
-
+LogStringWriter::LogStringWriter(FileStream& blobFile)
+  : isGood_(false)
+  , blobFile_(blobFile)
+{
+}
 
 bool LogStringWriter::isGood() const
 {
-	return (isGood_ && blobFile_.good());
+    return (isGood_ && blobFile_.good());
 }
 
 void LogStringWriter::onParseComplete()
 {
-	blobFile_.commit();
-	isGood_ = true;
+    blobFile_.commit();
+    isGood_ = true;
 }
-
 
 void LogStringWriter::onError()
 {
-	isGood_ = false;
+    isGood_ = false;
 }
 
-
-void LogStringWriter::onFmtStringSection( const BW::string &fmt,
-	int start, int end )
-{ }
-
-
-void LogStringWriter::onMinWidth( WidthType w, FormatData & /* fd */ )
+void LogStringWriter::onFmtStringSection(const BW::string& fmt,
+                                         int               start,
+                                         int               end)
 {
-	blobFile_ << w;
 }
 
-void LogStringWriter::onMaxWidth( WidthType w, FormatData & /* fd */ )
+void LogStringWriter::onMinWidth(WidthType w, FormatData& /* fd */)
 {
-	blobFile_ << w;
+    blobFile_ << w;
 }
 
-
-void LogStringWriter::onString( const char *s, const FormatData & /* fd */ )
+void LogStringWriter::onMaxWidth(WidthType w, FormatData& /* fd */)
 {
-	blobFile_ << s;
+    blobFile_ << w;
 }
 
-
-void LogStringWriter::onPointer( int64 ptr, const FormatData & /* fd */ )
+void LogStringWriter::onString(const char* s, const FormatData& /* fd */)
 {
-	blobFile_ << ptr;
+    blobFile_ << s;
 }
 
-
-void LogStringWriter::onChar( char c, const FormatData & /* fd */ )
+void LogStringWriter::onPointer(int64 ptr, const FormatData& /* fd */)
 {
-	blobFile_ << c;
+    blobFile_ << ptr;
+}
+
+void LogStringWriter::onChar(char c, const FormatData& /* fd */)
+{
+    blobFile_ << c;
 }
 
 BW_END_NAMESPACE

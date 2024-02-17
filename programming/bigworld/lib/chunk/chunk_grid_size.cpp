@@ -8,7 +8,7 @@ BW_BEGIN_NAMESPACE
  * reference this value can get it at link-time rather
  * than directly importing the constant provided in
  * chunk_grid_size.hpp
-*/
+ */
 float g_defaultGridResolution = DEFAULT_GRID_RESOLUTION;
 
 BW_END_NAMESPACE

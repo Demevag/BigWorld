@@ -3,7 +3,6 @@
 #include "cellapps.hpp"
 #include "space.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
@@ -15,92 +14,83 @@ BW_BEGIN_NAMESPACE
  *	objects. Each Group is the set of CellApps that can balance their load via
  *	normal load balancing.
  */
-CellAppGroups::CellAppGroups( const CellApps & cellApps )
+CellAppGroups::CellAppGroups(const CellApps& cellApps)
 {
-	cellApps.identifyGroups( list_ );
+    cellApps.identifyGroups(list_);
 }
 
+namespace {
 
-namespace
-{
+    /**
+     *	This class is used to collect the overloaded groups.
+     */
+    class OverloadedGroups
+    {
+      public:
+        void add(CellAppGroup& group)
+        {
+            map_.insert(std::make_pair(group.avgLoad(), &group));
+        }
 
-/**
- *	This class is used to collect the overloaded groups.
- */
-class OverloadedGroups
-{
-public:
-	void add( CellAppGroup & group )
-	{
-		map_.insert( std::make_pair( group.avgLoad(), &group ) );
-	}
+        void addCells()
+        {
+            // Iterate over in reverse order so that the most loaded group is
+            // merged first.
+            Map::reverse_iterator iter = map_.rbegin();
 
-	void addCells()
-	{
-		// Iterate over in reverse order so that the most loaded group is merged
-		// first.
-		Map::reverse_iterator iter = map_.rbegin();
+            while (iter != map_.rend()) {
+                CellAppGroup* pGroup = iter->second;
 
-		while (iter != map_.rend())
-		{
-			CellAppGroup * pGroup = iter->second;
+                pGroup->addCell();
 
-			pGroup->addCell();
+                ++iter;
+            }
+        }
 
-			++iter;
-		}
-	}
-
-private:
-	typedef std::multimap< float, CellAppGroup * > Map;
-	Map map_;
-};
+      private:
+        typedef std::multimap<float, CellAppGroup*> Map;
+        Map                                         map_;
+    };
 
 }
-
 
 /**
  *	This method checks whether there are any overloaded CellApp groups and adds
  *	cells, if necessary, to help balance the load.
  */
-void CellAppGroups::checkForOverloaded( float addCellThreshold )
+void CellAppGroups::checkForOverloaded(float addCellThreshold)
 {
-	OverloadedGroups overloadedGroups;
+    OverloadedGroups overloadedGroups;
 
-	List::iterator iter = list_.begin();
+    List::iterator iter = list_.begin();
 
-	while (iter != list_.end())
-	{
-		CellAppGroup & group = *iter;
+    while (iter != list_.end()) {
+        CellAppGroup& group = *iter;
 
-		if (group.avgLoad() > addCellThreshold)
-		{
-			overloadedGroups.add( group );
-		}
+        if (group.avgLoad() > addCellThreshold) {
+            overloadedGroups.add(group);
+        }
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	overloadedGroups.addCells();
+    overloadedGroups.addCells();
 }
-
 
 /**
  *	This method checks whether any current groups are underloaded. If so, it
  *	will remove the cells from one of the CellApps.
  */
-void CellAppGroups::checkForUnderloaded( float retireCellThreshold )
+void CellAppGroups::checkForUnderloaded(float retireCellThreshold)
 {
-	List::iterator iter = list_.begin();
+    List::iterator iter = list_.begin();
 
-	while (iter != list_.end())
-	{
-		iter->checkForUnderloaded( retireCellThreshold );
+    while (iter != list_.end()) {
+        iter->checkForUnderloaded(retireCellThreshold);
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 /**
  *	This method generates a string representation of the set of CellApp groups
@@ -108,38 +98,34 @@ void CellAppGroups::checkForUnderloaded( float retireCellThreshold )
  */
 BW::string CellAppGroups::asString() const
 {
-	BW::stringstream str;
+    BW::stringstream str;
 
-	List::const_iterator iter = list_.begin();
+    List::const_iterator iter = list_.begin();
 
-	str << '[';
+    str << '[';
 
-	bool hasGroupBeenAdded = false;
+    bool hasGroupBeenAdded = false;
 
-	while (iter != list_.end())
-	{
-		const CellAppGroup & group = *iter;
+    while (iter != list_.end()) {
+        const CellAppGroup& group = *iter;
 
-		if (group.size() > 1)
-		{
-			if (hasGroupBeenAdded)
-			{
-				str << ',';
-			}
+        if (group.size() > 1) {
+            if (hasGroupBeenAdded) {
+                str << ',';
+            }
 
-			str << group.asString();
+            str << group.asString();
 
-			hasGroupBeenAdded = true;
-		}
+            hasGroupBeenAdded = true;
+        }
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	str << ']';
+    str << ']';
 
-	return str.str();
+    return str.str();
 }
-
 
 BW_END_NAMESPACE
 

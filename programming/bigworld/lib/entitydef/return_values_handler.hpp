@@ -6,7 +6,6 @@
 #include "network/interfaces.hpp"
 #include "pyscript/script.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class MethodDescription;
@@ -17,22 +16,23 @@ class MethodDescription;
  */
 class ReturnValuesHandler : public Mercury::ReplyMessageHandler
 {
-public:
-	ReturnValuesHandler( const MethodDescription & methodDescription );
+  public:
+    ReturnValuesHandler(const MethodDescription& methodDescription);
 
-	void handleMessage( const Mercury::Address & srcAddr,
-			Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data, void * arg );
+    void handleMessage(const Mercury::Address&         srcAddr,
+                       Mercury::UnpackedMessageHeader& header,
+                       BinaryIStream&                  data,
+                       void*                           arg);
 
-	void handleException( const Mercury::NubException & exception, void * arg );
+    void handleException(const Mercury::NubException& exception, void* arg);
 
-	PyObjectPtr getDeferred() const	{ return deferred_.get(); }
+    PyObjectPtr getDeferred() const { return deferred_.get(); }
 
-	static bool staticInit();
+    static bool staticInit();
 
-private:
-	const MethodDescription & methodDescription_;
-	PyDeferred deferred_;
+  private:
+    const MethodDescription& methodDescription_;
+    PyDeferred               deferred_;
 };
 
 BW_END_NAMESPACE

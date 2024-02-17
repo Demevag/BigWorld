@@ -5,7 +5,6 @@
 
 #include "cstdmf/bw_list.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BinaryIStream;
@@ -13,12 +12,10 @@ class BufferedEntityMessage;
 class CellApp;
 class EntityMessageHandler;
 
-namespace Mercury
-{
-class Address;
-class UnpackedMessageHeader;
+namespace Mercury {
+    class Address;
+    class UnpackedMessageHeader;
 }
-
 
 /**
  *	Objects of this type are used to handle variable length messages destined
@@ -27,21 +24,21 @@ class UnpackedMessageHeader;
  */
 class BufferedEntityMessages
 {
-public:
-	void playBufferedMessages( CellApp & app );
+  public:
+    void playBufferedMessages(CellApp& app);
 
-	void add( EntityMessageHandler & handler,
-		const Mercury::Address & srcAddr,
-		Mercury::UnpackedMessageHeader & header,
-		BinaryIStream & data, EntityID entityID );
+    void add(EntityMessageHandler&           handler,
+             const Mercury::Address&         srcAddr,
+             Mercury::UnpackedMessageHeader& header,
+             BinaryIStream&                  data,
+             EntityID                        entityID);
 
-	bool isEmpty() const
-		{ return bufferedMessages_.empty(); }
+    bool isEmpty() const { return bufferedMessages_.empty(); }
 
-	size_t size() const	{ return bufferedMessages_.size(); }
+    size_t size() const { return bufferedMessages_.size(); }
 
-private:
-	BW::list< BufferedEntityMessage * > bufferedMessages_;
+  private:
+    BW::list<BufferedEntityMessage*> bufferedMessages_;
 };
 
 BW_END_NAMESPACE

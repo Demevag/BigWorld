@@ -1,7 +1,6 @@
 #ifndef ACTION_MATCHER_HPP
 #define ACTION_MATCHER_HPP
 
-
 #include "cstdmf/bw_vector.hpp"
 
 #include "math/vector3.hpp"
@@ -12,16 +11,13 @@
 #include "network/basictypes.hpp"
 #include "duplo/motor.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-typedef BW::vector< SmartPointer<class SuperModelAction> > SMActionVector;
-
+typedef BW::vector<SmartPointer<class SuperModelAction>> SMActionVector;
 
 class PyEntity;
 class PyModel;
-typedef WeakPyPtr< PyEntity > PyEntityWPtr;
-
+typedef WeakPyPtr<PyEntity> PyEntityWPtr;
 
 /*~ class BigWorld.ActionMatcher
  *
@@ -83,7 +79,8 @@ typedef WeakPyPtr< PyEntity > PyEntityWPtr;
  *		  track the DirectionCursor
  *
  *	By default, an ActionMatcher motor is automatically created for a primary
- *	Model. To create additional ActionMatchers, use BigWorld.ActionMatcher function.
+ *	Model. To create additional ActionMatchers, use BigWorld.ActionMatcher
+ *function.
  */
 /**
  *	The job of the action matcher is to match the movements of an
@@ -97,133 +94,128 @@ typedef WeakPyPtr< PyEntity > PyEntityWPtr;
  */
 class ActionMatcher : public Motor
 {
-	Py_Header( ActionMatcher, Motor )
+    Py_Header(ActionMatcher, Motor)
 
-public:
-	ActionMatcher( PyEntity * pPyEntity,
-		PyTypeObject * pType = &ActionMatcher::s_type_ );
-	~ActionMatcher();
+      public
+      : ActionMatcher(PyEntity*     pPyEntity,
+                      PyTypeObject* pType = &ActionMatcher::s_type_);
+    ~ActionMatcher();
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-	void resetVelocitySmoothing(float time)
-	{
-		lastSpeedFor_=0.f;
-		smoothingTime_=time;
-	}
+    void resetVelocitySmoothing(float time)
+    {
+        lastSpeedFor_  = 0.f;
+        smoothingTime_ = time;
+    }
 
-	virtual void onOwnerReloaded();
+    virtual void onOwnerReloaded();
 
+    PY_RW_ATTRIBUTE_DECLARE(matchCapabilities_, matchCaps)
 
-	PY_RW_ATTRIBUTE_DECLARE( matchCapabilities_, matchCaps )
+    PY_RW_ATTRIBUTE_DECLARE(entityCollision_, entityCollision)
+    PY_RW_ATTRIBUTE_DECLARE(collisionRooted_, collisionRooted)
 
-	PY_RW_ATTRIBUTE_DECLARE( entityCollision_, entityCollision )
-	PY_RW_ATTRIBUTE_DECLARE( collisionRooted_, collisionRooted )
+    PY_READABLE_ATTRIBUTE_GET(matcherCoupled_, matcherCoupled)
+    int pySet_matcherCoupled(PyObject* value);
+    PY_RW_ATTRIBUTE_DECLARE(inheritOnRecouple_, inheritOnRecouple)
+    PY_RW_ATTRIBUTE_DECLARE(turnModelToEntity_, turnModelToEntity)
+    PY_RW_ATTRIBUTE_DECLARE(matchModelScale_, matchModelScale)
+    PY_RW_ATTRIBUTE_DECLARE(useEntityModel_, useEntityModel)
+    PY_RW_ATTRIBUTE_DECLARE(useEntityPitchAndRoll_, useEntityPitchAndRoll)
+    PY_RW_ATTRIBUTE_DECLARE(velocityProvider_, velocityProvider)
 
-	PY_READABLE_ATTRIBUTE_GET( matcherCoupled_, matcherCoupled )
-	int pySet_matcherCoupled( PyObject * value );
-	PY_RW_ATTRIBUTE_DECLARE( inheritOnRecouple_, inheritOnRecouple )
-	PY_RW_ATTRIBUTE_DECLARE( turnModelToEntity_, turnModelToEntity )
-	PY_RW_ATTRIBUTE_DECLARE( matchModelScale_, matchModelScale )
-	PY_RW_ATTRIBUTE_DECLARE( useEntityModel_, useEntityModel )
-	PY_RW_ATTRIBUTE_DECLARE( useEntityPitchAndRoll_, useEntityPitchAndRoll )
-	PY_RW_ATTRIBUTE_DECLARE( velocityProvider_, velocityProvider )
+    PY_RW_ATTRIBUTE_DECLARE(maxCollisionLod_, maxCollisionLod)
 
-	PY_RW_ATTRIBUTE_DECLARE( maxCollisionLod_, maxCollisionLod )
+    PY_RW_ATTRIBUTE_DECLARE(bodyTwistSpeed_, bodyTwistSpeed)
+    PY_RW_ATTRIBUTE_DECLARE(footTwistSpeed_, footTwistSpeed)
 
-	PY_RW_ATTRIBUTE_DECLARE( bodyTwistSpeed_, bodyTwistSpeed )
-	PY_RW_ATTRIBUTE_DECLARE( footTwistSpeed_, footTwistSpeed )
+    PY_RW_ATTRIBUTE_DECLARE(fallNotifier_, fallNotifier)
+    PY_RW_ATTRIBUTE_DECLARE(fallSelected_, fallSelected)
 
-	PY_RW_ATTRIBUTE_DECLARE( fallNotifier_, fallNotifier )
-	PY_RW_ATTRIBUTE_DECLARE( fallSelected_, fallSelected )
+    PyObject* pyGet_lastMatch();
+    PY_RO_ATTRIBUTE_SET(lastMatch)
 
-	PyObject * pyGet_lastMatch();
-	PY_RO_ATTRIBUTE_SET( lastMatch )
+    PyObject* pyGet_actions();
+    PY_RO_ATTRIBUTE_SET(actions)
 
-	PyObject * pyGet_actions();
-	PY_RO_ATTRIBUTE_SET( actions )
+    PyObject* matchInfo(const BW::string&);
+    PY_AUTO_METHOD_DECLARE(RETOWN, matchInfo, ARG(BW::string, END))
 
-	PyObject * matchInfo( const BW::string& );
-	PY_AUTO_METHOD_DECLARE( RETOWN, matchInfo, ARG(BW::string, END ) )
+    PY_RW_ATTRIBUTE_DECLARE(fuse_, fuse)
+    PY_RW_ATTRIBUTE_DECLARE(patience_, patience)
+    PY_RW_ATTRIBUTE_DECLARE(boredNotifier_, boredNotifier)
+    PY_RW_ATTRIBUTE_DECLARE(startMovingNotifier_, startMovingNotifier)
 
-	PY_RW_ATTRIBUTE_DECLARE( fuse_, fuse )
-	PY_RW_ATTRIBUTE_DECLARE( patience_, patience )
-	PY_RW_ATTRIBUTE_DECLARE( boredNotifier_, boredNotifier )
-	PY_RW_ATTRIBUTE_DECLARE( startMovingNotifier_, startMovingNotifier )
+    PY_RW_ATTRIBUTE_DECLARE(debug_, debug)
+    PY_RW_ATTRIBUTE_DECLARE(debugWorldVelocity_, debugWorldVelocity)
+    PY_RW_ATTRIBUTE_DECLARE(matchNotifier_, matchNotifier)
+  private:
+    virtual void attached();
+    virtual void detached();
 
-	PY_RW_ATTRIBUTE_DECLARE( debug_, debug )
-	PY_RW_ATTRIBUTE_DECLARE( debugWorldVelocity_, debugWorldVelocity )
-	PY_RW_ATTRIBUTE_DECLARE( matchNotifier_, matchNotifier )
-private:
-	virtual void attached();
-	virtual void detached();
+    virtual void rev(float dTime);
 
-	virtual void rev( float dTime );
+    void pullInfoFromSuperModel();
 
-	void pullInfoFromSuperModel();
+  private:
+    PyEntityWPtr pPyEntity_;
 
+    SMActionVector           pActions_;
+    SMActionVector::iterator lastAction_;
+    BW::string               lastActionName_;
 
-private:
-	PyEntityWPtr	pPyEntity_;
+    float lastSpeed_;
+    float lastSpeedFor_;
+    float smoothingTime_;
+    float lastFootTwist_;
 
-	SMActionVector				pActions_;
-	SMActionVector::iterator	lastAction_;
-	BW::string	lastActionName_;
+    Capabilities matchCapabilities_;
 
-	float		lastSpeed_;
-	float		lastSpeedFor_;
-	float		smoothingTime_;
-	float		lastFootTwist_;
+    bool entityCollision_;
+    bool collisionRooted_;
 
-	Capabilities	matchCapabilities_;
+    bool               matcherCoupled_;
+    bool               inheritOnRecouple_;
+    bool               turnModelToEntity_;
+    bool               matchModelScale_;
+    bool               useEntityModel_;
+    bool               useEntityPitchAndRoll_;
+    Vector4ProviderPtr velocityProvider_;
 
-	bool		entityCollision_;
-	bool		collisionRooted_;
+    float maxCollisionLod_;
 
-	bool		matcherCoupled_;
-	bool		inheritOnRecouple_;
-	bool		turnModelToEntity_;
-	bool		matchModelScale_;
-	bool		useEntityModel_;
-	bool		useEntityPitchAndRoll_;
-	Vector4ProviderPtr velocityProvider_;
+    float bodyTwistSpeed_;
+    float footTwistSpeed_;
 
-	float		maxCollisionLod_;
+    SmartPointer<PyObject> fallNotifier_;
+    bool                   fallSelected_;
 
-	float		bodyTwistSpeed_;
-	float		footTwistSpeed_;
+    float                    fuse_;
+    float                    patience_;
+    SmartPointer<PyObject>   boredNotifier_;
+    SMActionVector::iterator boredAction_;
 
-	SmartPointer<PyObject>	fallNotifier_;
-	bool					fallSelected_;
+    SmartPointer<PyObject> startMovingNotifier_;
+    SmartPointer<PyObject> matchNotifier_;
 
-	float		fuse_;
-	float		patience_;
-	SmartPointer<PyObject>		boredNotifier_;
-	SMActionVector::iterator	boredAction_;
+    EntityID lastVehicleID_;
+    Vector3  wLastVehiclePos_;
+    float    wLastVehicleYaw_;
+    float    wLastVehiclePitch_;
+    float    wLastVehicleRoll_;
 
-	SmartPointer<PyObject>		startMovingNotifier_;
-	SmartPointer<PyObject>		matchNotifier_;
+    /// Used for debugging purposes only.
+    bool            debug_;
+    Vector4BasicPtr debugWorldVelocity_;
 
-	EntityID	lastVehicleID_;
-	Vector3		wLastVehiclePos_;
-	float		wLastVehicleYaw_;
-	float       wLastVehiclePitch_;
-	float       wLastVehicleRoll_; 
+    void doEntityCollisions(Vector3& wCurrPos);
 
-	/// Used for debugging purposes only.
-	bool			debug_;
-	Vector4BasicPtr	debugWorldVelocity_;
-
-	void doEntityCollisions( Vector3 & wCurrPos );
-
-public:
-	static bool				globalEntityCollision_;
-	static bool				matchBots_;	///< Should bots be action matched
+  public:
+    static bool globalEntityCollision_;
+    static bool matchBots_; ///< Should bots be action matched
 };
-
 
 BW_END_NAMESPACE
 
-
 #endif // ACTION_MATCHER_HPP
-

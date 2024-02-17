@@ -5,7 +5,6 @@
 #include "network/interfaces.hpp"
 #include "network/basictypes.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class CellApp;
@@ -34,77 +33,65 @@ class CellApp;
  *
  *  This object deletes itself.
  */
-class AckCellAppDeathHelper :
-	public TimerHandler,
-	public Mercury::ShutdownSafeReplyMessageHandler
+class AckCellAppDeathHelper
+  : public TimerHandler
+  , public Mercury::ShutdownSafeReplyMessageHandler
 {
-public:
-	AckCellAppDeathHelper( CellApp & app, const Mercury::Address & deadAddr );
+  public:
+    AckCellAppDeathHelper(CellApp& app, const Mercury::Address& deadAddr);
 
-	~AckCellAppDeathHelper()
-	{
-		--s_numInstances_;
-	}
+    ~AckCellAppDeathHelper() { --s_numInstances_; }
 
-	virtual void handleTimeout( TimerHandle handle, void * arg );
+    virtual void handleTimeout(TimerHandle handle, void* arg);
 
-	virtual void handleMessage( const Mercury::Address & srcAddr,
-		Mercury::UnpackedMessageHeader & header,
-		BinaryIStream & data,
-		void * arg );
+    virtual void handleMessage(const Mercury::Address&         srcAddr,
+                               Mercury::UnpackedMessageHeader& header,
+                               BinaryIStream&                  data,
+                               void*                           arg);
 
-	virtual void handleException( const Mercury::NubException & exc, void * );
+    virtual void handleException(const Mercury::NubException& exc, void*);
 
+    /**
+     *  This method adds a real in a critical state to the helper's collection.
+     */
+    void addCriticalEntity(Entity* pEntity) { recentOnloads_.insert(pEntity); }
 
-	/**
-	 *  This method adds a real in a critical state to the helper's collection.
-	 */
-	void addCriticalEntity( Entity * pEntity )
-	{
-		recentOnloads_.insert( pEntity );
-	}
+    /**
+     *  This method adds a dead real's ID to the collection.  You should call
+     *  this for every emergencySetCurrentCell message sent.
+     */
+    void addBadGhost() { ++numBadGhosts_; }
 
+    void startTimer();
 
-	/**
-	 *  This method adds a dead real's ID to the collection.  You should call
-	 *  this for every emergencySetCurrentCell message sent.
-	 */
-	void addBadGhost()
-	{
-		++numBadGhosts_;
-	}
+  private:
+    void checkFinished();
 
+    /// Reference to the CellApp instance, for convenience.
+    CellApp& app_;
 
-	void startTimer();
+    /// A collection of entities whose channels were in a critical state at the
+    /// time the CellApp death notification arrived.
+    typedef BW::set<EntityPtr> RecentOnloads;
+    RecentOnloads              recentOnloads_;
 
-private:
-	void checkFinished();
+    /// The address of the dead app.
+    Mercury::Address deadAddr_;
 
-	/// Reference to the CellApp instance, for convenience.
-	CellApp & app_;
+    /// How fast we check this (in microseconds).
+    int checkPeriod_;
 
-	/// A collection of entities whose channels were in a critical state at the
-	/// time the CellApp death notification arrived.
-	typedef BW::set< EntityPtr > RecentOnloads;
-	RecentOnloads recentOnloads_;
+    /// The number of emergencySetCurrentCell messages we sent.
+    int numBadGhosts_;
 
-	/// The address of the dead app.
-	Mercury::Address deadAddr_;
+    /// Our timer ID with the interface.
+    TimerHandle timerHandle_;
 
-	/// How fast we check this (in microseconds).
-	int checkPeriod_;
+    /// When we started the timer
+    uint64 startTime_;
 
-	/// The number of emergencySetCurrentCell messages we sent.
-	int numBadGhosts_;
-
-	/// Our timer ID with the interface.
-	TimerHandle timerHandle_;
-
-	/// When we started the timer
-	uint64	startTime_;
-
-	/// Static instance counter
-	static int s_numInstances_;
+    /// Static instance counter
+    static int s_numInstances_;
 };
 
 BW_END_NAMESPACE

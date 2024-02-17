@@ -7,108 +7,87 @@
 
 #include <limits>
 
-namespace BW {
-namespace CompiledSpace {
+namespace BW { namespace CompiledSpace {
 
+    // ----------------------------------------------------------------------------
+    StringTableWriter::StringTableWriter() {}
 
-// ----------------------------------------------------------------------------
-StringTableWriter::StringTableWriter()
-{
+    // ----------------------------------------------------------------------------
+    StringTableWriter::~StringTableWriter() {}
 
-}
+    // ----------------------------------------------------------------------------
+    bool StringTableWriter::write(BinaryFormatWriter& writer)
+    {
+        BinaryFormatWriter::Stream* stream = writer.appendSection(
+          StringTableTypes::FORMAT_MAGIC, StringTableTypes::FORMAT_VERSION);
 
+        return writeToStream(stream);
+    }
 
-// ----------------------------------------------------------------------------
-StringTableWriter::~StringTableWriter()
-{
+    // ----------------------------------------------------------------------------
+    bool StringTableWriter::writeToStream(BinaryFormatWriter::Stream* stream)
+    {
+        typedef StringTableTypes::Entry Entry;
 
-}
+        MF_ASSERT(stream != NULL);
 
+        // If we hit this I guess we need bigger indices X_X
+        MF_ASSERT(strings_.size() <=
+                  (size_t)std::numeric_limits<StringTableTypes::Index>::max());
 
-// ----------------------------------------------------------------------------
-bool StringTableWriter::write( BinaryFormatWriter& writer )
-{
-	BinaryFormatWriter::Stream* stream =
-		writer.appendSection( 
-			StringTableTypes::FORMAT_MAGIC,
-			StringTableTypes::FORMAT_VERSION );
+        // Entries
+        uint32            offset = 0;
+        BW::vector<Entry> entries;
 
-	return writeToStream( stream );
-}
+        for (size_t i = 0; i < strings_.size(); ++i) {
+            MF_ASSERT(offset <= (size_t)std::numeric_limits<uint32>::max());
 
-// ----------------------------------------------------------------------------
-bool StringTableWriter::writeToStream( BinaryFormatWriter::Stream* stream )
-{
-	typedef StringTableTypes::Entry Entry;
+            Entry entry;
+            entry.offset_ = offset;
+            entry.length_ = (uint32)(strings_[i].size());
+            offset += (uint32)(strings_[i].size() + 1);
 
-	MF_ASSERT( stream != NULL );
+            entries.push_back(entry);
+        }
 
-	// If we hit this I guess we need bigger indices X_X
-	MF_ASSERT( strings_.size() <=
-		(size_t)std::numeric_limits<StringTableTypes::Index>::max() );
+        stream->write(entries);
 
-	// Entries
-	uint32 offset = 0;
-	BW::vector<Entry> entries;
+        // Write out the amount of data we're going to be outputting
+        stream->write(offset);
 
-	for (size_t i = 0; i < strings_.size(); ++i)
-	{
-		MF_ASSERT( offset <=
-			(size_t)std::numeric_limits<uint32>::max() );
+        // String data
+        for (size_t i = 0; i < strings_.size(); ++i) {
+            // Making sure we include NULL terminator
+            stream->writeRaw(&strings_[i][0], strings_[i].size() + 1);
+        }
 
-		Entry entry;
-		entry.offset_ = offset;
-		entry.length_ = (uint32)(strings_[i].size());
-		offset += (uint32)(strings_[i].size() + 1);
+        return true;
+    }
 
-		entries.push_back( entry );
-	}
+    // ----------------------------------------------------------------------------
+    StringTableTypes::Index StringTableWriter::addString(const BW::string& str)
+    {
+        auto it = std::find(strings_.begin(), strings_.end(), str);
+        if (it != strings_.end()) {
+            return static_cast<StringTableTypes::Index>(
+              std::distance(strings_.begin(), it));
+        } else {
+            strings_.push_back(str);
+            return static_cast<StringTableTypes::Index>(strings_.size() - 1);
+        }
+    }
 
-	stream->write( entries );
+    // ----------------------------------------------------------------------------
+    size_t StringTableWriter::size() const
+    {
+        return strings_.size();
+    }
 
-	// Write out the amount of data we're going to be outputting
-	stream->write( offset );
-
-	// String data
-	for (size_t i = 0; i < strings_.size(); ++i)
-	{
-		// Making sure we include NULL terminator
-		stream->writeRaw( &strings_[i][0], strings_[i].size()+1 );
-	}
-
-	return true;
-}
-
-
-// ----------------------------------------------------------------------------
-StringTableTypes::Index StringTableWriter::addString( const BW::string& str )
-{
-	auto it = std::find( strings_.begin(), strings_.end(), str );
-	if (it != strings_.end())
-	{
-		return static_cast<StringTableTypes::Index>(
-			std::distance( strings_.begin(), it ) );
-	}
-	else
-	{
-		strings_.push_back( str );
-		return static_cast<StringTableTypes::Index>( strings_.size()-1 );
-	}
-}
-
-
-// ----------------------------------------------------------------------------
-size_t StringTableWriter::size() const
-{
-	return strings_.size();
-}
-
-
-// ----------------------------------------------------------------------------
-const BW::string& StringTableWriter::entry( size_t idx ) const
-{
-	return strings_[idx];
-}
+    // ----------------------------------------------------------------------------
+    const BW::string& StringTableWriter::entry(size_t idx) const
+    {
+        return strings_[idx];
+    }
 
 } // namespace CompiledSpace
 } // namespace BW

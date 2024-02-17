@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,8 +23,8 @@
  *
  */
 
-// Only compile this code on iOS. These files should NOT be included on your Mac project.
-// But in case they are included, it won't be compiled.
+// Only compile this code on iOS. These files should NOT be included on your Mac
+// project. But in case they are included, it won't be compiled.
 #import <Availability.h>
 #ifdef __IPHONE_OS_VERSION_MAX_ALLOWED
 
@@ -43,17 +43,17 @@
  Object than contains the delegate and priority of the event handler.
 */
 @interface CCTouchHandler : NSObject {
-	id				delegate;
-	int				priority;
-	ccTouchSelectorFlag		enabledSelectors_;
+    id                  delegate;
+    int                 priority;
+    ccTouchSelectorFlag enabledSelectors_;
 }
 
 /** delegate */
-@property(nonatomic, readwrite, retain) id delegate;
+@property (nonatomic, readwrite, retain) id delegate;
 /** priority */
-@property(nonatomic, readwrite) int priority; // default 0
+@property (nonatomic, readwrite) int priority; // default 0
 /** enabled selectors */
-@property(nonatomic,readwrite) ccTouchSelectorFlag enabledSelectors;
+@property (nonatomic, readwrite) ccTouchSelectorFlag enabledSelectors;
 
 /** allocates a TouchHandler with a delegate and a priority */
 + (id)handlerWithDelegate:(id)aDelegate priority:(int)priority;
@@ -64,8 +64,7 @@
 /** CCStandardTouchHandler
  It forwardes each event to the delegate.
  */
-@interface CCStandardTouchHandler : CCTouchHandler
-{
+@interface CCStandardTouchHandler : CCTouchHandler {
 }
 @end
 
@@ -75,18 +74,24 @@
  Used internally by TouchDispatcher
  */
 @interface CCTargetedTouchHandler : CCTouchHandler {
-	BOOL swallowsTouches;
-	NSMutableSet *claimedTouches;
+    BOOL          swallowsTouches;
+    NSMutableSet* claimedTouches;
 }
 /** whether or not the touches are swallowed */
-@property(nonatomic, readwrite) BOOL swallowsTouches; // default NO
+@property (nonatomic, readwrite) BOOL swallowsTouches; // default NO
 /** MutableSet that contains the claimed touches */
-@property(nonatomic, readonly) NSMutableSet *claimedTouches;
+@property (nonatomic, readonly) NSMutableSet* claimedTouches;
 
-/** allocates a TargetedTouchHandler with a delegate, a priority and whether or not it swallows touches or not */
-+ (id)handlerWithDelegate:(id) aDelegate priority:(int)priority swallowsTouches:(BOOL)swallowsTouches;
-/** initializes a TargetedTouchHandler with a delegate, a priority and whether or not it swallows touches or not */
-- (id)initWithDelegate:(id) aDelegate priority:(int)priority swallowsTouches:(BOOL)swallowsTouches;
+/** allocates a TargetedTouchHandler with a delegate, a priority and whether or
+ * not it swallows touches or not */
++ (id)handlerWithDelegate:(id)aDelegate
+                 priority:(int)priority
+          swallowsTouches:(BOOL)swallowsTouches;
+/** initializes a TargetedTouchHandler with a delegate, a priority and whether
+ * or not it swallows touches or not */
+- (id)initWithDelegate:(id)aDelegate
+              priority:(int)priority
+       swallowsTouches:(BOOL)swallowsTouches;
 
 @end
 

@@ -10,10 +10,9 @@ BW_BEGIN_NAMESPACE
 // This is defined prior to 'user_log.hpp' inclusion, so that UserLog will
 // know what UserSegments are.
 class UserSegment;
-typedef BW::vector< UserSegment * > UserSegments;
+typedef BW::vector<UserSegment*> UserSegments;
 
 BW_END_NAMESPACE
-
 
 #include "user_log.hpp"
 #include "log_time.hpp"
@@ -25,7 +24,6 @@ BW_END_NAMESPACE
 #include <dirent.h>
 
 #include "cstdmf/bw_string.hpp"
-
 
 BW_BEGIN_NAMESPACE
 
@@ -44,58 +42,55 @@ class MemoryIStream;
  */
 class UserSegment
 {
-public:
-	UserSegment( const BW::string userLogPath, const char *suffix );
-	virtual ~UserSegment();
+  public:
+    UserSegment(const BW::string userLogPath, const char* suffix);
+    virtual ~UserSegment();
 
-	const BW::string & getSuffix() const { return suffix_; }
+    const BW::string& getSuffix() const { return suffix_; }
 
-	bool isGood() const { return isGood_; }
+    bool isGood() const { return isGood_; }
 
-	bool readEntry( int n, LogEntry &entry );
+    bool readEntry(int n, LogEntry& entry);
 
-	bool updateEntryBounds();
+    bool updateEntryBounds();
 
-	int getNumEntries() const { return numEntries_; }
+    int getNumEntries() const { return numEntries_; }
 
+  protected:
+    bool buildSuffixFrom(struct tm& pTime, BW::string& newSuffix) const;
 
+    BW::string suffix_;
 
-protected:
-	bool buildSuffixFrom( struct tm & pTime, BW::string & newSuffix ) const;
+    // File streams representing the currently open args.* / entries.* files.
+    FileStream* pEntries_;
+    FileStream* pArgs_;
 
-	BW::string suffix_;
+    int numEntries_;
+    int argsSize_;
 
-	// File streams representing the currently open args.* / entries.* files.
-	FileStream *pEntries_;
-	FileStream *pArgs_;
+    LogTime start_;
+    LogTime end_;
 
-	int numEntries_;
-	int argsSize_;
+    bool isGood_;
 
-	LogTime start_;
-	LogTime end_;
+    BW::string userLogPath_;
 
-	bool isGood_;
+    MetadataMLDB* pMetadataMLDB_;
 
-	BW::string userLogPath_;
-
-	MetadataMLDB *pMetadataMLDB_;
-
-private:
-	friend class UserSegmentComparator;
+  private:
+    friend class UserSegmentComparator;
 };
-
 
 /**
  * This class is a helper to allow std::sort operations on UserSegments.
  */
 class UserSegmentComparator
 {
-public:
-	bool operator() ( const UserSegment *a, const UserSegment *b )
-	{
-		return a->start_ < b->start_;
-	}
+  public:
+    bool operator()(const UserSegment* a, const UserSegment* b)
+    {
+        return a->start_ < b->start_;
+    }
 };
 
 BW_END_NAMESPACE

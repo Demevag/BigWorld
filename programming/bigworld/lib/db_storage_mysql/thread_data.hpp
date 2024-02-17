@@ -5,7 +5,6 @@
 #include "wrapper.hpp"
 #include "cstdmf/bgtask_manager.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -13,19 +12,19 @@ BW_BEGIN_NAMESPACE
  */
 class MySqlThreadData : public BackgroundThreadData
 {
-public:
-	MySqlThreadData( const DBConfig::ConnectionInfo & connInfo );
+  public:
+    MySqlThreadData(const DBConfig::ConnectionInfo& connInfo);
 
-	virtual bool onStart( BackgroundTaskThread & thread );
-	virtual void onEnd( BackgroundTaskThread & thread );
+    virtual bool onStart(BackgroundTaskThread& thread);
+    virtual void onEnd(BackgroundTaskThread& thread);
 
-	MySql & connection()		{ return *pConnection_; }
+    MySql& connection() { return *pConnection_; }
 
-	bool reconnect();
+    bool reconnect();
 
-private:
-	MySql * pConnection_;
-	DBConfig::ConnectionInfo connectionInfo_;
+  private:
+    MySql*                   pConnection_;
+    DBConfig::ConnectionInfo connectionInfo_;
 };
 
 BW_END_NAMESPACE

@@ -6,7 +6,6 @@
 #include "cstdmf/bw_string.hpp"
 #include <mysql/mysql.h>
 
-
 BW_BEGIN_NAMESPACE
 
 class MySql;
@@ -17,52 +16,60 @@ class MySql;
 template <class T>
 class MySqlValueWithNull
 {
-public:
-	MySqlValueWithNull() : isNull_( true ) {}
-	MySqlValueWithNull( const T& x ) : value_(x), isNull_( false ) {}
+  public:
+    MySqlValueWithNull()
+      : isNull_(true)
+    {
+    }
+    MySqlValueWithNull(const T& x)
+      : value_(x)
+      , isNull_(false)
+    {
+    }
 
-	// this is the public interface
-	void nullify() { isNull_ = true; }
-	void valuefy() { isNull_ = false; }
-	void set( const T& x )
-	{
-		value_ = x;
-		isNull_ = true;
-	}
-	const T * get() const { return isNull_ ? 0 : &value_; }
-	T& getBuf() { return value_; }
+    // this is the public interface
+    void nullify() { isNull_ = true; }
+    void valuefy() { isNull_ = false; }
+    void set(const T& x)
+    {
+        value_  = x;
+        isNull_ = true;
+    }
+    const T* get() const { return isNull_ ? 0 : &value_; }
+    T&       getBuf() { return value_; }
 
-private:
-	T value_;
-	bool isNull_;
+  private:
+    T    value_;
+    bool isNull_;
 };
-
 
 /**
  *	This class is used to represent a time value that might be null.
  */
-class MySqlTimestampNull : public MySqlValueWithNull< MYSQL_TIME >
+class MySqlTimestampNull : public MySqlValueWithNull<MYSQL_TIME>
 {
-public:
-	typedef MySqlValueWithNull< MYSQL_TIME > BaseClass;
-	MySqlTimestampNull() {}
-	MySqlTimestampNull( const MYSQL_TIME& x ) : BaseClass(x) {}
+  public:
+    typedef MySqlValueWithNull<MYSQL_TIME> BaseClass;
+    MySqlTimestampNull() {}
+    MySqlTimestampNull(const MYSQL_TIME& x)
+      : BaseClass(x)
+    {
+    }
 };
-
 
 /**
  *	This class initialises itself to a MySQL escaped string from any string.
  */
 class MySqlEscapedString
 {
-public:
-	MySqlEscapedString( MySql & connection, const BW::string& string );
-	~MySqlEscapedString();
+  public:
+    MySqlEscapedString(MySql& connection, const BW::string& string);
+    ~MySqlEscapedString();
 
-	operator char*()	{ return escapedString_; }
+    operator char*() { return escapedString_; }
 
-private:
-	char *	escapedString_;
+  private:
+    char* escapedString_;
 };
 
 BW_END_NAMESPACE

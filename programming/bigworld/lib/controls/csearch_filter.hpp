@@ -7,52 +7,47 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace controls
-{
+namespace controls {
     //
     // This control is like CEdit, but has a search icon on the left and a
     // clear button image on the right.
     //
     class CSearchFilter : public CWnd
     {
-    public:
+      public:
         CSearchFilter();
 
         ~CSearchFilter();
 
-        BOOL
-        Create
-        (
-            DWORD           style,
-            RECT            const &extents, 
-            CWnd            *parent, 
-            UINT            id,
-            UINT            sbmpID,
-            UINT            cbmpID
-        );
+        BOOL Create(DWORD       style,
+                    RECT const& extents,
+                    CWnd*       parent,
+                    UINT        id,
+                    UINT        sbmpID,
+                    UINT        cbmpID);
 
         BOOL isClearVisible() const;
 
         BOOL isEmptyTextVisible() const;
 
-        void setEmptyText(wchar_t const *text);
+        void setEmptyText(wchar_t const* text);
 
-        wchar_t const *getEmptyText() const;
+        wchar_t const* getEmptyText() const;
 
         unsigned int editID() const;
 
-		void clearFilter();
+        void clearFilter();
 
-    protected:
-        /*virtual*/ BOOL PreTranslateMessage(MSG *msg);
-            
+      protected:
+        /*virtual*/ BOOL PreTranslateMessage(MSG* msg);
+
         afx_msg void OnSize(UINT type, int cx, int cy);
 
         afx_msg void OnPaint();
 
-        afx_msg BOOL OnEraseBkgnd(CDC *dc);
+        afx_msg BOOL OnEraseBkgnd(CDC* dc);
 
-        afx_msg BOOL OnSetCursor(CWnd *wnd, UINT hitTest, UINT message);
+        afx_msg BOOL OnSetCursor(CWnd* wnd, UINT hitTest, UINT message);
 
         afx_msg void OnEditText();
 
@@ -64,36 +59,32 @@ namespace controls
 
         afx_msg LRESULT OnGetTextLength(WPARAM wparam, LPARAM lparam);
 
-        afx_msg void OnSetFocus(CWnd *oldWnd);
+        afx_msg void OnSetFocus(CWnd* oldWnd);
 
-        afx_msg void OnKillFocus(CWnd *newWnd);        
+        afx_msg void OnKillFocus(CWnd* newWnd);
 
         DECLARE_MESSAGE_MAP()
 
-        void 
-        getRects
-        (
-            CRect           const &client,
-            CRect           &searchRect,
-            CRect           &editRect,
-            CRect           &clearRect,
-            bool            clearVis
-        ) const;
+        void getRects(CRect const& client,
+                      CRect&       searchRect,
+                      CRect&       editRect,
+                      CRect&       clearRect,
+                      bool         clearVis) const;
 
         void updatePositions();
 
-    private:
+      private:
         friend class CSearchFilterEdit;
 
-        CStatic             searchImg_;
-        CSearchFilterEdit   *edit_;
-        CStatic             clearImg_;
-        HBITMAP             searchBmp_;
-        HBITMAP             clearBmp_;
-        CToolTipCtrl        toolTip_;
-        size_t              filterChanges_;
+        CStatic            searchImg_;
+        CSearchFilterEdit* edit_;
+        CStatic            clearImg_;
+        HBITMAP            searchBmp_;
+        HBITMAP            clearBmp_;
+        CToolTipCtrl       toolTip_;
+        size_t             filterChanges_;
         BW::wstring        emptyText_;
-        bool                showEmptyText_;
+        bool               showEmptyText_;
     };
 }
 

@@ -3,11 +3,9 @@
 
 #include "ashes/simple_gui_component.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class TextGUIComponent;
-
 
 /*~ class BigWorld.LatencyGUIComponent
  *
@@ -23,24 +21,21 @@ class TextGUIComponent;
  */
 class LatencyGUIComponent : public SimpleGUIComponent
 {
-	Py_Header( LatencyGUIComponent, SimpleGUIComponent )
+    Py_Header(LatencyGUIComponent, SimpleGUIComponent)
 
-public:
-	LatencyGUIComponent( PyTypeObject* pType = &s_type_ );
-	~LatencyGUIComponent();
+      public : LatencyGUIComponent(PyTypeObject* pType = &s_type_);
+    ~LatencyGUIComponent();
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-	void		draw( Moo::DrawContext& drawContext, bool reallyDraw, bool overlay );
+    void draw(Moo::DrawContext& drawContext, bool reallyDraw, bool overlay);
 
-private:
-	TextGUIComponent* txt_;
+  private:
+    TextGUIComponent* txt_;
 
-	LatencyGUIComponent(const LatencyGUIComponent&);
-	LatencyGUIComponent& operator=(const LatencyGUIComponent&);
+    LatencyGUIComponent(const LatencyGUIComponent&);
+    LatencyGUIComponent& operator=(const LatencyGUIComponent&);
 };
-
-
 
 #ifdef CODE_INLINE
 #include "latency_gui_component.ipp"

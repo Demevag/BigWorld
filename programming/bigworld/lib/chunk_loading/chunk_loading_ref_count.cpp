@@ -2,7 +2,6 @@
 
 #include "chunk_loading_ref_count.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
@@ -12,17 +11,15 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor
  */
-ChunkLoadingRefCount::ChunkLoadingRefCount( Chunk & /* chunk */ ) :
-	numOverlapped_( 0 )
+ChunkLoadingRefCount::ChunkLoadingRefCount(Chunk& /* chunk */)
+  : numOverlapped_(0)
 {
 }
 
 /**
  *	Destructor
  */
-ChunkLoadingRefCount::~ChunkLoadingRefCount()
-{
-}
+ChunkLoadingRefCount::~ChunkLoadingRefCount() {}
 
 /**
  *	Get the ChunkLoadingRefCount's identifier.
@@ -30,12 +27,12 @@ ChunkLoadingRefCount::~ChunkLoadingRefCount()
  */
 const char* ChunkLoadingRefCount::id() const
 {
-	return "ChunkLoadingRefCount";
+    return "ChunkLoadingRefCount";
 }
 
 // static instance initialiser
-ChunkLoadingRefCount::Instance< ChunkLoadingRefCount >
-			ChunkLoadingRefCount::instance;
+ChunkLoadingRefCount::Instance<ChunkLoadingRefCount>
+  ChunkLoadingRefCount::instance;
 
 BW_END_NAMESPACE
 

@@ -21,64 +21,68 @@ typedef SmartPointer<BinaryBlock> BinaryPtr;
  */
 class BinaryBlock : public SafeReferenceCount
 {
-public:
-	BinaryBlock(	const void* data, size_t len,
-					const char * allocator,
-					BinaryPtr pOwner = 0 );
-	BinaryBlock(	const void* data, size_t len,
-					const char * allocator,
-					bool externallyOwned );
-	BinaryBlock(	std::istream& stream, std::streamsize len,
-					const char * allocator );
+  public:
+    BinaryBlock(const void* data,
+                size_t      len,
+                const char* allocator,
+                BinaryPtr   pOwner = 0);
+    BinaryBlock(const void* data,
+                size_t      len,
+                const char* allocator,
+                bool        externallyOwned);
+    BinaryBlock(std::istream&   stream,
+                std::streamsize len,
+                const char*     allocator);
 
-	~BinaryBlock();
+    ~BinaryBlock();
 
-	/// This method returns a pointer to the block of binary data
-	const void *	data() const	{ return data_; }
-	const char *	cdata() const
-	{ return reinterpret_cast< const char * >( this->data() ); }
-	char *	cdata()
-	{ return reinterpret_cast< char * >( data_ ); }
+    /// This method returns a pointer to the block of binary data
+    const void* data() const { return data_; }
+    const char* cdata() const
+    {
+        return reinterpret_cast<const char*>(this->data());
+    }
+    char* cdata() { return reinterpret_cast<char*>(data_); }
 
-	/// This method returns the length of the binary data
-	int				len() const		{ return (int)len_; }
+    /// This method returns the length of the binary data
+    int len() const { return (int)len_; }
 
-	BinaryPtr		pOwner()		{ return pOwner_; }
+    BinaryPtr pOwner() { return pOwner_; }
 
-	/// These methods compress/decompress a BinaryBlock
-	static const int RAW_COMPRESSION		=  0;
-	static const int DEFAULT_COMPRESSION	=  6;
-	static const int BEST_COMPRESSION		= 10;
-	BinaryPtr compress(int level = DEFAULT_COMPRESSION) const;
-	BinaryPtr decompress() const;
-	bool isCompressed() const;
-	int compare( BinaryBlock& that ) const;
+    /// These methods compress/decompress a BinaryBlock
+    static const int RAW_COMPRESSION     = 0;
+    static const int DEFAULT_COMPRESSION = 6;
+    static const int BEST_COMPRESSION    = 10;
+    BinaryPtr        compress(int level = DEFAULT_COMPRESSION) const;
+    BinaryPtr        decompress() const;
+    bool             isCompressed() const;
+    int              compare(BinaryBlock& that) const;
 
-	bool canZip() const;
-	void canZip( bool newVal );
+    bool canZip() const;
+    void canZip(bool newVal);
 
-	static bool memoryCritical() { return s_memoryCritical_; }
-	static void memoryCritical( bool val ) { s_memoryCritical_ = val; }
+    static bool memoryCritical() { return s_memoryCritical_; }
+    static void memoryCritical(bool val) { s_memoryCritical_ = val; }
 
-private:
-	void initCopydata( const void* data, size_t len );
+  private:
+    void initCopydata(const void* data, size_t len);
 
-	static bool s_memoryCritical_;
+    static bool s_memoryCritical_;
 
-	void *			data_;
-	std::streamsize	len_;
-	bool			externallyOwned_;
-	BinaryPtr		pOwner_;
+    void*           data_;
+    std::streamsize len_;
+    bool            externallyOwned_;
+    BinaryPtr       pOwner_;
 
-	bool canZip_;
+    bool canZip_;
 
 #if ENABLE_RESOURCE_COUNTERS
-	BW::string		allocator_;
+    BW::string allocator_;
 #endif
 
-private:
-	BinaryBlock(const BinaryBlock&);
-	BinaryBlock& operator=(const BinaryBlock&);
+  private:
+    BinaryBlock(const BinaryBlock&);
+    BinaryBlock& operator=(const BinaryBlock&);
 };
 
 /**
@@ -86,20 +90,19 @@ private:
  */
 class BinaryInputBuffer : public std::streambuf
 {
-public:
-	BinaryInputBuffer(BinaryPtr data) :
-		data_(data)
-	{
-		this->std::streambuf::setg(
-			this->data_->cdata(), this->data_->cdata(),
-			this->data_->cdata() + this->data_->len());
-	}
+  public:
+    BinaryInputBuffer(BinaryPtr data)
+      : data_(data)
+    {
+        this->std::streambuf::setg(this->data_->cdata(),
+                                   this->data_->cdata(),
+                                   this->data_->cdata() + this->data_->len());
+    }
 
-private:
-	BinaryPtr data_;
+  private:
+    BinaryPtr data_;
 };
 
 BW_END_NAMESPACE
 
 #endif // _BINARY_BLOCK_HEADER
-

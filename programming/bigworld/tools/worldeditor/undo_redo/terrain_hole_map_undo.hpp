@@ -1,7 +1,6 @@
 #ifndef TERRAIN_HOLE_MAP_UNDO_HPP
 #define TERRAIN_HOLE_MAP_UNDO_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "gizmo/undoredo.hpp"
@@ -12,22 +11,23 @@
 BW_BEGIN_NAMESPACE
 
 /**
- *  This class can be used to save and restore the hole map of a terrain 
+ *  This class can be used to save and restore the hole map of a terrain
  *  block.
  */
 class TerrainHoleMapUndo : public UndoRedo::Operation
 {
-public:
-    TerrainHoleMapUndo(Terrain::EditorBaseTerrainBlockPtr block, ChunkPtr chunk);
+  public:
+    TerrainHoleMapUndo(Terrain::EditorBaseTerrainBlockPtr block,
+                       ChunkPtr                           chunk);
 
     virtual void undo();
 
-    virtual bool iseq( const UndoRedo::Operation & oth ) const;
+    virtual bool iseq(const UndoRedo::Operation& oth) const;
 
-private:
-    Terrain::EditorBaseTerrainBlockPtr  block_;
-    ChunkPtr				            chunk_;
-    Terrain::TerrainHoleMap::ImageType  holes_;
+  private:
+    Terrain::EditorBaseTerrainBlockPtr block_;
+    ChunkPtr                           chunk_;
+    Terrain::TerrainHoleMap::ImageType holes_;
 };
 
 BW_END_NAMESPACE

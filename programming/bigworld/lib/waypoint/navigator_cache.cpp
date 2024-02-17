@@ -8,18 +8,17 @@
 
 #include "chunk/chunk_space.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
  *	Constructor.
  */
-NavigatorCache::NavigatorCache() : 
-	ReferenceCount(),
-	wayPath_(),
-	waySetPath_()
-{}
-
+NavigatorCache::NavigatorCache()
+  : ReferenceCount()
+  , wayPath_()
+  , waySetPath_()
+{
+}
 
 /**
  *  This method saves a waypoint path. It then attempts to smooth the points
@@ -29,17 +28,16 @@ NavigatorCache::NavigatorCache() :
  *  result in the given AStar object. (i.e. must be unspoilt).
  */
 void NavigatorCache::saveWayPath(
-		AStar< ChunkWaypointState, ChunkWaypointState::SearchData > & astar,
-		const ChunkWaypointState & src,
-		const ChunkWaypointState & dst )
+  AStar<ChunkWaypointState, ChunkWaypointState::SearchData>& astar,
+  const ChunkWaypointState&                                  src,
+  const ChunkWaypointState&                                  dst)
 {
-	PROFILER_SCOPED( saveWayPath );
-	wayPath_.init( astar );
-	wayPath_.smoothPath( astar, src, dst );
-	wayPath_.removeDuplicates();
-	MF_ASSERT_DEBUG( wayPath_.isValid() );
+    PROFILER_SCOPED(saveWayPath);
+    wayPath_.init(astar);
+    wayPath_.smoothPath(astar, src, dst);
+    wayPath_.removeDuplicates();
+    MF_ASSERT_DEBUG(wayPath_.isValid());
 }
-
 
 /**
  *  This method indicates whether the cached path matches up with the next
@@ -53,12 +51,11 @@ void NavigatorCache::saveWayPath(
  * 				the destination changed or we have run out of intermediate
  * 				nodes.
  */
-bool NavigatorCache::findWayPath( const ChunkWaypointState & src,
-		const ChunkWaypointState & dst )
+bool NavigatorCache::findWayPath(const ChunkWaypointState& src,
+                                 const ChunkWaypointState& dst)
 {
-	return wayPath_.matches( src, dst );
+    return wayPath_.matches(src, dst);
 }
-
 
 /**
  *  This method saves a waypoint set path.
@@ -66,14 +63,12 @@ bool NavigatorCache::findWayPath( const ChunkWaypointState & src,
  *  Both the source and destination (goal) are extracted from the
  *  search result in the given AStar object. (i.e. must be unspoilt)
  */
-void NavigatorCache::saveWaySetPath(
-	AStar< ChunkWPSetState > & astar )
+void NavigatorCache::saveWaySetPath(AStar<ChunkWPSetState>& astar)
 {
-	waySetPath_.init( astar );
+    waySetPath_.init(astar);
 
-	MF_ASSERT_DEBUG( waySetPath_.isValid() );
+    MF_ASSERT_DEBUG(waySetPath_.isValid());
 }
-
 
 /**
  *  This method finds a waypoint set path that is stored in the cache.
@@ -83,19 +78,18 @@ void NavigatorCache::saveWaySetPath(
  *
  *  @return The intermediate waypoint set search state.
  */
-bool NavigatorCache::findWaySetPath(
-		const ChunkWPSetState & src, const ChunkWPSetState & dst )
+bool NavigatorCache::findWaySetPath(const ChunkWPSetState& src,
+                                    const ChunkWPSetState& dst)
 {
-	return waySetPath_.matches( src, dst );
+    return waySetPath_.matches(src, dst);
 }
-
 
 /**
  *  This method finds a waypoint path
  */
 size_t NavigatorCache::getWaySetPathSize() const
 {
-	return waySetPath_.size();
+    return waySetPath_.size();
 }
 
 BW_END_NAMESPACE

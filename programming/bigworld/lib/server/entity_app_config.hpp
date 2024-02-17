@@ -3,7 +3,6 @@
 
 #include "server_app_config.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,8 +10,8 @@ BW_BEGIN_NAMESPACE
  */
 class EntityAppConfig : public ServerAppConfig
 {
-protected:
-	static bool postInit();
+  protected:
+    static bool postInit();
 };
 
 BW_END_NAMESPACE

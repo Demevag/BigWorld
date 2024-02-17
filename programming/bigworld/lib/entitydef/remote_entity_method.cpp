@@ -5,8 +5,7 @@
 #include "mailbox_base.hpp"
 #include "method_description.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "EntityDef", 0 )
-
+DECLARE_DEBUG_COMPONENT2("EntityDef", 0)
 
 BW_BEGIN_NAMESPACE
 
@@ -20,50 +19,44 @@ BW_BEGIN_NAMESPACE
  *	An instance of RemoteEntityMethod is return from an entity mailbox to allow
  *	the calling of a method on a remote machine
  */
-PY_TYPEOBJECT_WITH_CALL( RemoteEntityMethod )
+PY_TYPEOBJECT_WITH_CALL(RemoteEntityMethod)
 
-PY_BEGIN_METHODS( RemoteEntityMethod )
-	PY_METHOD( convertReturnValuesToDict )
+PY_BEGIN_METHODS(RemoteEntityMethod)
+PY_METHOD(convertReturnValuesToDict)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( RemoteEntityMethod )
-	PY_ATTRIBUTE( argumentTypes )
-	PY_ATTRIBUTE( returnValueTypes )
+PY_BEGIN_ATTRIBUTES(RemoteEntityMethod)
+PY_ATTRIBUTE(argumentTypes)
+PY_ATTRIBUTE(returnValueTypes)
 PY_END_ATTRIBUTES()
-
 
 /**
  *	This method is called when a script wants to call this method
  *	on a remote script handler (entity/base).
  */
-PyObject * RemoteEntityMethod::pyCall( PyObject * args, PyObject * kwargs )
+PyObject* RemoteEntityMethod::pyCall(PyObject* args, PyObject* kwargs)
 {
-	ScriptTuple pArgs = ScriptTuple( args,
-		ScriptTuple::FROM_BORROWED_REFERENCE );
+    ScriptTuple pArgs = ScriptTuple(args, ScriptTuple::FROM_BORROWED_REFERENCE);
 
-	if (kwargs)
-	{
-		pArgs = pMethodDescription_->convertKeywordArgs( pArgs,
-			ScriptDict( kwargs, ScriptObject::FROM_BORROWED_REFERENCE ) );
+    if (kwargs) {
+        pArgs = pMethodDescription_->convertKeywordArgs(
+          pArgs, ScriptDict(kwargs, ScriptObject::FROM_BORROWED_REFERENCE));
 
-		if (!pArgs)
-		{
-			return NULL;
-		}
-	}
-	return pMailBox_->callMethod( pMethodDescription_, pArgs );
+        if (!pArgs) {
+            return NULL;
+        }
+    }
+    return pMailBox_->callMethod(pMethodDescription_, pArgs);
 }
-
 
 /**
  *	This method creates a dictionary from a tuple of return values.
  */
 ScriptDict RemoteEntityMethod::convertReturnValuesToDict(
-		ScriptTuple pArgs ) const
+  ScriptTuple pArgs) const
 {
-	return pMethodDescription_->createDictFromTuple( pArgs );
+    return pMethodDescription_->createDictFromTuple(pArgs);
 }
-
 
 /*~ attribute RemoteEntityMethod.argumentTypes
  *	@components{ base, cell }
@@ -79,9 +72,8 @@ ScriptDict RemoteEntityMethod::convertReturnValuesToDict(
  */
 ScriptObject RemoteEntityMethod::argumentTypes() const
 {
-	return pMethodDescription_->argumentTypesAsScript();
+    return pMethodDescription_->argumentTypesAsScript();
 }
-
 
 /*~ attribute RemoteEntityMethod.returnValueTypes
  *	@components{ base, cell }
@@ -99,10 +91,9 @@ ScriptObject RemoteEntityMethod::argumentTypes() const
  */
 ScriptObject RemoteEntityMethod::returnValueTypes() const
 {
-	return pMethodDescription_->returnValueTypesAsScript();
+    return pMethodDescription_->returnValueTypesAsScript();
 }
 
 BW_END_NAMESPACE
 
 // remote_entity_method.cpp
-

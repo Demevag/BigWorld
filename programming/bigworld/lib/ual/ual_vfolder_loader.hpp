@@ -2,7 +2,6 @@
 #ifndef UAL_VFOLDER_LOADER
 #define UAL_VFOLDER_LOADER
 
-
 #include "cstdmf/smartpointer.hpp"
 #include "cstdmf/guard.hpp"
 #include "cstdmf/bw_string.hpp"
@@ -25,7 +24,6 @@ typedef SmartPointer<VFolderProvider> VFolderProviderPtr;
 class DataSection;
 typedef SmartPointer<DataSection> DataSectionPtr;
 
-
 ///////////////////////////////////////////////////////////////////////////////
 //	UalVFolderLoader
 ///////////////////////////////////////////////////////////////////////////////
@@ -39,47 +37,54 @@ typedef SmartPointer<DataSection> DataSectionPtr;
  */
 class UalVFolderLoader : public ReferenceCount
 {
-public:
-	virtual bool test( const BW::string& sectionName ) = 0;
-	virtual bool subVFolders() { return false; }
-	virtual VFolderPtr load( UalDialog* dlg, DataSectionPtr section,
-		VFolderPtr parent, DataSectionPtr customData,
-		bool addToFolderTree ) = 0;
+  public:
+    virtual bool       test(const BW::string& sectionName) = 0;
+    virtual bool       subVFolders() { return false; }
+    virtual VFolderPtr load(UalDialog*     dlg,
+                            DataSectionPtr section,
+                            VFolderPtr     parent,
+                            DataSectionPtr customData,
+                            bool           addToFolderTree) = 0;
 
-protected:
-	UalVFolderLoader() :
-		icon_( 0 ),
-		iconSel_( 0 ),
-		show_( true )
-	{
-		BW_GUARD;
-	}
-	~UalVFolderLoader()
-	{
-		BW_GUARD;
+  protected:
+    UalVFolderLoader()
+      : icon_(0)
+      , iconSel_(0)
+      , show_(true)
+    {
+        BW_GUARD;
+    }
+    ~UalVFolderLoader()
+    {
+        BW_GUARD;
 
-		if( icon_ )	DestroyIcon( icon_ );
-		if( iconSel_ )	DestroyIcon( iconSel_ );
-	}
+        if (icon_)
+            DestroyIcon(icon_);
+        if (iconSel_)
+            DestroyIcon(iconSel_);
+    }
 
-	BW::wstring displayName_;
-	HICON icon_;
-	HICON iconSel_;
-	bool show_;
-	UalFolderDataPtr folderData_;
+    BW::wstring      displayName_;
+    HICON            icon_;
+    HICON            iconSel_;
+    bool             show_;
+    UalFolderDataPtr folderData_;
 
-	void error( UalDialog* dlg, const BW::string& msg );
+    void error(UalDialog* dlg, const BW::string& msg);
 
-	void beginLoad( UalDialog* dlg, DataSectionPtr section,
-		DataSectionPtr customData, int defaultThumbSize );
+    void beginLoad(UalDialog*     dlg,
+                   DataSectionPtr section,
+                   DataSectionPtr customData,
+                   int            defaultThumbSize);
 
-	VFolderPtr endLoad( UalDialog* dlg, VFolderProviderPtr provider,
-		VFolderPtr parent, bool expandable,
-		bool addToFolderTree = true, bool subVFolders = false );
-
+    VFolderPtr endLoad(UalDialog*         dlg,
+                       VFolderProviderPtr provider,
+                       VFolderPtr         parent,
+                       bool               expandable,
+                       bool               addToFolderTree = true,
+                       bool               subVFolders     = false);
 };
 typedef SmartPointer<UalVFolderLoader> UalVFolderLoaderPtr;
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //	LoaderRegistry: VFolder loaders vector singleton class
@@ -91,19 +96,19 @@ typedef BW::vector<UalVFolderLoaderPtr> VFolderLoaders;
  */
 class LoaderRegistry
 {
-public:
-	static VFolderLoaders& loaders()
-	{
-		BW_GUARD;
+  public:
+    static VFolderLoaders& loaders()
+    {
+        BW_GUARD;
 
-		static LoaderRegistry instance;
-		return instance.vfolderLoaders_;
-	}
-	static UalVFolderLoaderPtr loader( const BW::string& sectionName );
-private:
-	VFolderLoaders vfolderLoaders_;
+        static LoaderRegistry instance;
+        return instance.vfolderLoaders_;
+    }
+    static UalVFolderLoaderPtr loader(const BW::string& sectionName);
+
+  private:
+    VFolderLoaders vfolderLoaders_;
 };
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //	UalVFolderLoaderFactory
@@ -114,10 +119,9 @@ private:
  */
 class UalVFolderLoaderFactory
 {
-public:
-	UalVFolderLoaderFactory( UalVFolderLoaderPtr loader );
+  public:
+    UalVFolderLoaderFactory(UalVFolderLoaderPtr loader);
 };
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //	UalFilesVFolderLoader
@@ -128,17 +132,20 @@ public:
  */
 class UalFilesVFolderLoader : public UalVFolderLoader
 {
-public:
-	virtual bool test( const BW::string& sectionName )
-		{ return sectionName == "Files"; }
-	virtual VFolderPtr load( UalDialog* dlg,
-		DataSectionPtr section, VFolderPtr parent, DataSectionPtr customData,
-		bool addToFolderTree );
+  public:
+    virtual bool test(const BW::string& sectionName)
+    {
+        return sectionName == "Files";
+    }
+    virtual VFolderPtr load(UalDialog*     dlg,
+                            DataSectionPtr section,
+                            VFolderPtr     parent,
+                            DataSectionPtr customData,
+                            bool           addToFolderTree);
 
-protected:
-	bool pathIsGood( const BW::wstring& path );
+  protected:
+    bool pathIsGood(const BW::wstring& path);
 };
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //	UalXmlVFolderLoader
@@ -149,14 +156,17 @@ protected:
  */
 class UalXmlVFolderLoader : public UalVFolderLoader
 {
-public:
-	virtual bool test( const BW::string& sectionName )
-		{ return sectionName == "XmlList"; }
-	virtual VFolderPtr load( UalDialog* dlg,
-		DataSectionPtr section, VFolderPtr parent, DataSectionPtr customData,
-		bool addToFolderTree );
+  public:
+    virtual bool test(const BW::string& sectionName)
+    {
+        return sectionName == "XmlList";
+    }
+    virtual VFolderPtr load(UalDialog*     dlg,
+                            DataSectionPtr section,
+                            VFolderPtr     parent,
+                            DataSectionPtr customData,
+                            bool           addToFolderTree);
 };
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //	UalHistoryVFolderLoader
@@ -167,14 +177,17 @@ public:
  */
 class UalHistoryVFolderLoader : public UalVFolderLoader
 {
-public:
-	virtual bool test( const BW::string& sectionName )
-		{ return sectionName == "History"; }
-	virtual VFolderPtr load( UalDialog* dlg,
-		DataSectionPtr section, VFolderPtr parent, DataSectionPtr customData,
-		bool addToFolderTree );
+  public:
+    virtual bool test(const BW::string& sectionName)
+    {
+        return sectionName == "History";
+    }
+    virtual VFolderPtr load(UalDialog*     dlg,
+                            DataSectionPtr section,
+                            VFolderPtr     parent,
+                            DataSectionPtr customData,
+                            bool           addToFolderTree);
 };
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //	UalFavouritesVFolderLoader
@@ -185,14 +198,17 @@ public:
  */
 class UalFavouritesVFolderLoader : public UalVFolderLoader
 {
-public:
-	virtual bool test( const BW::string& sectionName )
-		{ return sectionName == "Favourites"; }
-	virtual VFolderPtr load( UalDialog* dlg,
-		DataSectionPtr section, VFolderPtr parent, DataSectionPtr customData,
-		bool addToFolderTree );
+  public:
+    virtual bool test(const BW::string& sectionName)
+    {
+        return sectionName == "Favourites";
+    }
+    virtual VFolderPtr load(UalDialog*     dlg,
+                            DataSectionPtr section,
+                            VFolderPtr     parent,
+                            DataSectionPtr customData,
+                            bool           addToFolderTree);
 };
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //	UalMultiVFolderLoader
@@ -204,14 +220,17 @@ public:
  */
 class UalMultiVFolderLoader : public UalVFolderLoader
 {
-public:
-	virtual bool test( const BW::string& sectionName )
-		{ return sectionName == "MultiVFolder"; }
-	virtual VFolderPtr load( UalDialog* dlg,
-		DataSectionPtr section, VFolderPtr parent, DataSectionPtr customData,
-		bool addToFolderTree );
+  public:
+    virtual bool test(const BW::string& sectionName)
+    {
+        return sectionName == "MultiVFolder";
+    }
+    virtual VFolderPtr load(UalDialog*     dlg,
+                            DataSectionPtr section,
+                            VFolderPtr     parent,
+                            DataSectionPtr customData,
+                            bool           addToFolderTree);
 };
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //	UalPlainVFolderLoader
@@ -223,13 +242,17 @@ public:
  */
 class UalPlainVFolderLoader : public UalVFolderLoader
 {
-public:
-	virtual bool test( const BW::string& sectionName )
-		{ return sectionName == "VFolder"; }
-	virtual bool subVFolders() { return true; }
-	virtual VFolderPtr load( UalDialog* dlg,
-		DataSectionPtr section, VFolderPtr parent, DataSectionPtr customData,
-		bool addToFolderTree );
+  public:
+    virtual bool test(const BW::string& sectionName)
+    {
+        return sectionName == "VFolder";
+    }
+    virtual bool       subVFolders() { return true; }
+    virtual VFolderPtr load(UalDialog*     dlg,
+                            DataSectionPtr section,
+                            VFolderPtr     parent,
+                            DataSectionPtr customData,
+                            bool           addToFolderTree);
 };
 
 BW_END_NAMESPACE

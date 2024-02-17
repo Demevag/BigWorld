@@ -15,26 +15,28 @@ class MainMessageLoop;
 class DetailsDialog;
 struct ConversionTask;
 
-class TaskListBox : public ATL::CWindowImpl<TaskListBox, WTL::CListBox>, public TaskListBoxBase
+class TaskListBox
+  : public ATL::CWindowImpl<TaskListBox, WTL::CListBox>
+  , public TaskListBoxBase
 {
-public:
-	TaskListBox(TaskStore & store, MainMessageLoop & messageLoop);
+  public:
+    TaskListBox(TaskStore& store, MainMessageLoop& messageLoop);
 
-	virtual void addTask(TaskInfoPtr task);
-	virtual void removeTask(TaskInfoPtr task);
+    virtual void addTask(TaskInfoPtr task);
+    virtual void removeTask(TaskInfoPtr task);
 
-	BEGIN_MSG_MAP_EX(TaskListBox)
-		MSG_WM_LBUTTONDBLCLK(onDoubleClick)
-		MSG_WM_CONTEXTMENU(onContextMenu)
-	END_MSG_MAP()
+    BEGIN_MSG_MAP_EX(TaskListBox)
+    MSG_WM_LBUTTONDBLCLK(onDoubleClick)
+    MSG_WM_CONTEXTMENU(onContextMenu)
+    END_MSG_MAP()
 
-private:
-	const ConversionTask * taskAtIndex(const int index) const;
+  private:
+    const ConversionTask* taskAtIndex(const int index) const;
 
-	void onDoubleClick(UINT flags, ::CPoint clientPoint);
-	void onContextMenu(CWindow handle, ::CPoint screenPoint);
+    void onDoubleClick(UINT flags, ::CPoint clientPoint);
+    void onContextMenu(CWindow handle, ::CPoint screenPoint);
 
-	WTL::CMenu contextMenu_;
+    WTL::CMenu contextMenu_;
 };
 
 BW_END_NAMESPACE

@@ -15,13 +15,12 @@
 
 class EntityView;
 
-@interface EntityInfoLayer : CCLayer 
-{
+@interface EntityInfoLayer : CCLayer {
 }
 
 @property (nonatomic, retain) EntityInfoViewController* contentViewController;
-@property (nonatomic, retain) WEPopoverController* popoverController;
-@property (nonatomic, assign) EntityView * entityView;
+@property (nonatomic, retain) WEPopoverController*      popoverController;
+@property (nonatomic, assign) EntityView*               entityView;
 
 @property (nonatomic, retain) NSTimer* hideTimer;
 
@@ -29,11 +28,11 @@ class EntityView;
 
 @property (nonatomic, assign) BOOL shouldUpdateMessage;
 
-- (void) adjustLayout;
-- (void) updateForEntityView: (EntityView *) anEntityView
-				 withMessage: (NSString *) msg;
-- (void) updateForEntityView: (EntityView *) anEntityView;
-- (void) show;
-- (void) hide;
+- (void)adjustLayout;
+- (void)updateForEntityView:(EntityView*)anEntityView
+                withMessage:(NSString*)msg;
+- (void)updateForEntityView:(EntityView*)anEntityView;
+- (void)show;
+- (void)hide;
 
 @end

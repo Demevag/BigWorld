@@ -6,10 +6,9 @@
 
 BW_USE_NAMESPACE
 
-int BIGWORLD_MAIN( int argc, char * argv[] )
+int BIGWORLD_MAIN(int argc, char* argv[])
 {
-	return bwMainT< DBApp >( argc, argv );
+    return bwMainT<DBApp>(argc, argv);
 }
 
 // main.cpp
-

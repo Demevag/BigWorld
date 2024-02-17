@@ -5,27 +5,27 @@ BW_BEGIN_NAMESPACE
 
 class ParticleEditorDoc : public CDocument
 {
-protected:
+  protected:
     ParticleEditorDoc();
 
     DECLARE_DYNCREATE(ParticleEditorDoc)
 
-public:
+  public:
     /*virtual*/ ~ParticleEditorDoc();
 
     /*virtual*/ BOOL OnNewDocument();
 
     void SetActionProperty(int actionSelect);
 
-    static ParticleEditorDoc &instance();
+    static ParticleEditorDoc& instance();
 
-protected:
+  protected:
     DECLARE_MESSAGE_MAP()
 
-private:
-    static ParticleEditorDoc    *s_instance_;
-    int                         m_actionSelect;
-    bool                        m_check;
+  private:
+    static ParticleEditorDoc* s_instance_;
+    int                       m_actionSelect;
+    bool                      m_check;
 };
 
 BW_END_NAMESPACE

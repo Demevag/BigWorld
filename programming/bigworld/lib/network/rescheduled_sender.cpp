@@ -8,49 +8,46 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
+namespace Mercury {
 
-/**
- *	Constructor for RescheduledSender.
- */
-RescheduledSender::RescheduledSender( EventDispatcher & dispatcher,
-		PacketSender & packetSender,
-		const Address & addr, Packet * pPacket, UDPChannel * pChannel,
-		int latencyMilli ) :
-	packetSender_( packetSender ),
-	addr_( addr ),
-	pPacket_( pPacket ),
-	pChannel_( pChannel )
-{
-	dispatcher.addOnceOffTimer( latencyMilli*1000, this );
-}
+    /**
+     *	Constructor for RescheduledSender.
+     */
+    RescheduledSender::RescheduledSender(EventDispatcher& dispatcher,
+                                         PacketSender&    packetSender,
+                                         const Address&   addr,
+                                         Packet*          pPacket,
+                                         UDPChannel*      pChannel,
+                                         int              latencyMilli)
+      : packetSender_(packetSender)
+      , addr_(addr)
+      , pPacket_(pPacket)
+      , pChannel_(pChannel)
+    {
+        dispatcher.addOnceOffTimer(latencyMilli * 1000, this);
+    }
 
+    /**
+     *
+     */
+    void RescheduledSender::handleTimeout(TimerHandle, void*)
+    {
+        packetSender_.sendRescheduledPacket(
+          addr_, pPacket_.get(), this->pUDPChannel());
+    }
 
-/**
- *
- */
-void RescheduledSender::handleTimeout( TimerHandle, void * )
-{
-	packetSender_.sendRescheduledPacket( addr_, pPacket_.get(),
-			this->pUDPChannel() );
-}
+    /**
+     *
+     */
+    void RescheduledSender::onRelease(TimerHandle, void*)
+    {
+        delete this;
+    }
 
-
-/**
- *
- */
-void RescheduledSender::onRelease( TimerHandle, void * )
-{
-	delete this;
-}
-
-
-UDPChannel * RescheduledSender::pUDPChannel()
-{
-	return static_cast< UDPChannel * >( pChannel_.get() );
-}
-
+    UDPChannel* RescheduledSender::pUDPChannel()
+    {
+        return static_cast<UDPChannel*>(pChannel_.get());
+    }
 
 } // namespace Mercury
 

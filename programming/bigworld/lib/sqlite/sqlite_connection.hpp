@@ -7,7 +7,6 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -15,21 +14,20 @@ BW_BEGIN_NAMESPACE
  */
 class SqliteConnection
 {
-public:
-	SqliteConnection();
-	~SqliteConnection();
+  public:
+    SqliteConnection();
+    ~SqliteConnection();
 
-	bool open( const BW::string & sqliteDbPath );
+    bool open(const BW::string& sqliteDbPath);
 
-	bool backup( const SqliteConnection * srcDb,
-		const BW::string & databaseName );
+    bool backup(const SqliteConnection* srcDb, const BW::string& databaseName);
 
-	const char * lastError() const;
+    const char* lastError() const;
 
-	sqlite3 * get() { return pDbHandle_; }
+    sqlite3* get() { return pDbHandle_; }
 
-private:
-	sqlite3 * pDbHandle_;
+  private:
+    sqlite3* pDbHandle_;
 };
 
 BW_END_NAMESPACE

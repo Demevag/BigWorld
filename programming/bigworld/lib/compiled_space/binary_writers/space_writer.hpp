@@ -5,45 +5,43 @@
 
 namespace BW {
 
-class CommandLine;
-class DataSection;
-typedef SmartPointer<DataSection> DataSectionPtr;
+    class CommandLine;
+    class DataSection;
+    typedef SmartPointer<DataSection> DataSectionPtr;
 
-namespace CompiledSpace {
+    namespace CompiledSpace {
 
-class BinaryFormatWriter;
-class AssetListWriter;
-class StringTableWriter;
-class ChunkConversionContext;
+        class BinaryFormatWriter;
+        class AssetListWriter;
+        class StringTableWriter;
+        class ChunkConversionContext;
 
-class ISpaceWriter
-{
-public:
-	typedef ChunkConversionContext ConversionContext;
+        class ISpaceWriter
+        {
+          public:
+            typedef ChunkConversionContext ConversionContext;
 
-	ISpaceWriter();
-	virtual ~ISpaceWriter();
+            ISpaceWriter();
+            virtual ~ISpaceWriter();
 
-	void configure( StringTableWriter* pStringTable, 
-		AssetListWriter* pAssetList );
+            void configure(StringTableWriter* pStringTable,
+                           AssetListWriter*   pAssetList);
 
-	virtual bool initialize( const DataSectionPtr& pSpaceSettings,
-		const CommandLine& commandLine ) = 0;
-	virtual void postProcess() {}
-	virtual bool write( BinaryFormatWriter& writer ) = 0;
+            virtual bool initialize(const DataSectionPtr& pSpaceSettings,
+                                    const CommandLine&    commandLine) = 0;
+            virtual void postProcess() {}
+            virtual bool write(BinaryFormatWriter& writer) = 0;
 
-protected:
-	StringTableWriter& strings();
-	AssetListWriter& assets();
+          protected:
+            StringTableWriter& strings();
+            AssetListWriter&   assets();
 
-private:
+          private:
+            StringTableWriter* pStringTable_;
+            AssetListWriter*   pAssetList_;
+        };
 
-	StringTableWriter* pStringTable_; 
-	AssetListWriter* pAssetList_;
-
-};
-
-} // namespace CompiledSpace
+    } // namespace CompiledSpace
 } // namespace BW
 
 #endif // SPACE_COMPILER_HPP

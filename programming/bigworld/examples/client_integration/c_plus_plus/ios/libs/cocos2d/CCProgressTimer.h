@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,19 +29,20 @@
 /** Types of progress
  @since v0.99.1
  */
-typedef enum {
-	/// Radial Counter-Clockwise 
-	kCCProgressTimerTypeRadialCCW,
-	/// Radial ClockWise
-	kCCProgressTimerTypeRadialCW,
-	/// Horizontal Left-Right
-	kCCProgressTimerTypeHorizontalBarLR,
-	/// Horizontal Right-Left
-	kCCProgressTimerTypeHorizontalBarRL,
-	/// Vertical Bottom-top
-	kCCProgressTimerTypeVerticalBarBT,
-	/// Vertical Top-Bottom
-	kCCProgressTimerTypeVerticalBarTB,
+typedef enum
+{
+    /// Radial Counter-Clockwise
+    kCCProgressTimerTypeRadialCCW,
+    /// Radial ClockWise
+    kCCProgressTimerTypeRadialCW,
+    /// Horizontal Left-Right
+    kCCProgressTimerTypeHorizontalBarLR,
+    /// Horizontal Right-Left
+    kCCProgressTimerTypeHorizontalBarRL,
+    /// Vertical Bottom-top
+    kCCProgressTimerTypeVerticalBarBT,
+    /// Vertical Top-Bottom
+    kCCProgressTimerTypeVerticalBarTB,
 } CCProgressTimerType;
 
 /**
@@ -50,14 +51,13 @@ typedef enum {
  The progress can be Radial, Horizontal or vertical.
  @since v0.99.1
  */
-@interface CCProgressTimer : CCNode
-{
-	CCProgressTimerType	type_;
-	float				percentage_;
-	CCSprite			*sprite_;
-	
-	int					vertexDataCount_;
-	ccV2F_C4B_T2F		*vertexData_;
+@interface CCProgressTimer : CCNode {
+    CCProgressTimerType type_;
+    float               percentage_;
+    CCSprite*           sprite_;
+
+    int            vertexDataCount_;
+    ccV2F_C4B_T2F* vertexData_;
 }
 
 /**	Change the percentage to change progress. */
@@ -67,17 +67,20 @@ typedef enum {
 @property (nonatomic, readwrite) float percentage;
 
 /** The image to show the progress percentage */
-@property (nonatomic, readwrite, retain) CCSprite *sprite;
+@property (nonatomic, readwrite, retain) CCSprite* sprite;
 
+/** Creates a progress timer with an image filename as the shape the timer goes
+ * through */
++ (id)progressWithFile:(NSString*)filename;
+/** Initializes  a progress timer with an image filename as the shape the timer
+ * goes through */
+- (id)initWithFile:(NSString*)filename;
 
-/** Creates a progress timer with an image filename as the shape the timer goes through */
-+ (id) progressWithFile:(NSString*) filename;
-/** Initializes  a progress timer with an image filename as the shape the timer goes through */
-- (id) initWithFile:(NSString*) filename;
-
-/** Creates a progress timer with the texture as the shape the timer goes through */
-+ (id) progressWithTexture:(CCTexture2D*) texture;
-/** Creates a progress timer with the texture as the shape the timer goes through */
-- (id) initWithTexture:(CCTexture2D*) texture;
+/** Creates a progress timer with the texture as the shape the timer goes
+ * through */
++ (id)progressWithTexture:(CCTexture2D*)texture;
+/** Creates a progress timer with the texture as the shape the timer goes
+ * through */
+- (id)initWithTexture:(CCTexture2D*)texture;
 
 @end

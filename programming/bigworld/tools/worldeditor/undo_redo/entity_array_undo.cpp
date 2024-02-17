@@ -4,30 +4,27 @@
 
 BW_BEGIN_NAMESPACE
 
-EntityArrayUndo::EntityArrayUndo( BasePropertiesHelper* props, int index ) :
-	UndoRedo::Operation(size_t(typeid(EntityArrayUndo).name())),
-    props_( props ),
-	index_( index )
+EntityArrayUndo::EntityArrayUndo(BasePropertiesHelper* props, int index)
+  : UndoRedo::Operation(size_t(typeid(EntityArrayUndo).name()))
+  , props_(props)
+  , index_(index)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	undoData_ = props_->propGet( index_ );
+    undoData_ = props_->propGet(index_);
 }
-
 
 /*virtual*/ void EntityArrayUndo::undo()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-    UndoRedo::instance().add(new EntityArrayUndo( props_, index_ ));
-	props_->propSet( index_, undoData_ );
-	WorldManager::instance().changedChunk( props_->pItem()->chunk() );
+    UndoRedo::instance().add(new EntityArrayUndo(props_, index_));
+    props_->propSet(index_, undoData_);
+    WorldManager::instance().changedChunk(props_->pItem()->chunk());
 }
 
-
-/*virtual*/ bool EntityArrayUndo::iseq( const UndoRedo::Operation& other ) const
+/*virtual*/ bool EntityArrayUndo::iseq(const UndoRedo::Operation& other) const
 {
-	return false;
+    return false;
 }
 BW_END_NAMESPACE
-

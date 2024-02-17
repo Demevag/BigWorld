@@ -6,7 +6,6 @@
 
 #include "types.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -15,49 +14,47 @@ BW_BEGIN_NAMESPACE
  */
 class CategoriesVisitor
 {
-public:
-	virtual bool onCategory( const BW::string & categoryName ) = 0;
+  public:
+    virtual bool onCategory(const BW::string& categoryName) = 0;
 };
-
 
 /**
  *	This class handles the mapping of Category ID's and Category Names.
  */
 class Categories
 {
-public:
-	Categories();
+  public:
+    Categories();
 
-	MessageLogger::CategoryID resolveOrCreateNameToID(
-			const BW::string & categoryName );
+    MessageLogger::CategoryID resolveOrCreateNameToID(
+      const BW::string& categoryName);
 
-	bool resolveNameToID( const BW::string & categoryName,
-			MessageLogger::CategoryID & categoryID ) const;
+    bool resolveNameToID(const BW::string&          categoryName,
+                         MessageLogger::CategoryID& categoryID) const;
 
-	const char * resolveIDToName( MessageLogger::CategoryID categoryID ) const;
+    const char* resolveIDToName(MessageLogger::CategoryID categoryID) const;
 
-	bool visitAllWith( CategoriesVisitor & visitor ) const;
+    bool visitAllWith(CategoriesVisitor& visitor) const;
 
-	virtual bool writeCategoryToDB(
-		MessageLogger::CategoryID newCategoryID,
-		const BW::string & categoryName) = 0;
+    virtual bool writeCategoryToDB(MessageLogger::CategoryID newCategoryID,
+                                   const BW::string&         categoryName) = 0;
 
-protected:
-	void clear();
+  protected:
+    void clear();
 
-	void addCategoryToMap( MessageLogger::CategoryID categoryID,
-		BW::string & categoryString );
+    void addCategoryToMap(MessageLogger::CategoryID categoryID,
+                          BW::string&               categoryString);
 
-private:
-	MessageLogger::CategoryID getNextAvailableCategoryID();
+  private:
+    MessageLogger::CategoryID getNextAvailableCategoryID();
 
-	typedef BW::map< MessageLogger::CategoryID, BW::string > IDToNameMap;
-	IDToNameMap idMap_;
+    typedef BW::map<MessageLogger::CategoryID, BW::string> IDToNameMap;
+    IDToNameMap                                            idMap_;
 
-	typedef BW::map< BW::string, MessageLogger::CategoryID > NameToIdMap;
-	NameToIdMap nameMap_;
+    typedef BW::map<BW::string, MessageLogger::CategoryID> NameToIdMap;
+    NameToIdMap                                            nameMap_;
 
-	MessageLogger::CategoryID maxCategoryID_;
+    MessageLogger::CategoryID maxCategoryID_;
 };
 
 BW_END_NAMESPACE

@@ -8,4 +8,3 @@ const int CHUNK_ADJACENT_CONSTANT = 30000;
 BW_END_NAMESPACE
 
 #endif
-

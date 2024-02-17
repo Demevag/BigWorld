@@ -1,12 +1,16 @@
 #if !defined(BWENTITY_BW_NAMESPACE_HPP)
 #define BWENTITY_BW_NAMESPACE_HPP
 
-#define BWENTITY_BW_BEGIN_NAMESPACE		namespace BW{
+#define BWENTITY_BW_BEGIN_NAMESPACE namespace BW {
 
-#define BWENTITY_BW_END_NAMESPACE			}
+#define BWENTITY_BW_END_NAMESPACE }
 
-#define BWENTITY_BEGIN_NAMESPACE	BWENTITY_BW_BEGIN_NAMESPACE 	namespace EntityDef{
-#define BWENTITY_END_NAMESPACE		} BWENTITY_BW_END_NAMESPACE
+#define BWENTITY_BEGIN_NAMESPACE                                               \
+    BWENTITY_BW_BEGIN_NAMESPACE namespace EntityDef                            \
+    {
+#define BWENTITY_END_NAMESPACE                                                 \
+    }                                                                          \
+    BWENTITY_BW_END_NAMESPACE
 
 /**
  * BW classes forward declarations

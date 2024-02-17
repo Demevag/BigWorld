@@ -1,5 +1,5 @@
 
-#pragma warning ( disable : 4530 )
+#pragma warning(disable : 4530)
 
 #ifndef MFXNODE_HPP
 #define MFXNODE_HPP
@@ -18,84 +18,85 @@ BW_BEGIN_NAMESPACE
 
 struct CompressionInfo
 {
-	bool specifyAmounts_;
-	float scaleCompressionError_;
-	float positionCompressionError_;
-	float rotationCompressionError_;
+    bool  specifyAmounts_;
+    float scaleCompressionError_;
+    float positionCompressionError_;
+    float rotationCompressionError_;
 };
 
 class MFXNode
 {
-public:
-	MFXNode();
-	MFXNode( INode *node );
-	~MFXNode();
+  public:
+    MFXNode();
+    MFXNode(INode* node);
+    ~MFXNode();
 
-	void setMaxNode( INode *node );
-	INode* getMaxNode( void ) const;
+    void   setMaxNode(INode* node);
+    INode* getMaxNode(void) const;
 
-	void setTransform( const Matrix3 &m );
-	const Matrix3 &getTransform( void ) const;
+    void           setTransform(const Matrix3& m);
+    const Matrix3& getTransform(void) const;
 
-	int getNChildren( void ) const;
-	MFXNode* getChild( int n ) const;
-	MFXNode* getParent( void ) const;
+    int      getNChildren(void) const;
+    MFXNode* getChild(int n) const;
+    MFXNode* getParent(void) const;
 
-	void addChild( MFXNode *node );
+    void addChild(MFXNode* node);
 
-	void removeChild( int n );
-	void removeChild( MFXNode *n );
+    void removeChild(int n);
+    void removeChild(MFXNode* n);
 
-	//removeChildAddChildren removes the child from this node, and adds all children
-	//from the child to this node
-	void removeChildAddChildren( MFXNode *n );
-	void removeChildAddChildren( int n );
+    // removeChildAddChildren removes the child from this node, and adds all
+    // children from the child to this node
+    void removeChildAddChildren(MFXNode* n);
+    void removeChildAddChildren(int n);
 
+    Matrix3 getTransform(TimeValue t, bool normalise = false);
+    Matrix3 getRelativeTransform(TimeValue t,
+                                 bool      normalise   = false,
+                                 MFXNode*  idealParent = NULL);
 
-	Matrix3 getTransform( TimeValue t, bool normalise = false );
-	Matrix3 getRelativeTransform( TimeValue t, bool normalise = false,
-		MFXNode * idealParent = NULL );
+    const BW::string& getIdentifier(void);
+    void              setIdentifier(const BW::string& s);
 
-	const BW::string &getIdentifier( void );
-	void setIdentifier( const BW::string &s );
+    int treeSize(void);
 
-	int treeSize( void );
+    MFXNode* find(INode* node);
+    MFXNode* find(const BW::string& identifier);
 
-	MFXNode *find( INode *node );
-	MFXNode *find( const BW::string &identifier );
+    bool contentFlag() const;
+    void contentFlag(bool state);
 
-	bool contentFlag( ) const;
-	void contentFlag( bool state );
+    bool include() const { return include_; };
+    void include(bool state) { include_ = state; };
 
-	bool include( ) const {return include_;};
-	void include( bool state ) {include_ = state;};
+    void includeAncestors();
 
-	void includeAncestors();
+    void exportTree(DataSectionPtr pParentSection, MFXNode* idealParent = NULL);
+    void exportAnimation(class BinaryFile&      animFile,
+                         const CompressionInfo& ci,
+                         MFXNode*               idealParent = NULL);
 
-	void exportTree( DataSectionPtr pParentSection, MFXNode* idealParent = NULL );
-	void exportAnimation( class BinaryFile& animFile, const CompressionInfo& ci, MFXNode* idealParent = NULL );
+    int nIncludedNodes();
 
-	int nIncludedNodes();
+  private:
+    BW::string           identifier_;
+    MFXNode*             parent_;
+    BW::vector<MFXNode*> children_;
 
-private:
+    INode*  node_;
+    Matrix3 transform_;
 
-	BW::string identifier_;
-	MFXNode* parent_;
-	BW::vector < MFXNode * > children_;
+    bool contentFlag_;
+    bool include_;
 
-	INode *node_;
-	Matrix3 transform_;
+    MFXNode(const MFXNode&);
+    MFXNode& operator=(const MFXNode&);
 
-	bool contentFlag_;
-	bool include_;
-
-	MFXNode(const MFXNode&);
-	MFXNode& operator=(const MFXNode&);
-
-	friend std::ostream& operator<<(std::ostream&, const MFXNode&);
+    friend std::ostream& operator<<(std::ostream&, const MFXNode&);
 };
 
-bool numChildDescending( MFXNode* lhs, MFXNode* rhs );
+bool numChildDescending(MFXNode* lhs, MFXNode* rhs);
 
 BW_END_NAMESPACE
 

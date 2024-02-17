@@ -16,57 +16,54 @@
 
 BW_BEGIN_NAMESPACE
 
-DECLARE_WATCHER_DATA( "TestConverter" )
-DECLARE_COPY_STACK_INFO( true )
+DECLARE_WATCHER_DATA("TestConverter")
+DECLARE_COPY_STACK_INFO(true)
 DEFINE_CREATE_EDITOR_PROPERTY_STUB
 
-TestConversionRule testConversionRule;
+TestConversionRule     testConversionRule;
 TestRootConversionRule testRootConversionRule;
-ConverterInfo testConverterInfo;
-ResourceCallbacks resourceCallbacks;
+ConverterInfo          testConverterInfo;
+ResourceCallbacks      resourceCallbacks;
 
 PLUGIN_INIT_FUNC
 {
-	TestCompiler * compiler = dynamic_cast< TestCompiler * >( &pluginLoader );
-	if (compiler == NULL)
-	{
-		return false;
-	}
+    TestCompiler* compiler = dynamic_cast<TestCompiler*>(&pluginLoader);
+    if (compiler == NULL) {
+        return false;
+    }
 
-	// Initialise the file systems
-	//For the unit tests, we force a particular resource path.
-	const char * UNIT_TEST_RESOURCE_PATH = "../..";
-	const char * myargv[] =
-	{
-		//Test-specific resources.
-		"--res", UNIT_TEST_RESOURCE_PATH
-	};
-	int myargc = ARRAY_SIZE( myargv );
+    // Initialise the file systems
+    // For the unit tests, we force a particular resource path.
+    const char* UNIT_TEST_RESOURCE_PATH = "../..";
+    const char* myargv[]                = { // Test-specific resources.
+                             "--res",
+                             UNIT_TEST_RESOURCE_PATH
+    };
+    int myargc = ARRAY_SIZE(myargv);
 
-	bool bInitRes = BWResource::init( myargc, myargv );
+    bool bInitRes = BWResource::init(myargc, myargv);
 
-	INIT_CONVERTER_INFO( testConverterInfo, 
-						 TestConverter, 
-						 ConverterInfo::DEFAULT_FLAGS );
+    INIT_CONVERTER_INFO(
+      testConverterInfo, TestConverter, ConverterInfo::DEFAULT_FLAGS);
 
-	compiler->registerConversionRule( testConversionRule );
-	compiler->registerConversionRule( testRootConversionRule );
-	compiler->registerConverter( testConverterInfo );
-	compiler->registerResourceCallbacks( resourceCallbacks );
+    compiler->registerConversionRule(testConversionRule);
+    compiler->registerConversionRule(testRootConversionRule);
+    compiler->registerConverter(testConverterInfo);
+    compiler->registerResourceCallbacks(resourceCallbacks);
 
-	return true;
+    return true;
 }
 
 PLUGIN_FINI_FUNC
 {
-	BWResource::fini();
+    BWResource::fini();
 
-	// DataSectionCensus is created on first use, so delete at end of App
-	DataSectionCensus::fini();
+    // DataSectionCensus is created on first use, so delete at end of App
+    DataSectionCensus::fini();
 
-	Watcher::fini();
+    Watcher::fini();
 
-	return true;
+    return true;
 }
 
 BW_END_NAMESPACE

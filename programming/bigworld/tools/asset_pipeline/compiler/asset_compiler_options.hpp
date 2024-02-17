@@ -13,61 +13,60 @@ typedef SmartPointer<DataSection> DataSectionPtr;
 
 class AssetCompilerOptions
 {
-public:
-	AssetCompilerOptions();
-	explicit AssetCompilerOptions( const AssetCompiler & compiler );
+  public:
+    AssetCompilerOptions();
+    explicit AssetCompilerOptions(const AssetCompiler& compiler);
 
-	virtual bool readFromDataSection( const DataSectionPtr & dataSection );
-	virtual bool writeToDataSection( DataSectionPtr & dataSection ) const;
+    virtual bool readFromDataSection(const DataSectionPtr& dataSection);
+    virtual bool writeToDataSection(DataSectionPtr& dataSection) const;
 
-	virtual bool parseCommandLine( const BW::string & commandString );
+    virtual bool parseCommandLine(const BW::string& commandString);
 
-	virtual bool apply( AssetCompiler & compiler ) const;
+    virtual bool apply(AssetCompiler& compiler) const;
 
-	// Accessors
-	const BW::string & cachePath() const;
-	void cachePath( const BW::string & path );
+    // Accessors
+    const BW::string& cachePath() const;
+    void              cachePath(const BW::string& path);
 
-	const BW::string & intermediatePath() const;
-	void intermediatePath( const BW::string & path );
+    const BW::string& intermediatePath() const;
+    void              intermediatePath(const BW::string& path);
 
-	const BW::string & outputPath() const;
-	void outputPath( const BW::string & path );
+    const BW::string& outputPath() const;
+    void              outputPath(const BW::string& path);
 
-	int threadCount() const;
-	void threadCount( int numThreads );
+    int  threadCount() const;
+    void threadCount(int numThreads);
 
-	bool forceRebuild() const;
-	void forceRebuild( bool rebuild );
+    bool forceRebuild() const;
+    void forceRebuild(bool rebuild);
 
-	bool recursive() const;
-	void recursive( bool recurse );
+    bool recursive() const;
+    void recursive(bool recurse);
 
-	bool enableCacheRead() const;
-	void enableCacheRead( bool enable );
+    bool enableCacheRead() const;
+    void enableCacheRead(bool enable);
 
-	bool enableCacheWrite() const;
-	void enableCacheWrite( bool enable );
+    bool enableCacheWrite() const;
+    void enableCacheWrite(bool enable);
 
-protected:
+  protected:
+    bool sanitisePath(const BW::string& path, BW::string& cleanPath);
 
-	bool sanitisePath( const BW::string & path, BW::string & cleanPath );
+  protected:
+    BW::string cachePath_;
+    BW::string intermediatePath_;
+    BW::string outputPath_;
+    int        numThreads_;
+    bool       forceRebuild_;
+    bool       recursive_;
 
-protected:
-	BW::string cachePath_;
-	BW::string intermediatePath_;
-	BW::string outputPath_;
-	int numThreads_;
-	bool forceRebuild_;
-	bool recursive_;
-	
-	bool enableCacheRead_;
-	bool enableCacheWrite_;
+    bool enableCacheRead_;
+    bool enableCacheWrite_;
 
-	mutable bool cachePathChanged_;
-	mutable bool intermediatePathChanged_;
-	mutable bool outputPathChanged_;
-	mutable bool numThreadsChanged_;
+    mutable bool cachePathChanged_;
+    mutable bool intermediatePathChanged_;
+    mutable bool outputPathChanged_;
+    mutable bool numThreadsChanged_;
 };
 
 BW_END_NAMESPACE

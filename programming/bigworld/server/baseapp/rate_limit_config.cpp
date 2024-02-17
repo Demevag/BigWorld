@@ -11,29 +11,26 @@
 #define BW_COMMON_PREFIX "clientUpstreamLimits/"
 #include "server/server_app_option_macros.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
 // Section: RateLimitConfig
 // -----------------------------------------------------------------------------
 
-BW_OPTION( uint, warnMessagesPerSecond, 250 );
-BW_OPTION( uint, maxMessagesPerSecond, 500 );
-BW_OPTION( uint, warnBytesPerSecond, 20480 );
-BW_OPTION( uint, maxBytesPerSecond, 40960 );
+BW_OPTION(uint, warnMessagesPerSecond, 250);
+BW_OPTION(uint, maxMessagesPerSecond, 500);
+BW_OPTION(uint, warnBytesPerSecond, 20480);
+BW_OPTION(uint, maxBytesPerSecond, 40960);
 
-DERIVED_BW_OPTION( uint, warnMessagesPerTick );
-DERIVED_BW_OPTION( uint, maxMessagesPerTick );
-DERIVED_BW_OPTION( uint, warnBytesPerTick );
-DERIVED_BW_OPTION( uint, maxBytesPerTick );
+DERIVED_BW_OPTION(uint, warnMessagesPerTick);
+DERIVED_BW_OPTION(uint, maxMessagesPerTick);
+DERIVED_BW_OPTION(uint, warnBytesPerTick);
+DERIVED_BW_OPTION(uint, maxBytesPerTick);
 
-BW_OPTION( uint, warnMessagesBuffered, 500 );
-BW_OPTION( uint, maxMessagesBuffered, 1000 );
-BW_OPTION( uint, warnBytesBuffered, 262144 );
-BW_OPTION( uint, maxBytesBuffered, 524288 );
-
-
+BW_OPTION(uint, warnMessagesBuffered, 500);
+BW_OPTION(uint, maxMessagesBuffered, 1000);
+BW_OPTION(uint, warnBytesBuffered, 262144);
+BW_OPTION(uint, maxBytesBuffered, 524288);
 
 // -----------------------------------------------------------------------------
 // Section: Custom initialisation
@@ -45,15 +42,15 @@ BW_OPTION( uint, maxBytesBuffered, 524288 );
  */
 bool RateLimitConfig::postInit()
 {
-#define DERIVE_RATE_LIMIT( NAME ) 											\
-	NAME##PerTick.set( NAME##PerSecond() / BaseAppConfig::updateHertz() );
+#define DERIVE_RATE_LIMIT(NAME)                                                \
+    NAME##PerTick.set(NAME##PerSecond() / BaseAppConfig::updateHertz());
 
-	DERIVE_RATE_LIMIT( warnMessages );
-	DERIVE_RATE_LIMIT( maxMessages );
-	DERIVE_RATE_LIMIT( warnBytes );
-	DERIVE_RATE_LIMIT( maxBytes );
+    DERIVE_RATE_LIMIT(warnMessages);
+    DERIVE_RATE_LIMIT(maxMessages);
+    DERIVE_RATE_LIMIT(warnBytes);
+    DERIVE_RATE_LIMIT(maxBytes);
 
-	return true;
+    return true;
 }
 
 BW_END_NAMESPACE

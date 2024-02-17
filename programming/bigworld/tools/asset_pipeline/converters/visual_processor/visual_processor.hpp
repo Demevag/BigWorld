@@ -9,30 +9,33 @@ BW_BEGIN_NAMESPACE
 
 class VisualProcessor : public Converter
 {
-protected:
-	VisualProcessor( const BW::string& params );
-	~VisualProcessor();
+  protected:
+    VisualProcessor(const BW::string& params);
+    ~VisualProcessor();
 
-public:
-	virtual bool createDependencies( const BW::string & sourcefile,
-									 const Compiler & compiler,
-									 DependencyList & dependencies );
+  public:
+    virtual bool createDependencies(const BW::string& sourcefile,
+                                    const Compiler&   compiler,
+                                    DependencyList&   dependencies);
 
-	virtual bool convert( const BW::string & sourcefile,
-						  const Compiler & compiler,
-						  BW::vector< BW::string > & intermediateFiles,
-						  BW::vector< BW::string > & outputFiles );
+    virtual bool convert(const BW::string&       sourcefile,
+                         const Compiler&         compiler,
+                         BW::vector<BW::string>& intermediateFiles,
+                         BW::vector<BW::string>& outputFiles);
 
-public:
-	static uint64 getTypeId() { return s_TypeId; }
-	static const char * getVersion() { return s_Version; }
-	static const char * getTypeName() { return "VisualProcessor"; }
-	static Converter * createConverter( const BW::string& params ) { return new VisualProcessor( params ); }
+  public:
+    static uint64      getTypeId() { return s_TypeId; }
+    static const char* getVersion() { return s_Version; }
+    static const char* getTypeName() { return "VisualProcessor"; }
+    static Converter*  createConverter(const BW::string& params)
+    {
+        return new VisualProcessor(params);
+    }
 
-	static const uint64 s_TypeId;
-	static const char * s_Version;
+    static const uint64 s_TypeId;
+    static const char*  s_Version;
 };
 
 BW_END_NAMESPACE
 
-#endif //ASSET_PIPELINE_VISUAL_PROCESSOR
+#endif // ASSET_PIPELINE_VISUAL_PROCESSOR

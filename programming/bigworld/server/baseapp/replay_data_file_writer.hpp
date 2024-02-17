@@ -12,7 +12,6 @@
 
 #include "recording_recovery_data.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BinaryIStream;
@@ -20,40 +19,37 @@ class MemoryOStream;
 class ReplayDataFileWriter;
 class ReplayMetaData;
 
-
 /**
  *	This class is used to accumulate game tick data.
  */
 class TickReplayData
 {
-public:
-	TickReplayData();
-	~TickReplayData();
+  public:
+    TickReplayData();
+    ~TickReplayData();
 
-	void init( GameTime tick, uint numCells );
-	void transferFromCell( BinaryIStream & data );
-	void finalise( BWCompressionType compressionType );
+    void init(GameTime tick, uint numCells);
+    void transferFromCell(BinaryIStream& data);
+    void finalise(BWCompressionType compressionType);
 
-	GameTime tick() const 			{ return tick_; }
+    GameTime tick() const { return tick_; }
 
-	uint numExpectedCells() const 	{ return numExpectedCells_; }
-	void numExpectedCells( uint newValue );
+    uint numExpectedCells() const { return numExpectedCells_; }
+    void numExpectedCells(uint newValue);
 
-	uint numCellsLeft() const 		{ return numCellsLeft_; }
-	BinaryIStream & data() 			{ return *pBlob_; }
-	int size() const				{ return pBlob_->size(); }
-	
-	static int tickHeaderSize();
-	static void streamTickHeader( BinaryOStream & stream, GameTime tick );
+    uint           numCellsLeft() const { return numCellsLeft_; }
+    BinaryIStream& data() { return *pBlob_; }
+    int            size() const { return pBlob_->size(); }
 
-private:
+    static int  tickHeaderSize();
+    static void streamTickHeader(BinaryOStream& stream, GameTime tick);
 
-	GameTime 		tick_;
-	uint 			numExpectedCells_;
-	uint 			numCellsLeft_;
-	MemoryOStream * pBlob_;
+  private:
+    GameTime       tick_;
+    uint           numExpectedCells_;
+    uint           numCellsLeft_;
+    MemoryOStream* pBlob_;
 };
-
 
 /**
  *	This interface is used for handling events from a ReplayDataFileWriter
@@ -61,134 +57,128 @@ private:
  */
 class ReplayDataFileWriterListener
 {
-public:
-	/** Destructor. */
-	virtual ~ReplayDataFileWriterListener() {}
+  public:
+    /** Destructor. */
+    virtual ~ReplayDataFileWriterListener() {}
 
-	/**
-	 *	This method is called when the given writer is destroyed.
-	 */
-	virtual void onReplayDataFileWriterDestroyed(
-		ReplayDataFileWriter & writer ) = 0;
+    /**
+     *	This method is called when the given writer is destroyed.
+     */
+    virtual void onReplayDataFileWriterDestroyed(
+      ReplayDataFileWriter& writer) = 0;
 
-	/**
-	 *	This method handles a file writing error in the given file writer.
-	 */
-	virtual void onReplayDataFileWritingError(
-		ReplayDataFileWriter & writer ) = 0;
+    /**
+     *	This method handles a file writing error in the given file writer.
+     */
+    virtual void onReplayDataFileWritingError(ReplayDataFileWriter& writer) = 0;
 
-	/**
-	 *	This method is called to handle when the file writing is completed.
-	 */
-	virtual void onReplayDataFileWritingComplete(
-		ReplayDataFileWriter & writer ) = 0;
+    /**
+     *	This method is called to handle when the file writing is completed.
+     */
+    virtual void onReplayDataFileWritingComplete(
+      ReplayDataFileWriter& writer) = 0;
 };
-
 
 /**
  *	This class implements writing to a replay data file.
  */
 class ReplayDataFileWriter : private BackgroundFileWriterListener
 {
-public:
-	ReplayDataFileWriter( IBackgroundFileWriter * pWriter,
-		ChecksumSchemePtr pChecksumScheme,
-		BWCompressionType compressionType,
-		const MD5::Digest & digest,
-		uint numTicksToSign,
-		const ReplayMetaData & metaData,
-		const BW::string & nonce = BW::string( "" ) );
+  public:
+    ReplayDataFileWriter(IBackgroundFileWriter* pWriter,
+                         ChecksumSchemePtr      pChecksumScheme,
+                         BWCompressionType      compressionType,
+                         const MD5::Digest&     digest,
+                         uint                   numTicksToSign,
+                         const ReplayMetaData&  metaData,
+                         const BW::string&      nonce = BW::string(""));
 
-	ReplayDataFileWriter( IBackgroundFileWriter * pWriter,
-		ChecksumSchemePtr pChecksumScheme,
-		const RecordingRecoveryData & recoveryData );
+    ReplayDataFileWriter(IBackgroundFileWriter*       pWriter,
+                         ChecksumSchemePtr            pChecksumScheme,
+                         const RecordingRecoveryData& recoveryData);
 
-	virtual ~ReplayDataFileWriter();
+    virtual ~ReplayDataFileWriter();
 
+    void addTickData(GameTime tick, uint numCells, BinaryIStream& blob);
 
-	void addTickData( GameTime tick, uint numCells, BinaryIStream & blob );
+    void addListener(ReplayDataFileWriterListener* pListener);
 
-	void addListener( ReplayDataFileWriterListener * pListener );
+    const BW::string& path() const { return path_; }
 
-	const BW::string & path() const { return path_; }
+    bool isFinalising() const { return isFinalising_; }
+    bool isClosed() const { return isFinalising_ && !pWriter_.get(); }
 
-	bool isFinalising() const { return isFinalising_; }
-	bool isClosed() const { return isFinalising_ && !pWriter_.get(); }
+    void close(bool shouldFinalise = true);
 
-	void close( bool shouldFinalise = true );
+    void finalise();
 
-	void finalise();
+    bool       hasError() const;
+    BW::string errorString() const;
 
-	bool hasError() const;
-	BW::string errorString() const;
+    BWCompressionType compressionType() const { return compressionType_; }
+    uint              numTicksToSign() { return numTicksToSign_; }
 
-	BWCompressionType compressionType() const { return compressionType_; }
-	uint numTicksToSign()				{ return numTicksToSign_; }
+    GameTime numTicksWritten() const { return numTicksWritten_; }
+    GameTime lastTickWritten() const { return lastTickWritten_; }
+    GameTime lastTickPendingWrite() const { return lastTickPendingWrite_; }
+    off_t    lastChunkPosition() const { return lastChunkPosition_; }
+    uint     lastChunkLength() const { return lastChunkLength_; }
 
-	GameTime numTicksWritten() const 	{ return numTicksWritten_; }
-	GameTime lastTickWritten() const 	{ return lastTickWritten_; }
-	GameTime lastTickPendingWrite() const { return lastTickPendingWrite_; }
-	off_t lastChunkPosition() const 	{ return lastChunkPosition_; }
-	uint lastChunkLength() const 		{ return lastChunkLength_; }
+    const RecordingRecoveryData recoveryData() const;
 
-	const RecordingRecoveryData recoveryData() const;
+    static bool existsForPath(const BW::string& path);
+    static void closeAll(ReplayDataFileWriterListener* pListener,
+                         bool                          shouldFinalise = true);
+    static bool haveAllClosed();
 
-	static bool existsForPath( const BW::string & path );
-	static void closeAll( ReplayDataFileWriterListener * pListener,
-		bool shouldFinalise = true );
-	static bool haveAllClosed();
+  private:
+    void commonInit();
 
+    void finaliseCompletedTickData(TickReplayData& pTickData);
+    void signAndWriteCompletedTickData(bool isLastChunk = false);
+    void setReadOnly();
+    void closeWriter();
 
-private:
-	void commonInit();
+    void notifyListenersOfError();
+    void notifyListenersOfCompletion();
+    void notifyListenersOfDestruction();
 
-	void finaliseCompletedTickData( TickReplayData & pTickData );
-	void signAndWriteCompletedTickData( bool isLastChunk = false );
-	void setReadOnly();
-	void closeWriter();
+    // Overrides from BackgroundFileWriterListener
+    virtual void onBackgroundFileWritingError(
+      IBackgroundFileWriter& fileWriter);
 
-	void notifyListenersOfError();
-	void notifyListenersOfCompletion();
-	void notifyListenersOfDestruction();
+    virtual void onBackgroundFileWritingComplete(
+      IBackgroundFileWriter& fileWriter,
+      long                   filePosition,
+      int                    userArg);
 
-	// Overrides from BackgroundFileWriterListener
-	virtual void onBackgroundFileWritingError(
-		IBackgroundFileWriter & fileWriter );
+    BWCompressionType compressionType_;
 
-	virtual void onBackgroundFileWritingComplete(
-		IBackgroundFileWriter & fileWriter, long filePosition, int userArg );
+    GameTime      currentTick_;
+    GameTime      lastTickPendingWrite_;
+    GameTime      lastTickWritten_;
+    off_t         lastChunkPosition_;
+    uint          lastChunkLength_;
+    MemoryOStream lastSignature_;
+    uint          numTicksToSign_;
 
+    ChecksumSchemePtr pChecksumScheme_;
 
-	BWCompressionType				compressionType_;
+    typedef BW::map<GameTime, TickReplayData> TickData;
+    TickData                                  bufferedTickData_;
+    GameTime                                  numTicksWritten_;
 
-	GameTime 						currentTick_;
-	GameTime 						lastTickPendingWrite_;
-	GameTime						lastTickWritten_;
-	off_t 							lastChunkPosition_;
-	uint							lastChunkLength_;
-	MemoryOStream 					lastSignature_;
-	uint							numTicksToSign_;
+    BW::string               path_;
+    bool                     isFinalising_;
+    IBackgroundFileWriterPtr pWriter_;
 
-	ChecksumSchemePtr 				pChecksumScheme_;
+    typedef BW::vector<ReplayDataFileWriterListener*> Listeners;
+    Listeners                                         listeners_;
 
-	typedef BW::map< GameTime, TickReplayData > TickData;
-	TickData 						bufferedTickData_;
-	GameTime 						numTicksWritten_;
-
-	BW::string 						path_;
-	bool 							isFinalising_;
-	IBackgroundFileWriterPtr 		pWriter_;
-
-	typedef BW::vector< ReplayDataFileWriterListener * > Listeners;
-	Listeners listeners_;
-
-	typedef BW::map< BW::string, ReplayDataFileWriter * > Writers;
-	static Writers s_activeWriters_;
+    typedef BW::map<BW::string, ReplayDataFileWriter*> Writers;
+    static Writers                                     s_activeWriters_;
 };
-
 
 BW_END_NAMESPACE
 
-
 #endif // REPLAY_DATA_FILE_WRITER_HPP
-

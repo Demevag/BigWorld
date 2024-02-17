@@ -8,52 +8,50 @@
 #include "scene/scene_provider.hpp"
 #include "moo/texture_streaming_scene_view.hpp"
 
-namespace BW {
-namespace CompiledSpace {
+namespace BW { namespace CompiledSpace {
 
-class StaticTextureStreamingSceneProvider :
-	public ILoader,
-	public SceneProvider,
-	public Moo::BaseTextureStreamingSceneViewProvider
-{
-public:
-	StaticTextureStreamingSceneProvider();
-	virtual ~StaticTextureStreamingSceneProvider();
+    class StaticTextureStreamingSceneProvider
+      : public ILoader
+      , public SceneProvider
+      , public Moo::BaseTextureStreamingSceneViewProvider
+    {
+      public:
+        StaticTextureStreamingSceneProvider();
+        virtual ~StaticTextureStreamingSceneProvider();
 
-protected:
-	// ILoader interface
-	virtual bool doLoadFromSpace( ClientSpace * pSpace,
-		BinaryFormat & reader,
-		const DataSectionPtr & pSpaceSettings,
-		const Matrix & transform,
-		const StringTable & strings );
+      protected:
+        // ILoader interface
+        virtual bool doLoadFromSpace(ClientSpace*          pSpace,
+                                     BinaryFormat&         reader,
+                                     const DataSectionPtr& pSpaceSettings,
+                                     const Matrix&         transform,
+                                     const StringTable&    strings);
 
-	virtual bool doBind();
-	virtual void doUnload();
-	virtual float percentLoaded() const;
+        virtual bool  doBind();
+        virtual void  doUnload();
+        virtual float percentLoaded() const;
 
-	bool isValid() const;
+        bool isValid() const;
 
-	// Scene view implementations
-	virtual void * getView(
-		const SceneTypeSystem::RuntimeTypeID & sceneInterfaceTypeID);
+        // Scene view implementations
+        virtual void* getView(
+          const SceneTypeSystem::RuntimeTypeID& sceneInterfaceTypeID);
 
-	virtual void getModelUsage( 
-		const Moo::ModelTextureUsage ** pUsages, 
-		size_t * numUsage );
+        virtual void getModelUsage(const Moo::ModelTextureUsage** pUsages,
+                                   size_t*                        numUsage);
 
-	virtual void drawDebug( uint32 debugMode );
+        virtual void drawDebug(uint32 debugMode);
 
-private:
-	bool loadUsages( const StringTable & strings );
-	void freeUsages();
-	
-	BinaryFormat * pReader_;
-	BinaryFormat::Stream * pStream_;
+      private:
+        bool loadUsages(const StringTable& strings);
+        void freeUsages();
 
-	ExternalArray<StaticTextureStreamingTypes::Usage> usageDefs_;
-	BW::vector<Moo::ModelTextureUsage> usages_;
-};
+        BinaryFormat*         pReader_;
+        BinaryFormat::Stream* pStream_;
+
+        ExternalArray<StaticTextureStreamingTypes::Usage> usageDefs_;
+        BW::vector<Moo::ModelTextureUsage>                usages_;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW

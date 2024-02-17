@@ -7,11 +7,11 @@ BW_BEGIN_NAMESPACE
 
 class IEditorApp
 {
-public:
-	virtual bool isMinimized();
-	virtual void onIdle() {};
+  public:
+    virtual bool isMinimized();
+    virtual void onIdle(){};
 };
 
 BW_END_NAMESPACE
 
-#endif //EDITOR_APP_H
+#endif // EDITOR_APP_H

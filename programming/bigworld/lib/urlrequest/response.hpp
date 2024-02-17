@@ -9,79 +9,78 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace URL
-{
+namespace URL {
 
-static const int RESPONSE_ERR_OK = 200;
+    static const int RESPONSE_ERR_OK = 200;
 
-const char * httpResponseCodeToString( long responseCode );
+    const char* httpResponseCodeToString(long responseCode);
 
-/**
- *	Interface for a handler for a URL request.
- */
-class Response : public ReferenceCount
-{
-public:
-	/**
-	 *	This method is called when the HTTP response code is known.
-	 */
-	virtual bool onResponseCode( long responseCode ) { return true; }
+    /**
+     *	Interface for a handler for a URL request.
+     */
+    class Response : public ReferenceCount
+    {
+      public:
+        /**
+         *	This method is called when the HTTP response code is known.
+         */
+        virtual bool onResponseCode(long responseCode) { return true; }
 
-	/**
-	 *	This method is called when the Content-Type HTTP header is known.
-	 *
-	 *	@param contentType 	The reported Content-Type, or empty string if none
-	 *						was supplied.
-	 */
-	virtual bool onContentTypeHeader( const BW::string & contentType )
-	{
-		return true;
-	}
+        /**
+         *	This method is called when the Content-Type HTTP header is known.
+         *
+         *	@param contentType 	The reported Content-Type, or empty string if
+         *none was supplied.
+         */
+        virtual bool onContentTypeHeader(const BW::string& contentType)
+        {
+            return true;
+        }
 
-	/**
-	 *	This method is called when body data has been read.
-	 *
-	 *	@param data		A chunk of the body data.
-	 *	@param len		The size of the body data chunk.
-	 */
-	virtual bool onData( const char * data, size_t len ) = 0;
+        /**
+         *	This method is called when body data has been read.
+         *
+         *	@param data		A chunk of the body data.
+         *	@param len		The size of the body data chunk.
+         */
+        virtual bool onData(const char* data, size_t len) = 0;
 
-	/**
-	 *	This method is called when the request is completed.
-	 */
-	virtual void onDone( int responseCode, const char * error ) = 0;
-};
+        /**
+         *	This method is called when the request is completed.
+         */
+        virtual void onDone(int responseCode, const char* error) = 0;
+    };
 
-typedef SmartPointer< Response > ResponsePtr;
+    typedef SmartPointer<Response> ResponsePtr;
 
+    /**
+     *	This convenience class writes out all received data into a
+     *	string stream member, accessible by subclasses.
+     */
+    class SimpleResponse : public Response
+    {
+      public:
+        /** Constructor. */
+        SimpleResponse()
+          : body_()
+        {
+        }
 
-/**
- *	This convenience class writes out all received data into a
- *	string stream member, accessible by subclasses.
- */
-class SimpleResponse : public Response
-{
-public:
-	/** Constructor. */
-	SimpleResponse() :
-		body_()
-	{}
+        /** Destructor. */
+        virtual ~SimpleResponse() {}
 
-	/** Destructor. */
-	virtual ~SimpleResponse() {}
+        /*
+         *	Override from Response.
+         */
+        virtual bool onData(const char* data, size_t len)
+        {
+            body_.write(data, len);
+            return true;
+        }
 
-	/*
-	 *	Override from Response.
-	 */
-	virtual bool onData( const char * data, size_t len )
-	{
-		body_.write( data, len );
-		return true;
-	}
-
-protected:
-	BW::ostringstream body_;
-};
+      protected:
+        BW::ostringstream body_;
+    };
 
 } // namespace URL
 

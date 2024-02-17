@@ -8,14 +8,11 @@
 #define DEFINE_INTERFACE_HERE
 #include "cellappmgr/cellappmgr_interface.hpp"
 
-
 BW_USE_NAMESPACE
 
-
-int BIGWORLD_MAIN( int argc, char * argv[] )
+int BIGWORLD_MAIN(int argc, char* argv[])
 {
-	return bwMainT< BaseAppMgr >( argc, argv );
+    return bwMainT<BaseAppMgr>(argc, argv);
 }
-
 
 // main.cpp

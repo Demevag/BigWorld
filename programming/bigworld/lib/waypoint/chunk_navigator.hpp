@@ -9,7 +9,6 @@
 
 #include "cstdmf/smartpointer.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class NavigatorFindResult;
@@ -20,56 +19,61 @@ class Vector3;
  */
 class ChunkNavigator : public ChunkCache
 {
-public:
-	ChunkNavigator( Chunk & chunk );
-	~ChunkNavigator();
+  public:
+    ChunkNavigator(Chunk& chunk);
+    ~ChunkNavigator();
 
-	virtual void bind( bool isUnbind );
+    virtual void bind(bool isUnbind);
 
-	bool find( const WorldSpaceVector3& point, float girth,
-				NavigatorFindResult & res, bool ignoreHeight = false ) const;
-	bool findExact( const WorldSpaceVector3& point, float girth,
-				NavigatorFindResult & res ) const;
+    bool find(const WorldSpaceVector3& point,
+              float                    girth,
+              NavigatorFindResult&     res,
+              bool                     ignoreHeight = false) const;
+    bool findExact(const WorldSpaceVector3& point,
+                   float                    girth,
+                   NavigatorFindResult&     res) const;
 
-	bool isEmpty() const;
-	bool hasNavPolySet( float girth ) const;
+    bool isEmpty() const;
+    bool hasNavPolySet(float girth) const;
 
-	void add( ChunkWaypointSet * pSet );
-	void del( ChunkWaypointSet * pSet );
+    void add(ChunkWaypointSet* pSet);
+    void del(ChunkWaypointSet* pSet);
 
-	static bool shouldUseGirthGrids()
-		{ return s_useGirthGrids_; }
+    static bool shouldUseGirthGrids() { return s_useGirthGrids_; }
 
-	static void shouldUseGirthGrids( bool value )
-		{ s_useGirthGrids_ = value; }
+    static void shouldUseGirthGrids(bool value) { s_useGirthGrids_ = value; }
 
-	static Instance< ChunkNavigator > instance;
+    static Instance<ChunkNavigator> instance;
 
-#if !defined( MF_SERVER )
-	static void drawDebug();
-	void drawWaypointSets() const;
+#if !defined(MF_SERVER)
+    static void drawDebug();
+    void        drawWaypointSets() const;
 #endif // !defined( MF_SERVER )
 
-private:
-#if !defined( MF_SERVER )
-	static bool s_debugDraw;
-	static bool s_debugDrawConnected;
+  private:
+#if !defined(MF_SERVER)
+    static bool s_debugDraw;
+    static bool s_debugDrawConnected;
 #endif // !defined( MF_SERVER )
 
-	Chunk & chunk_;
+    Chunk& chunk_;
 
-	ChunkWaypointSets	wpSets_;
+    ChunkWaypointSets wpSets_;
 
-	GirthGrids	girthGrids_;
-	Vector2		girthGridOrigin_;
-	float		girthGridResolution_;
+    GirthGrids girthGrids_;
+    Vector2    girthGridOrigin_;
+    float      girthGridResolution_;
 
-	static bool s_useGirthGrids_;
+    static bool s_useGirthGrids_;
 
-	static const uint GIRTH_GRID_SIZE = 12;
+    static const uint GIRTH_GRID_SIZE = 12;
 
-	void tryGrid( GirthGridList* gridList, const WaypointSpaceVector3& point,
-		float& bestDistanceSquared, int xi, int zi, NavigatorFindResult& res ) const;
+    void tryGrid(GirthGridList*              gridList,
+                 const WaypointSpaceVector3& point,
+                 float&                      bestDistanceSquared,
+                 int                         xi,
+                 int                         zi,
+                 NavigatorFindResult&        res) const;
 };
 
 BW_END_NAMESPACE

@@ -12,18 +12,18 @@ BW_BEGIN_NAMESPACE
 
 class CueTrack
 {
-public:
-	static void clear();
-	static void addCue( TimeValue time, const char* name );
-	static void writeFile( BinaryFile& file );
+  public:
+    static void clear();
+    static void addCue(TimeValue time, const char* name);
+    static void writeFile(BinaryFile& file);
 
-	static bool hasCues();
+    static bool hasCues();
 
-protected:
-	static CueTrack _instance;
+  protected:
+    static CueTrack _instance;
 
-	// maps times the cues occur at to their identifiers
-	BW::map< TimeValue, BW::list<BW::string> > _cues;
+    // maps times the cues occur at to their identifiers
+    BW::map<TimeValue, BW::list<BW::string>> _cues;
 };
 
 BW_END_NAMESPACE

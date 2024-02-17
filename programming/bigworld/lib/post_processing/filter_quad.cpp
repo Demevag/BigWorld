@@ -5,42 +5,33 @@
 #include "filter_quad.ipp"
 #endif
 
-DECLARE_DEBUG_COMPONENT2( "PostProcessing", 0 )
-
+DECLARE_DEBUG_COMPONENT2("PostProcessing", 0)
 
 BW_BEGIN_NAMESPACE
 
-namespace PostProcessing
-{
+namespace PostProcessing {
 
-// Python statics
-PY_TYPEOBJECT( FilterQuad )
+    // Python statics
+    PY_TYPEOBJECT(FilterQuad)
 
-PY_BEGIN_METHODS( FilterQuad )	
-PY_END_METHODS()
+    PY_BEGIN_METHODS(FilterQuad)
+    PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( FilterQuad )	
-PY_END_ATTRIBUTES()
+    PY_BEGIN_ATTRIBUTES(FilterQuad)
+    PY_END_ATTRIBUTES()
 
+    FilterQuad::FilterQuad(PyTypeObject* pType)
+      : PyObjectPlus(pType)
+    {
+    }
 
-FilterQuad::FilterQuad( PyTypeObject *pType ):
-	PyObjectPlus( pType )
-{
-}
+    FilterQuad::~FilterQuad() {}
 
+    void FilterQuad::draw() {}
 
-FilterQuad::~FilterQuad()
-{
-}
+} // namespace PostProcessing
 
-
-void FilterQuad::draw()
-{
-}
-
-}	//namespace PostProcessing
-
-PY_SCRIPT_CONVERTERS( PostProcessing::FilterQuad )
+PY_SCRIPT_CONVERTERS(PostProcessing::FilterQuad)
 
 BW_END_NAMESPACE
 

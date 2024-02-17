@@ -5,53 +5,61 @@
 #include "cstdmf/smartpointer.hpp"
 #include "device_callback.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-typedef SmartPointer< class ShaderSet > ShaderSetPtr;
+typedef SmartPointer<class ShaderSet> ShaderSetPtr;
 
 /**
  * This class contains a set of shaders based on different light combinations,
  * and the same base shader.
  */
-class ShaderSet : public Moo::DeviceCallback, public ReferenceCount
+class ShaderSet
+  : public Moo::DeviceCallback
+  , public ReferenceCount
 {
-public:
-	typedef uint32 ShaderID;
-	typedef IDirect3DVertexShader9* ShaderHandle;
+  public:
+    typedef uint32                  ShaderID;
+    typedef IDirect3DVertexShader9* ShaderHandle;
 
-	typedef BW::map< ShaderID, ShaderHandle > ShaderMap;
+    typedef BW::map<ShaderID, ShaderHandle> ShaderMap;
 
-	ShaderSet( DataSectionPtr shaderSetSection, const BW::string & vertexFormat, 
-		const BW::string & shaderType );
-	~ShaderSet();
+    ShaderSet(DataSectionPtr    shaderSetSection,
+              const BW::string& vertexFormat,
+              const BW::string& shaderType);
+    ~ShaderSet();
 
-	static ShaderID		shaderID( char nDirectionalLights, char nPointLights, char nSpotLights );
+    static ShaderID shaderID(char nDirectionalLights,
+                             char nPointLights,
+                             char nSpotLights);
 
-	ShaderHandle		shader( char nDirectionalLights, char nPointLights, char nSpotLights, bool hardwareVP = false );
-	ShaderHandle		shader( ShaderID shaderID, bool hardwareVP = false );
+    ShaderHandle shader(char nDirectionalLights,
+                        char nPointLights,
+                        char nSpotLights,
+                        bool hardwareVP = false);
+    ShaderHandle shader(ShaderID shaderID, bool hardwareVP = false);
 
-	void				deleteUnmanagedObjects( );
+    void deleteUnmanagedObjects();
 
-	bool				isSameSet( const BW::string & vertexFormat, const BW::string & shaderType )
-		{ return vertexFormat == vertexFormat_ && shaderType == shaderType_; }
+    bool isSameSet(const BW::string& vertexFormat, const BW::string& shaderType)
+    {
+        return vertexFormat == vertexFormat_ && shaderType == shaderType_;
+    }
 
-	void				preloadAll();
+    void preloadAll();
 
-private:
+  private:
+    ShaderMap shaders_;
+    ShaderMap hwShaders_;
 
-	ShaderMap		shaders_;
-	ShaderMap		hwShaders_;
+    DataSectionPtr shaderSetSection_;
 
-	DataSectionPtr	shaderSetSection_;
+    BW::string vertexFormat_;
+    BW::string shaderType_;
 
-	BW::string		vertexFormat_;
-	BW::string		shaderType_;
+    bool preloading_;
 
-	bool			preloading_;
-
-	ShaderSet(const ShaderSet&);
-	ShaderSet& operator=(const ShaderSet&);
+    ShaderSet(const ShaderSet&);
+    ShaderSet& operator=(const ShaderSet&);
 };
 
 #ifdef CODE_INLINE

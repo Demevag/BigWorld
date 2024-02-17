@@ -1,13 +1,13 @@
 #ifndef SCALEFORM_CONFIG_HPP
 #define SCALEFORM_CONFIG_HPP
 
+// Set this define to 1 if you wish to use the Scaleform IME library in your
+// game. This comes as an additional package that must be installed over the top
+// of the basic GFx installation. Please see http://www.scaleform.com for
+// licensing details.
 
-// Set this define to 1 if you wish to use the Scaleform IME library in your game.
-// This comes as an additional package that must be installed over the top of
-// the basic GFx installation.
-// Please see http://www.scaleform.com for licensing details.
-
-// Note that enabling Scaleform IME will disable the built-in IME support in BigWorld.
+// Note that enabling Scaleform IME will disable the built-in IME support in
+// BigWorld.
 #define SCALEFORM_IME 0
 
 // We don't want Scaleform functions to be exported from our EXE
@@ -41,19 +41,18 @@
 using namespace Scaleform;
 namespace SF = Scaleform;
 
-typedef unsigned                        UInt;
-typedef int                             SInt;
-typedef float                           Float;
-using namespace                         SF::BaseTypes;
+typedef unsigned UInt;
+typedef int      SInt;
+typedef float    Float;
+using namespace SF::BaseTypes;
 
-typedef SF::Render::Color               GColor;
-typedef SF::Render::RectF               GRectF;
-typedef SF::Render::PointF              GPointF;
-typedef SF::Render::SizeF               GSizeF;
-typedef SF::String                      GString;
-typedef SF::File                        GFile;
+typedef SF::Render::Color  GColor;
+typedef SF::Render::RectF  GRectF;
+typedef SF::Render::PointF GPointF;
+typedef SF::Render::SizeF  GSizeF;
+typedef SF::String         GString;
+typedef SF::File           GFile;
 
 #endif
-
 
 #endif // SCALEFORM_CONFIG_HPP

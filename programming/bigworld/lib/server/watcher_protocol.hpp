@@ -3,7 +3,6 @@
 
 #include "cstdmf/watcher.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BinaryIStream;
@@ -14,19 +13,19 @@ class BinaryIStream;
  */
 class WatcherProtocolDecoder
 {
-public:
-	virtual bool decode( BinaryIStream & stream );
-	virtual bool decodeNext( BinaryIStream & stream );
+  public:
+    virtual bool decode(BinaryIStream& stream);
+    virtual bool decodeNext(BinaryIStream& stream);
 
-	virtual int readSize( BinaryIStream & stream );
+    virtual int readSize(BinaryIStream& stream);
 
-	virtual bool defaultHandler( BinaryIStream & stream, Watcher::Mode mode );
-	virtual bool intHandler( BinaryIStream & stream, Watcher::Mode mode );
-	virtual bool uintHandler( BinaryIStream & stream, Watcher::Mode mode );
-	virtual bool floatHandler( BinaryIStream & stream, Watcher::Mode mode );
-	virtual bool boolHandler( BinaryIStream & stream, Watcher::Mode mode );
-	virtual bool stringHandler( BinaryIStream & stream, Watcher::Mode mode );
-	virtual bool tupleHandler( BinaryIStream & stream, Watcher::Mode mode );
+    virtual bool defaultHandler(BinaryIStream& stream, Watcher::Mode mode);
+    virtual bool intHandler(BinaryIStream& stream, Watcher::Mode mode);
+    virtual bool uintHandler(BinaryIStream& stream, Watcher::Mode mode);
+    virtual bool floatHandler(BinaryIStream& stream, Watcher::Mode mode);
+    virtual bool boolHandler(BinaryIStream& stream, Watcher::Mode mode);
+    virtual bool stringHandler(BinaryIStream& stream, Watcher::Mode mode);
+    virtual bool tupleHandler(BinaryIStream& stream, Watcher::Mode mode);
 };
 
 BW_END_NAMESPACE

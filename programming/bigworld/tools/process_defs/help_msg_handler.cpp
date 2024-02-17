@@ -9,46 +9,45 @@
 
 BW_BEGIN_NAMESPACE
 
-
 /**
  *	Default Constructor.
  */
 ProcessDefsHelpMsgHandler::ProcessDefsHelpMsgHandler()
 {
-	DebugFilter::instance().addMessageCallback( this );
+    DebugFilter::instance().addMessageCallback(this);
 }
-
 
 /**
  *	Destructor.
  */
 ProcessDefsHelpMsgHandler::~ProcessDefsHelpMsgHandler()
 {
-	DebugFilter::instance().deleteMessageCallback( this );
+    DebugFilter::instance().deleteMessageCallback(this);
 }
-
 
 /*
  *	Override from DebugMessageCallback.
  */
 bool ProcessDefsHelpMsgHandler::handleMessage(
-	DebugMessagePriority messagePriority, const char * /*pCategory*/,
-	DebugMessageSource messageSource, const LogMetaData & /*metaData*/,
-	const char * pFormat, va_list argPtr )
+  DebugMessagePriority messagePriority,
+  const char* /*pCategory*/,
+  DebugMessageSource messageSource,
+  const LogMetaData& /*metaData*/,
+  const char* pFormat,
+  va_list     argPtr)
 {
-	if (messageSource != MESSAGE_SOURCE_SCRIPT)
-	{
-		return false;
-	}
+    if (messageSource != MESSAGE_SOURCE_SCRIPT) {
+        return false;
+    }
 
-	static const int MAX_MESSAGE_BUFFER = 8192;
-	static char buffer[ MAX_MESSAGE_BUFFER ];
+    static const int MAX_MESSAGE_BUFFER = 8192;
+    static char      buffer[MAX_MESSAGE_BUFFER];
 
-	LogMsg::formatMessage( buffer, MAX_MESSAGE_BUFFER, pFormat, argPtr );
+    LogMsg::formatMessage(buffer, MAX_MESSAGE_BUFFER, pFormat, argPtr);
 
-	std::cerr << buffer << std::endl;
+    std::cerr << buffer << std::endl;
 
-	return true;
+    return true;
 }
 
 BW_END_NAMESPACE

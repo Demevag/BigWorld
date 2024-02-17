@@ -6,7 +6,7 @@
 BW_BEGIN_NAMESPACE
 
 /**
- *	This class provides a random number generator based upon the Mersenne 
+ *	This class provides a random number generator based upon the Mersenne
  *	twister:
  *
  *	http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
@@ -17,36 +17,36 @@ BW_BEGIN_NAMESPACE
  */
 class CSTDMF_DLL BWRandom
 {
-public:
+  public:
     BWRandom();
     explicit BWRandom(uint32 seed);
-    BWRandom(uint32 const *seed, size_t size);
+    BWRandom(uint32 const* seed, size_t size);
 
     uint32 operator()();
-    int operator()(int min, int max);
-	float operator()(float min, float max);
+    int    operator()(int min, int max);
+    float  operator()(float min, float max);
 
-	// make it a singleton because it might be
-	// called from other static initialisations
-	static BWRandom& instance()
-	{
-		static BWRandom s_theRandom;
-		return s_theRandom;
-	}
-protected:
+    // make it a singleton because it might be
+    // called from other static initialisations
+    static BWRandom& instance()
+    {
+        static BWRandom s_theRandom;
+        return s_theRandom;
+    }
+
+  protected:
     void init(uint32 seed);
-    void init(uint32 const *seed, size_t size);
+    void init(uint32 const* seed, size_t size);
 
     uint32 generate();
 
-private:
-    uint32                  mt[624]; // state vector
-    int                     mti;
+  private:
+    uint32 mt[624]; // state vector
+    int    mti;
 };
 
-
 /**
- *	You can use this, rather than create a Random of your own.  
+ *	You can use this, rather than create a Random of your own.
  */
 #define bw_random (BWRandom::instance())
 

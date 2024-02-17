@@ -11,53 +11,48 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor.
  */
-EntityExtensions::EntityExtensions() :
-	extensions_( NULL ),
-	numExtensions_( 0 )
+EntityExtensions::EntityExtensions()
+  : extensions_(NULL)
+  , numExtensions_(0)
 {
 }
-
 
 /**
  *	Destructor.
  */
 EntityExtensions::~EntityExtensions()
 {
-	MF_ASSERT( extensions_ == NULL );
+    MF_ASSERT(extensions_ == NULL);
 }
-
 
 /**
  *	This method notifies and cleans up our collection of EntityExtensions
  */
 void EntityExtensions::clear()
 {
-	for (int i = 0; i < numExtensions_; ++i)
-	{
-		extensions_[i]->onEntityDestroyed();
-	}
+    for (int i = 0; i < numExtensions_; ++i) {
+        extensions_[i]->onEntityDestroyed();
+    }
 
-	delete [] extensions_;
+    delete[] extensions_;
 
-	extensions_ = NULL;
+    extensions_ = NULL;
 }
-
 
 /**
  *
  */
-void EntityExtensions::init( BWEntity & entity,
-		EntityExtensionFactoryManager & factories )
+void EntityExtensions::init(BWEntity&                      entity,
+                            EntityExtensionFactoryManager& factories)
 {
-	MF_ASSERT( (extensions_ == NULL) && (numExtensions_ == 0));
+    MF_ASSERT((extensions_ == NULL) && (numExtensions_ == 0));
 
-	numExtensions_ = static_cast<int>(factories.size());
-	extensions_ = new EntityExtension *[ factories.size() ];
+    numExtensions_ = static_cast<int>(factories.size());
+    extensions_    = new EntityExtension*[factories.size()];
 
-	for (int i = 0; i < numExtensions_; ++i)
-	{
-		extensions_[i] = entity.createExtension( factories[i] );
-	}
+    for (int i = 0; i < numExtensions_; ++i) {
+        extensions_[i] = entity.createExtension(factories[i]);
+    }
 }
 
 BW_END_NAMESPACE

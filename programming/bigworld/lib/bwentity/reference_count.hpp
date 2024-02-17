@@ -5,18 +5,17 @@
 
 BWENTITY_BEGIN_NAMESPACE
 
-template< typename Ty >
+template <typename Ty>
 class ReferenceCount : public BW::SafeReferenceCount
 {
-protected:
-	virtual void destroy() const
-	{
-		Ty * thisObj = 
-			static_cast<Ty *>( const_cast<ReferenceCount *>(this) );
-		destroyObject( thisObj );
-	}
+  protected:
+    virtual void destroy() const
+    {
+        Ty* thisObj = static_cast<Ty*>(const_cast<ReferenceCount*>(this));
+        destroyObject(thisObj);
+    }
 
-	virtual ~ReferenceCount(){}
+    virtual ~ReferenceCount() {}
 };
 
 BWENTITY_END_NAMESPACE

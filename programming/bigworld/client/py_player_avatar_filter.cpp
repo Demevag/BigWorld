@@ -2,20 +2,19 @@
 
 #include "py_player_avatar_filter.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Entity", 0 )
-
+DECLARE_DEBUG_COMPONENT2("Entity", 0)
 
 BW_BEGIN_NAMESPACE
 
-PY_TYPEOBJECT( PyPlayerAvatarFilter )
+PY_TYPEOBJECT(PyPlayerAvatarFilter)
 
-PY_BEGIN_METHODS( PyPlayerAvatarFilter )
+PY_BEGIN_METHODS(PyPlayerAvatarFilter)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( PyPlayerAvatarFilter )
+PY_BEGIN_ATTRIBUTES(PyPlayerAvatarFilter)
 PY_END_ATTRIBUTES()
 
-PY_SCRIPT_CONVERTERS( PyPlayerAvatarFilter )
+PY_SCRIPT_CONVERTERS(PyPlayerAvatarFilter)
 
 /*~ function BigWorld.PlayerAvatarFilter
  *
@@ -24,57 +23,51 @@ PY_SCRIPT_CONVERTERS( PyPlayerAvatarFilter )
  *
  *	@return	A new PlayerAvatarFilter object
  */
-PY_FACTORY_NAMED( PyPlayerAvatarFilter, "PlayerAvatarFilter", BigWorld )
-
+PY_FACTORY_NAMED(PyPlayerAvatarFilter, "PlayerAvatarFilter", BigWorld)
 
 /**
  *	Constructor
  *
  *	@param	pType	The python object defining the type of the filter.
  */
-PyPlayerAvatarFilter::PyPlayerAvatarFilter( PyTypeObject * pType ) :
-	PyFilter( pType )
+PyPlayerAvatarFilter::PyPlayerAvatarFilter(PyTypeObject* pType)
+  : PyFilter(pType)
 {
-	BW_GUARD;
+    BW_GUARD;
 }
-
 
 /**
  *	This method returns the PlayerAvatarFilter * we created, if not yet lost,
  *	and NULL otherwise.
  */
-PlayerAvatarFilter * PyPlayerAvatarFilter::pAttachedFilter()
+PlayerAvatarFilter* PyPlayerAvatarFilter::pAttachedFilter()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return static_cast< PlayerAvatarFilter * >(
-		this->PyFilter::pAttachedFilter() );
+    return static_cast<PlayerAvatarFilter*>(this->PyFilter::pAttachedFilter());
 }
-
 
 /**
  *	This method returns the const PlayerAvatarFilter * we created, if not yet
  *	lost, and NULL otherwise.
  */
-const PlayerAvatarFilter * PyPlayerAvatarFilter::pAttachedFilter() const
+const PlayerAvatarFilter* PyPlayerAvatarFilter::pAttachedFilter() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return static_cast< const PlayerAvatarFilter * >(
-		this->PyFilter::pAttachedFilter() );
+    return static_cast<const PlayerAvatarFilter*>(
+      this->PyFilter::pAttachedFilter());
 }
-
 
 /**
  *	Generate a new PlayerAvatarFilter for the given Entity
  */
-PlayerAvatarFilter * PyPlayerAvatarFilter::getNewFilter()
+PlayerAvatarFilter* PyPlayerAvatarFilter::getNewFilter()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return new PlayerAvatarFilter( this );
+    return new PlayerAvatarFilter(this);
 }
-
 
 BW_END_NAMESPACE
 

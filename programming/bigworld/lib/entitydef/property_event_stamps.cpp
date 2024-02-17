@@ -2,7 +2,6 @@
 
 #include "property_event_stamps.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 #ifndef CODE_INLINE
@@ -16,34 +15,29 @@ BW_BEGIN_NAMESPACE
 /**
  *	This method adds this object to the input stream.
  */
-void PropertyEventStamps::addToStream(
-		BinaryOStream & stream ) const
+void PropertyEventStamps::addToStream(BinaryOStream& stream) const
 {
-	Stamps::const_iterator iter = eventStamps_.begin();
+    Stamps::const_iterator iter = eventStamps_.begin();
 
-	while (iter != eventStamps_.end())
-	{
-		stream << (*iter);
+    while (iter != eventStamps_.end()) {
+        stream << (*iter);
 
-		iter++;
-	}
+        iter++;
+    }
 }
-
 
 /**
  *	This method removes this object to the input stream.
  */
-void PropertyEventStamps::removeFromStream(
-		BinaryIStream & stream )
+void PropertyEventStamps::removeFromStream(BinaryIStream& stream)
 {
-	Stamps::iterator iter = eventStamps_.begin();
+    Stamps::iterator iter = eventStamps_.begin();
 
-	while (iter != eventStamps_.end())
-	{
-		stream >> (*iter);
+    while (iter != eventStamps_.end()) {
+        stream >> (*iter);
 
-		iter++;
-	}
+        iter++;
+    }
 }
 
 BW_END_NAMESPACE

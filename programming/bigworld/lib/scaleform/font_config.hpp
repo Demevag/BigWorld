@@ -1,5 +1,5 @@
 /******************************************************************************
-BigWorld Technology 
+BigWorld Technology
 Copyright BigWorld Pty, Ltd.
 All Rights Reserved. Commercial in confidence.
 
@@ -23,34 +23,32 @@ class GFxFontMap;
 
 namespace Scaleform {
 
-	class FontConfig;
+    class FontConfig;
 
-	typedef SmartPointer<FontConfig> FontConfigPtr;
+    typedef SmartPointer<FontConfig> FontConfigPtr;
 
-	class FontConfig : public ReferenceCount
-	{
-	public:
-		FontConfig( DataSectionPtr ds, const BW::string& cfgName );
-		~FontConfig();
+    class FontConfig : public ReferenceCount
+    {
+      public:
+        FontConfig(DataSectionPtr ds, const BW::string& cfgName);
+        ~FontConfig();
 
-		void apply( GFxLoader& loader );
+        void apply(GFxLoader& loader);
 
-		static FontConfigPtr get( const BW::string& cfg );
+        static FontConfigPtr get(const BW::string& cfg);
 
-	private:
-		GPtr<GFxFontLib> fontLib_;
-		GPtr<GFxFontMap> fontMap_;
+      private:
+        GPtr<GFxFontLib> fontLib_;
+        GPtr<GFxFontMap> fontMap_;
 
-	private:
-		typedef BW::map<BW::string, FontConfig*> FontConfigMap;
-		static FontConfigMap s_fontConfigs;
+      private:
+        typedef BW::map<BW::string, FontConfig*> FontConfigMap;
+        static FontConfigMap                     s_fontConfigs;
 
-		FontConfigMap::iterator findCachedConfig( FontConfig* ptr );
-	};
+        FontConfigMap::iterator findCachedConfig(FontConfig* ptr);
+    };
 
-	
-
-} //namespace Scaleform
+} // namespace Scaleform
 
 #endif // #if SCALEFORM_SUPPORT
 #endif // #define SCALEFORM_FONT_CONFIG_HPP

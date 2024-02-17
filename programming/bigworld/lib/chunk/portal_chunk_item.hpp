@@ -15,16 +15,16 @@ BW_BEGIN_NAMESPACE
  */
 class PortalChunkItem : public ChunkItem
 {
-public:
-	PortalChunkItem( ChunkBoundary::Portal * pPortal );
+  public:
+    PortalChunkItem(ChunkBoundary::Portal* pPortal);
 
-	virtual void toss( Chunk * pChunk );
-	virtual void draw( Moo::DrawContext& drawContext );
+    virtual void toss(Chunk* pChunk);
+    virtual void draw(Moo::DrawContext& drawContext);
 
-	ChunkBoundary::Portal * pPortal() const		{ return pPortal_; }
+    ChunkBoundary::Portal* pPortal() const { return pPortal_; }
 
-private:
-	ChunkBoundary::Portal * pPortal_;
+  private:
+    ChunkBoundary::Portal* pPortal_;
 };
 
 BW_END_NAMESPACE

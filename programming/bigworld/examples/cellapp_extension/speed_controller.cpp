@@ -5,13 +5,12 @@
 
 #include "cellapp/cellapp.hpp"
 
-DECLARE_DEBUG_COMPONENT( 0 )
-
+DECLARE_DEBUG_COMPONENT(0)
 
 BW_BEGIN_NAMESPACE
 
-IMPLEMENT_CONTROLLER_TYPE( SpeedController,
-		ControllerDomain( DOMAIN_GHOST | DOMAIN_REAL ) );
+IMPLEMENT_CONTROLLER_TYPE(SpeedController,
+                          ControllerDomain(DOMAIN_GHOST | DOMAIN_REAL));
 
 // -----------------------------------------------------------------------------
 // Section: SpeedController
@@ -23,28 +22,25 @@ IMPLEMENT_CONTROLLER_TYPE( SpeedController,
  */
 void SpeedController::startGhost()
 {
-	// Create the SpeedExtra.
-	SpeedExtra::instance( this->entity() );
+    // Create the SpeedExtra.
+    SpeedExtra::instance(this->entity());
 }
-
 
 /**
  *	This method is called when this controller is started on a real entity.
  */
-void SpeedController::startReal( bool isInitialStart )
+void SpeedController::startReal(bool isInitialStart)
 {
-	SpeedExtra::instance( this->entity() ).setController( this );
+    SpeedExtra::instance(this->entity()).setController(this);
 }
-
 
 /**
  *	This method is called when this controller is stopped on a real entity.
  */
-void SpeedController::stopReal( bool isFinalStop )
+void SpeedController::stopReal(bool isFinalStop)
 {
-	SpeedExtra::instance( this->entity() ).setController( NULL );
+    SpeedExtra::instance(this->entity()).setController(NULL);
 }
-
 
 /**
  *	This method is called when this controller is stopped on a real or ghost
@@ -52,32 +48,30 @@ void SpeedController::stopReal( bool isFinalStop )
  */
 void SpeedController::stopGhost()
 {
-	// Destroy the SpeedExtra
-	SpeedExtra::instance.clear( this->entity() );
+    // Destroy the SpeedExtra
+    SpeedExtra::instance.clear(this->entity());
 }
-
 
 /**
  *	This method streams the necessary state to create a ghost controller.
  */
-void SpeedController::writeGhostToStream( BinaryOStream & stream )
+void SpeedController::writeGhostToStream(BinaryOStream& stream)
 {
-	this->Controller::writeGhostToStream( stream );
+    this->Controller::writeGhostToStream(stream);
 
-	SpeedExtra::instance( this->entity() ).writeToStream( stream );
+    SpeedExtra::instance(this->entity()).writeToStream(stream);
 }
-
 
 /**
  *	This method reads the ghost controller data from the input stream.
  */
-bool SpeedController::readGhostFromStream( BinaryIStream & stream )
+bool SpeedController::readGhostFromStream(BinaryIStream& stream)
 {
-	this->Controller::readGhostFromStream( stream );
+    this->Controller::readGhostFromStream(stream);
 
-	SpeedExtra::instance( this->entity() ).readFromStream( stream );
+    SpeedExtra::instance(this->entity()).readFromStream(stream);
 
-	return true;
+    return true;
 }
 
 BW_END_NAMESPACE

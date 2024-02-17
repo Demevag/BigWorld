@@ -4,7 +4,6 @@
 #include "pyscript/pyobject_plus.hpp"
 #include "pyscript/script.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class Filter;
@@ -31,76 +30,75 @@ class Filter;
  */
 class PyFilter : public PyObjectPlusWithWeakReference
 {
-	Py_Header( PyFilter, PyObjectPlusWithWeakReference )
+    Py_Header(PyFilter, PyObjectPlusWithWeakReference)
 
-public:
-	PyFilter( PyTypeObject * pType );
-	virtual ~PyFilter();
+      public : PyFilter(PyTypeObject* pType);
+    virtual ~PyFilter();
 
-	/**
-	 *	This method returns the Filter * created by getNewFilter() if it
-	 *	still exists, and NULL otherwise.
-	 *	Subclasses may override it covariantly for their own convenience.
-	 */
-	virtual Filter * pAttachedFilter() { return pAttachedFilter_; }
+    /**
+     *	This method returns the Filter * created by getNewFilter() if it
+     *	still exists, and NULL otherwise.
+     *	Subclasses may override it covariantly for their own convenience.
+     */
+    virtual Filter* pAttachedFilter() { return pAttachedFilter_; }
 
-	/**
-	 *	This method returns the const Filter * created by getNewFilter() if it
-	 *	still exists, and NULL otherwise.
-	 *	Subclasses may override it covariantly for their own convenience.
-	 */
-	virtual const Filter * pAttachedFilter() const
-		{ return pAttachedFilter_; }
+    /**
+     *	This method returns the const Filter * created by getNewFilter() if it
+     *	still exists, and NULL otherwise.
+     *	Subclasses may override it covariantly for their own convenience.
+     */
+    virtual const Filter* pAttachedFilter() const { return pAttachedFilter_; }
 
-	// This method is for Filter to call when it is destroyed.
-	void onFilterDestroyed( Filter * pDestroyedFilter );
+    // This method is for Filter to call when it is destroyed.
+    void onFilterDestroyed(Filter* pDestroyedFilter);
 
-	// This getter/setter method is for PyEntity to track whether this filter
-	// is attached to an entity or not.
-	bool isAttached() const { return isAttached_; }
-	void isAttached( bool newValue ) { isAttached_ = newValue; }
+    // This getter/setter method is for PyEntity to track whether this filter
+    // is attached to an entity or not.
+    bool isAttached() const { return isAttached_; }
+    void isAttached(bool newValue) { isAttached_ = newValue; }
 
-	// This method is for PyEntity to get a Filter * from this PyFilter
-	Filter * getFilter();
+    // This method is for PyEntity to get a Filter * from this PyFilter
+    Filter* getFilter();
 
-	// Python Interface
-	PY_AUTO_METHOD_DECLARE( RETVOID, reset,
-		OPTARG( double, PyFilter::getTimeNow(), END ) );
+    // Python Interface
+    PY_AUTO_METHOD_DECLARE(RETVOID,
+                           reset,
+                           OPTARG(double, PyFilter::getTimeNow(), END));
 
-protected:
-	static double getTimeNow();
+  protected:
+    static double getTimeNow();
 
-private:
-	// Disable copy-constructor and copy-assignment
-	PyFilter( const PyFilter & other );
-	PyFilter & operator=( const PyFilter & other );
+  private:
+    // Disable copy-constructor and copy-assignment
+    PyFilter(const PyFilter& other);
+    PyFilter& operator=(const PyFilter& other);
 
-	void reset( double time );
+    void reset(double time);
 
-	// This is the main interface for subclasses to override.
-	/**
-	 *	Return a new Filter for the given Entity. After this, the
-	 *	life-cycle of the returned Filter is opaque to the subclass, so
-	 *	any further access to the Filter instance must be done using
-	 *	pAttachedFilter()
-	 */
-	virtual Filter * getNewFilter() = 0;
+    // This is the main interface for subclasses to override.
+    /**
+     *	Return a new Filter for the given Entity. After this, the
+     *	life-cycle of the returned Filter is opaque to the subclass, so
+     *	any further access to the Filter instance must be done using
+     *	pAttachedFilter()
+     */
+    virtual Filter* getNewFilter() = 0;
 
-	/**
-	 *	pAttachedFilter() is about to be destroyed. This is an opportunity for
-	 *	subclasses to cache any settings on pAttachedFilter_ for later
-	 *	recreation.
-	 */
-	virtual void onLosingAttachedFilter() {}
+    /**
+     *	pAttachedFilter() is about to be destroyed. This is an opportunity for
+     *	subclasses to cache any settings on pAttachedFilter_ for later
+     *	recreation.
+     */
+    virtual void onLosingAttachedFilter() {}
 
-	// Weak-pointer to the last filter created by getNewFilter,
-	// cleared by onFilterDestroyed
-	Filter * pAttachedFilter_;
+    // Weak-pointer to the last filter created by getNewFilter,
+    // cleared by onFilterDestroyed
+    Filter* pAttachedFilter_;
 
-	bool isAttached_;
+    bool isAttached_;
 };
 
-PY_SCRIPT_CONVERTERS_DECLARE( PyFilter );
+PY_SCRIPT_CONVERTERS_DECLARE(PyFilter);
 
 BW_END_NAMESPACE
 

@@ -6,27 +6,24 @@
 #include "network/endpoint.hpp"
 #include "network/interfaces.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
-class EventDispatcher;
+namespace Mercury {
+    class EventDispatcher;
 }
 
 // Forward declarations
 class Space;
 
-namespace CellAppMgrViewerExport
-{
-	enum RequestTypes
-	{
-		GET_CELLS = 'b',
-		REMOVE_CELL = 'c',
-		STOP_CELL_APP = 'd',
-		GET_VERSION = 'e',
-		GET_SPACE_GEOMETRY_MAPPINGS = 'f'
-	};
+namespace CellAppMgrViewerExport {
+    enum RequestTypes
+    {
+        GET_CELLS                   = 'b',
+        REMOVE_CELL                 = 'c',
+        STOP_CELL_APP               = 'd',
+        GET_VERSION                 = 'e',
+        GET_SPACE_GEOMETRY_MAPPINGS = 'f'
+    };
 };
 
 class CellAppMgr;
@@ -34,25 +31,26 @@ class CellAppMgr;
 /**
  *	This class represents a single TCP connection for viewer access.
  */
-class CellAppMgrViewerConnection: public Mercury::InputNotificationHandler
+class CellAppMgrViewerConnection : public Mercury::InputNotificationHandler
 {
-public:
-	CellAppMgrViewerConnection( CellAppMgr & cellAppMgr,
-			Mercury::EventDispatcher & dispatcher, int fd );
-	virtual ~CellAppMgrViewerConnection();
-	void sendReply( const void * buf, uint32 len );
+  public:
+    CellAppMgrViewerConnection(CellAppMgr&               cellAppMgr,
+                               Mercury::EventDispatcher& dispatcher,
+                               int                       fd);
+    virtual ~CellAppMgrViewerConnection();
+    void sendReply(const void* buf, uint32 len);
 
-	int fileno() const		{ return socket_.fileno(); }
-	Endpoint & socket()		{ return socket_; }
+    int       fileno() const { return socket_.fileno(); }
+    Endpoint& socket() { return socket_; }
 
-private:
-	virtual int handleInputNotification( int fd );
+  private:
+    virtual int handleInputNotification(int fd);
 
-	void sendSpaceGeometryMappings( const Space& space );
+    void sendSpaceGeometryMappings(const Space& space);
 
-	Mercury::EventDispatcher & dispatcher_;
-	Endpoint socket_;
-	CellAppMgr & cellAppMgr_;
+    Mercury::EventDispatcher& dispatcher_;
+    Endpoint                  socket_;
+    CellAppMgr&               cellAppMgr_;
 };
 
 /**
@@ -62,27 +60,26 @@ private:
  */
 class CellAppMgrViewerServer : public Mercury::InputNotificationHandler
 {
-public:
-	CellAppMgrViewerServer( CellAppMgr & cellAppMgr );
-	virtual ~CellAppMgrViewerServer();
+  public:
+    CellAppMgrViewerServer(CellAppMgr& cellAppMgr);
+    virtual ~CellAppMgrViewerServer();
 
-	bool startup( Mercury::EventDispatcher & dispatcher, uint16 port = 0  );
-	void shutDown();
-	void deleteConnection( CellAppMgrViewerConnection* pConnection );
-	uint16 port() const;
+    bool   startup(Mercury::EventDispatcher& dispatcher, uint16 port = 0);
+    void   shutDown();
+    void   deleteConnection(CellAppMgrViewerConnection* pConnection);
+    uint16 port() const;
 
-private:
-	virtual	int	handleInputNotification(int fd);
+  private:
+    virtual int handleInputNotification(int fd);
 
-	BW::vector<CellAppMgrViewerConnection*> connections_;
+    BW::vector<CellAppMgrViewerConnection*> connections_;
 
-	Endpoint listener_;
-	Mercury::EventDispatcher * pDispatcher_;
-	CellAppMgr& cellAppMgr_;
-	uint16 port_;
+    Endpoint                  listener_;
+    Mercury::EventDispatcher* pDispatcher_;
+    CellAppMgr&               cellAppMgr_;
+    uint16                    port_;
 };
 
 BW_END_NAMESPACE
 
 #endif // CELLAPPMGR_VIEWER_SERVER_HPP
-

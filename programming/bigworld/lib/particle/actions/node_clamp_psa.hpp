@@ -3,7 +3,6 @@
 
 #include "particle_system_action.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -13,53 +12,52 @@ BW_BEGIN_NAMESPACE
  */
 class NodeClampPSA : public ParticleSystemAction
 {
-public:
-	///	@name Constructor(s) and Destructor.
-	//@{
-	NodeClampPSA();	
-	//@}
+  public:
+    ///	@name Constructor(s) and Destructor.
+    //@{
+    NodeClampPSA();
+    //@}
 
     ParticleSystemActionPtr clone() const;
 
-	///	@name Overrides to the Particle System Action Interface.
-	//@{
-	virtual void execute( ParticleSystem & particleSystem, float dTime );
-	virtual void lateExecute( ParticleSystem &particleSystem, float dTime );
-	virtual int typeID() const;
-	virtual const BW::string & nameID() const;
+    ///	@name Overrides to the Particle System Action Interface.
+    //@{
+    virtual void execute(ParticleSystem& particleSystem, float dTime);
+    virtual void lateExecute(ParticleSystem& particleSystem, float dTime);
+    virtual int  typeID() const;
+    virtual const BW::string& nameID() const;
 
-	virtual size_t sizeInBytes() const { return sizeof(NodeClampPSA); }
-	//@}
+    virtual size_t sizeInBytes() const { return sizeof(NodeClampPSA); }
+    //@}
 
-	///	 Accessors to NodeClampPSA properties.
-	//@{
-	bool fullyClamp() const;
-	void fullyClamp( bool f );
-	//@}
+    ///	 Accessors to NodeClampPSA properties.
+    //@{
+    bool fullyClamp() const;
+    void fullyClamp(bool f);
+    //@}
 
-	static const BW::string nameID_;
+    static const BW::string nameID_;
 
-protected:
-	virtual void loadInternal( DataSectionPtr pSect );
-	virtual void saveInternal( DataSectionPtr pSect ) const;
+  protected:
+    virtual void loadInternal(DataSectionPtr pSect);
+    virtual void saveInternal(DataSectionPtr pSect) const;
 
-private:
+  private:
+    template <typename Serialiser>
+    void serialise(const Serialiser&) const;
 
-	template < typename Serialiser >
-	void serialise( const Serialiser & ) const;
+    ///	@name Auxiliary Variables for the NodeClampPSA.
+    //@{
+    static int typeID_; ///< TypeID of the NodeClampPSA.
 
-	///	@name Auxiliary Variables for the NodeClampPSA.
-	//@{
-	static int typeID_;			///< TypeID of the NodeClampPSA.
-
-	Vector3 lastPositionOfPS_;	///< Previous position of the particle system.
-	bool firstUpdate_;			///< If true, need to ignore lastPositionOfPS.
-	bool fullyClamp_;			///< If true( default ), does not retain relative positions.
-	//@}
+    Vector3 lastPositionOfPS_; ///< Previous position of the particle system.
+    bool    firstUpdate_;      ///< If true, need to ignore lastPositionOfPS.
+    bool
+      fullyClamp_; ///< If true( default ), does not retain relative positions.
+                   //@}
 };
 
 typedef SmartPointer<NodeClampPSA> NodeClampPSAPtr;
-
 
 /*~ class Pixie.PyNodeClampPSA
  *
@@ -71,32 +69,30 @@ typedef SmartPointer<NodeClampPSA> NodeClampPSAPtr;
  */
 class PyNodeClampPSA : public PyParticleSystemAction
 {
-	Py_Header( PyNodeClampPSA, PyParticleSystemAction )
-public:
-	PyNodeClampPSA( NodeClampPSAPtr pAction, PyTypeObject *pType = &s_type_ );
+    Py_Header(PyNodeClampPSA, PyParticleSystemAction) public
+      : PyNodeClampPSA(NodeClampPSAPtr pAction, PyTypeObject* pType = &s_type_);
 
-	int typeID( void ) const;
+    int typeID(void) const;
 
-	///	 Accessors to PyNodeClampPSA properties.
-	//@{
-	bool fullyClamp() const;
-	void fullyClamp( bool f );
-	//@}
+    ///	 Accessors to PyNodeClampPSA properties.
+    //@{
+    bool fullyClamp() const;
+    void fullyClamp(bool f);
+    //@}
 
-	///	@name Python Interface to the PyCollidePSA.
-	//@{
-	PY_FACTORY_DECLARE()
+    ///	@name Python Interface to the PyCollidePSA.
+    //@{
+    PY_FACTORY_DECLARE()
 
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( bool, fullyClamp, fullyClamp )
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(bool, fullyClamp, fullyClamp)
 
-	PY_RO_ATTRIBUTE_DECLARE( typeID(), typeID )
-	//@}
-private:
-	NodeClampPSAPtr pAction_;
+    PY_RO_ATTRIBUTE_DECLARE(typeID(), typeID)
+    //@}
+  private:
+    NodeClampPSAPtr pAction_;
 };
 
-PY_SCRIPT_CONVERTERS_DECLARE( PyNodeClampPSA )
-
+PY_SCRIPT_CONVERTERS_DECLARE(PyNodeClampPSA)
 
 #ifdef CODE_INLINE
 #include "node_clamp_psa.ipp"

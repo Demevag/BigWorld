@@ -11,151 +11,152 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
+namespace Mercury {
 
-class InputNotificationHandler;
+    class InputNotificationHandler;
 
-class InputHandlerEntry
-{
-	static const uint32 INFORM_COUNT = 100000;
-public:
-	InputHandlerEntry() : pHandler_( NULL ), name_( ), numTriggers_( 0 ),
-		numErrors_( 0 )
-	{
-	}
+    class InputHandlerEntry
+    {
+        static const uint32 INFORM_COUNT = 100000;
 
-	InputHandlerEntry( InputNotificationHandler * pHandler,
-			const char * name ) :
-		pHandler_( pHandler ),
-		name_( name ),
-		numTriggers_( 0 ),
-		numErrors_( 0 )
-	{}
+      public:
+        InputHandlerEntry()
+          : pHandler_(NULL)
+          , name_()
+          , numTriggers_(0)
+          , numErrors_(0)
+        {
+        }
 
-	int handleInputNotification( int fd )
-	{
-		PROFILER_SCOPED_DYNAMIC_STRING( name_.c_str() );
-		++numTriggers_;
+        InputHandlerEntry(InputNotificationHandler* pHandler, const char* name)
+          : pHandler_(pHandler)
+          , name_(name)
+          , numTriggers_(0)
+          , numErrors_(0)
+        {
+        }
 
-		if ((numTriggers_ % INFORM_COUNT) == 0)
-		{
-			INFO_MSG( "InputHandlerEntry::handleInputNotification: "
-				"The fd %d (%s) has triggered %d times\n", fd, name_.c_str(), 
-				numTriggers_ );
-		}
+        int handleInputNotification(int fd)
+        {
+            PROFILER_SCOPED_DYNAMIC_STRING(name_.c_str());
+            ++numTriggers_;
 
-		return pHandler_->handleInputNotification( fd );
-	}
+            if ((numTriggers_ % INFORM_COUNT) == 0) {
+                INFO_MSG("InputHandlerEntry::handleInputNotification: "
+                         "The fd %d (%s) has triggered %d times\n",
+                         fd,
+                         name_.c_str(),
+                         numTriggers_);
+            }
 
-	bool handleErrorNotification( int fd )
-	{
-		PROFILER_SCOPED_DYNAMIC_STRING( name_.c_str() );
-		++numErrors_;
+            return pHandler_->handleInputNotification(fd);
+        }
 
-		if ((numErrors_ % INFORM_COUNT) == 0)
-		{
-			INFO_MSG( "InputHandlerEntry::handleErrorNotification: "
-				"The fd %d (%s) has triggered %d times\n", fd, name_.c_str(),
-				numErrors_ );
-		}
-		
-		return pHandler_->handleErrorNotification( fd );
-	}
+        bool handleErrorNotification(int fd)
+        {
+            PROFILER_SCOPED_DYNAMIC_STRING(name_.c_str());
+            ++numErrors_;
 
-	bool isReadyForShutdown() const
-	{
-		return pHandler_->isReadyForShutdown();
-	}
+            if ((numErrors_ % INFORM_COUNT) == 0) {
+                INFO_MSG("InputHandlerEntry::handleErrorNotification: "
+                         "The fd %d (%s) has triggered %d times\n",
+                         fd,
+                         name_.c_str(),
+                         numErrors_);
+            }
 
-	const char * name() const
-	{
-		return name_.c_str();
-	}
+            return pHandler_->handleErrorNotification(fd);
+        }
 
-	int numTriggers() const
-	{
-		return numTriggers_;
-	}
+        bool isReadyForShutdown() const
+        {
+            return pHandler_->isReadyForShutdown();
+        }
 
-	int numErrors() const
-	{
-		return numErrors_;
-	}
-private:
-	InputNotificationHandler * pHandler_;
-	BW::string name_;
-	uint32 numTriggers_;
-	uint32 numErrors_;
-};
+        const char* name() const { return name_.c_str(); }
 
-typedef BW::map< int, InputHandlerEntry > FDHandlers;
+        int numTriggers() const { return numTriggers_; }
 
+        int numErrors() const { return numErrors_; }
 
-class EventPoller : public InputNotificationHandler
-{
-public:
-	EventPoller();
-	virtual ~EventPoller();
+      private:
+        InputNotificationHandler* pHandler_;
+        BW::string                name_;
+        uint32                    numTriggers_;
+        uint32                    numErrors_;
+    };
 
-	bool isReadyForShutdown() const;
+    typedef BW::map<int, InputHandlerEntry> FDHandlers;
 
-	bool registerForRead( int fd, InputNotificationHandler * handler,
-				const char * name );
-	bool registerForWrite( int fd, InputNotificationHandler * handler,
-				const char * name );
+    class EventPoller : public InputNotificationHandler
+    {
+      public:
+        EventPoller();
+        virtual ~EventPoller();
 
-	bool deregisterForRead( int fd );
-	bool deregisterForWrite( int fd );
+        bool isReadyForShutdown() const;
 
-	/**
-	 *	This method polls the registered file descriptors for events.
-	 *
-	 *	@param maxWait The maximum number of seconds to wait for events.
-	 */
-	virtual int processPendingEvents( double maxWait ) = 0;
+        bool registerForRead(int                       fd,
+                             InputNotificationHandler* handler,
+                             const char*               name);
+        bool registerForWrite(int                       fd,
+                              InputNotificationHandler* handler,
+                              const char*               name);
 
-	virtual int getFileDescriptor() const;
+        bool deregisterForRead(int fd);
+        bool deregisterForWrite(int fd);
 
-	// Override from InputNotificationHandler.
-	virtual int handleInputNotification( int fd );
+        /**
+         *	This method polls the registered file descriptors for events.
+         *
+         *	@param maxWait The maximum number of seconds to wait for events.
+         */
+        virtual int processPendingEvents(double maxWait) = 0;
 
-	void clearSpareTime()		{ spareTime_ = 0; }
-	uint64 spareTime() const	{ return spareTime_; }
+        virtual int getFileDescriptor() const;
 
-	static EventPoller * create();
+        // Override from InputNotificationHandler.
+        virtual int handleInputNotification(int fd);
+
+        void   clearSpareTime() { spareTime_ = 0; }
+        uint64 spareTime() const { return spareTime_; }
+
+        static EventPoller* create();
 
 #if ENABLE_WATCHERS
-	static WatcherPtr pWatcher();
+        static WatcherPtr pWatcher();
 #endif
 
-protected:
-	virtual bool doRegisterForRead( int fd, const char * name ) = 0;
-	virtual bool doRegisterForWrite( int fd, const char * name ) = 0;
+      protected:
+        virtual bool doRegisterForRead(int fd, const char* name)  = 0;
+        virtual bool doRegisterForWrite(int fd, const char* name) = 0;
 
-	virtual bool doDeregisterForRead( int fd ) = 0;
-	virtual bool doDeregisterForWrite( int fd ) = 0;
+        virtual bool doDeregisterForRead(int fd)  = 0;
+        virtual bool doDeregisterForWrite(int fd) = 0;
 
-	bool triggerRead( int fd )	{ return this->trigger( fd, fdReadHandlers_ ); }
-	bool triggerWrite( int fd )	{ return this->trigger( fd, fdWriteHandlers_ ); }
-	bool triggerError( int fd );
+        bool triggerRead(int fd) { return this->trigger(fd, fdReadHandlers_); }
+        bool triggerWrite(int fd)
+        {
+            return this->trigger(fd, fdWriteHandlers_);
+        }
+        bool triggerError(int fd);
 
-	bool trigger( int fd, FDHandlers & handlers );
+        bool trigger(int fd, FDHandlers& handlers);
 
-	bool isRegistered( int fd, bool isForRead ) const;
+        bool isRegistered(int fd, bool isForRead) const;
 
-	int maxFD() const;
+        int maxFD() const;
 
-private:
-	static int maxFD( const FDHandlers & handlerMap );
+      private:
+        static int maxFD(const FDHandlers& handlerMap);
 
-	// Maps from file descriptor to their callbacks
-	FDHandlers fdReadHandlers_;
-	FDHandlers fdWriteHandlers_;
+        // Maps from file descriptor to their callbacks
+        FDHandlers fdReadHandlers_;
+        FDHandlers fdWriteHandlers_;
 
-protected:
-	uint64 spareTime_;
-};
+      protected:
+        uint64 spareTime_;
+    };
 
 } // namespace Mercury
 

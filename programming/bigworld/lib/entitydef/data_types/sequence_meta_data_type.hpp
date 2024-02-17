@@ -3,7 +3,6 @@
 
 #include "entitydef/meta_data_type.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,20 +10,22 @@ BW_BEGIN_NAMESPACE
  */
 class SequenceMetaDataType : public MetaDataType
 {
-public:
-	typedef DataType * (*SequenceTypeFactory)(
-		MetaDataType * pMeta, DataTypePtr elementPtr , int size, int dbLen );
+  public:
+    typedef DataType* (*SequenceTypeFactory)(MetaDataType* pMeta,
+                                             DataTypePtr   elementPtr,
+                                             int           size,
+                                             int           dbLen);
 
-	SequenceMetaDataType( const char * name, SequenceTypeFactory factory );
-	virtual ~SequenceMetaDataType();
+    SequenceMetaDataType(const char* name, SequenceTypeFactory factory);
+    virtual ~SequenceMetaDataType();
 
-	virtual const char * name() const { return name_; }
+    virtual const char* name() const { return name_; }
 
-	virtual DataTypePtr getType( DataSectionPtr pSection );
+    virtual DataTypePtr getType(DataSectionPtr pSection);
 
-protected:
-	const char * name_;
-	SequenceTypeFactory factory_;
+  protected:
+    const char*         name_;
+    SequenceTypeFactory factory_;
 };
 
 BW_END_NAMESPACE

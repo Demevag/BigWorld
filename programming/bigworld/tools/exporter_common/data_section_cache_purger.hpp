@@ -11,9 +11,9 @@ BW_BEGIN_NAMESPACE
  */
 class DataSectionCachePurger
 {
-public:
-	DataSectionCachePurger();
-	~DataSectionCachePurger();
+  public:
+    DataSectionCachePurger();
+    ~DataSectionCachePurger();
 };
 
 BW_END_NAMESPACE

@@ -9,22 +9,22 @@
 
 BW_USE_NAMESPACE
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
-	BW_SYSTEMSTAGE_MAIN();
+    BW_SYSTEMSTAGE_MAIN();
 
-	BW::Allocator::setCrashOnLeak( true );
+    BW::Allocator::setCrashOnLeak(true);
 
-	const std::auto_ptr<CStdMf> cstdmfSingleton( new CStdMf );
+    const std::auto_ptr<CStdMf> cstdmfSingleton(new CStdMf);
 
-	int result = BWUnitTest::runTest( "particle", argc, argv );
+    int result = BWUnitTest::runTest("particle", argc, argv);
 
-	ChunkVLO::fini();
-	Chunk::fini();
-	Moo::AnimationChannel::fini();
-	MainLoopTasks::finiAll();
+    ChunkVLO::fini();
+    Chunk::fini();
+    Moo::AnimationChannel::fini();
+    MainLoopTasks::finiAll();
 
-	return result;
+    return result;
 }
 
 // main.cpp

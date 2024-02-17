@@ -24,10 +24,8 @@
 //	- Also add menu items for showing it (check how the other panels do).
 //
 
-
 #ifndef PAGE_MY_PANEL_HPP
 #define PAGE_MY_PANEL_HPP
-
 
 #include "resource.h"
 #include "controls/auto_tooltip.hpp"
@@ -39,8 +37,8 @@
 //	Dummy definitions to make it compile.  Remove these when you create your
 //	actual dialog resources in Visual Studio resources editor.
 #ifndef IDD_MY_PANEL
-#define IDD_MY_PANEL	0
-#define IDC_BUTTONTEST	0
+#define IDD_MY_PANEL 0
+#define IDC_BUTTONTEST 0
 #endif
 //-----------------------------------------------------------------------------
 
@@ -50,48 +48,52 @@ BW_BEGIN_NAMESPACE
  *	This class implements a panel in a BigWorld tool, using BigWorld's panel
  *	system.
  */
-class PageMyPanel : public CDialog, public GUITABS::Content
+class PageMyPanel
+  : public CDialog
+  , public GUITABS::Content
 {
-	// There are some macros that help in defining the behaviour of your panel
-	// under some panel-system-related circumstances.
-	// See the other macros for more options (src\lib\guitabs\content.hpp).
-	IMPLEMENT_BASIC_CONTENT( L"MyPanel", L"My Blank Panel", 290, 250, NULL )
+    // There are some macros that help in defining the behaviour of your panel
+    // under some panel-system-related circumstances.
+    // See the other macros for more options (src\lib\guitabs\content.hpp).
+    IMPLEMENT_BASIC_CONTENT(L"MyPanel", L"My Blank Panel", 290, 250, NULL)
 
-public:
-	PageMyPanel();
-	virtual ~PageMyPanel();
+  public:
+    PageMyPanel();
+    virtual ~PageMyPanel();
 
-// Dialog Data
-	enum { IDD = IDD_MY_PANEL };
+    // Dialog Data
+    enum
+    {
+        IDD = IDD_MY_PANEL
+    };
 
-protected:
-	// This is optiona, BigWorld's automatic tooltips, which use the IDs of 
-	// controls in the dialog and gets the string matching that ID from the
-	// resource string table to display it as the tooltip for the control.
-	DECLARE_AUTO_TOOLTIP( PageMyPanel, CDialog );
+  protected:
+    // This is optiona, BigWorld's automatic tooltips, which use the IDs of
+    // controls in the dialog and gets the string matching that ID from the
+    // resource string table to display it as the tooltip for the control.
+    DECLARE_AUTO_TOOLTIP(PageMyPanel, CDialog);
 
-	// standard MFC stuff
-	virtual void DoDataExchange( CDataExchange * pDX );    // DDX/DDV support
-	DECLARE_MESSAGE_MAP()
+    // standard MFC stuff
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
+    DECLARE_MESSAGE_MAP()
 
-private:
-	// Some methods, again, standard MFC stuff
-	virtual BOOL OnInitDialog();
+  private:
+    // Some methods, again, standard MFC stuff
+    virtual BOOL OnInitDialog();
 
-	afx_msg void OnSize( UINT nType, int cx, int cy );
-	afx_msg LRESULT OnUpdateControls( WPARAM wParam, LPARAM lParam );
+    afx_msg void    OnSize(UINT nType, int cx, int cy);
+    afx_msg LRESULT OnUpdateControls(WPARAM wParam, LPARAM lParam);
 
-	// This sample dialog has a button, and it's handled as you would in a
-	// normal MFC dialog.
-	CButton buttonTest;
-	afx_msg void OnBnClickedTest();
+    // This sample dialog has a button, and it's handled as you would in a
+    // normal MFC dialog.
+    CButton      buttonTest;
+    afx_msg void OnBnClickedTest();
 };
-
 
 // GUITABS needs a factory for your dialog so it can create an instance when
 // loading from disk.  Fortunatelly, we have some straightforward macros for
 // this.
-IMPLEMENT_CDIALOG_CONTENT_FACTORY( PageMyPanel, PageMyPanel::IDD )
+IMPLEMENT_CDIALOG_CONTENT_FACTORY(PageMyPanel, PageMyPanel::IDD)
 
 BW_END_NAMESPACE
 

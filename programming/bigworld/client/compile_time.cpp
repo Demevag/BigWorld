@@ -2,7 +2,7 @@
 
 BW_BEGIN_NAMESPACE
 
-const char * compileTimeString	= __TIME__ " " __DATE__;
+const char* compileTimeString = __TIME__ " " __DATE__;
 
 BW_END_NAMESPACE
 

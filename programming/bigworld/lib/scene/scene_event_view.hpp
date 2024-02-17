@@ -4,17 +4,14 @@
 #include "forward_declarations.hpp"
 #include "scene_provider.hpp"
 
-namespace BW
-{
+namespace BW {
 
-class SCENE_API SceneEventView : 
-	public ISceneView
-{
-public:
-	virtual void addProvider( SceneProvider* pProvider );
-	virtual void removeProvider( SceneProvider * pProvider );
-};
-
+    class SCENE_API SceneEventView : public ISceneView
+    {
+      public:
+        virtual void addProvider(SceneProvider* pProvider);
+        virtual void removeProvider(SceneProvider* pProvider);
+    };
 
 } // namespace BW
 

@@ -1,12 +1,10 @@
 #ifndef __IMAGE_PACKER_HPP__
 #define __IMAGE_PACKER_HPP__
 
-
 #include "base_packer.hpp"
 #include "packers.hpp"
 
 #include <string>
-
 
 BW_BEGIN_NAMESPACE
 
@@ -17,24 +15,28 @@ BW_BEGIN_NAMESPACE
  */
 class ImagePacker : public BasePacker
 {
-private:
-	enum Type {
-		IMAGE,
-		DDS
-	};
+  private:
+    enum Type
+    {
+        IMAGE,
+        DDS
+    };
 
-public:
-	ImagePacker() : type_( IMAGE ) {}
+  public:
+    ImagePacker()
+      : type_(IMAGE)
+    {
+    }
 
-	virtual bool prepare( const BW::string & src, const BW::string & dst );
-	virtual bool print();
-	virtual bool pack();
+    virtual bool prepare(const BW::string& src, const BW::string& dst);
+    virtual bool print();
+    virtual bool pack();
 
-private:
-	DECLARE_PACKER()
-	BW::string src_;
-	BW::string dst_;
-	Type type_;
+  private:
+    DECLARE_PACKER()
+    BW::string src_;
+    BW::string dst_;
+    Type       type_;
 };
 
 BW_END_NAMESPACE

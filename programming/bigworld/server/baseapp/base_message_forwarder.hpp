@@ -6,14 +6,12 @@
 
 #include "cstdmf/bw_map.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BinaryIStream;
-namespace Mercury
-{
-	class NetworkInterface;
-	class UnpackedMessageHeader;
+namespace Mercury {
+    class NetworkInterface;
+    class UnpackedMessageHeader;
 }
 
 /**
@@ -23,27 +21,26 @@ namespace Mercury
  */
 class BaseMessageForwarder
 {
-public:
-	BaseMessageForwarder( Mercury::NetworkInterface & networkInterface );
+  public:
+    BaseMessageForwarder(Mercury::NetworkInterface& networkInterface);
 
-	void addForwardingMapping( EntityID entityID, 
-			const Mercury::Address & destAddr );
+    void addForwardingMapping(EntityID                entityID,
+                              const Mercury::Address& destAddr);
 
-	bool forwardIfNecessary( EntityID entityID, 
-			const Mercury::Address & srcAddr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    bool forwardIfNecessary(EntityID                              entityID,
+                            const Mercury::Address&               srcAddr,
+                            const Mercury::UnpackedMessageHeader& header,
+                            BinaryIStream&                        data);
 
-	Mercury::ChannelPtr getForwardingChannel( EntityID entityID );
+    Mercury::ChannelPtr getForwardingChannel(EntityID entityID);
 
-private:
-	typedef BW::map< EntityID, Mercury::Address > Map;
+  private:
+    typedef BW::map<EntityID, Mercury::Address> Map;
 
-	Map 							map_;
-	Mercury::NetworkInterface & 	networkInterface_;
+    Map                        map_;
+    Mercury::NetworkInterface& networkInterface_;
 };
 
 BW_END_NAMESPACE
 
 #endif // BASE_MESSAGE_FORWARDER_HPP
-

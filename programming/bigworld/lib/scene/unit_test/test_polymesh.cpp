@@ -3,34 +3,33 @@
 
 #include <scene/scene_object.hpp>
 
-namespace BW
-{
+namespace BW {
 
-PolyMesh::PolyMesh() : value(0)
-{
+    PolyMesh::PolyMesh()
+      : value(0)
+    {
+    }
 
-}
+    void PolyMesh::doDraw()
+    {
+        value = 1;
+    }
 
-void PolyMesh::doDraw()
-{
-	value = 1;
-}
+    bool PolyMesh::success() const
+    {
+        return (value == 1);
+    }
 
-bool PolyMesh::success() const
-{
-	return (value == 1);
-}
+    void PolyMeshDrawHandler::doDraw(const SceneObject& object) const
+    {
+        PolyMesh* pPolyMesh = object.getAs<PolyMesh>();
+        pPolyMesh->doDraw();
+    }
 
-void PolyMeshDrawHandler::doDraw( const SceneObject & object ) const
-{
-	PolyMesh* pPolyMesh = object.getAs<PolyMesh>();
-	pPolyMesh->doDraw();
-}
-
-bool PolyMeshDrawHandler::success( const SceneObject & object ) const
-{
-	PolyMesh* pPolyMesh = object.getAs<PolyMesh>();
-	return pPolyMesh->success();
-}
+    bool PolyMeshDrawHandler::success(const SceneObject& object) const
+    {
+        PolyMesh* pPolyMesh = object.getAs<PolyMesh>();
+        return pPolyMesh->success();
+    }
 
 } // namespace BW

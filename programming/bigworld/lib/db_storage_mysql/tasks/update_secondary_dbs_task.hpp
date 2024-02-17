@@ -4,7 +4,6 @@
 #include "db_storage/idatabase.hpp"
 #include "background_task.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -12,17 +11,17 @@ BW_BEGIN_NAMESPACE
  */
 class UpdateSecondaryDBsTask : public MySqlBackgroundTask
 {
-public:
-	UpdateSecondaryDBsTask( const SecondaryDBAddrs & addrs,
-			IDatabase::IUpdateSecondaryDBshandler & handler );
+  public:
+    UpdateSecondaryDBsTask(const SecondaryDBAddrs&                addrs,
+                           IDatabase::IUpdateSecondaryDBshandler& handler);
 
-	virtual void performBackgroundTask( MySql & conn );
-	virtual void performMainThreadTask( bool succeeded );
+    virtual void performBackgroundTask(MySql& conn);
+    virtual void performMainThreadTask(bool succeeded);
 
-private:
-	IDatabase::IUpdateSecondaryDBshandler &			handler_;
-	BW::string 									condition_;
-	IDatabase::SecondaryDBEntries					entries_;
+  private:
+    IDatabase::IUpdateSecondaryDBshandler& handler_;
+    BW::string                             condition_;
+    IDatabase::SecondaryDBEntries          entries_;
 };
 
 BW_END_NAMESPACE

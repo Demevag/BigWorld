@@ -31,14 +31,14 @@
 
 @interface NSScanner (NSScanner_Extensions)
 
-- (NSString *)remainingString;
+- (NSString*)remainingString;
 
 - (unichar)currentCharacter;
 - (unichar)scanCharacter;
 - (BOOL)scanCharacter:(unichar)inCharacter;
 - (void)backtrack:(unsigned)inCount;
 
-- (BOOL)scanCStyleComment:(NSString **)outComment;
-- (BOOL)scanCPlusPlusStyleComment:(NSString **)outComment;
+- (BOOL)scanCStyleComment:(NSString**)outComment;
+- (BOOL)scanCPlusPlusStyleComment:(NSString**)outComment;
 
 @end

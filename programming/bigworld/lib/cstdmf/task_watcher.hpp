@@ -17,57 +17,57 @@ BW_BEGIN_NAMESPACE
  */
 class TaskWatcher
 {
-public:
+  public:
+    TaskWatcher();
 
-	TaskWatcher();
+    void update(double duration, double timeInQueue, double timeInThread);
 
-	void update( double duration, double timeInQueue, double timeInThread );
+    static WatcherPtr pWatcher();
 
-	static WatcherPtr pWatcher();
+  private:
+    double decayedMaxTime() const { return decayedMaxTime_.average(); }
+    double averageTime() const { return averageTime_.average(); }
+    double averageTimeInQueue() const { return averageTimeInQueue_.average(); }
+    double averageTimeInThread() const
+    {
+        return averageTimeInThread_.average();
+    }
 
-private:
+    uint   numTasks_;
+    double totalTime_;
+    double totalTimeInQueue_;
+    double totalTimeInThread_;
 
-	double decayedMaxTime() const { return decayedMaxTime_.average(); }
-	double averageTime() const { return averageTime_.average(); }
-	double averageTimeInQueue() const { return averageTimeInQueue_.average(); }
-	double averageTimeInThread() const
-	{
-		return averageTimeInThread_.average();
-	}
-
-	uint numTasks_;
-	double totalTime_;
-	double totalTimeInQueue_;
-	double totalTimeInThread_;
-
-	EMA decayedMaxTime_;
-	EMA averageTime_;
-	EMA averageTimeInQueue_;
-	EMA averageTimeInThread_;
+    EMA decayedMaxTime_;
+    EMA averageTime_;
+    EMA averageTimeInQueue_;
+    EMA averageTimeInThread_;
 };
 
 class TaskWatchers
 {
-public:
+  public:
+    TaskWatchers();
 
-	TaskWatchers();
+    bool init(SimpleMutex& mutex,
+              const char*  bgPath,
+              const char*  mtPath,
+              float        warnThreshold);
 
-	bool init( SimpleMutex & mutex, const char * bgPath, const char * mtPath,
-			float warnThreshold );
+    void update(const char* taskName,
+                double      duration,
+                double      timeInThread,
+                bool        isBackgroundThread);
 
-	void update( const char * taskName, double duration, double timeInThread,
-			bool isBackgroundThread );
+  private:
+    bool  isInitialised_;
+    float warnThreshold_;
 
-private:
+    BW::string backgroundPath_;
+    BW::string mainThreadPath_;
 
-	bool isInitialised_;
-	float warnThreshold_;
-
-	BW::string backgroundPath_;
-	BW::string mainThreadPath_;
-
-	StringHashMap< TaskWatcher > backgroundWatchers_;
-	StringHashMap< TaskWatcher > mainThreadWatchers_;
+    StringHashMap<TaskWatcher> backgroundWatchers_;
+    StringHashMap<TaskWatcher> mainThreadWatchers_;
 };
 
 BW_END_NAMESPACE

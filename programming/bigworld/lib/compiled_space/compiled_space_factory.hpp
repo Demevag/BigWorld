@@ -19,32 +19,29 @@ class PySpotLight;
 
 BW_END_NAMESPACE
 
-namespace BW {
+namespace BW { namespace CompiledSpace {
 
-namespace CompiledSpace {
+    class COMPILED_SPACE_API CompiledSpaceFactory : public IClientSpaceFactory
+    {
+      public:
+        CompiledSpaceFactory(AssetClient* pAssetClient);
 
-class COMPILED_SPACE_API CompiledSpaceFactory : public IClientSpaceFactory
-{
-public:
-	CompiledSpaceFactory( AssetClient* pAssetClient );
+        virtual ClientSpace*         createSpace(SpaceID spaceID) const;
+        virtual IEntityEmbodimentPtr createEntityEmbodiment(
+          const ScriptObject& object) const;
+        virtual IOmniLightEmbodiment* createOmniLightEmbodiment(
+          const PyOmniLight& pyOmniLight) const;
+        virtual ISpotLightEmbodiment* createSpotLightEmbodiment(
+          const PySpotLight& pySpotLight) const;
 
-	virtual ClientSpace * createSpace( SpaceID spaceID ) const;
-	virtual IEntityEmbodimentPtr createEntityEmbodiment( 
-		const ScriptObject& object ) const;
-	virtual IOmniLightEmbodiment * createOmniLightEmbodiment(
-		const PyOmniLight & pyOmniLight ) const;
-	virtual ISpotLightEmbodiment * createSpotLightEmbodiment(
-		const PySpotLight & pySpotLight ) const;
+        void mappingCreator(CompiledSpace::MappingCreator func);
 
-	void mappingCreator( CompiledSpace::MappingCreator func );
-
-protected:
-	AssetClient* pAssetClient_;
-	CompiledSpace::MappingCreator mappingCreator_;
-};
+      protected:
+        AssetClient*                  pAssetClient_;
+        CompiledSpace::MappingCreator mappingCreator_;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW
-
 
 #endif // COMPILED_SPACE_FACTORY_HPP

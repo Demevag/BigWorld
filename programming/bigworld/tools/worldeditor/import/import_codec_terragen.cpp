@@ -5,15 +5,14 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace
-{
-    bool compareChunkType(DWORD chunkType, char const *str)
+namespace {
+    bool compareChunkType(DWORD chunkType, char const* str)
     {
-		BW_GUARD;
+        BW_GUARD;
 
-        if (((chunkType & 0x000000ff) >>  0) != str[0])
+        if (((chunkType & 0x000000ff) >> 0) != str[0])
             return false;
-        if (((chunkType & 0x0000ff00) >>  8) != str[1])
+        if (((chunkType & 0x0000ff00) >> 8) != str[1])
             return false;
         if (((chunkType & 0x00ff0000) >> 16) != str[2])
             return false;
@@ -22,63 +21,55 @@ namespace
         return true;
     }
 
-    DWORD genChunkType(char const *str)
+    DWORD genChunkType(char const* str)
     {
-		BW_GUARD;
+        BW_GUARD;
 
         DWORD result = 0;
-        result |= str[0] <<  0;
-        result |= str[1] <<  8;
+        result |= str[0] << 0;
+        result |= str[1] << 8;
         result |= str[2] << 16;
         result |= str[3] << 24;
         return result;
     }
 
-    bool checkFRead(FILE *&file, void *buffer, size_t sz)
+    bool checkFRead(FILE*& file, void* buffer, size_t sz)
     {
-		BW_GUARD;
+        BW_GUARD;
 
         size_t readSz = fread(buffer, 1, sz, file);
-        if (readSz != sz)
-        {
-            fclose(file); file = NULL;
+        if (readSz != sz) {
+            fclose(file);
+            file = NULL;
             return false;
         }
         return true;
     }
 }
 
-
-/*virtual*/ bool 
-ImportCodecTerragen::canHandleFile
-(
-    BW::string         const &filename
-)
+/*virtual*/ bool ImportCodecTerragen::canHandleFile(BW::string const& filename)
 {
-	BW_GUARD;
-    return BWResource::getExtension(filename).equals_lower( "ter" );
+    BW_GUARD;
+    return BWResource::getExtension(filename).equals_lower("ter");
 }
 
-
-/*virtual*/ ImportCodec::LoadResult 
-ImportCodecTerragen::load
-(
-    BW::string         const &filename, 
-    ImportImage			&image,
-    float               * /*left           = NULL*/,
-    float               * /*top            = NULL*/,
-    float               * /*right          = NULL*/,
-    float               * /*bottom         = NULL*/,
-	bool				* /*absolute	   = NULL*/,
-    bool                /*loadConfigDlg    = false*/
+/*virtual*/ ImportCodec::LoadResult ImportCodecTerragen::load(
+  BW::string const& filename,
+  ImportImage&      image,
+  float* /*left           = NULL*/,
+  float* /*top            = NULL*/,
+  float* /*right          = NULL*/,
+  float* /*bottom         = NULL*/,
+  bool* /*absolute	   = NULL*/,
+  bool /*loadConfigDlg    = false*/
 )
 {
-	BW_GUARD;
+    BW_GUARD;
 
-    FILE *file = NULL;
-    try
-    {
-        file = BWResource::instance().fileSystem()->posixFileOpen( filename, "rb" );
+    FILE* file = NULL;
+    try {
+        file =
+          BWResource::instance().fileSystem()->posixFileOpen(filename, "rb");
         if (file == NULL)
             return LR_BAD_FORMAT;
 
@@ -107,100 +98,82 @@ ImportCodecTerragen::load
 
         // Read the chunks:
         bool done = false;
-        while (!done)
-        {
+        while (!done) {
             DWORD chunkType = 0;
             fread(&chunkType, sizeof(DWORD), 1, file);
-            if (compareChunkType(chunkType, "XPTS"))
-            {
+            if (compareChunkType(chunkType, "XPTS")) {
                 if (!checkFRead(file, &width, sizeof(uint16)))
                     return LR_BAD_FORMAT;
-                uint16 dummy;                 
+                uint16 dummy;
                 if (!checkFRead(file, &dummy, sizeof(uint16)))
                     return LR_BAD_FORMAT;
-            }
-            else if (compareChunkType(chunkType, "YPTS"))
-            {
+            } else if (compareChunkType(chunkType, "YPTS")) {
                 if (!checkFRead(file, &height, sizeof(uint16)))
                     return LR_BAD_FORMAT;
-                uint16 dummy;                 
+                uint16 dummy;
                 if (!checkFRead(file, &dummy, sizeof(uint16)))
                     return LR_BAD_FORMAT;
-            }
-            else if (compareChunkType(chunkType, "SIZE"))
-            {
+            } else if (compareChunkType(chunkType, "SIZE")) {
                 DWORD dummy;
                 if (!checkFRead(file, &dummy, sizeof(DWORD)))
                     return LR_BAD_FORMAT;
-            }
-            else if (compareChunkType(chunkType, "SCAL"))
-            {
+            } else if (compareChunkType(chunkType, "SCAL")) {
                 if (!checkFRead(file, &scale, sizeof(float)))
                     return LR_BAD_FORMAT;
                 if (!checkFRead(file, &scale, sizeof(float)))
                     return LR_BAD_FORMAT;
                 if (!checkFRead(file, &scale, sizeof(float)))
                     return LR_BAD_FORMAT;
-            }
-            else if (compareChunkType(chunkType, "CRAD"))
-            {
+            } else if (compareChunkType(chunkType, "CRAD")) {
                 float dummy;
                 if (!checkFRead(file, &dummy, sizeof(float)))
                     return LR_BAD_FORMAT;
-            }
-            else if (compareChunkType(chunkType, "CRVM"))
-            {
+            } else if (compareChunkType(chunkType, "CRVM")) {
                 unsigned int dummy;
                 if (!checkFRead(file, &dummy, sizeof(unsigned int)))
                     return LR_BAD_FORMAT;
-            }
-            else if (compareChunkType(chunkType, "ALTW"))
-            {
+            } else if (compareChunkType(chunkType, "ALTW")) {
                 int16 heightScale;
                 if (!checkFRead(file, &heightScale, sizeof(int16)))
                     return LR_BAD_FORMAT;
                 int16 baseHeight;
                 if (!checkFRead(file, &baseHeight, sizeof(int16)))
                     return LR_BAD_FORMAT;
-                if (width == 65535 || height == 65535)
-                {
-                    fclose(file); file = NULL;
+                if (width == 65535 || height == 65535) {
+                    fclose(file);
+                    file = NULL;
                     return LR_BAD_FORMAT;
                 }
                 image.resize(width, height);
-				uint16 minRaw    = std::numeric_limits<uint16>::max();
-				uint16 maxRaw    = 0;
-				float  minHeight = +std::numeric_limits<float>::max();
-				float  maxHeight = -std::numeric_limits<float>::max();
-                for (uint16 y = 0; y < height; ++y)
-                {
-                    for (uint16 x = 0; x < width; ++x)
-                    {
+                uint16 minRaw    = std::numeric_limits<uint16>::max();
+                uint16 maxRaw    = 0;
+                float  minHeight = +std::numeric_limits<float>::max();
+                float  maxHeight = -std::numeric_limits<float>::max();
+                for (uint16 y = 0; y < height; ++y) {
+                    for (uint16 x = 0; x < width; ++x) {
                         int16 height;
                         if (!checkFRead(file, &height, sizeof(int16)))
                             return LR_BAD_FORMAT;
-						uint16 h = height + 32768;
-						image.set(x, y, h);
-						minRaw = std::min(minRaw, h);
-						maxRaw = std::max(maxRaw, h);
-                        float heightf = baseHeight + height*heightScale/65535.0f;
+                        uint16 h = height + 32768;
+                        image.set(x, y, h);
+                        minRaw = std::min(minRaw, h);
+                        maxRaw = std::max(maxRaw, h);
+                        float heightf =
+                          baseHeight + height * heightScale / 65535.0f;
                         heightf *= scale;
-						minHeight = std::min(minHeight, heightf);   
-						maxHeight = std::max(maxHeight, heightf); 
+                        minHeight = std::min(minHeight, heightf);
+                        maxHeight = std::max(maxHeight, heightf);
                     }
                 }
-				image.setScale(minHeight, maxHeight, minRaw, maxRaw);
+                image.setScale(minHeight, maxHeight, minRaw, maxRaw);
                 done = true;
-            }
-            else
-            {
-                fclose(file); file = NULL;
+            } else {
+                fclose(file);
+                file = NULL;
                 return LR_BAD_FORMAT;
             }
         }
-    }
-    catch (...)
-    {
+    } catch (...) {
         if (file != NULL)
             fclose(file);
         file = NULL;
@@ -209,33 +182,29 @@ ImportCodecTerragen::load
     return LR_OK;
 }
 
-
-/*virtual*/ bool 
-ImportCodecTerragen::save
-(
-    BW::string         const &filename, 
-    ImportImage			const &image,
-    float               * /*left           = NULL*/,
-    float               * /*top            = NULL*/,
-    float               * /*right          = NULL*/,
-    float               * /*bottom         = NULL*/,
-	bool				* /*absolute	   = NULL*/,
-	float				* /*minVal		   = NULL*/,
-	float				* /*maxVal		   = NULL*/ 
+/*virtual*/ bool ImportCodecTerragen::save(BW::string const&  filename,
+                                           ImportImage const& image,
+                                           float* /*left           = NULL*/,
+                                           float* /*top            = NULL*/,
+                                           float* /*right          = NULL*/,
+                                           float* /*bottom         = NULL*/,
+                                           bool* /*absolute	   = NULL*/,
+                                           float* /*minVal		   = NULL*/,
+                                           float* /*maxVal		   = NULL*/
 )
 {
-	BW_GUARD;
+    BW_GUARD;
 
-    FILE *file = NULL;
-    try
-    {
-        file = BWResource::instance().fileSystem()->posixFileOpen(filename, "wb");
+    FILE* file = NULL;
+    try {
+        file =
+          BWResource::instance().fileSystem()->posixFileOpen(filename, "wb");
         if (file == NULL)
             return false;
 
         // Write the header:
         DWORD dword = 0;
-        dword = genChunkType("TERR");
+        dword       = genChunkType("TERR");
         fwrite(&dword, sizeof(DWORD), 1, file);
         dword = genChunkType("AGEN");
         fwrite(&dword, sizeof(DWORD), 1, file);
@@ -267,18 +236,16 @@ ImportCodecTerragen::save
         fwrite(&dword, sizeof(DWORD), 1, file);
         float minv, maxv;
         image.rangeHeight(minv, maxv);
-        if (maxv == minv) 
+        if (maxv == minv)
             maxv = minv + 1.0f;
-        uint16 heightScale = 65535/30; // 30 metres per unit
+        uint16 heightScale = 65535 / 30; // 30 metres per unit
         fwrite(&heightScale, sizeof(uint16), 1, file);
         int16 baseHeight = 0;
         fwrite(&baseHeight, sizeof(int16), 1, file);
-        for (unsigned int y = 0; y < image.height(); ++y)
-        {
-            for (unsigned int x = 0; x < image.width(); ++x)
-            {
-                int16 elevation = 
-                    Math::lerp(image.toHeight(image.get(x, y)), minv, maxv, 0, 10000);
+        for (unsigned int y = 0; y < image.height(); ++y) {
+            for (unsigned int x = 0; x < image.width(); ++x) {
+                int16 elevation = Math::lerp(
+                  image.toHeight(image.get(x, y)), minv, maxv, 0, 10000);
                 fwrite(&elevation, sizeof(int16), 1, file);
             }
         }
@@ -288,10 +255,9 @@ ImportCodecTerragen::save
         fwrite(&dword, sizeof(DWORD), 1, file);
 
         // Cleanup:
-        fclose(file); file = NULL;
-    }
-    catch (...)
-    {
+        fclose(file);
+        file = NULL;
+    } catch (...) {
         if (file != NULL)
             fclose(file);
         file = NULL;
@@ -301,12 +267,10 @@ ImportCodecTerragen::save
     return true;
 }
 
-
 /*virtual*/ bool ImportCodecTerragen::canLoad() const
 {
     return true;
 }
-
 
 /*virtual*/ bool ImportCodecTerragen::canSave() const
 {
@@ -314,4 +278,3 @@ ImportCodecTerragen::save
 }
 
 BW_END_NAMESPACE
-

@@ -10,23 +10,21 @@ BW_BEGIN_NAMESPACE
 #undef PY_ATTR_SCOPE
 #define PY_ATTR_SCOPE TerrainChunkTextureToolView::
 
+PY_TYPEOBJECT(TerrainChunkTextureToolView)
 
-PY_TYPEOBJECT( TerrainChunkTextureToolView )
-
-PY_BEGIN_METHODS( TerrainChunkTextureToolView )
+PY_BEGIN_METHODS(TerrainChunkTextureToolView)
 
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( TerrainChunkTextureToolView )
-	PY_ATTRIBUTE( numPerChunk )
+PY_BEGIN_ATTRIBUTES(TerrainChunkTextureToolView)
+PY_ATTRIBUTE(numPerChunk)
 PY_END_ATTRIBUTES()
 
+PY_FACTORY_NAMED(TerrainChunkTextureToolView,
+                 "TerrainChunkTextureToolView",
+                 View)
 
-PY_FACTORY_NAMED( TerrainChunkTextureToolView, "TerrainChunkTextureToolView", View )
-
-
-VIEW_FACTORY( TerrainChunkTextureToolView )
-
+VIEW_FACTORY(TerrainChunkTextureToolView)
 
 /**
  *	Constructor.
@@ -35,14 +33,12 @@ VIEW_FACTORY( TerrainChunkTextureToolView )
  *	@param pType			The Python type.
  */
 TerrainChunkTextureToolView::TerrainChunkTextureToolView(
-	const BW::string &		resourceID,
-	PyTypeObject *			pType 
-):
-	TextureToolView( resourceID, pType ),
-	numPerChunk_( 1.f )
+  const BW::string& resourceID,
+  PyTypeObject*     pType)
+  : TextureToolView(resourceID, pType)
+  , numPerChunk_(1.f)
 {
 }
-
 
 /**
  *	This method renders the terrain texture chunk tool.  It does
@@ -59,112 +55,106 @@ TerrainChunkTextureToolView::TerrainChunkTextureToolView(
  *
  *	@param	tool	The tool we are viewing.
  */
-void TerrainChunkTextureToolView::render( Moo::DrawContext& drawContext, 
-										 const Tool & tool )
+void TerrainChunkTextureToolView::render(Moo::DrawContext& drawContext,
+                                         const Tool&       tool)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	EditorChunkTerrainPtrs spChunks;
+    EditorChunkTerrainPtrs spChunks;
 
-	if (tool.relevantChunks().size())
-	{
+    if (tool.relevantChunks().size()) {
 
-		ChunkPtrVector::const_iterator it  = tool.relevantChunks().begin();
-		ChunkPtrVector::const_iterator end = tool.relevantChunks().end  ();
+        ChunkPtrVector::const_iterator it  = tool.relevantChunks().begin();
+        ChunkPtrVector::const_iterator end = tool.relevantChunks().end();
 
-		while (it != end)
-		{
-			Chunk * pChunk = *it++;
-			
-			EditorChunkTerrain * pChunkTerrain = 
-				static_cast< EditorChunkTerrain * >(
-					ChunkTerrainCache::instance( *pChunk ).pTerrain());
+        while (it != end) {
+            Chunk* pChunk = *it++;
 
-			if (pChunkTerrain != NULL)
-			{
-				spChunks.push_back( pChunkTerrain );
+            EditorChunkTerrain* pChunkTerrain =
+              static_cast<EditorChunkTerrain*>(
+                ChunkTerrainCache::instance(*pChunk).pTerrain());
 
-				const float gridSize = pChunk->space()->gridSize();
-				float scale = gridSize / numPerChunk_;               
-                // Have to offset by 0.5f to properly align the texture when numPerChunk_ is even
-                float scaleOffset = ( numPerChunk_ / 2.0f - int( numPerChunk_ / 2.0f ) + 0.5f ) * scale;
+            if (pChunkTerrain != NULL) {
+                spChunks.push_back(pChunkTerrain);
 
-				EditorChunkTerrainProjector::instance().projectTexture(
-					pTexture_,
-					gridSize / numPerChunk_,
-					0.f,				// Rotation		
-					pChunk->transform().applyToOrigin() +
-						Vector3( gridSize/2.0f + scaleOffset, 0.f, gridSize/2.0f  + scaleOffset),
-					D3DTADDRESS_WRAP,	// Wrapping mode
-					spChunks,			// Affected chunks
-					false );			// Don't show holes
+                const float gridSize = pChunk->space()->gridSize();
+                float       scale    = gridSize / numPerChunk_;
+                // Have to offset by 0.5f to properly align the texture when
+                // numPerChunk_ is even
+                float scaleOffset =
+                  (numPerChunk_ / 2.0f - int(numPerChunk_ / 2.0f) + 0.5f) *
+                  scale;
 
-				spChunks.clear();
-			}
-		}
-	}
-	else if ( tool.currentChunk() )
-	{
-		Chunk * pChunk = tool.currentChunk();
+                EditorChunkTerrainProjector::instance().projectTexture(
+                  pTexture_,
+                  gridSize / numPerChunk_,
+                  0.f, // Rotation
+                  pChunk->transform().applyToOrigin() +
+                    Vector3(gridSize / 2.0f + scaleOffset,
+                            0.f,
+                            gridSize / 2.0f + scaleOffset),
+                  D3DTADDRESS_WRAP, // Wrapping mode
+                  spChunks,         // Affected chunks
+                  false);           // Don't show holes
 
-		EditorChunkTerrain * pChunkTerrain = 
-			static_cast< EditorChunkTerrain* >(
-				ChunkTerrainCache::instance( *pChunk ).pTerrain());
+                spChunks.clear();
+            }
+        }
+    } else if (tool.currentChunk()) {
+        Chunk* pChunk = tool.currentChunk();
 
-		if (pChunkTerrain != NULL)
-		{
-			spChunks.push_back( pChunkTerrain );
+        EditorChunkTerrain* pChunkTerrain = static_cast<EditorChunkTerrain*>(
+          ChunkTerrainCache::instance(*pChunk).pTerrain());
 
-			const float gridSize = pChunk->space()->gridSize();
-			EditorChunkTerrainProjector::instance().projectTexture(
-				pTexture_,
-				gridSize / numPerChunk_,
-				0.f,				// Rotation
-				pChunk->transform().applyToOrigin() +
-					Vector3( gridSize/2.0f, 0.f, gridSize/2.0f ),
-				D3DTADDRESS_BORDER,	// Wrapping mode
-				spChunks,			// Affected chunks
-				false );			// Don't show holes
-		}
-	}
+        if (pChunkTerrain != NULL) {
+            spChunks.push_back(pChunkTerrain);
+
+            const float gridSize = pChunk->space()->gridSize();
+            EditorChunkTerrainProjector::instance().projectTexture(
+              pTexture_,
+              gridSize / numPerChunk_,
+              0.f, // Rotation
+              pChunk->transform().applyToOrigin() +
+                Vector3(gridSize / 2.0f, 0.f, gridSize / 2.0f),
+              D3DTADDRESS_BORDER, // Wrapping mode
+              spChunks,           // Affected chunks
+              false);             // Don't show holes
+        }
+    }
 }
-
 
 /**
  *	This sets the number of textures shown per chunk.
  *
  *	@param num		The number of textures to show per chunk.
  */
-void TerrainChunkTextureToolView::numPerChunk( float num )	
-{ 
-	numPerChunk_ = num; 
+void TerrainChunkTextureToolView::numPerChunk(float num)
+{
+    numPerChunk_ = num;
 }
-
 
 /**
  *	Static python factory method
  */
-PyObject * TerrainChunkTextureToolView::pyNew( PyObject * pArgs )
+PyObject* TerrainChunkTextureToolView::pyNew(PyObject* pArgs)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	char * pTextureName = NULL;
-	if (!PyArg_ParseTuple( pArgs, "|s", &pTextureName ))
-	{
-		PyErr_SetString( PyExc_TypeError, "View.TerrainChunkTextureToolView: "
-			"Argument parsing error: Expected an optional texture name" );
-		return NULL;
-	}
+    char* pTextureName = NULL;
+    if (!PyArg_ParseTuple(pArgs, "|s", &pTextureName)) {
+        PyErr_SetString(
+          PyExc_TypeError,
+          "View.TerrainChunkTextureToolView: "
+          "Argument parsing error: Expected an optional texture name");
+        return NULL;
+    }
 
-	if (pTextureName != NULL)
-	{
-		return new TerrainChunkTextureToolView( pTextureName );
-	}
-	else
-	{
-		return new TerrainChunkTextureToolView( "resources/maps/gizmo/square.dds" );
-	}
+    if (pTextureName != NULL) {
+        return new TerrainChunkTextureToolView(pTextureName);
+    } else {
+        return new TerrainChunkTextureToolView(
+          "resources/maps/gizmo/square.dds");
+    }
 }
 
 BW_END_NAMESPACE
-

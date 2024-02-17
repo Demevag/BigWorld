@@ -13,30 +13,38 @@ BW_BEGIN_NAMESPACE
  *	This class implements the default avatar filter. It uses AvatarFilterHelper
  *	to implement its functionality.
  */
-class AvatarFilter : public MovementFilter, public SafeAllocatable
+class AvatarFilter
+  : public MovementFilter
+  , public SafeAllocatable
 {
-public:
-	BWENTITY_API AvatarFilter( FilterEnvironment & filterEnvironment );
-	virtual BWENTITY_API ~AvatarFilter();
+  public:
+    BWENTITY_API AvatarFilter(FilterEnvironment& filterEnvironment);
+    virtual BWENTITY_API ~AvatarFilter();
 
-	// Overrides from MovementFilter
-	virtual void reset( double time );
+    // Overrides from MovementFilter
+    virtual void reset(double time);
 
-	virtual void input( double time, SpaceID spaceID, EntityID vehicleID, 
-		const Position3D & pos, const Vector3 & posError,
-		const Direction3D & dir );
+    virtual void input(double             time,
+                       SpaceID            spaceID,
+                       EntityID           vehicleID,
+                       const Position3D&  pos,
+                       const Vector3&     posError,
+                       const Direction3D& dir);
 
-	virtual void output( double time, MovementFilterTarget & target );
+    virtual void output(double time, MovementFilterTarget& target);
 
-	virtual bool getLastInput( double & time, SpaceID & spaceID, 
-		EntityID & vehicleID, Position3D & pos, Vector3 & posError,
-		Direction3D & dir ) const;
+    virtual bool getLastInput(double&      time,
+                              SpaceID&     spaceID,
+                              EntityID&    vehicleID,
+                              Position3D&  pos,
+                              Vector3&     posError,
+                              Direction3D& dir) const;
 
-private:
-	// Overrides from MovementFilter
-	virtual bool tryCopyState( const MovementFilter & rOtherFilter );
+  private:
+    // Overrides from MovementFilter
+    virtual bool tryCopyState(const MovementFilter& rOtherFilter);
 
-	AvatarFilterHelper helper_;
+    AvatarFilterHelper helper_;
 };
 
 BW_END_NAMESPACE

@@ -3,10 +3,9 @@
 
 #include "particle_system_action.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-typedef BW::vector< MatrixProviderPtr > Matrices;
+typedef BW::vector<MatrixProviderPtr> Matrices;
 
 /**
  *	This class causes particles to "swarm" around a list of targets. This
@@ -16,43 +15,47 @@ typedef BW::vector< MatrixProviderPtr > Matrices;
  */
 class MatrixSwarmPSA : public ParticleSystemAction
 {
-public:
-	MatrixSwarmPSA();
-	~MatrixSwarmPSA();
+  public:
+    MatrixSwarmPSA();
+    ~MatrixSwarmPSA();
 
     ParticleSystemActionPtr clone() const;
 
-	///	 Accessors to MatrixSwarmPSA properties.
-	//@{
-	Matrices & targets( void );
-	//@}
+    ///	 Accessors to MatrixSwarmPSA properties.
+    //@{
+    Matrices& targets(void);
+    //@}
 
-	///	@name Overrides to the Particle System Action Interface.
-	//@{
-	virtual void execute( ParticleSystem & particleSystem, float dTime );
-	virtual void lateExecute( ParticleSystem & particleSystem, float dTime );
-	virtual int typeID() const;
-	virtual const BW::string & nameID() const;
+    ///	@name Overrides to the Particle System Action Interface.
+    //@{
+    virtual void execute(ParticleSystem& particleSystem, float dTime);
+    virtual void lateExecute(ParticleSystem& particleSystem, float dTime);
+    virtual int  typeID() const;
+    virtual const BW::string& nameID() const;
 
-	virtual size_t sizeInBytes() const { return sizeof(MatrixSwarmPSA) + sizeof(BW::vector< MatrixProvider * >) * targets_.capacity() + sizeof(PySTLSequenceHolder<Matrices>); }
-	//@}
+    virtual size_t sizeInBytes() const
+    {
+        return sizeof(MatrixSwarmPSA) +
+               sizeof(BW::vector<MatrixProvider*>) * targets_.capacity() +
+               sizeof(PySTLSequenceHolder<Matrices>);
+    }
+    //@}
 
-	static const BW::string nameID_;
+    static const BW::string nameID_;
 
-protected:
-	virtual void loadInternal( DataSectionPtr pSect );
-	virtual void saveInternal( DataSectionPtr pSect ) const;
+  protected:
+    virtual void loadInternal(DataSectionPtr pSect);
+    virtual void saveInternal(DataSectionPtr pSect) const;
 
-private:
-	///	@name Auxiliary Variables for the MatrixSwarmPSA.
-	//@{
-	static int typeID_;			///< TypeID of the MatrixSwarmPSA.
-	Matrices						targets_;
-	//@}
+  private:
+    ///	@name Auxiliary Variables for the MatrixSwarmPSA.
+    //@{
+    static int typeID_; ///< TypeID of the MatrixSwarmPSA.
+    Matrices   targets_;
+    //@}
 };
 
 typedef SmartPointer<MatrixSwarmPSA> MatrixSwarmPSAPtr;
-
 
 /*~ class Pixie.PyMatrixSwarmPSA
  *
@@ -65,43 +68,41 @@ typedef SmartPointer<MatrixSwarmPSA> MatrixSwarmPSAPtr;
  */
 class PyMatrixSwarmPSA : public PyParticleSystemAction
 {
-	Py_Header( PyMatrixSwarmPSA, PyParticleSystemAction )
-public:
-	PyMatrixSwarmPSA( MatrixSwarmPSAPtr pAction, PyTypeObject *pType = &s_type_ );
+    Py_Header(PyMatrixSwarmPSA, PyParticleSystemAction) public
+      : PyMatrixSwarmPSA(MatrixSwarmPSAPtr pAction,
+                         PyTypeObject*     pType = &s_type_);
 
-	int typeID( void ) const;
+    int typeID(void) const;
 
-	///	@name Python Interface to the PyMatrixSwarmPSA.
-	//@{
-	PY_FACTORY_DECLARE()
+    ///	@name Python Interface to the PyMatrixSwarmPSA.
+    //@{
+    PY_FACTORY_DECLARE()
 
-	PY_RW_ATTRIBUTE_DECLARE( targetHolders_, targets )
-	//@}
-private:
-	MatrixSwarmPSAPtr pAction_;
+    PY_RW_ATTRIBUTE_DECLARE(targetHolders_, targets)
+    //@}
+  private:
+    MatrixSwarmPSAPtr pAction_;
 
-	PySTLSequenceHolder<Matrices> targetHolders_;
+    PySTLSequenceHolder<Matrices> targetHolders_;
 };
 
-PY_SCRIPT_CONVERTERS_DECLARE( PyMatrixSwarmPSA )
+PY_SCRIPT_CONVERTERS_DECLARE(PyMatrixSwarmPSA)
 
-
-void MatrixProviderPtr_release( MatrixProvider *&pCamera );
+void MatrixProviderPtr_release(MatrixProvider*& pCamera);
 /*
  *	Wrapper to let the C++ vector of matrices work as a vector/list in Python.
  */
-namespace PySTLObjectAid
-{
-	/// Releaser is same for all PyObject's
-	template <> struct Releaser< MatrixProvider * >
-	{
-		static void release( MatrixProvider *&pMatrix )
+namespace PySTLObjectAid {
+    /// Releaser is same for all PyObject's
+    template <>
+    struct Releaser<MatrixProvider*>
+    {
+        static void release(MatrixProvider*& pMatrix)
         {
-        	MatrixProviderPtr_release( pMatrix );
+            MatrixProviderPtr_release(pMatrix);
         }
-	};
+    };
 }
-
 
 #ifdef CODE_INLINE
 #include "matrix_swarm_psa.ipp"

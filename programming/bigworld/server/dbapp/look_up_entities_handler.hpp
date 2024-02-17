@@ -5,7 +5,6 @@
 
 #include "network/udp_bundle.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class DBApp;
@@ -16,30 +15,30 @@ class DBApp;
  */
 class LookUpEntitiesHandler : public IDatabase::ILookUpEntitiesHandler
 {
-public:
-	LookUpEntitiesHandler( DBApp & dbApp, 
-			const Mercury::Address & srcAddr,
-			Mercury::ReplyID replyID );
+  public:
+    LookUpEntitiesHandler(DBApp&                  dbApp,
+                          const Mercury::Address& srcAddr,
+                          Mercury::ReplyID        replyID);
 
-	virtual ~LookUpEntitiesHandler() {}
+    virtual ~LookUpEntitiesHandler() {}
 
-	void lookUpEntities( EntityTypeID entityTypeID, 
-		const LookUpEntitiesCriteria & criteria );
+    void lookUpEntities(EntityTypeID                  entityTypeID,
+                        const LookUpEntitiesCriteria& criteria);
 
-	// IDatabase::ILookUpEntitiesHandler overrides
+    // IDatabase::ILookUpEntitiesHandler overrides
 
-	virtual void onLookUpEntitiesStart( size_t numEntities );
-	virtual void onLookedUpEntity( DatabaseID databaseID,
-			const EntityMailBoxRef & baseEntityLocation );
+    virtual void onLookUpEntitiesStart(size_t numEntities);
+    virtual void onLookedUpEntity(DatabaseID              databaseID,
+                                  const EntityMailBoxRef& baseEntityLocation);
 
-	virtual void onLookUpEntitiesEnd( bool hasError = false );
+    virtual void onLookUpEntitiesEnd(bool hasError = false);
 
-private:
-	void sendReply();
+  private:
+    void sendReply();
 
-	DBApp & 			dbApp_;
-	Mercury::UDPBundle	replyBundle_;
-	Mercury::Address	srcAddr_;
+    DBApp&             dbApp_;
+    Mercury::UDPBundle replyBundle_;
+    Mercury::Address   srcAddr_;
 };
 
 BW_END_NAMESPACE

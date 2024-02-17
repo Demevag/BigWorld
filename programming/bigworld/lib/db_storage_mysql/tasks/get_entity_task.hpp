@@ -6,7 +6,6 @@
 
 #include "cstdmf/memory_stream.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class EntityTypeMapping;
@@ -17,38 +16,39 @@ class EntityTypeMapping;
  */
 class GetEntityTask : public EntityTask
 {
-public:
-	GetEntityTask( const EntityTypeMapping * pEntityTypeMapping,
-			const EntityDBKey & entityKey,
-			BinaryOStream * pStream,
-			bool shouldGetBaseEntityLocation,
-			IDatabase::IGetEntityHandler & handler );
+  public:
+    GetEntityTask(const EntityTypeMapping*      pEntityTypeMapping,
+                  const EntityDBKey&            entityKey,
+                  BinaryOStream*                pStream,
+                  bool                          shouldGetBaseEntityLocation,
+                  IDatabase::IGetEntityHandler& handler);
 
-	virtual void performBackgroundTask( MySql & conn );
-	virtual void performEntityMainThreadTask( bool succeeded );
+    virtual void performBackgroundTask(MySql& conn);
+    virtual void performEntityMainThreadTask(bool succeeded);
 
-	void onDatabaseIDLookupFailure();
+    void onDatabaseIDLookupFailure();
 
-	void updateEntityKey( const EntityDBKey & entityKey )
-		{ entityKey_ = entityKey; }
+    void updateEntityKey(const EntityDBKey& entityKey)
+    {
+        entityKey_ = entityKey;
+    }
 
-protected:
-	virtual void onRetry();
+  protected:
+    virtual void onRetry();
 
-private:
-	EntityDBKey entityKey_;
+  private:
+    EntityDBKey entityKey_;
 
-	BinaryOStream * pStream_;
-	MemoryOStream threadStream_;
+    BinaryOStream* pStream_;
+    MemoryOStream  threadStream_;
 
+    IDatabase::IGetEntityHandler& handler_;
 
-	IDatabase::IGetEntityHandler & handler_;
+    EntityMailBoxRef baseEntityLocation_;
 
-	EntityMailBoxRef baseEntityLocation_;
-
-	// Put at the end for better packing
-	bool shouldGetBaseEntityLocation_;
-	bool hasBaseLocation_;
+    // Put at the end for better packing
+    bool shouldGetBaseEntityLocation_;
+    bool hasBaseLocation_;
 };
 
 BW_END_NAMESPACE

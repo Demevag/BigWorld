@@ -1,5 +1,5 @@
-#if defined( DEFINE_INTERFACE_HERE ) || defined( DEFINE_SERVER_HERE )
-	#undef LOGIN_INT_INTERFACE_HPP
+#if defined(DEFINE_INTERFACE_HERE) || defined(DEFINE_SERVER_HERE)
+#undef LOGIN_INT_INTERFACE_HPP
 #endif
 
 #ifndef LOGIN_INT_INTERFACE_HPP
@@ -20,29 +20,28 @@
 #define MF_REVIVER_PING_MSG()
 #endif
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
 // Section: Interior interface
 // -----------------------------------------------------------------------------
 
-#pragma pack(push,1)
-BEGIN_MERCURY_INTERFACE( LoginIntInterface )
+#pragma pack(push, 1)
+BEGIN_MERCURY_INTERFACE(LoginIntInterface)
 
-	BW_ANONYMOUS_CHANNEL_CLIENT_MSG( DBAppMgrInterface )
+BW_ANONYMOUS_CHANNEL_CLIENT_MSG(DBAppMgrInterface)
 
-	MERCURY_EMPTY_MESSAGE( controlledShutDown, &gShutDownHandler )
+MERCURY_EMPTY_MESSAGE(controlledShutDown, &gShutDownHandler)
 
-	BW_BEGIN_STRUCT_MSG( LoginApp, handleDBAppMgrBirth )
-		Mercury::Address	addr;
-	END_STRUCT_MESSAGE()
+BW_BEGIN_STRUCT_MSG(LoginApp, handleDBAppMgrBirth)
+Mercury::Address addr;
+END_STRUCT_MESSAGE()
 
-	BW_BEGIN_STRUCT_MSG( LoginApp, notifyDBAppAlpha )
-		Mercury::Address addr;
-	END_STRUCT_MESSAGE()
+BW_BEGIN_STRUCT_MSG(LoginApp, notifyDBAppAlpha)
+Mercury::Address addr;
+END_STRUCT_MESSAGE()
 
-	MF_REVIVER_PING_MSG()
+MF_REVIVER_PING_MSG()
 
 END_MERCURY_INTERFACE()
 #pragma pack(pop)
@@ -50,4 +49,3 @@ END_MERCURY_INTERFACE()
 BW_END_NAMESPACE
 
 #endif // LOGIN__INT_INTERFACE_HPP
-

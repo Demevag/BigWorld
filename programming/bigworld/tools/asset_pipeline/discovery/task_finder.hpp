@@ -12,33 +12,32 @@ class Compiler;
 
 class TaskFinder
 {
-public:
-	TaskFinder( Compiler& compiler,
-				ConversionRules& rules );
-	~TaskFinder();
+  public:
+    TaskFinder(Compiler& compiler, ConversionRules& rules);
+    ~TaskFinder();
 
-	/* iterates recursively over directories to find root tasks. */
-	void findTasks( const BW::StringRef& directory );
+    /* iterates recursively over directories to find root tasks. */
+    void findTasks(const BW::StringRef& directory);
 
-	/* matches file conversion rules to task. */
-	ConversionTask & getTask( const BW::StringRef & filename );
+    /* matches file conversion rules to task. */
+    ConversionTask& getTask(const BW::StringRef& filename);
 
-	/* matches file conversion rules to task. */
-	ConversionTask * getTask( const BW::StringRef & filename, const bool bRoot );
+    /* matches file conversion rules to task. */
+    ConversionTask* getTask(const BW::StringRef& filename, const bool bRoot);
 
-private:
-	/* iterate a file for a root task */
-	void iterateFile( const BW::StringRef& file );
-	/* iterate a directory for root tasks */
-	void iterateDirectory( const BW::StringRef& directory );
+  private:
+    /* iterate a file for a root task */
+    void iterateFile(const BW::StringRef& file);
+    /* iterate a directory for root tasks */
+    void iterateDirectory(const BW::StringRef& directory);
 
-	Compiler &		 compiler_;
-	ConversionRules& rules_;
+    Compiler&        compiler_;
+    ConversionRules& rules_;
 
-	StringHashMap<ConversionTask *> tasks_;
-	ReadWriteLock					tasksLock_;
+    StringHashMap<ConversionTask*> tasks_;
+    ReadWriteLock                  tasksLock_;
 };
 
 BW_END_NAMESPACE
 
-#endif //ASSET_PIPELINE_TASK_FINDER
+#endif // ASSET_PIPELINE_TASK_FINDER

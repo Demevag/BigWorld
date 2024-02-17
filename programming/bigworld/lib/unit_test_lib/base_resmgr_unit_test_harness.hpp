@@ -7,19 +7,19 @@ BW_BEGIN_NAMESPACE
 
 class BaseResMgrUnitTestHarness
 {
-public:
-	// Should be set in main.cpp
-	static int 		s_cmdArgC;
-	static char ** 	s_cmdArgV; 
+  public:
+    // Should be set in main.cpp
+    static int    s_cmdArgC;
+    static char** s_cmdArgV;
 
-public:
-	BaseResMgrUnitTestHarness( const char* testName );
-	virtual ~BaseResMgrUnitTestHarness();
+  public:
+    BaseResMgrUnitTestHarness(const char* testName);
+    virtual ~BaseResMgrUnitTestHarness();
 
-	bool isOK() const { return isOK_; }
+    bool isOK() const { return isOK_; }
 
-private:
-	bool isOK_;
+  private:
+    bool isOK_;
 };
 
 BW_END_NAMESPACE

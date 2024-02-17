@@ -3,16 +3,15 @@
 
 #include "network/channel_finder.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class EntityChannelFinder : public Mercury::ChannelFinder
 {
-public:
-	virtual Mercury::UDPChannel * find( Mercury::ChannelID id,
-		const Mercury::Address & srcAddr,
-		const Mercury::Packet * pPacket,
-		bool & rHasBeenHandled );
+  public:
+    virtual Mercury::UDPChannel* find(Mercury::ChannelID      id,
+                                      const Mercury::Address& srcAddr,
+                                      const Mercury::Packet*  pPacket,
+                                      bool&                   rHasBeenHandled);
 };
 
 BW_END_NAMESPACE

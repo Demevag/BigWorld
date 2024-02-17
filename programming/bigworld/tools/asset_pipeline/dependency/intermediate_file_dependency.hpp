@@ -9,22 +9,25 @@ BW_BEGIN_NAMESPACE
 
 class IntermediateFileDependency : public Dependency
 {
-public:
-	IntermediateFileDependency();
-	IntermediateFileDependency( const BW::string & fileName );
-	virtual ~IntermediateFileDependency();
+  public:
+    IntermediateFileDependency();
+    IntermediateFileDependency(const BW::string& fileName);
+    virtual ~IntermediateFileDependency();
 
-	const BW::string & getFileName() const { return fileName_; }
+    const BW::string& getFileName() const { return fileName_; }
 
-	virtual DependencyType getType() const { return IntermediateFileDependencyType; }
+    virtual DependencyType getType() const
+    {
+        return IntermediateFileDependencyType;
+    }
 
-	virtual bool serialiseIn( DataSectionPtr pSection );
-	virtual bool serialiseOut( DataSectionPtr pSection ) const;
+    virtual bool serialiseIn(DataSectionPtr pSection);
+    virtual bool serialiseOut(DataSectionPtr pSection) const;
 
-private:
-	BW::string fileName_;
+  private:
+    BW::string fileName_;
 };
 
 BW_END_NAMESPACE
 
-#endif //ASSET_PIPELINE_INTERMEDIATE_FILE_DEPENDENCY
+#endif // ASSET_PIPELINE_INTERMEDIATE_FILE_DEPENDENCY

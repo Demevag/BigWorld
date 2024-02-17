@@ -8,23 +8,22 @@ BW_BEGIN_NAMESPACE
 
 class BaseView;
 
-
-class CDialogPropertyTable: public CDialog, public BasePropertyTable
+class CDialogPropertyTable
+  : public CDialog
+  , public BasePropertyTable
 {
-public:
-	
-	CDialogPropertyTable( UINT dialogID );
-	~CDialogPropertyTable();
-	
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  public:
+    CDialogPropertyTable(UINT dialogID);
+    ~CDialogPropertyTable();
 
-	DECLARE_MESSAGE_MAP()
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 
-	void stretchToRight( CWnd& widget, int pageWidth, int border );
-	void OnSize(UINT nType, int cx, int cy);
+    DECLARE_MESSAGE_MAP()
 
-	BOOL PreTranslateMessage(MSG* pMsg);
+    void stretchToRight(CWnd& widget, int pageWidth, int border);
+    void OnSize(UINT nType, int cx, int cy);
+
+    BOOL PreTranslateMessage(MSG* pMsg);
 };
 BW_END_NAMESPACE
-

@@ -15,43 +15,52 @@ BW_BEGIN_NAMESPACE
 
 // PageFences
 
-class PageFences : public CFormView, public GUITABS::Content
+class PageFences
+  : public CFormView
+  , public GUITABS::Content
 {
-	IMPLEMENT_BASIC_CONTENT( L"Tool: Fences", L"Tool Options: Fences", 290, 200, NULL )
+    IMPLEMENT_BASIC_CONTENT(L"Tool: Fences",
+                            L"Tool Options: Fences",
+                            290,
+                            200,
+                            NULL)
 
-public:
-	PageFences();
-	virtual ~PageFences();
+  public:
+    PageFences();
+    virtual ~PageFences();
 
-// Dialog Data
-	enum { IDD = IDD_PAGE_TERRAIN_FENCES };
+    // Dialog Data
+    enum
+    {
+        IDD = IDD_PAGE_TERRAIN_FENCES
+    };
 
-	afx_msg LRESULT OnActivateTool(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnUpdateControls(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnBnClickedSelectionToFenceModelName();
-	afx_msg void OnBnClickedStartNewSequence();
-	afx_msg void OnCbClickedSelectWholeFences();
-	afx_msg void OnCbClickedAlignToTerrainNormal();
-	afx_msg void OnEditChangedFenceStep();
-	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+    afx_msg LRESULT OnActivateTool(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnUpdateControls(WPARAM wParam, LPARAM lParam);
+    afx_msg void    OnBnClickedSelectionToFenceModelName();
+    afx_msg void    OnBnClickedStartNewSequence();
+    afx_msg void    OnCbClickedSelectWholeFences();
+    afx_msg void    OnCbClickedAlignToTerrainNormal();
+    afx_msg void    OnEditChangedFenceStep();
+    afx_msg void    OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 
-	DECLARE_AUTO_TOOLTIP( PageFences, CFormView );
-	DECLARE_MESSAGE_MAP()
+    DECLARE_AUTO_TOOLTIP(PageFences, CFormView);
+    DECLARE_MESSAGE_MAP()
 
-private:
-	bool pageReady_;
-	void InitPage();
+  private:
+    bool pageReady_;
+    void InitPage();
 
-	CEdit ctlEditFenceModelName;
-	CEdit ctlEditFenceStep;
-	CButton ctlCbSelectWholeFences;
-	CButton ctlCbAlignToTerrainNormal;
+    CEdit   ctlEditFenceModelName;
+    CEdit   ctlEditFenceStep;
+    CButton ctlCbSelectWholeFences;
+    CButton ctlCbAlignToTerrainNormal;
 };
 
-IMPLEMENT_BASIC_CONTENT_FACTORY( PageFences )
+IMPLEMENT_BASIC_CONTENT_FACTORY(PageFences)
 
 BW_END_NAMESPACE
 

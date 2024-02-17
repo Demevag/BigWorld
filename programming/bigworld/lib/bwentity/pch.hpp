@@ -7,7 +7,7 @@
 
 // no matching delete operator for placement new operators, which can't have
 // one in any case. applies to the Aligned class
-#pragma warning(disable: 4291)
+#pragma warning(disable : 4291)
 
 #endif // _WIN32
 

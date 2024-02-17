@@ -6,12 +6,12 @@
 
 #ifndef SCENE_API
 
-#if defined( SCENE_EXPORT )
-#	define SCENE_API __declspec(dllexport)
-#elif defined( SCENE_IMPORT )
-#	define SCENE_API __declspec(dllimport)
+#if defined(SCENE_EXPORT)
+#define SCENE_API __declspec(dllexport)
+#elif defined(SCENE_IMPORT)
+#define SCENE_API __declspec(dllimport)
 #else
-#	define SCENE_API
+#define SCENE_API
 #endif
 
 #endif // SCENE_API

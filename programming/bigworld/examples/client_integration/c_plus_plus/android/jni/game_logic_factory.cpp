@@ -1,7 +1,7 @@
 #include "game_logic_factory.hpp"
 
 #include "GameLogic/AccountGameLogic.hpp"
-//#include "GameLogic/AlertBeastTriggerGameLogic.hpp"
+// #include "GameLogic/AlertBeastTriggerGameLogic.hpp"
 #include "GameLogic/AvatarGameLogic.hpp"
 /*
 #include "GameLogic/BeastGameLogic.hpp"
@@ -73,184 +73,194 @@
 #include "Entities/WeatherSystem.hpp"
 #include "Entities/WebScreen.hpp"
 
-
-AccountExtension * GameLogicFactory::createForEntity( const Account & entity )
+AccountExtension* GameLogicFactory::createForEntity(const Account& entity)
 {
-	return new AccountGameLogic( &entity );
+    return new AccountGameLogic(&entity);
 }
 
-
-AlertBeastTriggerExtension * GameLogicFactory::createForEntity( const AlertBeastTrigger & entity )
+AlertBeastTriggerExtension* GameLogicFactory::createForEntity(
+  const AlertBeastTrigger& entity)
 {
-	return NULL;
+    return NULL;
 }
 
-
-AvatarExtension * GameLogicFactory::createForEntity( const Avatar & entity )
+AvatarExtension* GameLogicFactory::createForEntity(const Avatar& entity)
 {
-	return new AvatarGameLogic( &entity );
+    return new AvatarGameLogic(&entity);
 }
 
-
-BeastExtension * GameLogicFactory::createForEntity( const Beast & entity )
+BeastExtension* GameLogicFactory::createForEntity(const Beast& entity)
 {
-	return new BeastExtension( &entity );
+    return new BeastExtension(&entity);
 }
 
-BuildingExtension * GameLogicFactory::createForEntity( const Building & entity )
+BuildingExtension* GameLogicFactory::createForEntity(const Building& entity)
 {
-	return new BuildingExtension( &entity );
+    return new BuildingExtension(&entity);
 }
 
-ButtonExtension * GameLogicFactory::createForEntity( const Button & entity )
+ButtonExtension* GameLogicFactory::createForEntity(const Button& entity)
 {
-	return new ButtonExtension( &entity );
+    return new ButtonExtension(&entity);
 }
 
-CreatureExtension * GameLogicFactory::createForEntity( const Creature & entity )
+CreatureExtension* GameLogicFactory::createForEntity(const Creature& entity)
 {
-	return new CreatureExtension( &entity );
+    return new CreatureExtension(&entity);
 }
 
-DoorExtension * GameLogicFactory::createForEntity( const Door & entity )
+DoorExtension* GameLogicFactory::createForEntity(const Door& entity)
 {
-	return new DoorExtension( &entity );
+    return new DoorExtension(&entity);
 }
 
-DroppedItemExtension * GameLogicFactory::createForEntity( const DroppedItem & entity )
+DroppedItemExtension* GameLogicFactory::createForEntity(
+  const DroppedItem& entity)
 {
-	return new DroppedItemExtension( &entity );
+    return new DroppedItemExtension(&entity);
 }
 
-DustDevilExtension * GameLogicFactory::createForEntity( const DustDevil & entity )
+DustDevilExtension* GameLogicFactory::createForEntity(const DustDevil& entity)
 {
-	return new DustDevilExtension( &entity );
+    return new DustDevilExtension(&entity);
 }
 
-EffectExtension * GameLogicFactory::createForEntity( const Effect & entity )
+EffectExtension* GameLogicFactory::createForEntity(const Effect& entity)
 {
-	return new EffectExtension( &entity );
+    return new EffectExtension(&entity);
 }
 
-FlockExtension * GameLogicFactory::createForEntity( const Flock & entity )
+FlockExtension* GameLogicFactory::createForEntity(const Flock& entity)
 {
-	return new FlockExtension( &entity );
+    return new FlockExtension(&entity);
 }
 
-FogExtension * GameLogicFactory::createForEntity( const Fog & entity )
+FogExtension* GameLogicFactory::createForEntity(const Fog& entity)
 {
-	return new FogExtension( &entity );
+    return new FogExtension(&entity);
 }
 
-GuardExtension * GameLogicFactory::createForEntity( const Guard & entity )
+GuardExtension* GameLogicFactory::createForEntity(const Guard& entity)
 {
-	return new GuardExtension( &entity );
+    return new GuardExtension(&entity);
 }
 
-GuardRallyPointExtension * GameLogicFactory::createForEntity( const GuardRallyPoint & entity )
+GuardRallyPointExtension* GameLogicFactory::createForEntity(
+  const GuardRallyPoint& entity)
 {
-	return new GuardRallyPointExtension( &entity );
+    return new GuardRallyPointExtension(&entity);
 }
 
-GuardSpawnerExtension * GameLogicFactory::createForEntity( const GuardSpawner & entity )
+GuardSpawnerExtension* GameLogicFactory::createForEntity(
+  const GuardSpawner& entity)
 {
-	return new GuardSpawnerExtension( &entity );
+    return new GuardSpawnerExtension(&entity);
 }
 
-IndoorMapInfoExtension * GameLogicFactory::createForEntity( const IndoorMapInfo & entity )
+IndoorMapInfoExtension* GameLogicFactory::createForEntity(
+  const IndoorMapInfo& entity)
 {
-	return new IndoorMapInfoExtension( &entity );
+    return new IndoorMapInfoExtension(&entity);
 }
 
-InfoExtension * GameLogicFactory::createForEntity( const Info & entity )
+InfoExtension* GameLogicFactory::createForEntity(const Info& entity)
 {
-	return new InfoExtension( &entity );
+    return new InfoExtension(&entity);
 }
 
-LandmarkExtension * GameLogicFactory::createForEntity( const Landmark & entity )
+LandmarkExtension* GameLogicFactory::createForEntity(const Landmark& entity)
 {
-	return new LandmarkExtension( &entity );
+    return new LandmarkExtension(&entity);
 }
 
-LightGuardExtension * GameLogicFactory::createForEntity( const LightGuard & entity )
+LightGuardExtension* GameLogicFactory::createForEntity(const LightGuard& entity)
 {
-	return new LightGuardExtension( &entity );
+    return new LightGuardExtension(&entity);
 }
 
-MenuScreenAvatarExtension * GameLogicFactory::createForEntity( const MenuScreenAvatar & entity )
+MenuScreenAvatarExtension* GameLogicFactory::createForEntity(
+  const MenuScreenAvatar& entity)
 {
-	return new MenuScreenAvatarExtension( &entity );
+    return new MenuScreenAvatarExtension(&entity);
 }
 
-MerchantExtension * GameLogicFactory::createForEntity( const Merchant & entity )
+MerchantExtension* GameLogicFactory::createForEntity(const Merchant& entity)
 {
-	return new MerchantExtension( &entity );
+    return new MerchantExtension(&entity);
 }
 
-MovingPlatformExtension * GameLogicFactory::createForEntity( const MovingPlatform & entity )
+MovingPlatformExtension* GameLogicFactory::createForEntity(
+  const MovingPlatform& entity)
 {
-	return new MovingPlatformExtension( &entity );
+    return new MovingPlatformExtension(&entity);
 }
 
-PointOfInterestExtension * GameLogicFactory::createForEntity( const PointOfInterest & entity )
+PointOfInterestExtension* GameLogicFactory::createForEntity(
+  const PointOfInterest& entity)
 {
-	return new PointOfInterestExtension( &entity );
+    return new PointOfInterestExtension(&entity);
 }
 
-RandomNavigatorExtension * GameLogicFactory::createForEntity( const RandomNavigator & entity )
+RandomNavigatorExtension* GameLogicFactory::createForEntity(
+  const RandomNavigator& entity)
 {
-	return new RandomNavigatorExtension( &entity );
+    return new RandomNavigatorExtension(&entity);
 }
 
-ReverbExtension * GameLogicFactory::createForEntity( const Reverb & entity )
+ReverbExtension* GameLogicFactory::createForEntity(const Reverb& entity)
 {
-	return new ReverbExtension( &entity );
+    return new ReverbExtension(&entity);
 }
 
-RipperExtension * GameLogicFactory::createForEntity( const Ripper & entity )
+RipperExtension* GameLogicFactory::createForEntity(const Ripper& entity)
 {
-	return new RipperExtension( &entity );
+    return new RipperExtension(&entity);
 }
 
-SeatExtension * GameLogicFactory::createForEntity( const Seat & entity )
+SeatExtension* GameLogicFactory::createForEntity(const Seat& entity)
 {
-	return new SeatExtension( &entity );
+    return new SeatExtension(&entity);
 }
 
-SoundEmitterExtension * GameLogicFactory::createForEntity( const SoundEmitter & entity )
+SoundEmitterExtension* GameLogicFactory::createForEntity(
+  const SoundEmitter& entity)
 {
-	return new SoundEmitterExtension( &entity );
+    return new SoundEmitterExtension(&entity);
 }
 
-TeleportSourceExtension * GameLogicFactory::createForEntity( const TeleportSource & entity )
+TeleportSourceExtension* GameLogicFactory::createForEntity(
+  const TeleportSource& entity)
 {
-	return new TeleportSourceExtension( &entity );
+    return new TeleportSourceExtension(&entity);
 }
 
-TriggeredDustExtension * GameLogicFactory::createForEntity( const TriggeredDust & entity )
+TriggeredDustExtension* GameLogicFactory::createForEntity(
+  const TriggeredDust& entity)
 {
-	return new TriggeredDustExtension( &entity );
+    return new TriggeredDustExtension(&entity);
 }
 
-VideoScreenExtension * GameLogicFactory::createForEntity( const VideoScreen & entity )
+VideoScreenExtension* GameLogicFactory::createForEntity(
+  const VideoScreen& entity)
 {
-	return new VideoScreenExtension( &entity );
+    return new VideoScreenExtension(&entity);
 }
 
-VideoScreenChangerExtension * GameLogicFactory::createForEntity( const VideoScreenChanger & entity )
+VideoScreenChangerExtension* GameLogicFactory::createForEntity(
+  const VideoScreenChanger& entity)
 {
-	return new VideoScreenChangerExtension( &entity );
+    return new VideoScreenChangerExtension(&entity);
 }
 
-WeatherSystemExtension * GameLogicFactory::createForEntity( const WeatherSystem & entity )
+WeatherSystemExtension* GameLogicFactory::createForEntity(
+  const WeatherSystem& entity)
 {
-	return new WeatherSystemExtension( &entity );
+    return new WeatherSystemExtension(&entity);
 }
 
-WebScreenExtension * GameLogicFactory::createForEntity( const WebScreen & entity )
+WebScreenExtension* GameLogicFactory::createForEntity(const WebScreen& entity)
 {
-	return new WebScreenExtension( &entity );
+    return new WebScreenExtension(&entity);
 }
-
 
 // game_logic_factory.cpp

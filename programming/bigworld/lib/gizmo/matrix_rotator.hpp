@@ -13,30 +13,29 @@ typedef SmartPointer<MatrixProxy> MatrixProxyPtr;
 
 /*~ class Functor.MatrixRotator
  *	@components{ tools }
- *	
+ *
  *	This class is a functor that rotates a chunk item, or anything
  *	else that can return a matrix.
  */
 class MatrixRotator : public AlwaysApplyingFunctor
 {
-	Py_Header( MatrixRotator, AlwaysApplyingFunctor )
-public:
-	MatrixRotator( MatrixProxyPtr pMatrix,
-		bool allowedToDiscardChanges = true,
-		PyTypeObject * pType = &s_type_ );
+    Py_Header(MatrixRotator, AlwaysApplyingFunctor) public
+      : MatrixRotator(MatrixProxyPtr pMatrix,
+                      bool           allowedToDiscardChanges = true,
+                      PyTypeObject*  pType                   = &s_type_);
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-protected:
-	void doApply( float dTime, Tool& tool );
-	virtual void stopApplyCommitChanges( Tool& tool, bool addUndoBarrier );
-	virtual void stopApplyDiscardChanges( Tool& tool );
+  protected:
+    void         doApply(float dTime, Tool& tool);
+    virtual void stopApplyCommitChanges(Tool& tool, bool addUndoBarrier);
+    virtual void stopApplyDiscardChanges(Tool& tool);
 
-private:
-	bool					grabOffsetSet_;
-	Matrix					invGrabOffset_;
-	Vector3					initialToolLocation_;
-	PropertyRotaterHelper	rotaterHelper_;
+  private:
+    bool                  grabOffsetSet_;
+    Matrix                invGrabOffset_;
+    Vector3               initialToolLocation_;
+    PropertyRotaterHelper rotaterHelper_;
 };
 
 BW_END_NAMESPACE

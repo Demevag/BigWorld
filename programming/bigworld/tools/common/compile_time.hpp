@@ -5,9 +5,8 @@
 
 BW_BEGIN_NAMESPACE
 
-extern const char * aboutCompileTimeString;
+extern const char* aboutCompileTimeString;
 
 BW_END_NAMESPACE
-
 
 #endif // COMPILE_TIME_HPP

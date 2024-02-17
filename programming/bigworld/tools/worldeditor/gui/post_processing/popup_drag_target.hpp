@@ -9,24 +9,24 @@ BW_BEGIN_NAMESPACE
  */
 class PopupDragTarget : public CWnd
 {
-public:
-	typedef BW::vector< BW::string > ItemList;
+  public:
+    typedef BW::vector<BW::string> ItemList;
 
-	PopupDragTarget();
-	virtual ~PopupDragTarget();
+    PopupDragTarget();
+    virtual ~PopupDragTarget();
 
-	CSize calcSize( const ItemList & itemList ) const;
+    CSize calcSize(const ItemList& itemList) const;
 
-	bool open( const CPoint & pt, const ItemList & itemList, bool arrowUp );
+    bool open(const CPoint& pt, const ItemList& itemList, bool arrowUp);
 
-	BW::string update( int alpha );
+    BW::string update(int alpha);
 
-	void close();
+    void close();
 
-private:
-	CFont font_;
-	ItemList items_;
-	bool arrowUp_;
+  private:
+    CFont    font_;
+    ItemList items_;
+    bool     arrowUp_;
 };
 
 BW_END_NAMESPACE

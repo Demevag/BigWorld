@@ -8,15 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
-
 @interface InfoView : UIView<UIWebViewDelegate> {
-
 }
 
 @property (nonatomic, retain) UINavigationBar* navigationBar;
-@property (nonatomic, retain) UIWebView* webview;
-@property (nonatomic, retain) UIImageView* background;
+@property (nonatomic, retain) UIWebView*       webview;
+@property (nonatomic, retain) UIImageView*     background;
 
--(IBAction)handleDoneButton:(id)sender;
+- (IBAction)handleDoneButton:(id)sender;
 
 @end

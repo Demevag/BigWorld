@@ -16,93 +16,98 @@ BW_BEGIN_NAMESPACE
 
 class UalItemInfo;
 
-class LightList: public CTreeCtrl
+class LightList : public CTreeCtrl
 {
-protected:
-	DECLARE_MESSAGE_MAP()
+  protected:
+    DECLARE_MESSAGE_MAP()
 
-public:
-	afx_msg void OnClick( NMHDR *pNMHDR, LRESULT *pResult );
-	BOOL PreTranslateMessage( MSG* pMsg );
+  public:
+    afx_msg void OnClick(NMHDR* pNMHDR, LRESULT* pResult);
+    BOOL         PreTranslateMessage(MSG* pMsg);
 };
 
 // PageLights
 
-class PageLights: public PropertyTable, public GuiTabContent
+class PageLights
+  : public PropertyTable
+  , public GuiTabContent
 {
-	IMPLEMENT_BASIC_CONTENT( 
-		Localise(L"MODELEDITOR/PAGES/PAGE_LIGHTS/SHORT_NAME"), 
-		Localise(L"MODELEDITOR/PAGES/PAGE_LIGHTS/LONG_NAME"), 
-		285, 638, NULL )
+    IMPLEMENT_BASIC_CONTENT(
+      Localise(L"MODELEDITOR/PAGES/PAGE_LIGHTS/SHORT_NAME"),
+      Localise(L"MODELEDITOR/PAGES/PAGE_LIGHTS/LONG_NAME"),
+      285,
+      638,
+      NULL)
 
-	DECLARE_AUTO_TOOLTIP( PageLights, PropertyTable )
+    DECLARE_AUTO_TOOLTIP(PageLights, PropertyTable)
 
-public:
-	PageLights();
-	~PageLights();
+  public:
+    PageLights();
+    ~PageLights();
 
-	void fini();
+    void fini();
 
-	static PageLights* currPage();
-	
-	//These are exposed to python as:
-	void lightsNew();	// newLights()
-	void lightsOpen();	// openLights()
-	void lightsSave();	// saveLights()
+    static PageLights* currPage();
 
-	bool openLightFile( const BW::wstring& lightFile );
+    // These are exposed to python as:
+    void lightsNew();  // newLights()
+    void lightsOpen(); // openLights()
+    void lightsSave(); // saveLights()
 
-// Dialog Data
-	enum { IDD = IDD_LIGHTS };
+    bool openLightFile(const BW::wstring& lightFile);
 
-protected:
-	
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+    // Dialog Data
+    enum
+    {
+        IDD = IDD_LIGHTS
+    };
 
-	DECLARE_MESSAGE_MAP()
-	
-public:
-	
-	virtual BOOL OnInitDialog();
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 
-private:
-	
-	SmartPointer< struct PageLightsImpl > pImpl_;
-	size_t filter_;
-	
-	void OnGUIManagerCommand(UINT nID);
-	void OnGUIManagerCommandUpdate(CCmdUI * cmdUI);
-	afx_msg LRESULT OnShowTooltip(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnHideTooltip(WPARAM wParam, LPARAM lParam);
+    DECLARE_MESSAGE_MAP()
 
-	void OnSize( UINT nType, int cx, int cy );
-	
-	afx_msg LRESULT OnChangePropertyItem(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnDblClkPropertyItem(WPARAM wParam, LPARAM lParam);
-		
-	void updateCheck( CButton& button, const BW::string& actionName, int test = true );
-		
-	void redrawLightList( bool sel );	
+  public:
+    virtual BOOL OnInitDialog();
 
-	void updateChecks();
+  private:
+    SmartPointer<struct PageLightsImpl> pImpl_;
+    size_t                              filter_;
 
-	bool applyLights( UalItemInfo* ii );
+    void            OnGUIManagerCommand(UINT nID);
+    void            OnGUIManagerCommandUpdate(CCmdUI* cmdUI);
+    afx_msg LRESULT OnShowTooltip(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnHideTooltip(WPARAM wParam, LPARAM lParam);
 
-	void enableCustomLighting( bool enable );
+    void OnSize(UINT nType, int cx, int cy);
 
-public:
-	afx_msg LRESULT OnUpdateControls(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnSetFocus(CWnd* pOldWnd);
-	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	afx_msg void OnTvnSelchangedLightList(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnCbnSelchangeLightsSetups();
-	afx_msg void OnBnClickedLightsUseCustom();
-	afx_msg void OnBnClickedLightsCamera();
-	afx_msg void OnBnClickedLightsModels();
-	afx_msg void OnBnClickedLightsUseGame();
+    afx_msg LRESULT OnChangePropertyItem(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnDblClkPropertyItem(WPARAM wParam, LPARAM lParam);
+
+    void updateCheck(CButton&          button,
+                     const BW::string& actionName,
+                     int               test = true);
+
+    void redrawLightList(bool sel);
+
+    void updateChecks();
+
+    bool applyLights(UalItemInfo* ii);
+
+    void enableCustomLighting(bool enable);
+
+  public:
+    afx_msg LRESULT OnUpdateControls(WPARAM wParam, LPARAM lParam);
+    afx_msg void    OnSetFocus(CWnd* pOldWnd);
+    afx_msg void    OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+    afx_msg void    OnTvnSelchangedLightList(NMHDR* pNMHDR, LRESULT* pResult);
+    afx_msg void    OnCbnSelchangeLightsSetups();
+    afx_msg void    OnBnClickedLightsUseCustom();
+    afx_msg void    OnBnClickedLightsCamera();
+    afx_msg void    OnBnClickedLightsModels();
+    afx_msg void    OnBnClickedLightsUseGame();
 };
 
-IMPLEMENT_BASIC_CONTENT_FACTORY( PageLights )
+IMPLEMENT_BASIC_CONTENT_FACTORY(PageLights)
 
 BW_END_NAMESPACE
-

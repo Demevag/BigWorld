@@ -9,16 +9,19 @@
 #include "server/server_app_option_macros.hpp"
 #include "server/manager_app_config.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-BW_OPTION_FULL( float, maxLoad, 1.0f,
-		"loginConditions/dbApp/maxLoad",
-		"config/loginConditions/maxLoad" );
+BW_OPTION_FULL(float,
+               maxLoad,
+               1.0f,
+               "loginConditions/dbApp/maxLoad",
+               "config/loginConditions/maxLoad");
 
-BW_OPTION_FULL( float, overloadTolerancePeriod, 5.0f,
-		"loginConditions/overloadTolerancePeriod",
-		"config/loginConditions/overloadTolerancePeriod" );
+BW_OPTION_FULL(float,
+               overloadTolerancePeriod,
+               5.0f,
+               "loginConditions/overloadTolerancePeriod",
+               "config/loginConditions/overloadTolerancePeriod");
 
 // -----------------------------------------------------------------------------
 // Section: Post initialisation
@@ -29,16 +32,15 @@ BW_OPTION_FULL( float, overloadTolerancePeriod, 5.0f,
  */
 bool LoginConditionsConfig::postInit()
 {
-	BWConfig::update(
-			"loginConditions/dbApp/overloadTolerancePeriod",
-			overloadTolerancePeriod.getRef() );
+    BWConfig::update("loginConditions/dbApp/overloadTolerancePeriod",
+                     overloadTolerancePeriod.getRef());
 
-	return true;
+    return true;
 }
 
 uint64 LoginConditionsConfig::overloadTolerancePeriodInStamps()
 {
-	return TimeStamp::fromSeconds( overloadTolerancePeriod() );
+    return TimeStamp::fromSeconds(overloadTolerancePeriod());
 }
 
 BW_END_NAMESPACE

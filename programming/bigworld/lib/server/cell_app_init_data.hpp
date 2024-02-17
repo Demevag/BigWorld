@@ -8,20 +8,21 @@ BW_BEGIN_NAMESPACE
  */
 struct CellAppInitData
 {
-	int32 id;				//!< ID of the new CellApp
-	GameTime time;			//!< Current game time
-	Mercury::Address baseAppAddr;	//!< Address of the BaseApp to talk to
-	Mercury::Address dbAppAlphaAddr; //!< Address of the DBApp to talk to
-	bool isReady;			//!< Flag indicating whether the server is ready
-	float timeoutPeriod;	//!< The timeout period for CellApps
+    int32            id;             //!< ID of the new CellApp
+    GameTime         time;           //!< Current game time
+    Mercury::Address baseAppAddr;    //!< Address of the BaseApp to talk to
+    Mercury::Address dbAppAlphaAddr; //!< Address of the DBApp to talk to
+    bool             isReady; //!< Flag indicating whether the server is ready
+    float            timeoutPeriod; //!< The timeout period for CellApps
 
-	CellAppInitData() :
-		id(),
-		time(),
-		baseAppAddr(),
-		isReady(),
-		timeoutPeriod()
-	{}
+    CellAppInitData()
+      : id()
+      , time()
+      , baseAppAddr()
+      , isReady()
+      , timeoutPeriod()
+    {
+    }
 };
 
 BW_END_NAMESPACE

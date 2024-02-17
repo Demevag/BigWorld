@@ -15,13 +15,15 @@ BW_BEGIN_NAMESPACE
  */
 struct MessageTimePrefix : public DebugMessageCallback
 {
-	MessageTimePrefix();
-	~MessageTimePrefix();
+    MessageTimePrefix();
+    ~MessageTimePrefix();
 
-	bool handleMessage(
-		DebugMessagePriority messagePriority, const char * pCategory,
-		DebugMessageSource messageSource, const LogMetaData & metaData,
-		const char * pFormat, va_list argPtr );
+    bool handleMessage(DebugMessagePriority messagePriority,
+                       const char*          pCategory,
+                       DebugMessageSource   messageSource,
+                       const LogMetaData&   metaData,
+                       const char*          pFormat,
+                       va_list              argPtr);
 };
 
 BW_END_NAMESPACE

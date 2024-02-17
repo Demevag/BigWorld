@@ -5,7 +5,6 @@
 
 #define MANAGER_APP_HEADER SERVER_APP_HEADER
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -13,14 +12,14 @@ BW_BEGIN_NAMESPACE
  */
 class ManagerApp : public ServerApp
 {
-public:
-	ManagerApp( Mercury::EventDispatcher & mainDispatcher,
-			Mercury::NetworkInterface & interface );
+  public:
+    ManagerApp(Mercury::EventDispatcher&  mainDispatcher,
+               Mercury::NetworkInterface& interface);
 
-protected:
-	void addWatchers( Watcher & watcher );
+  protected:
+    void addWatchers(Watcher& watcher);
 
-private:
+  private:
 };
 
 BW_END_NAMESPACE

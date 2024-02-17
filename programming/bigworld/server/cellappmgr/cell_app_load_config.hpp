@@ -3,7 +3,6 @@
 
 #include "server/server_app_option.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,13 +10,13 @@ BW_BEGIN_NAMESPACE
  */
 class CellAppLoadConfig
 {
-public:
-	static ServerAppOption< float > lowerBound;
-	static ServerAppOption< float > safetyBound;
-	static ServerAppOption< float > safetyRatio;
-	static ServerAppOption< float > warningLevel;
+  public:
+    static ServerAppOption<float> lowerBound;
+    static ServerAppOption<float> safetyBound;
+    static ServerAppOption<float> safetyRatio;
+    static ServerAppOption<float> warningLevel;
 
-	static bool postInit();
+    static bool postInit();
 };
 
 BW_END_NAMESPACE

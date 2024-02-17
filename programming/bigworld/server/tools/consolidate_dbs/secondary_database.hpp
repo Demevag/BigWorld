@@ -8,7 +8,6 @@
 #include "cstdmf/bw_string.hpp"
 #include "cstdmf/bw_vector.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class ConsolidationProgressReporter;
@@ -21,38 +20,36 @@ class SqliteConnection;
  */
 class SecondaryDatabase
 {
-public:
-	SecondaryDatabase();
-	~SecondaryDatabase();
+  public:
+    SecondaryDatabase();
+    ~SecondaryDatabase();
 
-	bool init( const BW::string & dbPath );
+    bool init(const BW::string& dbPath);
 
-	bool getChecksumDigest( BW::string & digest );
+    bool getChecksumDigest(BW::string& digest);
 
-	uint numEntities() const
-		{ return numEntities_; }
+    uint numEntities() const { return numEntities_; }
 
-	SqliteConnection & connection()
-		{ return *pConnection_; }
+    SqliteConnection& connection() { return *pConnection_; }
 
-	bool consolidate( PrimaryDatabaseUpdateQueue & primaryDBQueue,
-			ConsolidationProgressReporter & progressReporter,
-			bool shouldIgnoreErrors,
-			bool & shouldAbort );
+    bool consolidate(PrimaryDatabaseUpdateQueue&    primaryDBQueue,
+                     ConsolidationProgressReporter& progressReporter,
+                     bool                           shouldIgnoreErrors,
+                     bool&                          shouldAbort);
 
-private:
-	bool readTables();
-	bool tableExists( const BW::string & tableName );
-	void sortTablesByAge();
+  private:
+    bool readTables();
+    bool tableExists(const BW::string& tableName);
+    void sortTablesByAge();
 
-	BW::string							path_;
+    BW::string path_;
 
-	std::auto_ptr< SqliteConnection > 	pConnection_;
+    std::auto_ptr<SqliteConnection> pConnection_;
 
-	typedef BW::vector< shared_ptr< SecondaryDatabaseTable > > Tables;
-	Tables 								tables_;
+    typedef BW::vector<shared_ptr<SecondaryDatabaseTable>> Tables;
+    Tables                                                 tables_;
 
-	uint								numEntities_;
+    uint numEntities_;
 };
 
 BW_END_NAMESPACE

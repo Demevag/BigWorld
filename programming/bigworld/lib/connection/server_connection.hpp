@@ -33,14 +33,13 @@ class ServerMessageHandler;
 class StreamEncoder;
 class TaskManager;
 
-namespace Mercury
-{
-	class Channel;
-	class NetworkInterface;
+namespace Mercury {
+    class Channel;
+    class NetworkInterface;
 }
 
 class LoginHandler;
-typedef SmartPointer< LoginHandler > LoginHandlerPtr;
+typedef SmartPointer<LoginHandler> LoginHandlerPtr;
 
 /**
  *	This class is used to represent a connection to the server.
@@ -49,221 +48,220 @@ typedef SmartPointer< LoginHandler > LoginHandlerPtr;
  */
 #if defined(__INTEL_COMPILER)
 // force safe inheritance member pointer declaration for Intel compiler
-#pragma pointers_to_members( pointer-declaration, full_generality )
+#pragma pointers_to_members(pointer - declaration, full_generality)
 #endif
 
-class ServerConnection :
-		public Mercury::BundlePrimer,
-		public Mercury::ChannelListener,
-		public TimerHandler
+class ServerConnection
+  : public Mercury::BundlePrimer
+  , public Mercury::ChannelListener
+  , public TimerHandler
 {
-public:
-	static const float NO_POSITION;
-	static const float NO_DIRECTION;
+  public:
+    static const float NO_POSITION;
+    static const float NO_DIRECTION;
 
-	ServerConnection(
-		LoginChallengeFactories & challengeFactories,
-		CondemnedInterfaces & condemnedInterfaces,
-		const EntityDefConstants & entityDefConstants );
+    ServerConnection(LoginChallengeFactories&  challengeFactories,
+                     CondemnedInterfaces&      condemnedInterfaces,
+                     const EntityDefConstants& entityDefConstants);
 
-	virtual ~ServerConnection();
+    virtual ~ServerConnection();
 
-	// If possible, do not use. Here for legacy client support.
-	void setConstants( const EntityDefConstants & constants );
+    // If possible, do not use. Here for legacy client support.
+    void setConstants(const EntityDefConstants& constants);
 
-	bool processInput();
-	void registerInterfaces( Mercury::NetworkInterface & networkInterface );
+    bool processInput();
+    void registerInterfaces(Mercury::NetworkInterface& networkInterface);
 
-	void setInactivityTimeout( float seconds );
+    void setInactivityTimeout(float seconds);
 
-	// Deprecated. Do not use.
-	LogOnStatus logOn( ServerMessageHandler * pHandler,
-		const char * serverName,
-		const char * username,
-		const char * password,
-		uint16 port = 0 );
+    // Deprecated. Do not use.
+    LogOnStatus logOn(ServerMessageHandler* pHandler,
+                      const char*           serverName,
+                      const char*           username,
+                      const char*           password,
+                      uint16                port = 0);
 
-	LoginHandlerPtr logOnBegin(
-		const char * serverName,
-		const char * username,
-		const char * password,
-		uint16 port = 0,
-		ConnectionTransport = CONNECTION_TRANSPORT_UDP );
+    LoginHandlerPtr logOnBegin(const char* serverName,
+                               const char* username,
+                               const char* password,
+                               uint16      port    = 0,
+                               ConnectionTransport = CONNECTION_TRANSPORT_UDP);
 
-	LogOnStatus logOnComplete(
-		LoginHandlerPtr pLRH,
-		ServerMessageHandler * pHandler );
+    LogOnStatus logOnComplete(LoginHandlerPtr       pLRH,
+                              ServerMessageHandler* pHandler);
 
-	void enableReconfigurePorts() { tryToReconfigurePorts_ = true; }
-	void enableEntities();
+    void enableReconfigurePorts() { tryToReconfigurePorts_ = true; }
+    void enableEntities();
 
-	bool isOnline() const;
-	bool isOffline() const				{ return !this->isOnline(); }
+    bool isOnline() const;
+    bool isOffline() const { return !this->isOnline(); }
 
-	// Deprecated.
-	bool online() const					{ return this->isOnline(); }
-	bool offline() const				{ return !this->isOnline(); }
+    // Deprecated.
+    bool online() const { return this->isOnline(); }
+    bool offline() const { return !this->isOnline(); }
 
-	void disconnect( bool informServer = true,
-		bool shouldCondemnChannel = true );
+    void disconnect(bool informServer = true, bool shouldCondemnChannel = true);
 
-	void channel( Mercury::Channel & channel );
-	void pInterface( Mercury::NetworkInterface * pInterface );
-	bool hasInterface() const 
-		{ return pInterface_ != NULL; }
+    void channel(Mercury::Channel& channel);
+    void pInterface(Mercury::NetworkInterface* pInterface);
+    bool hasInterface() const { return pInterface_ != NULL; }
 
-	void setArtificialLoss( float lossRatio, float minLatency, 
-						   float maxLatency );
+    void setArtificialLoss(float lossRatio, float minLatency, float maxLatency);
 
-	void setArtificialLoss( const Mercury::PacketLossParameters & parameters );
+    void setArtificialLoss(const Mercury::PacketLossParameters& parameters);
 
-	// Stuff that would normally be provided by ChannelOwner, however we can't
-	// derive from it because of destruction order.
-	Mercury::Channel & channel();
-	Mercury::Bundle & bundle() { return this->channel().bundle(); }
-	const Mercury::Address & addr() const;
+    // Stuff that would normally be provided by ChannelOwner, however we can't
+    // derive from it because of destruction order.
+    Mercury::Channel&       channel();
+    Mercury::Bundle&        bundle() { return this->channel().bundle(); }
+    const Mercury::Address& addr() const;
 
-	/** This method returns the block cipher used for symmetric encryption. */
-	Mercury::BlockCipherPtr pBlockCipher() const { return pBlockCipher_; }
+    /** This method returns the block cipher used for symmetric encryption. */
+    Mercury::BlockCipherPtr pBlockCipher() const { return pBlockCipher_; }
 
-	void addMove( EntityID id, SpaceID spaceID, EntityID vehicleID,
-		const Position3D & pos, float yaw, float pitch, float roll,
-		bool onGround, const Position3D & globalPos );
-	//void rcvMoves( EntityID id );
+    void addMove(EntityID          id,
+                 SpaceID           spaceID,
+                 EntityID          vehicleID,
+                 const Position3D& pos,
+                 float             yaw,
+                 float             pitch,
+                 float             roll,
+                 bool              onGround,
+                 const Position3D& globalPos);
+    // void rcvMoves( EntityID id );
 
-	BinaryOStream & startBasePlayerMessage( int methodID );
-	BinaryOStream & startCellPlayerMessage( int methodID );
+    BinaryOStream& startBasePlayerMessage(int methodID);
+    BinaryOStream& startCellPlayerMessage(int methodID);
 
-	BinaryOStream & startCellEntityMessage( int methodID, EntityID entityID );
+    BinaryOStream& startCellEntityMessage(int methodID, EntityID entityID);
 
-	BinaryOStream * startServerEntityMessage( int methodID, EntityID entityID,
-			bool isForBaseEntity );
+    BinaryOStream* startServerEntityMessage(int      methodID,
+                                            EntityID entityID,
+                                            bool     isForBaseEntity);
 
-	const BW::string & serverMsg() const	{ return serverMsg_; }
-	const BW::string & errorMsg() const { return this->serverMsg(); }
+    const BW::string& serverMsg() const { return serverMsg_; }
+    const BW::string& errorMsg() const { return this->serverMsg(); }
 
-	EntityID connectedID() const			{ return id_; }
-	void sessionKey( SessionKey key ) { sessionKey_ = key; }
+    EntityID connectedID() const { return id_; }
+    void     sessionKey(SessionKey key) { sessionKey_ = key; }
 
+    /**
+     *	Return the logon params encoding method.
+     *
+     *	@return The method used to encode the LogOnParams. NULL indicates that
+     *	no encoding be used.
+     */
+    StreamEncoder* pLogOnParamsEncoder() const { return pLogOnParamsEncoder_; }
 
-	/**
-	 *	Return the logon params encoding method.
-	 *
-	 *	@return The method used to encode the LogOnParams. NULL indicates that
-	 *	no encoding be used.
-	 */
-	StreamEncoder * pLogOnParamsEncoder() const 
-		{ return pLogOnParamsEncoder_; }
+    /**
+     *	Set the logon params encoding method.
+     *
+     *	@param pEncoder 	The new encoder. This class takes no
+     *						responsibility for deleting pEncoder.
+     */
+    void pLogOnParamsEncoder(StreamEncoder* pEncoder)
+    {
+        pLogOnParamsEncoder_ = pEncoder;
+    }
 
+    /**
+     *	This method returns the task manager for use in login challenges.
+     */
+    TaskManager* pTaskManager() { return pTaskManager_; }
 
-	/**
-	 *	Set the logon params encoding method.
-	 *
-	 *	@param pEncoder 	The new encoder. This class takes no
-	 *						responsibility for deleting pEncoder.
-	 */
-	void pLogOnParamsEncoder( StreamEncoder * pEncoder )
-		{ pLogOnParamsEncoder_ = pEncoder; }
+    /**
+     *	This method sets the task manager for e.g. use in login challenges.
+     */
+    void pTaskManager(TaskManager* pTaskManager)
+    {
+        pTaskManager_ = pTaskManager;
+    }
 
-	/**
-	 *	This method returns the task manager for use in login challenges.
-	 */
-	TaskManager * pTaskManager() { return pTaskManager_; }
+    // ---- Statistics ----
 
-	/**
-	 *	This method sets the task manager for e.g. use in login challenges.
-	 */
-	void pTaskManager( TaskManager * pTaskManager )
-	{ pTaskManager_ = pTaskManager; }
+    float latency() const;
 
-	// ---- Statistics ----
+    double bpsIn() const;
+    double bpsOut() const;
 
-	float latency() const;
+    double packetsPerSecondIn() const;
+    double packetsPerSecondOut() const;
 
-	double bpsIn() const;
-	double bpsOut() const;
+    double messagesPerSecondIn() const;
+    double messagesPerSecondOut() const;
 
-	double packetsPerSecondIn() const;
-	double packetsPerSecondOut() const;
+    int  bandwidthFromServer() const;
+    void bandwidthFromServer(int bandwidth);
 
-	double messagesPerSecondIn() const;
-	double messagesPerSecondOut() const;
+    double movementBytesPercent() const;
+    double nonMovementBytesPercent() const;
+    double overheadBytesPercent() const;
 
-	int		bandwidthFromServer() const;
-	void	bandwidthFromServer( int bandwidth );
+    int movementBytesTotal() const;
+    int nonMovementBytesTotal() const;
+    int overheadBytesTotal() const;
 
-	double movementBytesPercent() const;
-	double nonMovementBytesPercent() const;
-	double overheadBytesPercent() const;
+    uint32 packetsIn() const;
 
-	int movementBytesTotal() const;
-	int nonMovementBytesTotal() const;
-	int overheadBytesTotal() const;
+    void pTime(const double* pTime);
 
-	uint32 packetsIn() const;
+    /**
+     *	This method is used to return the pointer to current time.
+     *	It is used for server statistics and for syncronising between
+     *	client and server time.
+     */
+    const double* pTime() { return pTime_; }
 
-	void pTime( const double * pTime );
+    double   serverTime(double gameTime) const;
+    double   clientTimeOfLastMessage() const;
+    GameTime gameTimeOfLastMessage() const;
 
-	/**
-	 *	This method is used to return the pointer to current time.
-	 *	It is used for server statistics and for syncronising between
-	 *	client and server time.
-	 */
-	const double * pTime()					{ return pTime_; }
+    // These two methods have been deprecated due to naming change
+    double   lastMessageTime() const { return clientTimeOfLastMessage(); }
+    GameTime lastGameTime() const { return gameTimeOfLastMessage(); }
 
-	double		serverTime( double gameTime ) const;
-	double 		clientTimeOfLastMessage() const;
-	GameTime	gameTimeOfLastMessage() const;
+    double lastSendTime() const { return lastSendTime_; }
+    double minSendInterval() const { return minSendInterval_; }
 
-	// These two methods have been deprecated due to naming change
-	double 		lastMessageTime() const { return clientTimeOfLastMessage(); }
-	GameTime	lastGameTime() const { return gameTimeOfLastMessage(); }
+    // ---- InterfaceMinder handlers ----
+    void authenticate(const ClientInterface::authenticateArgs& args);
+    void bandwidthNotification(
+      const ClientInterface::bandwidthNotificationArgs& args);
+    void updateFrequencyNotification(
+      const ClientInterface::updateFrequencyNotificationArgs& args);
 
-	double		lastSendTime() const	{ return lastSendTime_; }
-	double		minSendInterval() const	{ return minSendInterval_; }
+    void setGameTime(const ClientInterface::setGameTimeArgs& args);
 
-	// ---- InterfaceMinder handlers ----
-	void authenticate(
-		const ClientInterface::authenticateArgs & args );
-	void bandwidthNotification(
-		const ClientInterface::bandwidthNotificationArgs & args );
-	void updateFrequencyNotification(
-		const ClientInterface::updateFrequencyNotificationArgs & args );
+    void resetEntities(const ClientInterface::resetEntitiesArgs& args);
+    void resetEntities(bool keepPlayerOnBase = false);
+    void createBasePlayer(BinaryIStream& stream);
+    void createCellPlayer(BinaryIStream& stream);
 
-	void setGameTime( const ClientInterface::setGameTimeArgs & args );
+    void spaceData(BinaryIStream& stream);
 
-	void resetEntities( const ClientInterface::resetEntitiesArgs & args );
-	void resetEntities( bool keepPlayerOnBase = false );
-	void createBasePlayer( BinaryIStream & stream );
-	void createCellPlayer( BinaryIStream & stream );
+    void enterAoI(const ClientInterface::enterAoIArgs& args);
+    void enterAoIOnVehicle(const ClientInterface::enterAoIOnVehicleArgs& args);
+    void leaveAoI(BinaryIStream& stream);
 
-	void spaceData( BinaryIStream & stream );
+    void createEntity(BinaryIStream& stream);
+    void createEntityDetailed(BinaryIStream& stream);
+    void updateEntity(BinaryIStream& stream);
 
-	void enterAoI( const ClientInterface::enterAoIArgs & args );
-	void enterAoIOnVehicle(
-		const ClientInterface::enterAoIOnVehicleArgs & args );
-	void leaveAoI( BinaryIStream & stream );
+    // This unattractive bit of macros is used to declare all of the handlers
+    // for (fixed length) messages sent from the cell to the client. It includes
+    // methods such as all of the avatarUpdate handlers.
+#define MF_EMPTY_COMMON_RELIABLE_MSG(MESSAGE) void MESSAGE();
 
-	void createEntity( BinaryIStream & stream );
-	void createEntityDetailed( BinaryIStream & stream );
-	void updateEntity( BinaryIStream & stream );
-
-	// This unattractive bit of macros is used to declare all of the handlers
-	// for (fixed length) messages sent from the cell to the client. It includes
-	// methods such as all of the avatarUpdate handlers.
-#define MF_EMPTY_COMMON_RELIABLE_MSG( MESSAGE )	\
-	void MESSAGE();
-
-#define MF_BEGIN_COMMON_RELIABLE_MSG( MESSAGE )	\
-	void MESSAGE( const ClientInterface::MESSAGE##Args & args );
+#define MF_BEGIN_COMMON_RELIABLE_MSG(MESSAGE)                                  \
+    void MESSAGE(const ClientInterface::MESSAGE##Args& args);
 
 #define MF_BEGIN_COMMON_PASSENGER_MSG MF_BEGIN_COMMON_RELIABLE_MSG
 #define MF_BEGIN_COMMON_UNRELIABLE_MSG MF_BEGIN_COMMON_RELIABLE_MSG
 
-#define MF_COMMON_ARGS( ARGS )
+#define MF_COMMON_ARGS(ARGS)
 #define MF_END_COMMON_MSG()
-#define MF_COMMON_ISTREAM( NAME, XSTREAM )
-#define MF_COMMON_OSTREAM( NAME, XSTREAM )
+#define MF_COMMON_ISTREAM(NAME, XSTREAM)
+#define MF_COMMON_OSTREAM(NAME, XSTREAM)
 #include "common_client_interface.hpp"
 #undef MF_EMPTY_COMMON_RELIABLE_MSG
 #undef MF_BEGIN_COMMON_RELIABLE_MSG
@@ -274,272 +272,264 @@ public:
 #undef MF_COMMON_ISTREAM
 #undef MF_COMMON_OSTREAM
 
-	void detailedPosition( const ClientInterface::detailedPositionArgs & args );
-	void controlEntity( const ClientInterface::controlEntityArgs & args );
+    void detailedPosition(const ClientInterface::detailedPositionArgs& args);
+    void controlEntity(const ClientInterface::controlEntityArgs& args);
 
-	void voiceData( const Mercury::Address & srcAddr,
-					const Mercury::UnpackedMessageHeader & header,
-					BinaryIStream & stream );
+    void voiceData(const Mercury::Address&               srcAddr,
+                   const Mercury::UnpackedMessageHeader& header,
+                   BinaryIStream&                        stream);
 
-	void restoreClient( BinaryIStream & stream );
+    void restoreClient(BinaryIStream& stream);
 
-	void switchBaseApp( const Mercury::Address & srcAddr,
-		const Mercury::UnpackedMessageHeader & header,
-		const ClientInterface::switchBaseAppArgs & args );
+    void switchBaseApp(const Mercury::Address&                   srcAddr,
+                       const Mercury::UnpackedMessageHeader&     header,
+                       const ClientInterface::switchBaseAppArgs& args);
 
-	void resourceHeader( BinaryIStream & stream );
-	void resourceFragment( BinaryIStream & stream );
+    void resourceHeader(BinaryIStream& stream);
+    void resourceFragment(BinaryIStream& stream);
 
-	void loggedOff( const ClientInterface::loggedOffArgs & args );
+    void loggedOff(const ClientInterface::loggedOffArgs& args);
 
-	void entityMethod( const Mercury::Address & srcAddr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & stream );
+    void entityMethod(const Mercury::Address&               srcAddr,
+                      const Mercury::UnpackedMessageHeader& header,
+                      BinaryIStream&                        stream);
 
-	void entityProperty( const Mercury::Address & srcAddr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & stream );
+    void entityProperty(const Mercury::Address&               srcAddr,
+                        const Mercury::UnpackedMessageHeader& header,
+                        BinaryIStream&                        stream);
 
-	void nestedEntityProperty( BinaryIStream & stream );
+    void nestedEntityProperty(BinaryIStream& stream);
 
-	void sliceEntityProperty( BinaryIStream & stream );
+    void sliceEntityProperty(BinaryIStream& stream);
 
-	int entityMethodGetStreamSize( Mercury::MessageID msgID ) const;
-	int entityPropertyGetStreamSize( Mercury::MessageID msgID ) const;
+    int entityMethodGetStreamSize(Mercury::MessageID msgID) const;
+    int entityPropertyGetStreamSize(Mercury::MessageID msgID) const;
 
-	void setMessageHandler( ServerMessageHandler * pHandler )
-	{
-		if (pHandler_ != NULL)
-		{
-			pHandler_ = pHandler;
-		}
-	}
+    void setMessageHandler(ServerMessageHandler* pHandler)
+    {
+        if (pHandler_ != NULL) {
+            pHandler_ = pHandler;
+        }
+    }
 
-	ServerMessageHandler * getMessageHandler() const
-	{
-		return pHandler_;
-	}
+    ServerMessageHandler* getMessageHandler() const { return pHandler_; }
 
-	Mercury::NetworkInterface & networkInterface();
+    Mercury::NetworkInterface& networkInterface();
 
-	Mercury::EventDispatcher & dispatcher() { return dispatcher_; };
+    Mercury::EventDispatcher& dispatcher() { return dispatcher_; };
 
 #if ENABLE_WATCHERS
-	static WatcherPtr pWatcher();
+    static WatcherPtr pWatcher();
 #endif // ENABLE_WATCHERS
 
-	const MD5::Digest digest() const			{ return digest_; }
+    const MD5::Digest digest() const { return digest_; }
 
-	double sendTimeReportThreshold() const 
-	{ return sendTimeReportThreshold_; } 
+    double sendTimeReportThreshold() const { return sendTimeReportThreshold_; }
 
-	void sendTimeReportThreshold( double threshold ) 
-	{ sendTimeReportThreshold_ = threshold; } 
+    void sendTimeReportThreshold(double threshold)
+    {
+        sendTimeReportThreshold_ = threshold;
+    }
 
-	void sendIfNecessary();
-	void send();
+    void sendIfNecessary();
+    void send();
 
-	LoginChallengeFactories & challengeFactories()
-	{
-		return challengeFactories_;
-	}
+    LoginChallengeFactories& challengeFactories()
+    {
+        return challengeFactories_;
+    }
 
-	void addCondemnedInterface( Mercury::NetworkInterface * pInterface );
+    void addCondemnedInterface(Mercury::NetworkInterface* pInterface);
 
-	/**
-	 *	The frequency of updates from the server.
-	 */
-	float updateFrequency() const { return updateFrequency_; }
+    /**
+     *	The frequency of updates from the server.
+     */
+    float updateFrequency() const { return updateFrequency_; }
 
-	static const char * transportToCString( ConnectionTransport transport );
+    static const char* transportToCString(ConnectionTransport transport);
 
+    /**
+     * Sets whether messages should are processed out of order (early)
+     * (for use by ClientMessageHandler only)
+     * @newValue value to be set
+     *
+     */
+    void processingEarlyMessageNow(bool newValue) { isEarly_ = newValue; }
 
-	/**
-	 * Sets whether messages should are processed out of order (early)
-	 * (for use by ClientMessageHandler only)
-	 * @newValue value to be set
-	 *
-	 */
-	void processingEarlyMessageNow( bool newValue )
-	{
-		isEarly_ = newValue;
-	}
+    /**
+     * Returns whether messages are processed out of order (early)
+     */
+    bool processingEarlyMessageNow() const { return isEarly_; }
 
-	/**
-	 * Returns whether messages are processed out of order (early)
-	 */
-	bool processingEarlyMessageNow() const
-	{
-		return isEarly_;
-	}
-protected:
-	virtual void onSwitchBaseApp( LoginHandler & loginHandler );
+  protected:
+    virtual void onSwitchBaseApp(LoginHandler& loginHandler);
 
-private:
-	typedef StatWithRatesOfChange< uint32 > Stat;
+  private:
+    typedef StatWithRatesOfChange<uint32> Stat;
 
-	// Not defined.
-	ServerConnection( const ServerConnection & );
-	ServerConnection& operator=( const ServerConnection & );
+    // Not defined.
+    ServerConnection(const ServerConnection&);
+    ServerConnection& operator=(const ServerConnection&);
 
-	void requestEntityUpdate( EntityID id,
-		const CacheStamps & stamps = CacheStamps() );
+    void requestEntityUpdate(EntityID           id,
+                             const CacheStamps& stamps = CacheStamps());
 
-	void enterAoI( EntityID id, IDAlias idAlias,
-		EntityID vehicleID = NULL_ENTITY_ID );
+    void enterAoI(EntityID id,
+                  IDAlias  idAlias,
+                  EntityID vehicleID = NULL_ENTITY_ID);
 
-	double appTime() const;
-	void updateStats();
+    double appTime() const;
+    void   updateStats();
 
-	// Override from Mercury::ChannelListener.
-	virtual void onChannelSend( Mercury::Channel & channel );
-	virtual void onChannelGone( Mercury::Channel & channel );
+    // Override from Mercury::ChannelListener.
+    virtual void onChannelSend(Mercury::Channel& channel);
+    virtual void onChannelGone(Mercury::Channel& channel);
 
-	void setVehicle( EntityID passengerID, EntityID vehicleID );
-	EntityID getVehicleID( EntityID passengerID ) const
-	{
-		PassengerToVehicleMap::const_iterator iter =
-			passengerToVehicle_.find( passengerID );
+    void     setVehicle(EntityID passengerID, EntityID vehicleID);
+    EntityID getVehicleID(EntityID passengerID) const
+    {
+        PassengerToVehicleMap::const_iterator iter =
+          passengerToVehicle_.find(passengerID);
 
-		return iter == passengerToVehicle_.end() ?
-												NULL_ENTITY_ID : iter->second;
-	}
+        return iter == passengerToVehicle_.end() ? NULL_ENTITY_ID
+                                                 : iter->second;
+    }
 
-	void initialiseConnectionState();
+    void initialiseConnectionState();
 
-	virtual void primeBundle( Mercury::Bundle & bundle );
-	virtual int numUnreliableMessages() const;
+    virtual void primeBundle(Mercury::Bundle& bundle);
+    virtual int  numUnreliableMessages() const;
 
-	virtual void handleTimeout( TimerHandle handle, void * arg );
+    virtual void handleTimeout(TimerHandle handle, void* arg);
 
-	double getRatePercent( const Stat & stat ) const;
+    double getRatePercent(const Stat& stat) const;
 
-	/**
-	 *	This method returns whether the entity with the input id is controlled
-	 *	locally by this client as opposed to controlled by the server.
-	 */
-	bool isControlledLocally( EntityID id ) const
-	{
-		return controlledEntities_.find( id ) != controlledEntities_.end();
-	}
+    /**
+     *	This method returns whether the entity with the input id is controlled
+     *	locally by this client as opposed to controlled by the server.
+     */
+    bool isControlledLocally(EntityID id) const
+    {
+        return controlledEntities_.find(id) != controlledEntities_.end();
+    }
 
-	void detailedPositionReceived( EntityID id, SpaceID spaceID,
-		EntityID vehicleID, const Position3D & position );
+    void detailedPositionReceived(EntityID          id,
+                                  SpaceID           spaceID,
+                                  EntityID          vehicleID,
+                                  const Position3D& position);
 
+    // ---- Data members ----
+    SessionKey sessionKey_;
+    BW::string username_;
 
-	// ---- Data members ----
-	SessionKey		sessionKey_;
-	BW::string	username_;
+    // ---- Statistics ----
 
-	// ---- Statistics ----
+    Stat numMovementBytes_;
+    Stat numNonMovementBytes_;
+    Stat numOverheadBytes_;
 
-	Stat numMovementBytes_;
-	Stat numNonMovementBytes_;
-	Stat numOverheadBytes_;
+    ServerMessageHandler* pHandler_;
 
-	ServerMessageHandler * pHandler_;
+    EntityID id_;
+    EntityID selectedEntityID_;
+    SpaceID  spaceID_;
+    int      bandwidthFromServer_;
 
-	EntityID	id_;
-	EntityID	selectedEntityID_;
-	SpaceID		spaceID_;
-	int			bandwidthFromServer_;
+    const double* pTime_;
+    uint64        lastReceiveTime_;
+    double        lastSendTime_;
+    double        minSendInterval_;
+    double        sendTimeReportThreshold_;
+    float         updateFrequency_; // frequency of updates from the server.
 
-	const double * pTime_;
-	uint64 	lastReceiveTime_;
-	double	lastSendTime_;
-	double	minSendInterval_;
-	double	sendTimeReportThreshold_;
-	float	updateFrequency_;	// frequency of updates from the server.
+    Mercury::EventDispatcher   dispatcher_;
+    Mercury::NetworkInterface* pInterface_;
+    Mercury::ChannelPtr        pChannel_;
+    ConnectionTransport        transport_;
 
-	Mercury::EventDispatcher	dispatcher_;
-	Mercury::NetworkInterface *	pInterface_;
-	Mercury::ChannelPtr			pChannel_;
-	ConnectionTransport 		transport_;
+    Mercury::PacketLossParameters packetLossParameters_;
 
-	Mercury::PacketLossParameters packetLossParameters_;
+    bool  shouldResetEntitiesOnChannel_;
+    bool  tryToReconfigurePorts_;
+    bool  entitiesEnabled_;
+    uint8 isOnGround_;
 
-	bool 		shouldResetEntitiesOnChannel_;
-	bool		tryToReconfigurePorts_;
-	bool		entitiesEnabled_;
-	uint8		isOnGround_;
+    float       inactivityTimeout_;
+    MD5::Digest digest_;
 
-	float				inactivityTimeout_;
-	MD5::Digest			digest_;
+    /// This is a simple class to handle what time the client thinks is on the
+    /// server.
+    class ServerTimeHandler
+    {
+      public:
+        ServerTimeHandler();
 
-	/// This is a simple class to handle what time the client thinks is on the
-	/// server.
-	class ServerTimeHandler
-	{
-	public:
-		ServerTimeHandler();
+        void pServerConnection(ServerConnection* pConnection)
+        {
+            pConnection_ = pConnection;
+        }
 
-		void pServerConnection( ServerConnection * pConnection )
-		{
-			pConnection_ = pConnection;
-		}
+        void tickSync(uint8 newSeqNum, double currentTime, bool isEarly);
+        void gameTime(GameTime gameTime, double currentTime);
 
-		void tickSync( uint8 newSeqNum, double currentTime, bool isEarly );
-		void gameTime( GameTime gameTime, double currentTime );
+        double   serverTime(double gameTime) const;
+        double   clientTimeOfLastMessage() const;
+        GameTime gameTimeOfLastMessage() const;
 
-		double		serverTime( double gameTime ) const;
-		double 		clientTimeOfLastMessage() const;
-		GameTime 	gameTimeOfLastMessage() const;
+      private:
+        ServerConnection* pConnection_;
+        uint8             tickByte_;
+        bool              hasReceivedGameTime_;
+        double            timeAtSequenceStart_;
+        GameTime          gameTimeAtSequenceStart_;
+        mutable double    lastReturnedServerTime_;
+        bool              lastPacketWasOrdered_;
+        uint8             lastOrderedTickByte_;
+    } serverTimeHandler_;
 
-
-	private:
-		ServerConnection * pConnection_;
-		uint8 tickByte_;
-		bool hasReceivedGameTime_;
-		double timeAtSequenceStart_;
-		GameTime gameTimeAtSequenceStart_;
-		mutable double lastReturnedServerTime_;
-		bool lastPacketWasOrdered_;
-		uint8 lastOrderedTickByte_;
-	} serverTimeHandler_;
-
-	BW::string serverMsg_;
+    BW::string serverMsg_;
 
 #if !VOLATILE_POSITIONS_ARE_ABSOLUTE
-	uint8	sendingSequenceNumber_;
+    uint8 sendingSequenceNumber_;
 #endif /* !VOLATILE_POSITIONS_ARE_ABSOLUTE */
 
-	EntityID	idAlias_[ 256 ];
+    EntityID idAlias_[256];
 
-	float packedXZScale_;
+    float packedXZScale_;
 
-	typedef BW::map< EntityID, EntityID > PassengerToVehicleMap;
-	PassengerToVehicleMap passengerToVehicle_;
+    typedef BW::map<EntityID, EntityID> PassengerToVehicleMap;
+    PassengerToVehicleMap               passengerToVehicle_;
 
 #if !VOLATILE_POSITIONS_ARE_ABSOLUTE
-	Position3D		sentPositions_[ 256 ];
-	Position3D		referencePosition_;
+    Position3D sentPositions_[256];
+    Position3D referencePosition_;
 #endif /* !VOLATILE_POSITIONS_ARE_ABSOLUTE */
 
-	typedef BW::set< EntityID >		ControlledEntities;
-	ControlledEntities controlledEntities_;
+    typedef BW::set<EntityID> ControlledEntities;
+    ControlledEntities        controlledEntities_;
 
-	typedef BW::map< uint16, DataDownload* > DataDownloadMap;
-	DataDownloadMap dataDownloads_;
+    typedef BW::map<uint16, DataDownload*> DataDownloadMap;
+    DataDownloadMap                        dataDownloads_;
 
-	Mercury::BlockCipherPtr pBlockCipher_;
+    Mercury::BlockCipherPtr pBlockCipher_;
 
-	StreamEncoder * pLogOnParamsEncoder_;
+    StreamEncoder* pLogOnParamsEncoder_;
 
-	TimerHandle timerHandle_;
+    TimerHandle timerHandle_;
 
-	LoginChallengeFactories & challengeFactories_;
-	CondemnedInterfaces & condemnedInterfaces_;
+    LoginChallengeFactories& challengeFactories_;
+    CondemnedInterfaces&     condemnedInterfaces_;
 
-	int maxClientMethodCount_;
-	int maxBaseMethodCount_;
-	int maxCellMethodCount_;
+    int maxClientMethodCount_;
+    int maxBaseMethodCount_;
+    int maxCellMethodCount_;
 
-	TaskManager * pTaskManager_;
+    TaskManager* pTaskManager_;
 
-	const int FIRST_AVATAR_UPDATE_MESSAGE;
-	const int LAST_AVATAR_UPDATE_MESSAGE;
+    const int FIRST_AVATAR_UPDATE_MESSAGE;
+    const int LAST_AVATAR_UPDATE_MESSAGE;
 
-	bool isEarly_;
+    bool isEarly_;
 };
 
 #ifdef CODE_INLINE
@@ -548,7 +538,7 @@ private:
 
 #if defined(__INTEL_COMPILER)
 // revert pointer declaration pragma to its default value
-#pragma pointers_to_members( pointer-declaration, best_case )
+#pragma pointers_to_members(pointer - declaration, best_case)
 #endif
 
 BW_END_NAMESPACE

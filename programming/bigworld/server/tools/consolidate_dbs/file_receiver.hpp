@@ -10,7 +10,6 @@
 #include <cstdio>
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class FileReceiverMgr;
@@ -20,57 +19,52 @@ class FileReceiverMgr;
  */
 class FileReceiver : public Mercury::InputNotificationHandler
 {
-public:
-	FileReceiver( int socket, uint32 ip, uint16 port, FileReceiverMgr & mgr );
-	virtual ~FileReceiver();
+  public:
+    FileReceiver(int socket, uint32 ip, uint16 port, FileReceiverMgr& mgr);
+    virtual ~FileReceiver();
 
-	const Mercury::Address & srcAddr() const
-		{ return srcAddr_; }
+    const Mercury::Address& srcAddr() const { return srcAddr_; }
 
-	const BW::string & destPath() const
-		{ return destPath_; }
+    const BW::string& destPath() const { return destPath_; }
 
-	const BW::string & srcPath() const
-		{ return srcPath_; }
+    const BW::string& srcPath() const { return srcPath_; }
 
-	uint64 lastActivityTime() const 
-		{ return lastActivityTime_; }
+    uint64 lastActivityTime() const { return lastActivityTime_; }
 
-	bool deleteRemoteFile();
-	bool deleteLocalFile();
-	void abort();
+    bool deleteRemoteFile();
+    bool deleteLocalFile();
+    void abort();
 
-	// Mercury::InputNotificationHandler override
-	virtual int handleInputNotification( int fd );
+    // Mercury::InputNotificationHandler override
+    virtual int handleInputNotification(int fd);
 
-private:
-	size_t recvCommand();
-	size_t recvSrcPathLen();
-	size_t recvSrcPath();
-	size_t recvFileLen();
-	size_t recvFileContents();
-	size_t recvErrorLen();
-	size_t recvErrorStr();
+  private:
+    size_t recvCommand();
+    size_t recvSrcPathLen();
+    size_t recvSrcPath();
+    size_t recvFileLen();
+    size_t recvFileContents();
+    size_t recvErrorLen();
+    size_t recvErrorStr();
 
-	bool closeFile();
+    bool closeFile();
 
-	typedef size_t (FileReceiver::*MessageProcessorFn)();
+    typedef size_t (FileReceiver::*MessageProcessorFn)();
 
-	Endpoint			endPoint_;
-	FileReceiverMgr & 	mgr_;
-	MsgReceiver			msgReceiver_;
-	MessageProcessorFn	pMsgProcessor_;
-	const char *		curActionDesc_;
-	uint64				lastActivityTime_;
-	Mercury::Address	srcAddr_;	// Cached for error info
-	BW::string			srcPath_;
-	BW::string			destPath_;
-	uint32				expectedFileSize_;
-	uint32				currentFileSize_;
-	FILE *				destFile_;
+    Endpoint           endPoint_;
+    FileReceiverMgr&   mgr_;
+    MsgReceiver        msgReceiver_;
+    MessageProcessorFn pMsgProcessor_;
+    const char*        curActionDesc_;
+    uint64             lastActivityTime_;
+    Mercury::Address   srcAddr_; // Cached for error info
+    BW::string         srcPath_;
+    BW::string         destPath_;
+    uint32             expectedFileSize_;
+    uint32             currentFileSize_;
+    FILE*              destFile_;
 };
 
 BW_END_NAMESPACE
 
 #endif // CONSOLIDATE_DBS_FILE_RECEIVER_HPP
-

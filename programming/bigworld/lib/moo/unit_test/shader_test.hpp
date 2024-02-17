@@ -6,30 +6,27 @@
 
 BW_USE_NAMESPACE
 
-namespace BW
-{
-	namespace Moo
-	{
-		class EffectMaterial;
-		typedef SmartPointer< EffectMaterial > EffectMaterialPtr;
-	}
-}
+namespace BW { namespace Moo {
+    class EffectMaterial;
+    typedef SmartPointer<EffectMaterial> EffectMaterialPtr;
+}}
 
 class ShaderTest
 {
-public:
-	ShaderTest();
+  public:
+    ShaderTest();
 
-	Moo::EffectMaterialPtr init( const BW::string& effectFileName );    
-	void fini();
+    Moo::EffectMaterialPtr init(const BW::string& effectFileName);
+    void                   fini();
 
-	bool test( uint32 technique, const BW::string& refImageFile );
+    bool test(uint32 technique, const BW::string& refImageFile);
 
-	static void getImageFileNameForEffect( const BW::string&	effectFileName,
-										   uint32				techniqueIndex,
-										   BW::string&			refImageFileName );
-private:
-	Moo::EffectMaterialPtr pEffect_;
+    static void getImageFileNameForEffect(const BW::string& effectFileName,
+                                          uint32            techniqueIndex,
+                                          BW::string&       refImageFileName);
+
+  private:
+    Moo::EffectMaterialPtr pEffect_;
 };
 
 #endif

@@ -9,28 +9,27 @@
 //-----------------------------------------------------------------------------
 // Forward declarations
 
-namespace BW
-{
+namespace BW {
 
-typedef int32 SpaceID;
-const SpaceID NULL_SPACE_ID = SpaceID( 0 );
+    typedef int32 SpaceID;
+    const SpaceID NULL_SPACE_ID = SpaceID(0);
 
-// Deprecated. Use NULL_SPACE_ID instead.
-const SpaceID NULL_SPACE = NULL_SPACE_ID;
+    // Deprecated. Use NULL_SPACE_ID instead.
+    const SpaceID NULL_SPACE = NULL_SPACE_ID;
 
-typedef uint32 SpaceTypeID;
+    typedef uint32 SpaceTypeID;
 
-class ClientSpace;
-class SpaceManager;
-class IClientSpaceFactory; 
-class IEntityEmbodiment;
-class PyOmniLight;
-class PySpotLight;
-class IOmniLightEmbodiment;
-class ISpotLightEmbodiment;
+    class ClientSpace;
+    class SpaceManager;
+    class IClientSpaceFactory;
+    class IEntityEmbodiment;
+    class PyOmniLight;
+    class PySpotLight;
+    class IOmniLightEmbodiment;
+    class ISpotLightEmbodiment;
 
-typedef SmartPointer< IEntityEmbodiment > IEntityEmbodimentPtr;
-typedef SmartPointer< ClientSpace > ClientSpacePtr;
+    typedef SmartPointer<IEntityEmbodiment> IEntityEmbodimentPtr;
+    typedef SmartPointer<ClientSpace>       ClientSpacePtr;
 
 } // namespace BW
 

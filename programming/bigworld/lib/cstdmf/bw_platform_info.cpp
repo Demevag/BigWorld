@@ -7,28 +7,27 @@
 
 #include <sys/stat.h>
 
-#if !defined( _WIN32 ) && !defined( _WIN64 )
+#if !defined(_WIN32) && !defined(_WIN64)
 #include <unistd.h>
 #endif
 
 #include <errno.h>
 #include <string.h>
 
-
 BW_BEGIN_NAMESPACE
 
 namespace { // anonymous
 
-const BW::string REDHAT_VERSION_FILE = "/etc/redhat-release";
+    const BW::string REDHAT_VERSION_FILE = "/etc/redhat-release";
 
-const BW::string SHORT_NAME_ENTERPRISE_LINUX = "el";
-const BW::string SHORT_NAME_CENTOS = "centos";
-const BW::string SHORT_NAME_FEDORA = "fedora";
-const BW::string SHORT_NAME_RHEL = "rhel";
-const BW::string SHORT_NAME_MACOSX = "macosx";
-const BW::string SHORT_NAME_WIN32 = "win32";
-const BW::string SHORT_NAME_WIN64 = "win64";
-const BW::string SHORT_NAME_UNKNOWN = "unknown";
+    const BW::string SHORT_NAME_ENTERPRISE_LINUX = "el";
+    const BW::string SHORT_NAME_CENTOS           = "centos";
+    const BW::string SHORT_NAME_FEDORA           = "fedora";
+    const BW::string SHORT_NAME_RHEL             = "rhel";
+    const BW::string SHORT_NAME_MACOSX           = "macosx";
+    const BW::string SHORT_NAME_WIN32            = "win32";
+    const BW::string SHORT_NAME_WIN64            = "win64";
+    const BW::string SHORT_NAME_UNKNOWN          = "unknown";
 
 }; // anonymous
 
@@ -45,84 +44,75 @@ const BW::string SHORT_NAME_UNKNOWN = "unknown";
  *
  *	CentOS 6+ have /etc/centos-release
  */
-bool PlatformInfo::parseRedHatRelease( BW::string & shortPlatformName )
+bool PlatformInfo::parseRedHatRelease(BW::string& shortPlatformName)
 {
-	FILE *fp = fopen( REDHAT_VERSION_FILE.c_str(), "r" );
+    FILE* fp = fopen(REDHAT_VERSION_FILE.c_str(), "r");
 
-	if (fp == NULL)
-	{
-		ERROR_MSG( "PlatformInfo::parseRedHatRelease: "
-				"Unable to open existing file '%s': %s\n",
-			REDHAT_VERSION_FILE.c_str(), strerror( errno ) );
+    if (fp == NULL) {
+        ERROR_MSG("PlatformInfo::parseRedHatRelease: "
+                  "Unable to open existing file '%s': %s\n",
+                  REDHAT_VERSION_FILE.c_str(),
+                  strerror(errno));
 
-		return false;
-	}
+        return false;
+    }
 
-	char versionLine[ BUFSIZ ];
+    char versionLine[BUFSIZ];
 
-	if (fgets( versionLine, sizeof( versionLine ), fp ) == NULL)
-	{
-		ERROR_MSG( "PlatformInfo::parseRedHatRelease: "
-				"Failed to read line from '%s': %s\n",
-			REDHAT_VERSION_FILE.c_str(), strerror( errno ) );
+    if (fgets(versionLine, sizeof(versionLine), fp) == NULL) {
+        ERROR_MSG("PlatformInfo::parseRedHatRelease: "
+                  "Failed to read line from '%s': %s\n",
+                  REDHAT_VERSION_FILE.c_str(),
+                  strerror(errno));
 
-		return false;
-	}
+        return false;
+    }
 
-	fclose( fp );
+    fclose(fp);
 
+    BW::string versionLineStr(versionLine);
 
-	BW::string versionLineStr( versionLine );
+    if (versionLineStr.find("CentOS") != BW::string::npos) {
+        shortPlatformName = SHORT_NAME_CENTOS;
+    } else if (versionLineStr.find("Red Hat") != BW::string::npos) {
+        shortPlatformName = SHORT_NAME_RHEL;
+    } else if (versionLineStr.find("Fedora") != BW::string::npos) {
+        shortPlatformName = SHORT_NAME_FEDORA;
+    } else {
+        ERROR_MSG("PlatformInfo::parseRedHatRelease: "
+                  "Unknown RedHat distribution: %s\n",
+                  versionLine);
+        return false;
+    }
 
-	if (versionLineStr.find( "CentOS" ) != BW::string::npos)
-	{
-		shortPlatformName = SHORT_NAME_CENTOS;
-	}
-	else if (versionLineStr.find( "Red Hat" ) != BW::string::npos)
-	{
-		shortPlatformName = SHORT_NAME_RHEL;
-	}
-	else if (versionLineStr.find( "Fedora" ) != BW::string::npos)
-	{
-		shortPlatformName = SHORT_NAME_FEDORA;
-	}
-	else
-	{
-		ERROR_MSG( "PlatformInfo::parseRedHatRelease: "
-			"Unknown RedHat distribution: %s\n", versionLine );
-		return false;
-	}
+    size_t           foundPos             = versionLineStr.find(" release ");
+    const BW::string unknownVersionSuffix = "-unknown";
 
-	size_t foundPos = versionLineStr.find( " release " );
-	const BW::string unknownVersionSuffix = "-unknown";
+    if (foundPos == BW::string::npos) {
+        WARNING_MSG("PlatformInfo::parseRedHatRelease: "
+                    "Unable to determine RedHat release information: %s\n",
+                    versionLine);
+        shortPlatformName += unknownVersionSuffix;
+        return true;
+    }
 
-	if (foundPos == BW::string::npos)
-	{
-		WARNING_MSG( "PlatformInfo::parseRedHatRelease: "
-				"Unable to determine RedHat release information: %s\n",
-			versionLine );
-		shortPlatformName += unknownVersionSuffix;
-		return true;
-	}
+    int versionNumber;
 
-	int versionNumber;
+    if (sscanf(versionLine + foundPos, " release %d", &versionNumber) != 1) {
+        ERROR_MSG("PlatformInfo::parseRedHatRelease: "
+                  "Unable to determine version number in: %s\n",
+                  versionLine);
 
-	if (sscanf( versionLine + foundPos, " release %d", &versionNumber ) != 1)
-	{
-		ERROR_MSG( "PlatformInfo::parseRedHatRelease: "
-			"Unable to determine version number in: %s\n", versionLine );
+        shortPlatformName += unknownVersionSuffix;
+        return true;
+    }
 
-		shortPlatformName += unknownVersionSuffix;
-		return true;
-	}
+    char versionNumBuf[8];
+    bw_snprintf(versionNumBuf, sizeof(versionNumBuf), "%d", versionNumber);
+    shortPlatformName += versionNumBuf;
 
-	char versionNumBuf[ 8 ];
-	bw_snprintf( versionNumBuf, sizeof( versionNumBuf ), "%d", versionNumber );
-	shortPlatformName += versionNumBuf;
-
-	return true;
+    return true;
 }
-
 
 /**
  *	Return a string representation of the platform name to be used for locating
@@ -130,41 +120,36 @@ bool PlatformInfo::parseRedHatRelease( BW::string & shortPlatformName )
  *	as we condense RHEL / CentOS to 'el' to provide easier cross platform
  *	support.
  */
-const BW::string & PlatformInfo::buildStr()
+const BW::string& PlatformInfo::buildStr()
 {
-#if defined( _WIN64 )
-	return SHORT_NAME_WIN64;
-#elif defined( _WIN32 )
-	return SHORT_NAME_WIN32;
-#elif defined( __APPLE__ )
-	return SHORT_NAME_MACOSX;
+#if defined(_WIN64)
+    return SHORT_NAME_WIN64;
+#elif defined(_WIN32)
+    return SHORT_NAME_WIN32;
+#elif defined(__APPLE__)
+    return SHORT_NAME_MACOSX;
 #else
-	static BW::string s_cachedBuildPlatformName;
+    static BW::string s_cachedBuildPlatformName;
 
-	if (!s_cachedBuildPlatformName.empty())
-	{
-		return s_cachedBuildPlatformName;
-	}
+    if (!s_cachedBuildPlatformName.empty()) {
+        return s_cachedBuildPlatformName;
+    }
 
-	s_cachedBuildPlatformName = PlatformInfo::str();
+    s_cachedBuildPlatformName = PlatformInfo::str();
 
-	// Replace leading SHORT_NAME_CENTOS or SHORT_NAME_RHEL with
-	// SHORT_NAME_ENTERPRISE_LINUX
-	if (s_cachedBuildPlatformName.find( SHORT_NAME_CENTOS ) == 0)
-	{
-		s_cachedBuildPlatformName.replace( 0, SHORT_NAME_CENTOS.size(),
-			SHORT_NAME_ENTERPRISE_LINUX );
-	}
-	else if (s_cachedBuildPlatformName.find( SHORT_NAME_RHEL ) == 0)
-	{
-		s_cachedBuildPlatformName.replace( 0, SHORT_NAME_RHEL.size(),
-			SHORT_NAME_ENTERPRISE_LINUX );
-	}
+    // Replace leading SHORT_NAME_CENTOS or SHORT_NAME_RHEL with
+    // SHORT_NAME_ENTERPRISE_LINUX
+    if (s_cachedBuildPlatformName.find(SHORT_NAME_CENTOS) == 0) {
+        s_cachedBuildPlatformName.replace(
+          0, SHORT_NAME_CENTOS.size(), SHORT_NAME_ENTERPRISE_LINUX);
+    } else if (s_cachedBuildPlatformName.find(SHORT_NAME_RHEL) == 0) {
+        s_cachedBuildPlatformName.replace(
+          0, SHORT_NAME_RHEL.size(), SHORT_NAME_ENTERPRISE_LINUX);
+    }
 
-	return s_cachedBuildPlatformName;
+    return s_cachedBuildPlatformName;
 #endif
 }
-
 
 /**
  *	Return a string representation of the Operating System platform name.
@@ -172,44 +157,38 @@ const BW::string & PlatformInfo::buildStr()
  *	This name is distinct for each version of the same operating system. For
  *	example, centos5, centos6, win32, win64.
  */
-const BW::string & PlatformInfo::str()
+const BW::string& PlatformInfo::str()
 {
-#if defined( _WIN64 )
-	return SHORT_NAME_WIN64;
-#elif defined( _WIN32 )
-	return SHORT_NAME_WIN32;
-#elif defined( __APPLE__ )
-	return SHORT_NAME_MACOSX;
+#if defined(_WIN64)
+    return SHORT_NAME_WIN64;
+#elif defined(_WIN32)
+    return SHORT_NAME_WIN32;
+#elif defined(__APPLE__)
+    return SHORT_NAME_MACOSX;
 #else
-	// Linux platforms
+    // Linux platforms
 
-	static BW::string s_cachedPlatformName;
+    static BW::string s_cachedPlatformName;
 
-	if (!s_cachedPlatformName.empty())
-	{
-		return s_cachedPlatformName;
-	}
+    if (!s_cachedPlatformName.empty()) {
+        return s_cachedPlatformName;
+    }
 
-	struct stat statBuf;
-	if (stat( REDHAT_VERSION_FILE.c_str(), &statBuf ) == 0)
-	{
-		if (!PlatformInfo::parseRedHatRelease( s_cachedPlatformName ))
-		{
-			s_cachedPlatformName.clear();
-		}
-	}
+    struct stat statBuf;
+    if (stat(REDHAT_VERSION_FILE.c_str(), &statBuf) == 0) {
+        if (!PlatformInfo::parseRedHatRelease(s_cachedPlatformName)) {
+            s_cachedPlatformName.clear();
+        }
+    }
 
-	if (s_cachedPlatformName.empty())
-	{
-		s_cachedPlatformName = SHORT_NAME_UNKNOWN;
-	}
+    if (s_cachedPlatformName.empty()) {
+        s_cachedPlatformName = SHORT_NAME_UNKNOWN;
+    }
 
-	return s_cachedPlatformName;
+    return s_cachedPlatformName;
 #endif
 }
 
-
 BW_END_NAMESPACE
-
 
 // bw_platform_info.cpp

@@ -1,41 +1,34 @@
 #ifndef TCP_BUNDLE_PROCESSOR
 #define TCP_BUNDLE_PROCESSOR
 
-
 #include "network/misc.hpp"
 #include "network/tcp_bundle.hpp"
 
-
 BW_BEGIN_NAMESPACE
-
 
 class BinaryIStream;
 
-namespace Mercury
-{
+namespace Mercury {
 
-class InterfaceTable;
-class TCPChannel;
+    class InterfaceTable;
+    class TCPChannel;
 
+    /**
+     *	This class processes messages on a TCPBundle.
+     */
+    class TCPBundleProcessor
+    {
+      public:
+        TCPBundleProcessor(BinaryIStream& data);
 
-/**
- *	This class processes messages on a TCPBundle.
- */
-class TCPBundleProcessor
-{
-public:
-	TCPBundleProcessor( BinaryIStream & data );
+        Reason dispatchMessages(TCPChannel&     channel,
+                                InterfaceTable& interfaceTable);
 
-	Reason dispatchMessages( TCPChannel & channel, 
-		InterfaceTable & interfaceTable );
-
-private:
-	BinaryIStream & data_;
-};
-
+      private:
+        BinaryIStream& data_;
+    };
 
 } // end namespace Mercury
-
 
 BW_END_NAMESPACE
 

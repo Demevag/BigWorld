@@ -18,51 +18,50 @@ typedef SmartPointer<MatrixProxy> MatrixProxyPtr;
  * It also listens to the currently selected coordinate system
  * this means that if you are working in local coordinates the
  * scales will be appplied relative to their origin, otherwise
- * the scales are applied relative to the centre of the current 
+ * the scales are applied relative to the centre of the current
  * scale properties
  */
 class PropertyScalerHelper
 {
-public:
-	PropertyScalerHelper();
+  public:
+    PropertyScalerHelper();
 
-	void init( const Matrix& gizmoTransform );
-	void updateScale( const Vector3& scale );
-	void fini( bool success );
+    void init(const Matrix& gizmoTransform);
+    void updateScale(const Vector3& scale);
+    void fini(bool success);
 
-private:
+  private:
+    struct PropInfo
+    {
+        GenScaleProperty* prop_;
+        Matrix            initialMatrix_;
+    };
 
-	struct PropInfo
-	{
-		GenScaleProperty* prop_;
-		Matrix			initialMatrix_;
-	};
+    BW::vector<PropInfo> props_;
 
-	BW::vector<PropInfo> props_;
+    struct PositionOnlyPropInfo
+    {
+        GenPositionProperty* prop_;
+        Matrix               initialMatrix_;
+    };
 
-	struct PositionOnlyPropInfo
-	{
-		GenPositionProperty* prop_;
-		Matrix			initialMatrix_;
-	};
+    BW::vector<PositionOnlyPropInfo> positionOnlyProps_;
 
-	BW::vector<PositionOnlyPropInfo> positionOnlyProps_;
+    Vector3 groupOrigin_;
+    Matrix  groupFrame_;
+    Matrix  invGroupFrame_;
 
-	Vector3				groupOrigin_;
-	Matrix				groupFrame_;
-	Matrix				invGroupFrame_;
+    // Helper class to find a Propinfo structure
+    // by its MatrixProxyPtr
+    class PropFinder
+    {
+      public:
+        PropFinder(MatrixProxyPtr pMatrix);
+        bool operator()(PropInfo& prop);
 
-	// Helper class to find a Propinfo structure
-	// by its MatrixProxyPtr
-	class PropFinder
-	{
-	public:
-		PropFinder( MatrixProxyPtr pMatrix );
-		bool operator () ( PropInfo& prop );
-	private:
-		MatrixProxyPtr pMatrix_;
-
-	};
+      private:
+        MatrixProxyPtr pMatrix_;
+    };
 };
 
 BW_END_NAMESPACE

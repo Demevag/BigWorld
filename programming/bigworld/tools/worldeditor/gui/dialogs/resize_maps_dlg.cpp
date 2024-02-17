@@ -10,87 +10,82 @@ BW_BEGIN_NAMESPACE
 
 IMPLEMENT_DYNAMIC(ResizeMapsDlg, CDialog)
 
-
 ResizeMapsDlg::ResizeMapsDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(ResizeMapsDlg::IDD, pParent)
+  : CDialog(ResizeMapsDlg::IDD, pParent)
 {
 }
 
-
-ResizeMapsDlg::~ResizeMapsDlg()
-{
-}
+ResizeMapsDlg::~ResizeMapsDlg() {}
 
 uint32 ResizeMapsDlg::blendsMapSize() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return Options::getOptionInt( "terrain2/defaults/blendMapSize",
-		Terrain::TerrainSettings::defaults()->blendMapSize());
+    return Options::getOptionInt(
+      "terrain2/defaults/blendMapSize",
+      Terrain::TerrainSettings::defaults()->blendMapSize());
 }
 
 void ResizeMapsDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_RESIZEMAP_CURSIZE, curBlendMapSize_);
-	DDX_Control(pDX, IDC_RESIZE_BLENDMAP_SIZE, blendMapSize_);
-	DDX_Control(pDX, IDC_ICON_WARNING, iconWarning_);
-	DDX_Control(pDX, IDCANCEL, buttonCancel_);
-	DDX_Control(pDX, IDOK, buttonCreate_);
+    CDialog::DoDataExchange(pDX);
+    DDX_Control(pDX, IDC_RESIZEMAP_CURSIZE, curBlendMapSize_);
+    DDX_Control(pDX, IDC_RESIZE_BLENDMAP_SIZE, blendMapSize_);
+    DDX_Control(pDX, IDC_ICON_WARNING, iconWarning_);
+    DDX_Control(pDX, IDCANCEL, buttonCancel_);
+    DDX_Control(pDX, IDOK, buttonCreate_);
 }
 
-
 BEGIN_MESSAGE_MAP(ResizeMapsDlg, CDialog)
-	ON_BN_CLICKED(IDOK, OnBnClickedOk)
+ON_BN_CLICKED(IDOK, OnBnClickedOk)
 END_MESSAGE_MAP()
-
 
 // ResizeMaps message handlers
 
 BOOL ResizeMapsDlg::OnInitDialog()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	CDialog::OnInitDialog();
+    CDialog::OnInitDialog();
 
-	INIT_AUTO_TOOLTIP();
-	
-	blendMapSize_.initInt( MIN_HOLE_MAP_SIZE, MAX_MAP_SIZE,
-		Options::getOptionInt( "terrain2/defaults/blendMapSize", 
-		Terrain::TerrainSettings::defaults()->blendMapSize() ) );
-	blendMapSize_.setSilent( false );
+    INIT_AUTO_TOOLTIP();
 
-	BW::stringstream sizeStr;
-	sizeStr << WorldManager::instance().pTerrainSettings()->blendMapSize();
-	curBlendMapSize_.SetWindowText( bw_utf8tow( sizeStr.str() ).c_str() );
+    blendMapSize_.initInt(
+      MIN_HOLE_MAP_SIZE,
+      MAX_MAP_SIZE,
+      Options::getOptionInt(
+        "terrain2/defaults/blendMapSize",
+        Terrain::TerrainSettings::defaults()->blendMapSize()));
+    blendMapSize_.setSilent(false);
 
-	iconWarning_.SetIcon( LoadIcon( NULL, IDI_WARNING ) );
+    BW::stringstream sizeStr;
+    sizeStr << WorldManager::instance().pTerrainSettings()->blendMapSize();
+    curBlendMapSize_.SetWindowText(bw_utf8tow(sizeStr.str()).c_str());
 
-	UpdateData( FALSE );
+    iconWarning_.SetIcon(LoadIcon(NULL, IDI_WARNING));
 
-	return TRUE;  // return TRUE unless you set the focus to a control
+    UpdateData(FALSE);
+
+    return TRUE; // return TRUE unless you set the focus to a control
 }
-
 
 void ResizeMapsDlg::OnBnClickedOk()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// store the defaults
-	if (GetFocus() != &buttonCreate_)
-	{
-		if (!blendMapSize_.isValidValue())
-		{
-			blendMapSize_.setSilent( true );
-			blendMapSize_.SetFocus();
-			blendMapSize_.setSilent( false );
-			return;
-		}
-	}
-	Options::setOptionInt( "terrain2/defaults/blendMapSize", blendMapSize_.GetIntegerValue() );
+    // store the defaults
+    if (GetFocus() != &buttonCreate_) {
+        if (!blendMapSize_.isValidValue()) {
+            blendMapSize_.setSilent(true);
+            blendMapSize_.SetFocus();
+            blendMapSize_.setSilent(false);
+            return;
+        }
+    }
+    Options::setOptionInt("terrain2/defaults/blendMapSize",
+                          blendMapSize_.GetIntegerValue());
 
-	OnOK();
+    OnOK();
 }
 
 BW_END_NAMESPACE
-

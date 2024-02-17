@@ -3,7 +3,6 @@
 
 #include "server/server_app_option.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,16 +10,16 @@ BW_BEGIN_NAMESPACE
  */
 class NoiseConfig
 {
-public:
-	static ServerAppOption< float > standardRange;
-	static ServerAppOption< float > verticalSpeed;
-	static ServerAppOption< float > horizontalSpeed;
-	static ServerAppOption< float > horizontalSpeedSqr;
+  public:
+    static ServerAppOption<float> standardRange;
+    static ServerAppOption<float> verticalSpeed;
+    static ServerAppOption<float> horizontalSpeed;
+    static ServerAppOption<float> horizontalSpeedSqr;
 
-	static bool postInit();
+    static bool postInit();
 
-private:
-	NoiseConfig();
+  private:
+    NoiseConfig();
 };
 
 BW_END_NAMESPACE

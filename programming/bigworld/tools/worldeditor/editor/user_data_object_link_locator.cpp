@@ -14,111 +14,93 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace
-{
+namespace {
     /**
      *  This is a helper class that finds the closest linkable chunk item.
      */
     class ObjectLinkLocatorClosestLinkableCatcher : public CollisionCallback
     {
-    public:
-		explicit ObjectLinkLocatorClosestLinkableCatcher(const BW::string& linkName, UserDataObjectLinkLocator::Type type ) : 
-            chunkItem_(NULL),
-            distance_(std::numeric_limits<float>::max()),
-            type_(type),
-			linkName_(linkName)
+      public:
+        explicit ObjectLinkLocatorClosestLinkableCatcher(
+          const BW::string&               linkName,
+          UserDataObjectLinkLocator::Type type)
+          : chunkItem_(NULL)
+          , distance_(std::numeric_limits<float>::max())
+          , type_(type)
+          , linkName_(linkName)
         {
         }
 
-        /*virtual*/ int operator()
-        ( 
-            CollisionObstacle   const & obstacle,
-		    WorldTriangle   const &/*triangle*/, 
-            float           dist
-        )
+        /*virtual*/ int operator()(CollisionObstacle const& obstacle,
+                                   WorldTriangle const& /*triangle*/,
+                                   float dist)
         {
-			BW_GUARD;
+            BW_GUARD;
 
-            if (dist < distance_)
-            {
+            if (dist < distance_) {
                 distance_ = dist;
 
-				ChunkItem * pItem = obstacle.sceneObject().isType<ChunkItem>() ?
-					obstacle.sceneObject().getAs<ChunkItem>() : NULL;
-				MF_ASSERT( pItem );
-				if (!pItem)
-				{
-					return COLLIDE_ALL;
-				}
-
-                EditorChunkItem *item = pItem;
-                
-                if 
-                (
-                    (type_ & UserDataObjectLinkLocator::LOCATE_USER_DATA_OBJECTS) != 0
-                    &&
-                    item->isEditorUserDataObject()
-                )
-                {
-                    EditorChunkUserDataObject *cci = (EditorChunkUserDataObject *)item;
-                    chunkItem_ = pItem;
+                ChunkItem* pItem = obstacle.sceneObject().isType<ChunkItem>()
+                                     ? obstacle.sceneObject().getAs<ChunkItem>()
+                                     : NULL;
+                MF_ASSERT(pItem);
+                if (!pItem) {
+                    return COLLIDE_ALL;
                 }
-                else if 
-                (
-				   (type_ & UserDataObjectLinkLocator::LOCATE_ENTITIES) != 0
-                    &&
-                    item->isEditorEntity()
-                )
-                {
-                    EditorChunkEntity *entity = (EditorChunkEntity *)item;
-                    int idx = entity->patrolListPropIdx();
-                    if (idx != -1)
-                    {
+
+                EditorChunkItem* item = pItem;
+
+                if ((type_ &
+                     UserDataObjectLinkLocator::LOCATE_USER_DATA_OBJECTS) !=
+                      0 &&
+                    item->isEditorUserDataObject()) {
+                    EditorChunkUserDataObject* cci =
+                      (EditorChunkUserDataObject*)item;
+                    chunkItem_ = pItem;
+                } else if ((type_ &
+                            UserDataObjectLinkLocator::LOCATE_ENTITIES) != 0 &&
+                           item->isEditorEntity()) {
+                    EditorChunkEntity* entity = (EditorChunkEntity*)item;
+                    int                idx    = entity->patrolListPropIdx();
+                    if (idx != -1) {
                         chunkItem_ = pItem;
                     }
-				}
-                    
+                }
             }
             return COLLIDE_BEFORE;
         }
 
         ChunkItemPtr                    chunkItem_;
         float                           distance_;
-        UserDataObjectLinkLocator::Type    type_;
-		BW::string							linkName_;
+        UserDataObjectLinkLocator::Type type_;
+        BW::string                      linkName_;
     };
 }
-
 
 /**
  *  StationNodeLinkLocator constructor.
  */
-/*explicit*/ UserDataObjectLinkLocator::UserDataObjectLinkLocator
-(	
-	const BW::string& linkName,
-    Type    type       /*= LOCATE_BOTH*/
-) :
-    chunkItem_(NULL),
-    initialPos_(true),
-    type_(type),
-	linkName_(linkName)
+/*explicit*/ UserDataObjectLinkLocator::UserDataObjectLinkLocator(
+  const BW::string& linkName,
+  Type              type /*= LOCATE_BOTH*/
+  )
+  : chunkItem_(NULL)
+  , initialPos_(true)
+  , type_(type)
+  , linkName_(linkName)
 
 {
-	BW_GUARD;
+    BW_GUARD;
 
     subLocator_ = ToolLocatorPtr(
-        new ChunkObstacleToolLocator(ClosestObstacleNoEditStations::s_default),
-		PyObjectPtr::STEAL_REFERENCE );
+      new ChunkObstacleToolLocator(ClosestObstacleNoEditStations::s_default),
+      PyObjectPtr::STEAL_REFERENCE);
 }
-
 
 /**
  *  StationNodeLinkLocator destrcutor.
  */
-/*virtual*/ UserDataObjectLinkLocator::~UserDataObjectLinkLocator()
-{
-}
-
+/*virtual*/ UserDataObjectLinkLocator::~UserDataObjectLinkLocator() {}
 
 /**
  *  Calculate the location given a ray through worldray.
@@ -126,39 +108,28 @@ namespace
  *  @param worldRay     The world ray.
  *  @param tool         The originating tool.
  */
-/*virtual*/ void 
-UserDataObjectLinkLocator::calculatePosition
-(
-    Vector3             const &worldRay, 
-    Tool                &tool
-)
+/*virtual*/ void UserDataObjectLinkLocator::calculatePosition(
+  Vector3 const& worldRay,
+  Tool&          tool)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     chunkItem_ = NULL; // reset item
 
     // Allow the sub-locator to find the position first:
-	subLocator_->calculatePosition(worldRay, tool);
-	transform_ = subLocator_->transform();
+    subLocator_->calculatePosition(worldRay, tool);
+    transform_ = subLocator_->transform();
 
-	Vector3 extent = 
-        Moo::rc().invView().applyToOrigin() 
-        +
-		worldRay*Moo::rc().camera().farPlane();
+    Vector3 extent = Moo::rc().invView().applyToOrigin() +
+                     worldRay * Moo::rc().camera().farPlane();
 
     ObjectLinkLocatorClosestLinkableCatcher clc(linkName_, type_);
 
-	float distance = 
-        ChunkManager::instance().cameraSpace()->collide
-        ( 
-		    Moo::rc().invView().applyToOrigin(),
-		    extent,
-		    clc
-        );
+    float distance = ChunkManager::instance().cameraSpace()->collide(
+      Moo::rc().invView().applyToOrigin(), extent, clc);
 
     chunkItem_ = clc.chunkItem_;
 }
-
 
 /**
  *  Return the selected chunk item.
@@ -168,4 +139,3 @@ ChunkItemPtr UserDataObjectLinkLocator::chunkItem()
     return chunkItem_;
 }
 BW_END_NAMESPACE
-

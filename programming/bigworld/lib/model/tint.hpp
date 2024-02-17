@@ -1,4 +1,4 @@
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 #pragma once
 #endif
 
@@ -10,12 +10,10 @@
 #include "dye_property.hpp"
 #include "dye_selection.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class Tint;
-typedef SmartPointer< Tint > TintPtr;
-
+typedef SmartPointer<Tint> TintPtr;
 
 /**
  *	Inner class to represent a tint
@@ -23,29 +21,27 @@ typedef SmartPointer< Tint > TintPtr;
  */
 class Tint : public ReferenceCount
 {
-public:
-	Tint( const BW::string & name, bool defaultTint = false );
-	virtual ~Tint();
+  public:
+    Tint(const BW::string& name, bool defaultTint = false);
+    virtual ~Tint();
 
-	void applyTint();
+    void applyTint();
 
-	void updateFromEffect();
+    void updateFromEffect();
 
-	BW::string name_;
+    BW::string name_;
 
-	Moo::ComplexEffectMaterialPtr			effectMaterial_;	// newvisual
-	BW::vector< DyeProperty >		properties_;		// *visual
-	BW::vector< DyeSelection >		sourceDyes_;		// textural
+    Moo::ComplexEffectMaterialPtr effectMaterial_; // newvisual
+    BW::vector<DyeProperty>       properties_;     // *visual
+    BW::vector<DyeSelection>      sourceDyes_;     // textural
 
-private:
-	Tint( const Tint & );
-	Tint & operator=( const Tint & );
+  private:
+    Tint(const Tint&);
+    Tint& operator=(const Tint&);
 
-	bool default_;
+    bool default_;
 };
 
 BW_END_NAMESPACE
 
-
 #endif // MODEL_TINT_HPP
-

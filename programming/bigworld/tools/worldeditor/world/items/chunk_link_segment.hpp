@@ -1,7 +1,6 @@
 #ifndef CHUNK_LINK_SEGMENT_HPP
 #define CHUNK_LINK_SEGMENT_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "chunk/chunk_link.hpp"
@@ -18,71 +17,52 @@ BW_BEGIN_NAMESPACE
  */
 class ChunkLinkSegment : public ReferenceCount
 {
-public:
-    typedef Moo::VertexXYZNUV2                  VertexType;
+  public:
+    typedef Moo::VertexXYZNUV2 VertexType;
 
-    ChunkLinkSegment
-    (
-        Vector3                 const &start,
-        Vector3                 const &end,
-        float                   startU,
-        float                   endU,
-        float                   thickness,
-		Moo::VertexBuffer       vertexBuffer,
-		Moo::IndexBuffer        indexBuffer,
-        uint16                  vertexBase,
-        uint16                  indexBase,
-		Moo::VertexBuffer       lineVertexBuffer,
-		Moo::IndexBuffer        lineIndexBuffer,
-        uint16                  lineVertexBase,
-        uint16                  lineIndexBase
-    );
+    ChunkLinkSegment(Vector3 const&    start,
+                     Vector3 const&    end,
+                     float             startU,
+                     float             endU,
+                     float             thickness,
+                     Moo::VertexBuffer vertexBuffer,
+                     Moo::IndexBuffer  indexBuffer,
+                     uint16            vertexBase,
+                     uint16            indexBase,
+                     Moo::VertexBuffer lineVertexBuffer,
+                     Moo::IndexBuffer  lineIndexBuffer,
+                     uint16            lineVertexBase,
+                     uint16            lineIndexBase);
 
-    static bool 
-    beginDrawSegments
-    (
-        Moo::RenderContext      &rc,
-        DX::BaseTexture         *texture,
-        Moo::EffectMaterialPtr	effectMaterial,
-        float                   time,
-        float                   vSpeed,
-        ChunkLink::Direction    direction,
-		const Matrix&			worldTransform = Matrix::identity
-    );
+    static bool beginDrawSegments(
+      Moo::RenderContext&    rc,
+      DX::BaseTexture*       texture,
+      Moo::EffectMaterialPtr effectMaterial,
+      float                  time,
+      float                  vSpeed,
+      ChunkLink::Direction   direction,
+      const Matrix&          worldTransform = Matrix::identity);
 
-    static void draw
-    (
-        Moo::RenderContext      &rc,
-		Moo::VertexBuffer       vertexBuffer,
-        Moo::IndexBuffer        indexBuffer,
-		Moo::VertexBuffer       lineVertexBuffer,
-        Moo::IndexBuffer        lineIndexBuffer,
-        unsigned int            numSegments
-    );
+    static void draw(Moo::RenderContext& rc,
+                     Moo::VertexBuffer   vertexBuffer,
+                     Moo::IndexBuffer    indexBuffer,
+                     Moo::VertexBuffer   lineVertexBuffer,
+                     Moo::IndexBuffer    lineIndexBuffer,
+                     unsigned int        numSegments);
 
-    void drawTris
-    (
-        Moo::RenderContext      &rc
-    ) const;
+    void drawTris(Moo::RenderContext& rc) const;
 
-    static void 
-    endDrawSegments
-    (
-        Moo::RenderContext      &rc,
-        DX::BaseTexture         *texture,
-        Moo::EffectMaterialPtr	effectMaterial,
-        float                   time,
-        float                   vSpeed,
-        ChunkLink::Direction    direction
-    );
+    static void endDrawSegments(Moo::RenderContext&    rc,
+                                DX::BaseTexture*       texture,
+                                Moo::EffectMaterialPtr effectMaterial,
+                                float                  time,
+                                float                  vSpeed,
+                                ChunkLink::Direction   direction);
 
-    bool intersects
-    (
-        Vector3                 const &start,
-        Vector3                 const &dir,
-        float                   &t,
-        WorldTriangle           &tri
-    ) const;
+    bool intersects(Vector3 const& start,
+                    Vector3 const& dir,
+                    float&         t,
+                    WorldTriangle& tri) const;
 
     static unsigned int numberVertices();
 
@@ -90,32 +70,27 @@ public:
 
     static unsigned int numberTriangles();
 
-private:
-    void addVertex(VertexType *buffer, VertexType const &v);
+  private:
+    void addVertex(VertexType* buffer, VertexType const& v);
 
-    void 
-    addTriangle
-    (
-        VertexType                  const &v1,
-        VertexType                  const &v2,
-        VertexType                  const &v3
-    );
+    void addTriangle(VertexType const& v1,
+                     VertexType const& v2,
+                     VertexType const& v3);
 
-    ChunkLinkSegment(ChunkLinkSegment const &);
-    ChunkLinkSegment &operator=(ChunkLinkSegment const &);
+    ChunkLinkSegment(ChunkLinkSegment const&);
+    ChunkLinkSegment& operator=(ChunkLinkSegment const&);
 
-private:           
-    Matrix                          transform_;
-    Matrix                          invTransform_;
-    Vector3                         min_;
-    Vector3                         max_;
-    BW::vector<WorldTriangle>      triangles_;
-    float                           startU_;
-    float                           endU_;
+  private:
+    Matrix                    transform_;
+    Matrix                    invTransform_;
+    Vector3                   min_;
+    Vector3                   max_;
+    BW::vector<WorldTriangle> triangles_;
+    float                     startU_;
+    float                     endU_;
 };
 
-
-typedef SmartPointer<ChunkLinkSegment>  ChunkLinkSegmentPtr;
+typedef SmartPointer<ChunkLinkSegment> ChunkLinkSegmentPtr;
 
 BW_END_NAMESPACE
 

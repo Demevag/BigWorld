@@ -11,18 +11,17 @@ class BackupHash;
 
 class LogOnRecordsCache
 {
-public:
-	void insert( const EntityKey & entityKey, const EntityMailBoxRef & mb );
-	void erase( const EntityKey & entityKey );
-	void remapMailboxes( const Mercury::Address & oldAddr,
-			const BackupHash & destAddrs );
-	bool lookUp( const EntityKey & entityKey, EntityMailBoxRef & mb ) const;
+  public:
+    void insert(const EntityKey& entityKey, const EntityMailBoxRef& mb);
+    void erase(const EntityKey& entityKey);
+    void remapMailboxes(const Mercury::Address& oldAddr,
+                        const BackupHash&       destAddrs);
+    bool lookUp(const EntityKey& entityKey, EntityMailBoxRef& mb) const;
 
-private:
-
-	typedef BW::map< DatabaseID, EntityMailBoxRef > MailBoxMap;
-	typedef BW::map< EntityTypeID, MailBoxMap > MailBoxMapCache;
-	MailBoxMapCache cache_;
+  private:
+    typedef BW::map<DatabaseID, EntityMailBoxRef> MailBoxMap;
+    typedef BW::map<EntityTypeID, MailBoxMap>     MailBoxMapCache;
+    MailBoxMapCache                               cache_;
 };
 
 BW_END_NAMESPACE

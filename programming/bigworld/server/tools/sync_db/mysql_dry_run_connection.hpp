@@ -3,7 +3,6 @@
 
 #include "db_storage_mysql/locked_connection.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -15,12 +14,12 @@ BW_BEGIN_NAMESPACE
  */
 class MySqlDryRunConnection : public MySqlLockedConnection
 {
-public:
-	MySqlDryRunConnection( const DBConfig::ConnectionInfo & connectionInfo);
-	~MySqlDryRunConnection() {}
+  public:
+    MySqlDryRunConnection(const DBConfig::ConnectionInfo& connectionInfo);
+    ~MySqlDryRunConnection() {}
 
-private:
-	MySql * createMysqlWrapper() const; /* override */
+  private:
+    MySql* createMysqlWrapper() const; /* override */
 };
 
 BW_END_NAMESPACE

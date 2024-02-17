@@ -9,13 +9,11 @@ BW_BEGIN_NAMESPACE
 
 class WorldEditorRompHarness : public RompHarness
 {
-private:
-	void disturbWater();
+  private:
+    void disturbWater();
 };
 
 BW_END_NAMESPACE
 
 //---------------------------------------------------------------------------
-#endif //WORLD_EDITOR_ROMP_HARNESS_H
- 
-
+#endif // WORLD_EDITOR_ROMP_HARNESS_H

@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,7 +23,6 @@
  *
  */
 
-
 #import "CCActionInterval.h"
 #import "CCActionInstant.h"
 #import "CCGrid.h"
@@ -31,20 +30,19 @@
 @class CCGridBase;
 
 /** Base class for Grid actions */
-@interface CCGridAction : CCActionInterval
-{
-	ccGridSize gridSize_;
+@interface CCGridAction : CCActionInterval {
+    ccGridSize gridSize_;
 }
 
 /** size of the grid */
-@property (nonatomic,readwrite) ccGridSize gridSize;
+@property (nonatomic, readwrite) ccGridSize gridSize;
 
 /** creates the action with size and duration */
-+(id) actionWithSize:(ccGridSize)size duration:(ccTime)d;
++ (id)actionWithSize:(ccGridSize)size duration:(ccTime)d;
 /** initializes the action with size and duration */
--(id) initWithSize:(ccGridSize)gridSize duration:(ccTime)d;
+- (id)initWithSize:(ccGridSize)gridSize duration:(ccTime)d;
 /** returns the grid */
--(CCGridBase *)grid;
+- (CCGridBase*)grid;
 
 @end
 
@@ -53,89 +51,92 @@
 /** Base class for CCGrid3D actions.
  Grid3D actions can modify a non-tiled grid.
  */
-@interface CCGrid3DAction : CCGridAction
-{
+@interface CCGrid3DAction : CCGridAction {
 }
 
 /** returns the vertex than belongs to certain position in the grid */
--(ccVertex3F)vertex:(ccGridSize)pos;
-/** returns the non-transformed vertex than belongs to certain position in the grid */
--(ccVertex3F)originalVertex:(ccGridSize)pos;
+- (ccVertex3F)vertex:(ccGridSize)pos;
+/** returns the non-transformed vertex than belongs to certain position in the
+ * grid */
+- (ccVertex3F)originalVertex:(ccGridSize)pos;
 /** sets a new vertex to a certain position of the grid */
--(void)setVertex:(ccGridSize)pos vertex:(ccVertex3F)vertex;
+- (void)setVertex:(ccGridSize)pos vertex:(ccVertex3F)vertex;
 
 @end
 
 ////////////////////////////////////////////////////////////
 
 /** Base class for CCTiledGrid3D actions */
-@interface CCTiledGrid3DAction : CCGridAction
-{
+@interface CCTiledGrid3DAction : CCGridAction {
 }
 
 /** returns the tile that belongs to a certain position of the grid */
--(ccQuad3)tile:(ccGridSize)pos;
-/** returns the non-transformed tile that belongs to a certain position of the grid */
--(ccQuad3)originalTile:(ccGridSize)pos;
+- (ccQuad3)tile:(ccGridSize)pos;
+/** returns the non-transformed tile that belongs to a certain position of the
+ * grid */
+- (ccQuad3)originalTile:(ccGridSize)pos;
 /** sets a new tile to a certain position of the grid */
--(void)setTile:(ccGridSize)pos coords:(ccQuad3)coords;
+- (void)setTile:(ccGridSize)pos coords:(ccQuad3)coords;
 
 @end
 
 ////////////////////////////////////////////////////////////
 
 /** CCAccelDeccelAmplitude action */
-@interface CCAccelDeccelAmplitude : CCActionInterval
-{
-	float			rate;
-	CCActionInterval *other;
+@interface CCAccelDeccelAmplitude : CCActionInterval {
+    float             rate;
+    CCActionInterval* other;
 }
 
 /** amplitude rate */
-@property (nonatomic,readwrite) float rate;
+@property (nonatomic, readwrite) float rate;
 
-/** creates the action with an inner action that has the amplitude property, and a duration time */
-+(id)actionWithAction:(CCAction*)action duration:(ccTime)d;
-/** initializes the action with an inner action that has the amplitude property, and a duration time */
--(id)initWithAction:(CCAction*)action duration:(ccTime)d;
+/** creates the action with an inner action that has the amplitude property, and
+ * a duration time */
++ (id)actionWithAction:(CCAction*)action duration:(ccTime)d;
+/** initializes the action with an inner action that has the amplitude property,
+ * and a duration time */
+- (id)initWithAction:(CCAction*)action duration:(ccTime)d;
 
 @end
 
 ////////////////////////////////////////////////////////////
 
 /** CCAccelAmplitude action */
-@interface CCAccelAmplitude : CCActionInterval
-{
-	float			rate;
-	CCActionInterval *other;
+@interface CCAccelAmplitude : CCActionInterval {
+    float             rate;
+    CCActionInterval* other;
 }
 
 /** amplitude rate */
-@property (nonatomic,readwrite) float rate;
+@property (nonatomic, readwrite) float rate;
 
-/** creates the action with an inner action that has the amplitude property, and a duration time */
-+(id)actionWithAction:(CCAction*)action duration:(ccTime)d;
-/** initializes the action with an inner action that has the amplitude property, and a duration time */
--(id)initWithAction:(CCAction*)action duration:(ccTime)d;
+/** creates the action with an inner action that has the amplitude property, and
+ * a duration time */
++ (id)actionWithAction:(CCAction*)action duration:(ccTime)d;
+/** initializes the action with an inner action that has the amplitude property,
+ * and a duration time */
+- (id)initWithAction:(CCAction*)action duration:(ccTime)d;
 
 @end
 
 ////////////////////////////////////////////////////////////
 
 /** CCDeccelAmplitude action */
-@interface CCDeccelAmplitude : CCActionInterval
-{
-	float			rate;
-	CCActionInterval *other;
+@interface CCDeccelAmplitude : CCActionInterval {
+    float             rate;
+    CCActionInterval* other;
 }
 
 /** amplitude rate */
-@property (nonatomic,readwrite) float rate;
+@property (nonatomic, readwrite) float rate;
 
-/** creates the action with an inner action that has the amplitude property, and a duration time */
-+(id)actionWithAction:(CCAction*)action duration:(ccTime)d;
-/** initializes the action with an inner action that has the amplitude property, and a duration time */
--(id)initWithAction:(CCAction*)action duration:(ccTime)d;
+/** creates the action with an inner action that has the amplitude property, and
+ * a duration time */
++ (id)actionWithAction:(CCAction*)action duration:(ccTime)d;
+/** initializes the action with an inner action that has the amplitude property,
+ * and a duration time */
+- (id)initWithAction:(CCAction*)action duration:(ccTime)d;
 
 @end
 
@@ -146,20 +147,20 @@
  Call if you want to remove the the grid effect. Example:
  [Sequence actions:[Lens ...], [StopGrid action], nil];
  */
-@interface CCStopGrid : CCActionInstant
-{
+@interface CCStopGrid : CCActionInstant {
 }
 @end
 
 ////////////////////////////////////////////////////////////
 
 /** CCReuseGrid action */
-@interface CCReuseGrid : CCActionInstant
-{
-	int t;
+@interface CCReuseGrid : CCActionInstant {
+    int t;
 }
-/** creates an action with the number of times that the current grid will be reused */
-+(id) actionWithTimes: (int) times;
-/** initializes an action with the number of times that the current grid will be reused */
--(id) initWithTimes: (int) times;
+/** creates an action with the number of times that the current grid will be
+ * reused */
++ (id)actionWithTimes:(int)times;
+/** initializes an action with the number of times that the current grid will be
+ * reused */
+- (id)initWithTimes:(int)times;
 @end

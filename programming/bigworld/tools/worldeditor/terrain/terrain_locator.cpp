@@ -15,28 +15,27 @@ BW_BEGIN_NAMESPACE
 //	Section : TerrainToolLocator
 //----------------------------------------------------
 
-PY_TYPEOBJECT( TerrainToolLocator )
+PY_TYPEOBJECT(TerrainToolLocator)
 
-PY_BEGIN_METHODS( TerrainToolLocator )
+PY_BEGIN_METHODS(TerrainToolLocator)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( TerrainToolLocator )
+PY_BEGIN_ATTRIBUTES(TerrainToolLocator)
 PY_END_ATTRIBUTES()
 
-PY_FACTORY_NAMED( TerrainToolLocator, "TerrainToolLocator", Locator )
+PY_FACTORY_NAMED(TerrainToolLocator, "TerrainToolLocator", Locator)
 
-LOCATOR_FACTORY( TerrainToolLocator )
+LOCATOR_FACTORY(TerrainToolLocator)
 
 /**
  *	Constructor.
  *
  *	@param pType		The type.
  */
-/*explicit*/ TerrainToolLocator::TerrainToolLocator( PyTypeObject * pType ):
-	ChunkObstacleToolLocator( terrainCallback_, pType )
+/*explicit*/ TerrainToolLocator::TerrainToolLocator(PyTypeObject* pType)
+  : ChunkObstacleToolLocator(terrainCallback_, pType)
 {
 }
-
 
 /**
  *	This method calculates the position of the terrain tool locator,
@@ -45,76 +44,66 @@ LOCATOR_FACTORY( TerrainToolLocator )
  *	@param	worldRay	The camera's world ray.
  *	@param	tool		The tool we are locating.
  */
-void TerrainToolLocator::calculatePosition( 
-	const Vector3 &		worldRay, 
-	Tool &				tool )
+void TerrainToolLocator::calculatePosition(const Vector3& worldRay, Tool& tool)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	Vector3 groundPos = 
-		Snap::toGround(Moo::rc().invView().applyToOrigin(), worldRay, 20000.f);
+    Vector3 groundPos =
+      Snap::toGround(Moo::rc().invView().applyToOrigin(), worldRay, 20000.f);
 
-	if (groundPos != Moo::rc().invView().applyToOrigin())
-	{
-		transform_.setTranslate( groundPos );
-		positionValid_ = true;
+    if (groundPos != Moo::rc().invView().applyToOrigin()) {
+        transform_.setTranslate(groundPos);
+        positionValid_ = true;
 
-		// Snap in the XZ direction.
-		if (WorldManager::instance().snapsEnabled())
-		{
-			Vector3 snaps = WorldManager::instance().movementSnaps();
-			snaps.y = 0.0f;
-			Snap::vector3( *(Vector3*)&transform_._41, snaps );
-			Snap::toGround( *(Vector3*)&transform_._41 );
-		}
-	}
-	else
-	{
-		positionValid_ = false;
-	}
+        // Snap in the XZ direction.
+        if (WorldManager::instance().snapsEnabled()) {
+            Vector3 snaps = WorldManager::instance().movementSnaps();
+            snaps.y       = 0.0f;
+            Snap::vector3(*(Vector3*)&transform_._41, snaps);
+            Snap::toGround(*(Vector3*)&transform_._41);
+        }
+    } else {
+        positionValid_ = false;
+    }
 }
-
 
 /**
  *	This is the static python factory method.
  *
  *	@param pArgs		The arguments for the factory.
  */
-PyObject * TerrainToolLocator::pyNew( PyObject * pArgs )
+PyObject* TerrainToolLocator::pyNew(PyObject* pArgs)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return new TerrainToolLocator();
+    return new TerrainToolLocator();
 }
-
 
 //----------------------------------------------------
 //	Section : TerrainHoleToolLocator
 //----------------------------------------------------
 
-PY_TYPEOBJECT( TerrainHoleToolLocator )
+PY_TYPEOBJECT(TerrainHoleToolLocator)
 
-PY_BEGIN_METHODS( TerrainHoleToolLocator )
+PY_BEGIN_METHODS(TerrainHoleToolLocator)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( TerrainHoleToolLocator )
+PY_BEGIN_ATTRIBUTES(TerrainHoleToolLocator)
 PY_END_ATTRIBUTES()
 
-PY_FACTORY_NAMED( TerrainHoleToolLocator, "TerrainHoleToolLocator", Locator )
+PY_FACTORY_NAMED(TerrainHoleToolLocator, "TerrainHoleToolLocator", Locator)
 
-LOCATOR_FACTORY( TerrainHoleToolLocator )
-
+LOCATOR_FACTORY(TerrainHoleToolLocator)
 
 /**
  *	Constructor.
  *
  *	@param pType		The type.
  */
-/*explicit*/ TerrainHoleToolLocator::TerrainHoleToolLocator( PyTypeObject * pType ):
-	ChunkObstacleToolLocator( terrainCallback_, pType )
+/*explicit*/ TerrainHoleToolLocator::TerrainHoleToolLocator(PyTypeObject* pType)
+  : ChunkObstacleToolLocator(terrainCallback_, pType)
 {
 }
-
 
 /**
  *	This method calculates the position of the terrain tool locator,
@@ -124,80 +113,73 @@ LOCATOR_FACTORY( TerrainHoleToolLocator )
  *	@param	worldRay	The camera's world ray.
  *	@param	tool		The tool we are locating.
  */
-void TerrainHoleToolLocator::calculatePosition(
-	const Vector3 &		worldRay, 
-	Tool &				tool )
+void TerrainHoleToolLocator::calculatePosition(const Vector3& worldRay,
+                                               Tool&          tool)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	Vector3 groundPos = 
-			Snap::toGround( 
-				Moo::rc().invView().applyToOrigin(), 
-				worldRay,
-				WorldManager::instance().getMaxFarPlane(), 
-				true );		// ignore holes
+    Vector3 groundPos =
+      Snap::toGround(Moo::rc().invView().applyToOrigin(),
+                     worldRay,
+                     WorldManager::instance().getMaxFarPlane(),
+                     true); // ignore holes
 
-	if (groundPos != Moo::rc().invView().applyToOrigin())
-	{
-		transform_.setTranslate( groundPos );
-		positionValid_ = true;
+    if (groundPos != Moo::rc().invView().applyToOrigin()) {
+        transform_.setTranslate(groundPos);
+        positionValid_ = true;
 
-		// Always snap in the XZ direction.	
-		float size = float( WorldManager::instance().pTerrainSettings()->blockSize() ) / 
-			float( WorldManager::instance().pTerrainSettings()->holeMapSize() );
-		Vector3 snaps( size, 0.0f, size );
-		float offset = -size / 2.0f;
-		Snap::vector3( *(Vector3*)&transform_._41, snaps, Vector3( offset, 0.f, offset ) );	
-		Snap::toGround( *(Vector3*)&transform_._41, Vector3(0.f, -1.f, 0.f), 500.f, true );
-	}
-	else
-	{
-		positionValid_ = false;
-	}
+        // Always snap in the XZ direction.
+        float size =
+          float(WorldManager::instance().pTerrainSettings()->blockSize()) /
+          float(WorldManager::instance().pTerrainSettings()->holeMapSize());
+        Vector3 snaps(size, 0.0f, size);
+        float   offset = -size / 2.0f;
+        Snap::vector3(
+          *(Vector3*)&transform_._41, snaps, Vector3(offset, 0.f, offset));
+        Snap::toGround(
+          *(Vector3*)&transform_._41, Vector3(0.f, -1.f, 0.f), 500.f, true);
+    } else {
+        positionValid_ = false;
+    }
 }
-
 
 /**
  *	This is the static python factory method.
  *
  *	@param pArgs	The arguments for the factory.
  */
-PyObject * TerrainHoleToolLocator::pyNew( PyObject * pArgs )
+PyObject* TerrainHoleToolLocator::pyNew(PyObject* pArgs)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return new TerrainHoleToolLocator;
+    return new TerrainHoleToolLocator;
 }
-
-
 
 //----------------------------------------------------
 //	Section : TerrainChunkLocator
 //----------------------------------------------------
 
-PY_TYPEOBJECT( TerrainChunkLocator )
+PY_TYPEOBJECT(TerrainChunkLocator)
 
-PY_BEGIN_METHODS( TerrainChunkLocator )
+PY_BEGIN_METHODS(TerrainChunkLocator)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( TerrainChunkLocator )
+PY_BEGIN_ATTRIBUTES(TerrainChunkLocator)
 PY_END_ATTRIBUTES()
 
-PY_FACTORY_NAMED( TerrainChunkLocator, "TerrainChunkLocator", Locator )
+PY_FACTORY_NAMED(TerrainChunkLocator, "TerrainChunkLocator", Locator)
 
-LOCATOR_FACTORY( TerrainChunkLocator )
-
+LOCATOR_FACTORY(TerrainChunkLocator)
 
 /**
  *	Constructor.
  *
  *	@param pType		The type.
  */
-/*explicit*/ TerrainChunkLocator::TerrainChunkLocator( PyTypeObject * pType ):
-	ChunkObstacleToolLocator( terrainCallback_, pType )
+/*explicit*/ TerrainChunkLocator::TerrainChunkLocator(PyTypeObject* pType)
+  : ChunkObstacleToolLocator(terrainCallback_, pType)
 {
 }
-
 
 /**
  *	This method calculates the position of the terrain chunk locator,
@@ -207,59 +189,47 @@ LOCATOR_FACTORY( TerrainChunkLocator )
  *	@param	worldRay	The camera's world ray.
  *	@param	tool		The tool we are locating.
  */
-void TerrainChunkLocator::calculatePosition( 
-	const Vector3 &		worldRay, 
-	Tool &				tool )
+void TerrainChunkLocator::calculatePosition(const Vector3& worldRay, Tool& tool)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	terrainCallback_.reset();
-	Vector3 extent = Moo::rc().invView().applyToOrigin() +
-		( worldRay * WorldManager::instance().getMaxFarPlane() );
+    terrainCallback_.reset();
+    Vector3 extent = Moo::rc().invView().applyToOrigin() +
+                     (worldRay * WorldManager::instance().getMaxFarPlane());
 
-	ChunkSpacePtr space = ChunkManager::instance().cameraSpace();
-	if (space)
-	{
-		space->collide( 
-			Moo::rc().invView().applyToOrigin(),
-			extent,
-			*callback_ );
-	}
+    ChunkSpacePtr space = ChunkManager::instance().cameraSpace();
+    if (space) {
+        space->collide(Moo::rc().invView().applyToOrigin(), extent, *callback_);
+    }
 
-	if (terrainCallback_.collided())
-	{
-		Vector3	pos = Moo::rc().invView().applyToOrigin() +
-				( worldRay * terrainCallback_.dist() );
+    if (terrainCallback_.collided()) {
+        Vector3 pos = Moo::rc().invView().applyToOrigin() +
+                      (worldRay * terrainCallback_.dist());
 
-		if (ChunkManager::instance().cameraSpace())
-		{
-			ChunkSpace::Column * pColumn =
-				ChunkManager::instance().cameraSpace()->column( pos, false );
+        if (ChunkManager::instance().cameraSpace()) {
+            ChunkSpace::Column* pColumn =
+              ChunkManager::instance().cameraSpace()->column(pos, false);
 
-			if (pColumn != NULL)
-			{
-				if (pColumn->pOutsideChunk())
-				{
-					transform_ = pColumn->pOutsideChunk()->transform();
-					transform_[3] += Vector3( 50.f, 0.f, 50.f );
-				}
-			}
-		}
-	}
+            if (pColumn != NULL) {
+                if (pColumn->pOutsideChunk()) {
+                    transform_ = pColumn->pOutsideChunk()->transform();
+                    transform_[3] += Vector3(50.f, 0.f, 50.f);
+                }
+            }
+        }
+    }
 }
-
 
 /**
  *	This is the static python factory method.
  *
  *	@param pArgs	The arguments for the factory.
  */
-PyObject * TerrainChunkLocator::pyNew( PyObject * pArgs )
+PyObject* TerrainChunkLocator::pyNew(PyObject* pArgs)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return new TerrainChunkLocator;
+    return new TerrainChunkLocator;
 }
 
 BW_END_NAMESPACE
-

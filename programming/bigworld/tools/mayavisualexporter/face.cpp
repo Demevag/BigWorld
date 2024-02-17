@@ -6,8 +6,7 @@ BW_BEGIN_NAMESPACE
 
 Face::Face()
 {
-	memset( this, 0, sizeof(Face) );
+    memset(this, 0, sizeof(Face));
 }
 
 BW_END_NAMESPACE
-

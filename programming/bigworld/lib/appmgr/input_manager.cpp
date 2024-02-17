@@ -18,18 +18,12 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor.
  */
-InputManager::InputManager()
-{
-}
-
+InputManager::InputManager() {}
 
 /**
  *	Destructor.
  */
-InputManager::~InputManager()
-{
-}
-
+InputManager::~InputManager() {}
 
 /**
  * This method responds to key events by sending them
@@ -41,25 +35,22 @@ InputManager::~InputManager()
  *
  * @return true if the event was handled by any module
  */
-bool InputManager::handleKeyEvent( const KeyEvent & event )
+bool InputManager::handleKeyEvent(const KeyEvent& event)
 {
-	bool handled = ConsoleManager::instance().handleKeyEvent( event );
+    bool handled = ConsoleManager::instance().handleKeyEvent(event);
 
-	ModulePtr module = ModuleManager::instance().currentModule();
+    ModulePtr module = ModuleManager::instance().currentModule();
 
-	if ( module && !handled )
-	{
-		handled = module->handleKeyEvent( event );
-	}
+    if (module && !handled) {
+        handled = module->handleKeyEvent(event);
+    }
 
-	if ( !handled )
-	{
-		handled = ApplicationInput::handleKeyEvent( event );
-	}
+    if (!handled) {
+        handled = ApplicationInput::handleKeyEvent(event);
+    }
 
-	return handled;
+    return handled;
 }
-
 
 /**
  * This method handles incoming mouse events.  Like the keyboard
@@ -71,33 +62,30 @@ bool InputManager::handleKeyEvent( const KeyEvent & event )
  *
  * @return true if the event was handled by any module.
  */
-bool InputManager::handleMouseEvent( const MouseEvent & event )
+bool InputManager::handleMouseEvent(const MouseEvent& event)
 {
-	ModulePtr module = ModuleManager::instance().currentModule();
+    ModulePtr module = ModuleManager::instance().currentModule();
 
-	bool handled = false;
+    bool handled = false;
 
-	if ( module )
-	{
-		handled = module->handleMouseEvent( event );
-	}
+    if (module) {
+        handled = module->handleMouseEvent(event);
+    }
 
-	if ( !handled )
-	{
-		handled = ApplicationInput::handleMouseEvent( event );
-	}
+    if (!handled) {
+        handled = ApplicationInput::handleMouseEvent(event);
+    }
 
-	return handled;
+    return handled;
 }
-
 
 /**
  *	Output streaming operator for InputManager.
  */
 std::ostream& operator<<(std::ostream& o, const InputManager& t)
 {
-	o << "InputManager\n";
-	return o;
+    o << "InputManager\n";
+    return o;
 }
 
 BW_END_NAMESPACE

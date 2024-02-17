@@ -7,7 +7,6 @@
 
 #include "cstdmf/unique_id.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -16,28 +15,29 @@ BW_BEGIN_NAMESPACE
  */
 class UniqueIDMapping : public PropertyMapping
 {
-public:
-	UniqueIDMapping( const Namer & namer, const BW::string & propName,
-			DataSectionPtr pDefaultValue );
+  public:
+    UniqueIDMapping(const Namer&      namer,
+                    const BW::string& propName,
+                    DataSectionPtr    pDefaultValue);
 
-	UniqueID getValue() const;
+    UniqueID getValue() const;
 
-	// Overrides from PropertyMapping
-	virtual void fromStreamToDatabase( StreamToQueryHelper & helper,
-			BinaryIStream & strm,
-			QueryRunner & queryRunner ) const;
+    // Overrides from PropertyMapping
+    virtual void fromStreamToDatabase(StreamToQueryHelper& helper,
+                                      BinaryIStream&       strm,
+                                      QueryRunner&         queryRunner) const;
 
-	virtual void fromDatabaseToStream( ResultToStreamHelper & helper,
-				ResultStream & results,
-				BinaryOStream & strm ) const;
+    virtual void fromDatabaseToStream(ResultToStreamHelper& helper,
+                                      ResultStream&         results,
+                                      BinaryOStream&        strm) const;
 
-	virtual void defaultToStream( BinaryOStream & strm ) const;
+    virtual void defaultToStream(BinaryOStream& strm) const;
 
-	virtual bool visitParentColumns( ColumnVisitor & visitor );
+    virtual bool visitParentColumns(ColumnVisitor& visitor);
 
-private:
-	BW::string	colName_;
-	UniqueID 	defaultValue_;
+  private:
+    BW::string colName_;
+    UniqueID   defaultValue_;
 };
 
 BW_END_NAMESPACE

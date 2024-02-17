@@ -13,13 +13,13 @@ class LogOnStatus;
  */
 class ServerConnectionHandler
 {
-public:
-	virtual ~ServerConnectionHandler() {}
+  public:
+    virtual ~ServerConnectionHandler() {}
 
-	virtual void onLoggedOff() = 0;
-	virtual void onLoggedOn() = 0;
-	virtual void onLogOnFailure( const LogOnStatus & status,
-		const BW::string & message ) = 0;
+    virtual void onLoggedOff()                             = 0;
+    virtual void onLoggedOn()                              = 0;
+    virtual void onLogOnFailure(const LogOnStatus& status,
+                                const BW::string&  message) = 0;
 };
 
 BW_END_NAMESPACE

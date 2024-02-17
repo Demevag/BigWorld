@@ -9,8 +9,6 @@
 
 BW_BEGIN_NAMESPACE
 
-
-
 /**
  *	BufferedTcpEndpoint constructor, this is used to create an Endpoint for
  *	communicating with non-blocking tcp connection accepted from listener.
@@ -20,27 +18,23 @@ BW_BEGIN_NAMESPACE
  *
  *	@return none.
  */
-BufferedTcpEndpoint::BufferedTcpEndpoint(
-		Mercury::EventDispatcher & dispatcher, Endpoint & endpoint ) : 
-	dispatcher_( dispatcher ),
-	endpoint_( endpoint )
+BufferedTcpEndpoint::BufferedTcpEndpoint(Mercury::EventDispatcher& dispatcher,
+                                         Endpoint&                 endpoint)
+  : dispatcher_(dispatcher)
+  , endpoint_(endpoint)
 {
-	endpoint.setnonblocking( true );
+    endpoint.setnonblocking(true);
 }
-
 
 /**
  *	BufferedTcpEndpoint destructor.
  */
 BufferedTcpEndpoint::~BufferedTcpEndpoint()
 {
-	if (this->getEndpoint().good() && bufferedStream_.size())
-	{
-		dispatcher_.deregisterWriteFileDescriptor(
-					this->getEndpoint().fileno() );
-	}
+    if (this->getEndpoint().good() && bufferedStream_.size()) {
+        dispatcher_.deregisterWriteFileDescriptor(this->getEndpoint().fileno());
+    }
 }
-
 
 /**
  *	Append a data buffer to the buffered stream.
@@ -50,10 +44,10 @@ BufferedTcpEndpoint::~BufferedTcpEndpoint()
  *
  *	@return none.
  */
-void BufferedTcpEndpoint::appendToBufferedStream( 
-			const char * data, int size ) const
+void BufferedTcpEndpoint::appendToBufferedStream(const char* data,
+                                                 int         size) const
 {
-	bufferedStream_.addBlob( data, size );
+    bufferedStream_.addBlob(data, size);
 }
 
 /**
@@ -65,23 +59,18 @@ void BufferedTcpEndpoint::appendToBufferedStream(
  *	@return the actual sent bytes upon success;
  *		-1 if non-ignorable errno detected.
  */
-int BufferedTcpEndpoint::sendContent( const char *content, int size ) const
+int BufferedTcpEndpoint::sendContent(const char* content, int size) const
 {
-	int sentVal = this->getEndpoint().send( content, size );
-	if (sentVal < size)
-	{
-		if (!isErrnoIgnorable())
-		{
-			sentVal = -1;
-		}
-		else if (sentVal < 0)
-		{
-			sentVal = 0;
-		}
-	}
-	return sentVal;
+    int sentVal = this->getEndpoint().send(content, size);
+    if (sentVal < size) {
+        if (!isErrnoIgnorable()) {
+            sentVal = -1;
+        } else if (sentVal < 0) {
+            sentVal = 0;
+        }
+    }
+    return sentVal;
 }
-
 
 /**
  *	This method flushes the data in the buffered stream.
@@ -93,36 +82,29 @@ int BufferedTcpEndpoint::sendContent( const char *content, int size ) const
  */
 int BufferedTcpEndpoint::flushBufferedStream() const
 {
-	int sentVal = 0;
+    int sentVal = 0;
 
-	sentVal = this->sendContent( 
-			(const char *)bufferedStream_.retrieve( 0 ),
-			bufferedStream_.remainingLength() );
+    sentVal = this->sendContent((const char*)bufferedStream_.retrieve(0),
+                                bufferedStream_.remainingLength());
 
-	if (sentVal > 0)
-	{
-		bufferedStream_.retrieve( sentVal );
-	}
-	else if (sentVal == -1)
-	{
-		int err = errno;
-		WARNING_MSG( "BufferedTcpEndpoint::send: "
-			"Could not send : %s, remaining %d bytes.\n",
-			strerror( err ),
-			bufferedStream_.remainingLength() );
+    if (sentVal > 0) {
+        bufferedStream_.retrieve(sentVal);
+    } else if (sentVal == -1) {
+        int err = errno;
+        WARNING_MSG("BufferedTcpEndpoint::send: "
+                    "Could not send : %s, remaining %d bytes.\n",
+                    strerror(err),
+                    bufferedStream_.remainingLength());
 
-		bufferedStream_.retrieve( bufferedStream_.remainingLength() );
-	}
+        bufferedStream_.retrieve(bufferedStream_.remainingLength());
+    }
 
-	if (bufferedStream_.size() == 0)
-	{
-		dispatcher_.deregisterWriteFileDescriptor( 
-					this->getEndpoint().fileno() );
-	}
+    if (bufferedStream_.size() == 0) {
+        dispatcher_.deregisterWriteFileDescriptor(this->getEndpoint().fileno());
+    }
 
-	return sentVal;
+    return sentVal;
 }
-
 
 /**
  *	This method will send the data specified in buffer,
@@ -132,57 +114,49 @@ int BufferedTcpEndpoint::flushBufferedStream() const
  *	@param data		the buffer with the data to be sent
  *	@param size		the size of the data to be sent
  *
- *	@return bytes sent if successful 
+ *	@return bytes sent if successful
  *		or -1 if it could not be sent
  */
-int BufferedTcpEndpoint::send( void * data, int32 size ) const
+int BufferedTcpEndpoint::send(void* data, int32 size) const
 {
-	int sentVal = 0;
+    int sentVal = 0;
 
-	if (bufferedStream_.size() == 0)
-	{
-		sentVal = this->sendContent( (const char*)data, size );
-		if ((sentVal >= 0) && (sentVal < size))
-		{
-			this->appendToBufferedStream( (char *)data + sentVal,
-							size - sentVal );
-			dispatcher_.registerWriteFileDescriptor(
-					this->getEndpoint().fileno(),
-					const_cast<BufferedTcpEndpoint*>( this ),
-					"BufferedTcpEndpointWrite" );
-		}
-		else if (sentVal == -1)
-		{
-			int err = errno;
-			WARNING_MSG( "BufferedTcpEndpoint::send: "
-				"Could not send : %s, remaining %d bytes.\n",
-				strerror( err ),
-				bufferedStream_.remainingLength() );
-		}
+    if (bufferedStream_.size() == 0) {
+        sentVal = this->sendContent((const char*)data, size);
+        if ((sentVal >= 0) && (sentVal < size)) {
+            this->appendToBufferedStream((char*)data + sentVal, size - sentVal);
+            dispatcher_.registerWriteFileDescriptor(
+              this->getEndpoint().fileno(),
+              const_cast<BufferedTcpEndpoint*>(this),
+              "BufferedTcpEndpointWrite");
+        } else if (sentVal == -1) {
+            int err = errno;
+            WARNING_MSG("BufferedTcpEndpoint::send: "
+                        "Could not send : %s, remaining %d bytes.\n",
+                        strerror(err),
+                        bufferedStream_.remainingLength());
+        }
 
-	}
-	else
-	{
-		this->appendToBufferedStream( (char *)data, size );
-	}
+    } else {
+        this->appendToBufferedStream((char*)data, size);
+    }
 
-	return sentVal;
+    return sentVal;
 }
 
 /**
- *	This method overrides the InputNotificationHandler. It is called 
+ *	This method overrides the InputNotificationHandler. It is called
  *	when there are events to process.
  *
  *	@param fd		The socket disriptor
  *
  *	@return The return value is ignored, should return 0.
  */
-int BufferedTcpEndpoint::handleInputNotification( int fd )
+int BufferedTcpEndpoint::handleInputNotification(int fd)
 {
-	this->flushBufferedStream();
-	return 0;
+    this->flushBufferedStream();
+    return 0;
 }
-
 
 BW_END_NAMESPACE
 

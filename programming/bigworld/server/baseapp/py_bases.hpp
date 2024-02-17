@@ -3,7 +3,6 @@
 
 #include "pyscript/pyobject_plus.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class Bases;
@@ -13,27 +12,27 @@ class Bases;
  */
 class PyBases : public PyObjectPlus
 {
-	Py_Header( PyBases, PyObjectPlus )
+    Py_Header(PyBases, PyObjectPlus)
 
-public:
-	PyBases( const Bases & bases, PyTypeObject * pType = &PyBases::s_type_ );
+      public
+      : PyBases(const Bases& bases, PyTypeObject* pType = &PyBases::s_type_);
 
-	PyObject * 			subscript( PyObject * entityID );
-	int					length();
+    PyObject* subscript(PyObject* entityID);
+    int       length();
 
-	PY_METHOD_DECLARE( py_has_key )
-	PY_METHOD_DECLARE( py_keys )
-	PY_METHOD_DECLARE( py_values )
-	PY_METHOD_DECLARE( py_items )
-	PY_METHOD_DECLARE( py_get )
+    PY_METHOD_DECLARE(py_has_key)
+    PY_METHOD_DECLARE(py_keys)
+    PY_METHOD_DECLARE(py_values)
+    PY_METHOD_DECLARE(py_items)
+    PY_METHOD_DECLARE(py_get)
 
-	static PyObject * 	s_subscript( PyObject * self, PyObject * entityID );
-	static Py_ssize_t	s_length( PyObject * self );
+    static PyObject*  s_subscript(PyObject* self, PyObject* entityID);
+    static Py_ssize_t s_length(PyObject* self);
 
-private:
-	PyObject * findInstanceWithType( const char * typeName ) const;
+  private:
+    PyObject* findInstanceWithType(const char* typeName) const;
 
-	const Bases & bases_;
+    const Bases& bases_;
 };
 
 #ifdef CODE_INLINE

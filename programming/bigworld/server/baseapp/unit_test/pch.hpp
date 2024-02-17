@@ -5,4 +5,3 @@
 #include "unit_test_lib/unit_test.hpp"
 
 #endif // BASEAPP_UNIT_TEST_PCH_HPP
-

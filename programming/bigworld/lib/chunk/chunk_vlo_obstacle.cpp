@@ -6,12 +6,11 @@
 
 #ifdef MF_SERVER
 #include "server_super_model.hpp"
-#else  // MF_SERVER (is client)
+#else // MF_SERVER (is client)
 #include "model/super_model.hpp"
 #endif // MF_SERVER
 
-DECLARE_DEBUG_COMPONENT2( "Chunk", 0 )
-
+DECLARE_DEBUG_COMPONENT2("Chunk", 0)
 
 BW_BEGIN_NAMESPACE
 
@@ -22,18 +21,15 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor
  */
-ChunkVLOObstacle::ChunkVLOObstacle( Chunk & chunk ) :
-	ChunkModelObstacle( chunk )
+ChunkVLOObstacle::ChunkVLOObstacle(Chunk& chunk)
+  : ChunkModelObstacle(chunk)
 {
 }
-
 
 /**
  *	Destructor
  */
-ChunkVLOObstacle::~ChunkVLOObstacle()
-{
-}
+ChunkVLOObstacle::~ChunkVLOObstacle() {}
 
 /**
  *	This private method adds one obstacle to its chunk space columns.
@@ -42,37 +38,36 @@ ChunkVLOObstacle::~ChunkVLOObstacle()
  *
  *	@return number of columns added to (always 1 now)
  */
-int ChunkVLOObstacle::addToSpace( ChunkObstacle & cso )
+int ChunkVLOObstacle::addToSpace(ChunkObstacle& cso)
 {
-	// add to this chunk's column
-	ChunkSpace::Column * pColumn = this->pChunk_->space()->column( this->pChunk_->boundingBox().centre() );
-	if (!pColumn)
-	{
-		ERROR_MSG( "ChunkVLOObstacle::addToSpace: "
-				"Object is not inside the space -\n" );
-		return 0;
-	}
+    // add to this chunk's column
+    ChunkSpace::Column* pColumn =
+      this->pChunk_->space()->column(this->pChunk_->boundingBox().centre());
+    if (!pColumn) {
+        ERROR_MSG("ChunkVLOObstacle::addToSpace: "
+                  "Object is not inside the space -\n");
+        return 0;
+    }
 
-	// and add it
-	pColumn->addObstacle( cso );
+    // and add it
+    pColumn->addObstacle(cso);
 
-	return 1;
+    return 1;
 }
-
 
 /**
  *	This method deletes the obstacle from its chunk space column
  */
-void ChunkVLOObstacle::delFromSpace( ChunkObstacle & cso )
+void ChunkVLOObstacle::delFromSpace(ChunkObstacle& cso)
 {
-	// add to this chunk's column
-	ChunkSpace::Column * pColumn = this->pChunk_->space()->column( this->pChunk_->boundingBox().centre() );
+    // add to this chunk's column
+    ChunkSpace::Column* pColumn =
+      this->pChunk_->space()->column(this->pChunk_->boundingBox().centre());
 
-	// and flag them all as stale
-	if (pColumn)
-		pColumn->stale();
+    // and flag them all as stale
+    if (pColumn)
+        pColumn->stale();
 }
-
 
 /// Static instance accessor initialiser
 ChunkCache::Instance<ChunkVLOObstacle> ChunkVLOObstacle::instance;
@@ -80,4 +75,3 @@ ChunkCache::Instance<ChunkVLOObstacle> ChunkVLOObstacle::instance;
 BW_END_NAMESPACE
 
 // chunk_vlo_obstacle.cpp
-

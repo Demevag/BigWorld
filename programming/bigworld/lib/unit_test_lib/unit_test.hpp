@@ -5,16 +5,14 @@
 
 #include <iostream>
 
-
 BW_BEGIN_NAMESPACE
 
-namespace BWUnitTest
-{
+namespace BWUnitTest {
 
-int runTest( const BW::string & testName, int argc, char* argv[] );
+    int runTest(const BW::string& testName, int argc, char* argv[]);
 
-int unitTestError( const char * _Format, ... );
-int unitTestInfo( const char * _Format, ... );
+    int unitTestError(const char* _Format, ...);
+    int unitTestInfo(const char* _Format, ...);
 
 }
 

@@ -7,7 +7,6 @@
 #include "cstdmf/bw_string.hpp"
 #include "cstdmf/bw_map.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -17,20 +16,20 @@ BW_BEGIN_NAMESPACE
  */
 class OffloadedBackups
 {
-public:
-	OffloadedBackups();
+  public:
+    OffloadedBackups();
 
-	bool wasOffloaded( EntityID entityID ) const;
+    bool wasOffloaded(EntityID entityID) const;
 
-	void backUpEntity( const Mercury::Address & srcAddr,
-					   BinaryIStream & data );
-	void handleBaseAppDeath( const Mercury::Address & deadAddr,
-							 const BackupHashChain & backedUpHashChain );
-	void stopBackingUpEntity( EntityID entityID );
-	bool isEmpty()	{ return apps_.empty(); }
-private:
-	typedef BW::map< Mercury::Address, BackedUpEntities > Container;
-	Container apps_;
+    void backUpEntity(const Mercury::Address& srcAddr, BinaryIStream& data);
+    void handleBaseAppDeath(const Mercury::Address& deadAddr,
+                            const BackupHashChain&  backedUpHashChain);
+    void stopBackingUpEntity(EntityID entityID);
+    bool isEmpty() { return apps_.empty(); }
+
+  private:
+    typedef BW::map<Mercury::Address, BackedUpEntities> Container;
+    Container                                           apps_;
 };
 
 BW_END_NAMESPACE

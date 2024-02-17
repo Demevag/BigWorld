@@ -14,20 +14,24 @@ class Compiler;
 /// A class for interfacing with a file cache that stores files by their hash
 class ContentAddressableCache
 {
-public:
-	static const BW::string & getCachePath();
-	static bool getReadFromCache();
-	static bool getWriteToCache();
-	static void setCachePath( const BW::string & cachePath );
-	static void setReadFromCache( bool readFromCache );
-	static void setWriteToCache( bool writeToCache );
-	static bool readFromCache( const BW::string & filename, uint64 hash, Compiler & compiler );
-	static bool writeToCache( const BW::string & filename, uint64 hash, Compiler & compiler );
+  public:
+    static const BW::string& getCachePath();
+    static bool              getReadFromCache();
+    static bool              getWriteToCache();
+    static void              setCachePath(const BW::string& cachePath);
+    static void              setReadFromCache(bool readFromCache);
+    static void              setWriteToCache(bool writeToCache);
+    static bool              readFromCache(const BW::string& filename,
+                                           uint64            hash,
+                                           Compiler&         compiler);
+    static bool              writeToCache(const BW::string& filename,
+                                          uint64            hash,
+                                          Compiler&         compiler);
 
-private:
-	static BW::string cachePath_;
-	static bool readFromCache_;
-	static bool writeToCache_;
+  private:
+    static BW::string cachePath_;
+    static bool       readFromCache_;
+    static bool       writeToCache_;
 };
 
 BW_END_NAMESPACE

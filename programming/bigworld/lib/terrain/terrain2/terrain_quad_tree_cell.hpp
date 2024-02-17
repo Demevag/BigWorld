@@ -5,42 +5,50 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Terrain
-{
+namespace Terrain {
     class TerrainCollisionCallback;
     class TerrainHeightMap2;
 }
 
 class WorldTriangle;
 
-namespace Terrain
-{
+namespace Terrain {
     /**
      *  This class is used in TerrainHeightMap2 collisions calculations.
      */
     class TerrainQuadTreeCell
     {
-    public:
-		TerrainQuadTreeCell();
+      public:
+        TerrainQuadTreeCell();
         ~TerrainQuadTreeCell();
 
-		void init( const TerrainHeightMap2* map,
-			uint32 xOffset, uint32 zOffset, uint32 xSize, uint32 zSize,
-			float xMin, float zMin, float xMax, float zMax, float minCellSize, 
-			TerrainQuadTreeCell** pCellArray, TerrainQuadTreeCell* cellArrayEnd );
+        void init(const TerrainHeightMap2* map,
+                  uint32                   xOffset,
+                  uint32                   zOffset,
+                  uint32                   xSize,
+                  uint32                   zSize,
+                  float                    xMin,
+                  float                    zMin,
+                  float                    xMax,
+                  float                    zMax,
+                  float                    minCellSize,
+                  TerrainQuadTreeCell**    pCellArray,
+                  TerrainQuadTreeCell*     cellArrayEnd);
 
-		bool collide( const Vector3& source, const Vector3& extent,
-			const TerrainHeightMap2* pOwner,
-            TerrainCollisionCallback* pCallback ) const;
+        bool collide(const Vector3&            source,
+                     const Vector3&            extent,
+                     const TerrainHeightMap2*  pOwner,
+                     TerrainCollisionCallback* pCallback) const;
 
-		bool collide( const WorldTriangle& source, const Vector3& extent,
-			const TerrainHeightMap2* pOwner, TerrainCollisionCallback* pCallback
-			) const;
+        bool collide(const WorldTriangle&      source,
+                     const Vector3&            extent,
+                     const TerrainHeightMap2*  pOwner,
+                     TerrainCollisionCallback* pCallback) const;
 
-    private:
-		BoundingBox                         boundingBox_;
-		TerrainQuadTreeCell*				children_;
-	};
+      private:
+        BoundingBox          boundingBox_;
+        TerrainQuadTreeCell* children_;
+    };
 }
 
 BW_END_NAMESPACE

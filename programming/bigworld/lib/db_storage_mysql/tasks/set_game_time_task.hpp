@@ -4,19 +4,18 @@
 #include "background_task.hpp"
 #include "network/basictypes.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class SetGameTimeTask : public MySqlBackgroundTask
 {
-public:
-	SetGameTimeTask( GameTime gameTime );
+  public:
+    SetGameTimeTask(GameTime gameTime);
 
-	virtual void performBackgroundTask( MySql & conn );
-	virtual void performMainThreadTask( bool succeeded );
+    virtual void performBackgroundTask(MySql& conn);
+    virtual void performMainThreadTask(bool succeeded);
 
-private:
-	GameTime gameTime_;
+  private:
+    GameTime gameTime_;
 };
 
 BW_END_NAMESPACE

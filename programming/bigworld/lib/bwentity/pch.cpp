@@ -1,6 +1,6 @@
 #include "pch.hpp"
 
-#if defined( _XBOX )
+#if defined(_XBOX)
 
 #include <xtl.h>
 

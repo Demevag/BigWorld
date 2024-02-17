@@ -12,19 +12,19 @@ class BinaryIStream;
  */
 class BitReader
 {
-public:
-	CSTDMF_DLL BitReader( BinaryIStream & data );
-	CSTDMF_DLL ~BitReader();
+  public:
+    CSTDMF_DLL BitReader(BinaryIStream& data);
+    CSTDMF_DLL ~BitReader();
 
-	CSTDMF_DLL int get( int nbits );
-	CSTDMF_DLL int getSigned( int nbits );
+    CSTDMF_DLL int get(int nbits);
+    CSTDMF_DLL int getSigned(int nbits);
 
-	CSTDMF_DLL static int bitsRequired( uint numValues );
+    CSTDMF_DLL static int bitsRequired(uint numValues);
 
-private:
-	BinaryIStream & data_;
-	int	bitsLeft_;
-	uint8 byte_;
+  private:
+    BinaryIStream& data_;
+    int            bitsLeft_;
+    uint8          byte_;
 };
 
 BW_END_NAMESPACE

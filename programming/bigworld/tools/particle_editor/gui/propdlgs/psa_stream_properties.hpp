@@ -15,44 +15,46 @@ class StreamPSA;
 
 class PsaStreamProperties : public PsaProperties
 {
-	DECLARE_DYNCREATE(PsaStreamProperties)
+    DECLARE_DYNCREATE(PsaStreamProperties)
 
-public:
-	PsaStreamProperties(); 
-	virtual ~PsaStreamProperties();
+  public:
+    PsaStreamProperties();
+    virtual ~PsaStreamProperties();
 
-	enum { IDD = IDD_PSA_STREAM_PROPERTIES };
+    enum
+    {
+        IDD = IDD_PSA_STREAM_PROPERTIES
+    };
 #ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+    virtual void AssertValid() const;
+    virtual void Dump(CDumpContext& dc) const;
 #endif
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 
-	DECLARE_MESSAGE_MAP()
-public:
-	controls::EditNumeric halfLife_;
-	controls::EditNumeric z_;
-	controls::EditNumeric y_;
-	controls::EditNumeric x_;
+    DECLARE_MESSAGE_MAP()
+  public:
+    controls::EditNumeric halfLife_;
+    controls::EditNumeric z_;
+    controls::EditNumeric y_;
+    controls::EditNumeric x_;
 
-public:
-	StreamPSA *	action();
-	void		SetParameters(SetOperation task);
+  public:
+    StreamPSA* action();
+    void       SetParameters(SetOperation task);
 
-private:
-	void		position(const Vector3 & position);
-	Vector3 	position() const;
+  private:
+    void    position(const Vector3& position);
+    Vector3 position() const;
 
-	void		addPositionGizmo();
-	void		removePositionGizmo();
+    void addPositionGizmo();
+    void removePositionGizmo();
 
-	SmartPointer< VectorGeneratorMatrixProxy<PsaStreamProperties> > positionMatrixProxy_;
-	GizmoPtr		positionGizmo_;
-	controls::EditNumeric	delay_;
+    SmartPointer<VectorGeneratorMatrixProxy<PsaStreamProperties>>
+                          positionMatrixProxy_;
+    GizmoPtr              positionGizmo_;
+    controls::EditNumeric delay_;
 };
 
-
 BW_END_NAMESPACE
-

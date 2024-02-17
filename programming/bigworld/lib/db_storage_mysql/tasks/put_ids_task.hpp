@@ -7,7 +7,6 @@
 
 #include "cstdmf/bw_vector.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -16,16 +15,16 @@ BW_BEGIN_NAMESPACE
  */
 class PutIDsTask : public MySqlBackgroundTask
 {
-public:
-	PutIDsTask( int numIDs, const EntityID * ids );
+  public:
+    PutIDsTask(int numIDs, const EntityID* ids);
 
-	// MySqlBackgroundTask overrides
-	virtual void performBackgroundTask( MySql & conn );
-	virtual void performMainThreadTask( bool succeeded );
+    // MySqlBackgroundTask overrides
+    virtual void performBackgroundTask(MySql& conn);
+    virtual void performMainThreadTask(bool succeeded);
 
-private:
-	typedef BW::vector< EntityID > Container;
-	Container	ids_;
+  private:
+    typedef BW::vector<EntityID> Container;
+    Container                    ids_;
 };
 
 BW_END_NAMESPACE

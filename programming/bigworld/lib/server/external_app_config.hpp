@@ -3,7 +3,6 @@
 
 #include "server_app_option.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,17 +10,17 @@ BW_BEGIN_NAMESPACE
  */
 class ExternalAppConfig
 {
-public:
-	static ServerAppOption< float > externalLatencyMin;
-	static ServerAppOption< float > externalLatencyMax;
-	static ServerAppOption< float > externalLossRatio;
+  public:
+    static ServerAppOption<float> externalLatencyMin;
+    static ServerAppOption<float> externalLatencyMax;
+    static ServerAppOption<float> externalLossRatio;
 
-	static ServerAppOption< BW::string > externalInterface;
+    static ServerAppOption<BW::string> externalInterface;
 
-	static ServerAppOption< uint > tcpServerBacklog;
+    static ServerAppOption<uint> tcpServerBacklog;
 
-protected:
-	static bool postInit();
+  protected:
+    static bool postInit();
 };
 
 BW_END_NAMESPACE

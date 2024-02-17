@@ -7,37 +7,35 @@
 
 #include "moo/vertex_formats.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace VisualManipulator
-{
+namespace VisualManipulator {
 
-struct BloatVertex
-{
-	BloatVertex();
-	Vector3	pos;
-	Vector3	normal;
-	Vector3	binormal;
-	Vector3	tangent;
-	Vector4 colour;
-	Vector2	uv;
-	Vector2	uv2;
-	int		meshIndex;
-	int		vertexIndex;
-	int		smoothingGroup;
-	Vector4 weights;
-	uint32  indices[4];
+    struct BloatVertex
+    {
+        BloatVertex();
+        Vector3 pos;
+        Vector3 normal;
+        Vector3 binormal;
+        Vector3 tangent;
+        Vector4 colour;
+        Vector2 uv;
+        Vector2 uv2;
+        int     meshIndex;
+        int     vertexIndex;
+        int     smoothingGroup;
+        Vector4 weights;
+        uint32  indices[4];
 
-	void output( Moo::VertexXYZNUV& v ) const;
-	void output( Moo::VertexXYZNUVIIIWW& v ) const;
-	void output( Moo::VertexXYZNUVTB& v ) const;
-	void output( Moo::VertexXYZNUVIIIWWTB& v ) const;
+        void output(Moo::VertexXYZNUV& v) const;
+        void output(Moo::VertexXYZNUVIIIWW& v) const;
+        void output(Moo::VertexXYZNUVTB& v) const;
+        void output(Moo::VertexXYZNUVIIIWWTB& v) const;
 
-	// for creating MeshParticles
-	bool operator == ( const BloatVertex& bv ) const;
-	bool operator < ( const BloatVertex& bv ) const;
-};
+        // for creating MeshParticles
+        bool operator==(const BloatVertex& bv) const;
+        bool operator<(const BloatVertex& bv) const;
+    };
 
 }
 

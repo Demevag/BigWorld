@@ -16,63 +16,65 @@
 
 BW_BEGIN_NAMESPACE
 
-DECLARE_WATCHER_DATA( "VisualProcessor" )
-DECLARE_COPY_STACK_INFO( true )
+DECLARE_WATCHER_DATA("VisualProcessor")
+DECLARE_COPY_STACK_INFO(true)
 DEFINE_CREATE_EDITOR_PROPERTY_STUB
 
-ConverterInfo visualProcessorInfo;
+ConverterInfo     visualProcessorInfo;
 ResourceCallbacks resourceCallbacks;
 
 static std::auto_ptr<Renderer> s_pRenderer;
 
 PLUGIN_INIT_FUNC
 {
-    Compiler * compiler = dynamic_cast< Compiler * >( &pluginLoader );
-    if (compiler == NULL)
-    {
+    Compiler* compiler = dynamic_cast<Compiler*>(&pluginLoader);
+    if (compiler == NULL) {
         return false;
     }
 
     // Initialise the file systems
-    const auto & paths = compiler->getResourcePaths();
-    bool bInitRes = BWResource::init( paths );
+    const auto& paths    = compiler->getResourcePaths();
+    bool        bInitRes = BWResource::init(paths);
 
-    if ( !AutoConfig::configureAllFrom( "resources.xml" ) )
-    {
-        ERROR_MSG("Couldn't load auto-config strings from resource.xml\n" );
+    if (!AutoConfig::configureAllFrom("resources.xml")) {
+        ERROR_MSG("Couldn't load auto-config strings from resource.xml\n");
     }
 
-    Moo::init( true, true );
+    Moo::init(true, true);
 
-    WNDCLASS wc = { 0, DefWindowProc, 0, 0, NULL, NULL, NULL, NULL, NULL, L"VisualProcessor" };
-    if ( !RegisterClass( &wc ) )
-    {
-        printf( "Could not register window class\n" );
+    WNDCLASS wc = { 0,    DefWindowProc, 0,    0,    NULL,
+                    NULL, NULL,          NULL, NULL, L"VisualProcessor" };
+    if (!RegisterClass(&wc)) {
+        printf("Could not register window class\n");
         return false;
     }
 
-    HWND hWnd = CreateWindow(
-        L"VisualProcessor", L"VisualProcessor",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT,
-        100, 100,
-        NULL, NULL, NULL, 0 );
+    HWND hWnd = CreateWindow(L"VisualProcessor",
+                             L"VisualProcessor",
+                             WS_OVERLAPPEDWINDOW,
+                             CW_USEDEFAULT,
+                             CW_USEDEFAULT,
+                             100,
+                             100,
+                             NULL,
+                             NULL,
+                             NULL,
+                             0);
 
-    s_pRenderer.reset( new Renderer );
+    s_pRenderer.reset(new Renderer);
 
-    s_pRenderer->init( true, true );
+    s_pRenderer->init(true, true);
 
-    if (!Moo::rc().createDevice( hWnd,0,0,true,false,Vector2(0,0),true,false ))
-    {
-        ERROR_MSG( "Could not create render device\n" );
+    if (!Moo::rc().createDevice(
+          hWnd, 0, 0, true, false, Vector2(0, 0), true, false)) {
+        ERROR_MSG("Could not create render device\n");
     }
 
-    INIT_CONVERTER_INFO( visualProcessorInfo, 
-                         VisualProcessor, 
-                         ConverterInfo::CACHE_CONVERSION );
+    INIT_CONVERTER_INFO(
+      visualProcessorInfo, VisualProcessor, ConverterInfo::CACHE_CONVERSION);
 
-    compiler->registerConverter( visualProcessorInfo );
-    compiler->registerResourceCallbacks( resourceCallbacks );
+    compiler->registerConverter(visualProcessorInfo);
+    compiler->registerResourceCallbacks(resourceCallbacks);
 
     return true;
 }

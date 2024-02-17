@@ -4,38 +4,35 @@
 #include <scene/scene_object.hpp>
 #include <scene/scene_type_system.hpp>
 
-namespace BW
-{
+namespace BW {
 
-class IDrawOperationTypeHandler
-{
-public:
-	virtual ~IDrawOperationTypeHandler(){}
+    class IDrawOperationTypeHandler
+    {
+      public:
+        virtual ~IDrawOperationTypeHandler() {}
 
-	virtual void doDraw( const SceneObject & object ) const = 0;
-	virtual bool success( const SceneObject & object ) const = 0;
-};
+        virtual void doDraw(const SceneObject& object) const  = 0;
+        virtual bool success(const SceneObject& object) const = 0;
+    };
 
-class DrawOperation
-	: public SceneObjectOperation<IDrawOperationTypeHandler>
-{
-public:
-	void doDraw( const SceneObject & object );
-	bool success( const SceneObject & object );
-};
+    class DrawOperation : public SceneObjectOperation<IDrawOperationTypeHandler>
+    {
+      public:
+        void doDraw(const SceneObject& object);
+        bool success(const SceneObject& object);
+    };
 
+    class DrawSuccessChecker
+    {
+      public:
+        DrawSuccessChecker(DrawOperation* drawOp);
+        void checkSuccess(const SceneObject& object);
+        bool result() const;
 
-class DrawSuccessChecker
-{
-public:
-	DrawSuccessChecker(DrawOperation * drawOp);
-	void checkSuccess(const SceneObject& object);
-	bool result() const;
-
-private:
-	DrawOperation * drawOp_;
-	bool success_;
-};
+      private:
+        DrawOperation* drawOp_;
+        bool           success_;
+    };
 
 } // namespace BW
 

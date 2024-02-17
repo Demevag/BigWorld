@@ -11,24 +11,24 @@ class EntityType;
 
 class EntityUDOFactory : public CompiledSpace::IEntityUDOFactory
 {
-public:
-	static Entity* createEntityWithType( SpaceID spaceID,
-		const EntityType* pType, const Matrix& transform,
-		const DataSectionPtr &pPropertiesDS );
-	
-	static void destroyEntityByID( EntityID id );
-	static void destroyBWEntity( BWEntity * pEntity );
+  public:
+    static Entity* createEntityWithType(SpaceID               spaceID,
+                                        const EntityType*     pType,
+                                        const Matrix&         transform,
+                                        const DataSectionPtr& pPropertiesDS);
 
-	
-	// IEntityUDOFactory interface
-	virtual EntityID createEntity( SpaceID spaceID, const DataSectionPtr& ds );
-	virtual void destroyEntity( EntityID id );
+    static void destroyEntityByID(EntityID id);
+    static void destroyBWEntity(BWEntity* pEntity);
 
-	virtual UDOHandle createUDO( const DataSectionPtr& ds );
-	virtual void destroyUDO( UDOHandle udo );
+    // IEntityUDOFactory interface
+    virtual EntityID createEntity(SpaceID spaceID, const DataSectionPtr& ds);
+    virtual void     destroyEntity(EntityID id);
 
-private:
-	struct UDOHolder;
+    virtual UDOHandle createUDO(const DataSectionPtr& ds);
+    virtual void      destroyUDO(UDOHandle udo);
+
+  private:
+    struct UDOHolder;
 };
 
 BW_END_NAMESPACE

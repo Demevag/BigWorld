@@ -5,9 +5,7 @@ BW_BEGIN_NAMESPACE
 
 using namespace Terrain;
 
-/*virtual*/ TerrainCollisionCallback::~TerrainCollisionCallback()
-{
-}
+/*virtual*/ TerrainCollisionCallback::~TerrainCollisionCallback() {}
 
 BW_END_NAMESPACE
 

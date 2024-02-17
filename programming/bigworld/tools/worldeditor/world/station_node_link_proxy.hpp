@@ -1,7 +1,6 @@
 #ifndef STATION_NODE_LINK_PROXY_HPP
 #define STATION_NODE_LINK_PROXY_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "worldeditor/editor/link_proxy.hpp"
@@ -14,11 +13,8 @@ BW_BEGIN_NAMESPACE
  */
 class StationNodeLinkProxy : public LinkProxy
 {
-public:
-    explicit StationNodeLinkProxy
-    (
-        EditorChunkStationNode      &node
-    );
+  public:
+    explicit StationNodeLinkProxy(EditorChunkStationNode& node);
 
     /*virtual*/ ~StationNodeLinkProxy();
 
@@ -32,16 +28,17 @@ public:
 
     /*virtual*/ ToolLocatorPtr createLocator() const;
 
-private:
-    StationNodeLinkProxy(StationNodeLinkProxy const &);
-    StationNodeLinkProxy &operator=(StationNodeLinkProxy const &);
+  private:
+    StationNodeLinkProxy(StationNodeLinkProxy const&);
+    StationNodeLinkProxy& operator=(StationNodeLinkProxy const&);
 
-	void relinkEntities( StationGraph* oldGraph, StationGraph* newGraph );
-	void relinkEntitiesInChunk( ChunkStationNode* node,
-								StationGraph* graph,
-								BW::string& chunkID );
-private:
-    EditorChunkStationNode          *node_;
+    void relinkEntities(StationGraph* oldGraph, StationGraph* newGraph);
+    void relinkEntitiesInChunk(ChunkStationNode* node,
+                               StationGraph*     graph,
+                               BW::string&       chunkID);
+
+  private:
+    EditorChunkStationNode* node_;
 };
 
 BW_END_NAMESPACE

@@ -7,4 +7,3 @@ BW_BEGIN_NAMESPACE
 BW_END_NAMESPACE
 
 // login_interface.cpp
-

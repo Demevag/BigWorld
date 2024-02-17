@@ -3,13 +3,11 @@
 
 #include "math/vector3.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Terrain
-{
+namespace Terrain {
 
-class TerrainBlock2;
+    class TerrainBlock2;
 
 #if 0 // unused?
 /**
@@ -47,41 +45,42 @@ private:
 };
 #endif
 
-class BasicTerrainLodController
-{
-public:	
-	BasicTerrainLodController();
+    class BasicTerrainLodController
+    {
+      public:
+        BasicTerrainLodController();
 
-	~BasicTerrainLodController();
+        ~BasicTerrainLodController();
 
-	void	setCameraPosition( const Vector3& position, float zoomFactor );
-	void	addBlock( TerrainBlock2* pBlock, const Matrix& worldTransform );
-	bool	delBlock( TerrainBlock2* pBlock );
+        void setCameraPosition(const Vector3& position, float zoomFactor);
+        void addBlock(TerrainBlock2* pBlock, const Matrix& worldTransform);
+        bool delBlock(TerrainBlock2* pBlock);
 
-	float closestUnstreamedBlock() const { return closestUnstreamedBlock_; }
+        float closestUnstreamedBlock() const { return closestUnstreamedBlock_; }
 
-	static BasicTerrainLodController& instance();
+        static BasicTerrainLodController& instance();
 
-private:
-	uint32		getNumBlocks() const
-	{
-		MF_ASSERT( blocks_.size() <= UINT_MAX );
-		return ( uint32 ) blocks_.size();
-	}
+      private:
+        uint32 getNumBlocks() const
+        {
+            MF_ASSERT(blocks_.size() <= UINT_MAX);
+            return (uint32)blocks_.size();
+        }
 
-	// This is the distance to the first block that still needs to stream 
-	// at least one LOD. FLT_MAX means there are none.
-	float closestUnstreamedBlock_;
+        // This is the distance to the first block that still needs to stream
+        // at least one LOD. FLT_MAX means there are none.
+        float closestUnstreamedBlock_;
 
-	// This is the list of block entries, so controller may update them at will.
-	typedef		std::pair< Matrix, TerrainBlock2* > BlockEntry; 
-	typedef		BW::vector< BlockEntry > BlockContainer;
-	BlockContainer	blocks_;
+        // This is the list of block entries, so controller may update them at
+        // will.
+        typedef std::pair<Matrix, TerrainBlock2*> BlockEntry;
+        typedef BW::vector<BlockEntry>            BlockContainer;
+        BlockContainer                            blocks_;
 
-	// This serialises access to the list, so we don't try to update a partially
-	// inserted block entry.
-	SimpleMutex		accessMutex_;
-};
+        // This serialises access to the list, so we don't try to update a
+        // partially inserted block entry.
+        SimpleMutex accessMutex_;
+    };
 
 } // namespace Terrain
 

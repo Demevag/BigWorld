@@ -5,11 +5,11 @@ BW_BEGIN_NAMESPACE
 
 class BoneSet
 {
-public:
-	void addBone( BW::string bone );
+  public:
+    void addBone(BW::string bone);
 
-	BW::map<BW::string, uint32> indexes;
-	BW::vector<BW::string> bones;
+    BW::map<BW::string, uint32> indexes;
+    BW::vector<BW::string>      bones;
 };
 
 BW_END_NAMESPACE

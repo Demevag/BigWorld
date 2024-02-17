@@ -18,149 +18,146 @@ BW_BEGIN_NAMESPACE
 
 class DBAppMgrConfig;
 
-namespace Mercury
-{
-class EventDispatcher;
-class NetworkInterface;
+namespace Mercury {
+    class EventDispatcher;
+    class NetworkInterface;
 } // end namespace Mercury
-
 
 typedef Mercury::ChannelOwner BaseAppMgr;
 typedef Mercury::ChannelOwner CellAppMgr;
 
-
 /**
  *	This class implements the main singleton object in the DBAppMgr application.
  */
-class DBAppMgr : public ManagerApp, 
-	public TimerHandler,
-	public Singleton< DBAppMgr >
+class DBAppMgr
+  : public ManagerApp
+  , public TimerHandler
+  , public Singleton<DBAppMgr>
 {
-public:
-	MANAGER_APP_HEADER( DBAppMgr, dbAppMgr )
+  public:
+    MANAGER_APP_HEADER(DBAppMgr, dbAppMgr)
 
-	typedef DBAppMgrConfig Config;
+    typedef DBAppMgrConfig Config;
 
-	DBAppMgr( Mercury::EventDispatcher & mainDispatcher,
-		Mercury::NetworkInterface & interface );
-	~DBAppMgr();
+    DBAppMgr(Mercury::EventDispatcher&  mainDispatcher,
+             Mercury::NetworkInterface& interface);
+    ~DBAppMgr();
 
-	void controlledShutDown(
-		const DBAppMgrInterface::controlledShutDownArgs & args );
+    void controlledShutDown(
+      const DBAppMgrInterface::controlledShutDownArgs& args);
 
-	void handleDBAppMgrBirth(
-		const DBAppMgrInterface::handleDBAppMgrBirthArgs & args );
+    void handleDBAppMgrBirth(
+      const DBAppMgrInterface::handleDBAppMgrBirthArgs& args);
 
-	void handleBaseAppDeath( BinaryIStream & data );
+    void handleBaseAppDeath(BinaryIStream& data);
 
-	DBApp * findApp( const Mercury::Address & addr );
+    DBApp* findApp(const Mercury::Address& addr);
 
-	size_t numDBApps() const	{ return dbApps_.size(); }
+    size_t numDBApps() const { return dbApps_.size(); }
 
-	/** This method returns the DBApp Alpha's DBAppID. */
-	DBAppID alphaID() const 
-	{ 
-		return dbApps_.empty() ? 0 : dbApps_.smallest().second->id();
-	}
+    /** This method returns the DBApp Alpha's DBAppID. */
+    DBAppID alphaID() const
+    {
+        return dbApps_.empty() ? 0 : dbApps_.smallest().second->id();
+    }
 
-	DBApp * dbAppAlpha();
+    DBApp* dbAppAlpha();
 
-	void onBaseAppMgrStartStatusReceived( bool hasStarted );
+    void onBaseAppMgrStartStatusReceived(bool hasStarted);
 
-	// Message handlers
-	void addDBApp( const Mercury::Address & addr,
-		const Mercury::UnpackedMessageHeader & header );
+    // Message handlers
+    void addDBApp(const Mercury::Address&               addr,
+                  const Mercury::UnpackedMessageHeader& header);
 
-	void recoverDBApp( const Mercury::Address & addr,
-		const Mercury::UnpackedMessageHeader & header,
-		const DBAppMgrInterface::recoverDBAppArgs & args );
+    void recoverDBApp(const Mercury::Address&                    addr,
+                      const Mercury::UnpackedMessageHeader&      header,
+                      const DBAppMgrInterface::recoverDBAppArgs& args);
 
-	void handleDBAppDeath( const Mercury::Address & srcAddr,
-		const Mercury::UnpackedMessageHeader & header,
-		const DBAppMgrInterface::handleDBAppDeathArgs & args );
+    void handleDBAppDeath(const Mercury::Address&               srcAddr,
+                          const Mercury::UnpackedMessageHeader& header,
+                          const DBAppMgrInterface::handleDBAppDeathArgs& args);
 
-	void handleLoginAppDeath(
-		const DBAppMgrInterface::handleLoginAppDeathArgs & args );
+    void handleLoginAppDeath(
+      const DBAppMgrInterface::handleLoginAppDeathArgs& args);
 
-	void handleBaseAppMgrBirth(
-		const DBAppMgrInterface::handleBaseAppMgrBirthArgs & args );
+    void handleBaseAppMgrBirth(
+      const DBAppMgrInterface::handleBaseAppMgrBirthArgs& args);
 
-	void handleCellAppMgrBirth(
-		const DBAppMgrInterface::handleCellAppMgrBirthArgs & args );
+    void handleCellAppMgrBirth(
+      const DBAppMgrInterface::handleCellAppMgrBirthArgs& args);
 
-	void addLoginApp( const Mercury::Address & srcAddr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    void addLoginApp(const Mercury::Address&               srcAddr,
+                     const Mercury::UnpackedMessageHeader& header,
+                     BinaryIStream&                        data);
 
-	void recoverLoginApp( const Mercury::Address & srcAddr,
-			const Mercury::UnpackedMessageHeader & header,
-			const DBAppMgrInterface::recoverLoginAppArgs & args );
+    void recoverLoginApp(const Mercury::Address&                       srcAddr,
+                         const Mercury::UnpackedMessageHeader&         header,
+                         const DBAppMgrInterface::recoverLoginAppArgs& args);
 
-	/**
-	 *	This method handles the message from DBApp-Alpha confirming one-time
-	 *	initialisation has successfully completed.
-	 */
-	void serverHasStarted()
-	{
-		// This is its own method because BW_EMPTY_MSG won't work with
-		// default arguments.
-		this->serverHasStarted( /* hasStarted */ true );
-	}
+    /**
+     *	This method handles the message from DBApp-Alpha confirming one-time
+     *	initialisation has successfully completed.
+     */
+    void serverHasStarted()
+    {
+        // This is its own method because BW_EMPTY_MSG won't work with
+        // default arguments.
+        this->serverHasStarted(/* hasStarted */ true);
+    }
 
-	void serverHasStarted( bool hasStarted );
+    void serverHasStarted(bool hasStarted);
 
-	// Overrides from TimerHandler
-	void handleTimeout( TimerHandle handle, void * arg ) /* override */;
+    // Overrides from TimerHandler
+    void handleTimeout(TimerHandle handle, void* arg) /* override */;
 
-private:
-	// Overrides from ServerApp
-	bool init( int argc, char * argv[] ) /* override */;
-	void onSignalled( int sigNum ) /* override */;
-	void onStartOfTick() /* override */;
+  private:
+    // Overrides from ServerApp
+    bool init(int argc, char* argv[]) /* override */;
+    void onSignalled(int sigNum) /* override */;
+    void onStartOfTick() /* override */;
 
-	void sendDBAppHashUpdate( bool haveNewAlpha );
-	void sendDBAppHashUpdateToBaseAppMgr();
-	void sendDBAppHashUpdateToCellAppMgr();
+    void sendDBAppHashUpdate(bool haveNewAlpha);
+    void sendDBAppHashUpdateToBaseAppMgr();
+    void sendDBAppHashUpdateToCellAppMgr();
 
+    void addWatchers();
 
-	void addWatchers();
+    void handleDBAppDeath(const Mercury::Address& addr);
 
-	void handleDBAppDeath( const Mercury::Address & addr );
+    enum TimeoutType
+    {
+        TIMEOUT_TICK,
+        TIMEOUT_GATHER_LOGIN_APPS
+    };
 
-	enum TimeoutType
-	{
-		TIMEOUT_TICK,
-		TIMEOUT_GATHER_LOGIN_APPS
-	};
+    TimerHandle tickTimer_;
+    bool        isShuttingDown_;
 
-	TimerHandle 	tickTimer_;
-	bool			isShuttingDown_;
+    BaseAppMgr baseAppMgr_;
+    CellAppMgr cellAppMgr_;
 
-	BaseAppMgr 		baseAppMgr_;
-	CellAppMgr		cellAppMgr_;
+    typedef DBHashSchemes::DBAppIDBuckets<DBAppPtr>::HashScheme DBApps;
+    DBApps                                                      dbApps_;
+    typedef BW::map<Mercury::Address, DBAppPtr>                 AddressMap;
+    AddressMap                                                  addressMap_;
+    TimeStamp dbAppAddStartWaitTime_;
+    DBAppID   lastDBAppID_;
 
-	typedef DBHashSchemes::DBAppIDBuckets< DBAppPtr >::HashScheme DBApps;
-	DBApps 			dbApps_;
-	typedef BW::map< Mercury::Address, DBAppPtr > AddressMap;
-	AddressMap 		addressMap_;
-	TimeStamp 		dbAppAddStartWaitTime_;
-	DBAppID 		lastDBAppID_;
+    typedef BW::set<Mercury::Address> LoginApps;
+    LoginApps                         loginApps_;
+    bool                              shouldAcceptLoginApps_;
+    TimerHandle                       gatherLoginAppsTimer_;
+    LoginAppID                        lastLoginAppID_;
 
-	typedef BW::set< Mercury::Address > LoginApps;
-	LoginApps 		loginApps_;
-	bool 			shouldAcceptLoginApps_;
-	TimerHandle 	gatherLoginAppsTimer_;
-	LoginAppID 		lastLoginAppID_;
+    enum StartupState
+    {
+        STARTUP_STATE_NOT_STARTED,
+        STARTUP_STATE_STARTED,
+        STARTUP_STATE_INDETERMINATE
+    };
+    StartupState startupState_;
 
-	enum StartupState
-	{
-		STARTUP_STATE_NOT_STARTED,
-		STARTUP_STATE_STARTED,
-		STARTUP_STATE_INDETERMINATE
-	};
-	StartupState 	startupState_;
-
-	static const double ADD_WAIT_TIME_SECONDS;
+    static const double ADD_WAIT_TIME_SECONDS;
 };
 
 BW_END_NAMESPACE

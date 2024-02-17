@@ -6,100 +6,92 @@
 #include "cstdmf/lookup_table.hpp"
 #include "cstdmf/bw_hash.hpp"
 
-namespace BW
-{
-namespace SceneTypeSystem
-{
+namespace BW { namespace SceneTypeSystem {
 
-namespace
-{
-	SimpleMutex s_typeIDGenerationMutex;
-}
+    namespace {
+        SimpleMutex s_typeIDGenerationMutex;
+    }
 
-LookUpTable< const char * > s_typeNameLookup;
-TypeIDContext s_sceneGlobalTypeContext;
-TypeIDContext s_viewTypeContext;
-TypeIDContext s_objectTypeContext;
-TypeIDContext s_objectOperationTypeContext;
+    LookUpTable<const char*> s_typeNameLookup;
+    TypeIDContext            s_sceneGlobalTypeContext;
+    TypeIDContext            s_viewTypeContext;
+    TypeIDContext            s_objectTypeContext;
+    TypeIDContext            s_objectOperationTypeContext;
 
-GlobalUniqueTypeID generateSceneTypeID( const char * typeName )
-{
-	GlobalUniqueTypeID hashId = 
-		static_cast<GlobalUniqueTypeID>( hash_string( typeName ) );
-	
-	// NOTE: This extra layer of typeID's is setup so that
-	// debug tools can automatically look up the typename based on the
-	// contextual ID's using lookup tables. Type ID generation is thread-safe.
-	TypeIDContext::TypeLocalUniqueID sceneId = 
-		s_sceneGlobalTypeContext.getLocalID( hashId );
+    GlobalUniqueTypeID generateSceneTypeID(const char* typeName)
+    {
+        GlobalUniqueTypeID hashId =
+          static_cast<GlobalUniqueTypeID>(hash_string(typeName));
 
-	SimpleMutexHolder smh( s_typeIDGenerationMutex );
-	s_typeNameLookup[sceneId] = typeName;
+        // NOTE: This extra layer of typeID's is setup so that
+        // debug tools can automatically look up the typename based on the
+        // contextual ID's using lookup tables. Type ID generation is
+        // thread-safe.
+        TypeIDContext::TypeLocalUniqueID sceneId =
+          s_sceneGlobalTypeContext.getLocalID(hashId);
 
-	return static_cast<GlobalUniqueTypeID>(sceneId);
-}
+        SimpleMutexHolder smh(s_typeIDGenerationMutex);
+        s_typeNameLookup[sceneId] = typeName;
 
-const char * fetchTypeName( GlobalUniqueTypeID id )
-{
-	SimpleMutexHolder smh( s_typeIDGenerationMutex );
-	return s_typeNameLookup[ static_cast<size_t>(id) ];
-}
+        return static_cast<GlobalUniqueTypeID>(sceneId);
+    }
 
-TypeIDContext& sceneViewTypeIDContext()
-{
-	return s_viewTypeContext;
-}
+    const char* fetchTypeName(GlobalUniqueTypeID id)
+    {
+        SimpleMutexHolder smh(s_typeIDGenerationMutex);
+        return s_typeNameLookup[static_cast<size_t>(id)];
+    }
 
-TypeIDContext& sceneObjectTypeIDContext()
-{
-	return s_objectTypeContext;
-}
+    TypeIDContext& sceneViewTypeIDContext()
+    {
+        return s_viewTypeContext;
+    }
 
-TypeIDContext& sceneObjectOperationTypeIDContext()
-{
-	return s_objectOperationTypeContext;
-}
+    TypeIDContext& sceneObjectTypeIDContext()
+    {
+        return s_objectTypeContext;
+    }
 
-TypeIDContext::TypeLocalUniqueID TypeIDContext::getLocalID( 
-	TypeGlobalUniqueID globalUniqueID )
-{
-	SimpleMutexHolder smh( s_typeIDGenerationMutex );
+    TypeIDContext& sceneObjectOperationTypeIDContext()
+    {
+        return s_objectOperationTypeContext;
+    }
 
-	InternalMapping::iterator findResult = 
-		internalMapping_.find( globalUniqueID );
-	if (findResult != internalMapping_.end())
-	{
-		return findResult->second;
-	}
+    TypeIDContext::TypeLocalUniqueID TypeIDContext::getLocalID(
+      TypeGlobalUniqueID globalUniqueID)
+    {
+        SimpleMutexHolder smh(s_typeIDGenerationMutex);
 
-	// We need to create a new ID then
-	externalMapping_.push_back( globalUniqueID );
-	TypeLocalUniqueID result = 
-		static_cast<TypeLocalUniqueID>(externalMapping_.size());
-	internalMapping_[ globalUniqueID ] = result;
+        InternalMapping::iterator findResult =
+          internalMapping_.find(globalUniqueID);
+        if (findResult != internalMapping_.end()) {
+            return findResult->second;
+        }
 
-	// If the result is 0 then we've overrun the storage available in 
-	// the uniqueID type. Increase its size.
-	MF_ASSERT( result != UNKNOWN );
+        // We need to create a new ID then
+        externalMapping_.push_back(globalUniqueID);
+        TypeLocalUniqueID result =
+          static_cast<TypeLocalUniqueID>(externalMapping_.size());
+        internalMapping_[globalUniqueID] = result;
 
-	return result;
-}
+        // If the result is 0 then we've overrun the storage available in
+        // the uniqueID type. Increase its size.
+        MF_ASSERT(result != UNKNOWN);
 
-TypeIDContext::TypeGlobalUniqueID TypeIDContext::getGlobalID( 
-	TypeLocalUniqueID localUniqueID )
-{
-	SimpleMutexHolder smh( s_typeIDGenerationMutex );
+        return result;
+    }
 
-	if (static_cast<size_t>(localUniqueID - 1) >= externalMapping_.size())
-	{
-		return UNKNOWN;
-	}
-	else
-	{
-		return externalMapping_[localUniqueID - 1];
-	}
-}
+    TypeIDContext::TypeGlobalUniqueID TypeIDContext::getGlobalID(
+      TypeLocalUniqueID localUniqueID)
+    {
+        SimpleMutexHolder smh(s_typeIDGenerationMutex);
+
+        if (static_cast<size_t>(localUniqueID - 1) >= externalMapping_.size()) {
+            return UNKNOWN;
+        } else {
+            return externalMapping_[localUniqueID - 1];
+        }
+    }
 
 } // namespace SceneTypeSystem
 } // namespace BW
-

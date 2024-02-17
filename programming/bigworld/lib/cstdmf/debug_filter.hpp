@@ -24,108 +24,106 @@ BW_BEGIN_NAMESPACE
  */
 class DebugFilter
 {
-public:
+  public:
+    DebugFilter();
+    ~DebugFilter();
 
-	DebugFilter();
-	~DebugFilter();
+    CSTDMF_DLL static DebugFilter& instance();
 
-	CSTDMF_DLL static DebugFilter & instance();
+    CSTDMF_DLL static void fini();
 
-	CSTDMF_DLL static void fini();
+    CSTDMF_DLL static bool shouldAccept(DebugMessagePriority messagePriority,
+                                        const char* pCategoryName = NULL);
+    bool                   shouldAcceptCategory(const char*          pCategoryName,
+                                                DebugMessagePriority messagePriority);
 
-	CSTDMF_DLL static bool shouldAccept( DebugMessagePriority messagePriority,
-		const char * pCategoryName = NULL );
-	bool shouldAcceptCategory( const char * pCategoryName,
-		DebugMessagePriority messagePriority );
+    static bool shouldWriteTimePrefix();
+    static void shouldWriteTimePrefix(bool value);
 
-	static bool shouldWriteTimePrefix();
-	static void shouldWriteTimePrefix( bool value );
+    static bool            shouldWriteToConsole();
+    CSTDMF_DLL static void shouldWriteToConsole(bool value);
 
-	static bool shouldWriteToConsole();
-	CSTDMF_DLL static void shouldWriteToConsole( bool value );
+    static bool shouldOutputErrorBackTrace();
+    static void shouldOutputErrorBackTrace(bool value);
 
-	static bool shouldOutputErrorBackTrace();
-	static void shouldOutputErrorBackTrace( bool value );
+    static bool isCreated() { return s_instance_ != NULL; }
 
-	static bool isCreated()
-	{
-		return s_instance_ != NULL;
-	}
+    CSTDMF_DLL DebugMessagePriority filterThreshold() const;
+    CSTDMF_DLL void                 filterThreshold(DebugMessagePriority value);
 
+    CSTDMF_DLL bool hasDevelopmentAssertions() const;
+    CSTDMF_DLL void hasDevelopmentAssertions(bool value);
 
-	CSTDMF_DLL DebugMessagePriority filterThreshold() const;
-	CSTDMF_DLL void filterThreshold( DebugMessagePriority value );
+    typedef BW::vector<CriticalMessageCallback*> CriticalCallbacks;
 
+    CSTDMF_DLL void addCriticalCallback(CriticalMessageCallback* pCallback);
+    CSTDMF_DLL void deleteCriticalCallback(CriticalMessageCallback* pCallback);
+    void            handleCriticalMessage(const char* message);
 
-	CSTDMF_DLL bool hasDevelopmentAssertions() const;
-	CSTDMF_DLL void hasDevelopmentAssertions( bool value );
+    typedef BW::vector<DebugMessageCallback*> DebugCallbacks;
 
+    CSTDMF_DLL void addMessageCallback(
+      DebugMessageCallback* pCallback,
+      bool                  ignoreIfMsgLoggingIsDisabled = true);
+    CSTDMF_DLL void deleteMessageCallback(DebugMessageCallback* pCallback);
 
-	typedef BW::vector< CriticalMessageCallback * > CriticalCallbacks;
+    bool handleMessage(DebugMessagePriority messagePriority,
+                       const char*          pCategory,
+                       DebugMessageSource   messageSource,
+                       const LogMetaData&   metaData,
+                       const char*          pFormat,
+                       va_list              argPtr);
 
-	CSTDMF_DLL void addCriticalCallback( CriticalMessageCallback * pCallback );
-	CSTDMF_DLL void deleteCriticalCallback( CriticalMessageCallback * pCallback );
-	void handleCriticalMessage( const char * message );
+    typedef BW::map<BW::string, DebugMessagePriority> CategoriesMap;
 
-	typedef BW::vector< DebugMessageCallback * > DebugCallbacks;
+    CSTDMF_DLL void setCategoryFilter(
+      const BW::string&    categoryName,
+      DebugMessagePriority minAcceptedPriorityLevel);
 
-	CSTDMF_DLL void addMessageCallback( DebugMessageCallback * pCallback,
-		bool ignoreIfMsgLoggingIsDisabled = true );
-	CSTDMF_DLL void deleteMessageCallback( DebugMessageCallback * pCallback );
+    static void             consoleOutputFile(FILE* value);
+    CSTDMF_DLL static FILE* consoleOutputFile();
 
-	bool handleMessage(
-		DebugMessagePriority messagePriority, const char * pCategory,
-		DebugMessageSource messageSource, const LogMetaData & metaData,
-		const char * pFormat, va_list argPtr );
+    static void setAlwaysHandleMessage(bool enable);
+    static bool alwaysHandleMessage();
 
-	typedef BW::map< BW::string, DebugMessagePriority > CategoriesMap;
+  private:
+    void addWatchers();
+    void removeWatchers() const;
 
-	CSTDMF_DLL void setCategoryFilter( const BW::string & categoryName,
-		DebugMessagePriority minAcceptedPriorityLevel );
+    DebugMessagePriority filterThreshold_;
+    bool                 hasDevelopmentAssertions_;
 
-	static void consoleOutputFile( FILE * value );
-	CSTDMF_DLL static FILE * consoleOutputFile();
+    CriticalCallbacks pCriticalCallbacks_;
+    RecursiveMutex    criticalCallbackMutex_;
+    DebugCallbacks    pMessageCallbacks_;
+    RecursiveMutex    messageCallbackMutex_;
 
-	static void setAlwaysHandleMessage( bool enable );
-	static bool alwaysHandleMessage();
+    // TODO: Improve this from using a ReadWriteLock
+    ReadWriteLock suppressedCategoriesLock_;
+    CategoriesMap suppressedCategories_;
 
-private:
-	void addWatchers();
-	void removeWatchers() const;
+    static DebugFilter* s_instance_;
 
-	DebugMessagePriority filterThreshold_;
-	bool hasDevelopmentAssertions_;
+    static bool s_shouldWriteTimePrefix_;
+    static bool s_shouldWriteToConsole_;
+    static bool s_shouldOutputErrorBackTrace_;
 
-	CriticalCallbacks pCriticalCallbacks_;
-	RecursiveMutex criticalCallbackMutex_;
-	DebugCallbacks pMessageCallbacks_;
-	RecursiveMutex messageCallbackMutex_;
+    class FileInitWrapper
+    {
+      public:
+        FileInitWrapper(FILE* f)
+          : f_(f){};
+        FILE* get() const { return f_; };
+        void  set(FILE* f) { f_ = f; };
 
-	// TODO: Improve this from using a ReadWriteLock
-	ReadWriteLock suppressedCategoriesLock_;
-	CategoriesMap suppressedCategories_;
+      private:
+        FILE* f_;
+    };
 
-	static DebugFilter * s_instance_;
+    static FileInitWrapper s_consoleOutputFile_;
 
-	static bool s_shouldWriteTimePrefix_;
-	static bool s_shouldWriteToConsole_;
-	static bool s_shouldOutputErrorBackTrace_;
-
-	class FileInitWrapper
-	{
-	public:
-		FileInitWrapper( FILE * f ) :
-			f_( f ) {};
-		FILE * get() const { return f_; };
-		void set( FILE * f ) { f_ = f; };
-	private:
-		FILE * f_;
-	};
-
-	static FileInitWrapper s_consoleOutputFile_;
-
-#if defined( _WIN32 )
-	static bool alwaysHandleMessage_;
+#if defined(_WIN32)
+    static bool alwaysHandleMessage_;
 #endif
 };
 

@@ -7,42 +7,38 @@ struct curl_slist;
 
 BW_BEGIN_NAMESPACE
 
-namespace URL
-{
+namespace URL {
 
-class StringList
-{
-public:
-	StringList():
-			pValue_( NULL )
-	{}
+    class StringList
+    {
+      public:
+        StringList()
+          : pValue_(NULL)
+        {
+        }
 
-	~StringList()
-		{ this->clear(); }
+        ~StringList() { this->clear(); }
 
+        void add(const BW::string& s);
 
-	void add( const BW::string & s );
+        void add(Headers& headers)
+        {
+            Headers::iterator iter = headers.begin();
 
-	void add( Headers & headers )
-	{
-		Headers::iterator iter = headers.begin();
+            while (iter != headers.end()) {
+                this->add(*iter);
 
-		while (iter != headers.end())
-		{
-			this->add( *iter );
+                ++iter;
+            }
+        }
 
-			++iter;
-		}
-	}
+        curl_slist* value() const { return pValue_; }
 
-	curl_slist* value() const
-		{ return pValue_; }
+        void clear();
 
-	void clear();
-
-private:
-	curl_slist * pValue_;
-};
+      private:
+        curl_slist* pValue_;
+    };
 
 } // namespace URL
 

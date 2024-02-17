@@ -3,7 +3,6 @@
 
 #include "string_like_mapping.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -14,19 +13,21 @@ BW_BEGIN_NAMESPACE
  */
 class UnicodeStringMapping : public StringLikeMapping
 {
-private:
-	// For calculating UTF8 character start offsets.
-	typedef BW::vector< uint > Offsets;
+  private:
+    // For calculating UTF8 character start offsets.
+    typedef BW::vector<uint> Offsets;
 
-public:
-	UnicodeStringMapping( const Namer & namer, const BW::string & propName,
-			ColumnIndexType indexType, uint charLength,
-			DataSectionPtr pDefaultValue );
+  public:
+    UnicodeStringMapping(const Namer&      namer,
+                         const BW::string& propName,
+                         ColumnIndexType   indexType,
+                         uint              charLength,
+                         DataSectionPtr    pDefaultValue);
 
-	static void getUTF8CharOffsets( const BW::string & s, Offsets & offsets );
+    static void getUTF8CharOffsets(const BW::string& s, Offsets& offsets);
 
-	virtual bool isBinary() const	{ return false; }
-	virtual enum_field_types getColumnType() const;
+    virtual bool             isBinary() const { return false; }
+    virtual enum_field_types getColumnType() const;
 };
 
 BW_END_NAMESPACE

@@ -7,11 +7,9 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class EntityTypeMapping;
-
 
 /**
  *	This class encapsulates the MySqlDatabase::lookUpEntities() operation so
@@ -19,27 +17,25 @@ class EntityTypeMapping;
  */
 class LookUpEntitiesTask : public MySqlBackgroundTask
 {
-public:
-	LookUpEntitiesTask( const EntityTypeMapping & entityTypeMapping,
-		const LookUpEntitiesCriteria & criteria,
-		IDatabase::ILookUpEntitiesHandler & handler );
+  public:
+    LookUpEntitiesTask(const EntityTypeMapping&           entityTypeMapping,
+                       const LookUpEntitiesCriteria&      criteria,
+                       IDatabase::ILookUpEntitiesHandler& handler);
 
-	virtual ~LookUpEntitiesTask() {}
+    virtual ~LookUpEntitiesTask() {}
 
+    // Overrides from MySqlBackgroundTask
 
-	// Overrides from MySqlBackgroundTask
+    virtual void performBackgroundTask(MySql& conn);
 
-	virtual void performBackgroundTask( MySql & conn );
+    virtual void performMainThreadTask(bool succeeded);
 
-	virtual void performMainThreadTask( bool succeeded );
-
-private:
-	const EntityTypeMapping & 			mapping_;
-	LookUpEntitiesCriteria 				criteria_;
-	IDatabase::ILookUpEntitiesHandler & handler_;
+  private:
+    const EntityTypeMapping&           mapping_;
+    LookUpEntitiesCriteria             criteria_;
+    IDatabase::ILookUpEntitiesHandler& handler_;
 };
 
 BW_END_NAMESPACE
 
 #endif // LOOKUP_ENTITIES_TASK_HPP
-

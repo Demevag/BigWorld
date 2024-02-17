@@ -11,8 +11,7 @@ BW_BEGIN_NAMESPACE
 
 namespace // (anonymous)
 {
-const BW::string privateKey = 
-"-----BEGIN RSA PRIVATE KEY-----\n\
+    const BW::string privateKey = "-----BEGIN RSA PRIVATE KEY-----\n\
 MIICXwIBAAKBgQChXiKCstcIVvsccBq3C/38ITpHrLSD4imW29q9wsUHBLfn2Yve\n\
 KrKzFeYc4mLsJbDjqTrnDjMBmk4n/PvkZpklKwiFRy0b0EY1BF1Zl6FG8vyheMwI\n\
 UoBUEbL1WDL46GmEL5y3wx8Xs+Iis/zFO3tn8IpMh/D4UUqjWk50rwzUMQIDAQAB\n\
@@ -28,150 +27,142 @@ syz6P3/LUKKqvnl98spBs3/SxxiLYlef7mlrmQIsJ0902486DKdqU5ArAaFVYVUq\n\
 FCsnIHcm7sA/J9pphVaFWsY1csO3uZQl2PtTFIIdv3r6P4s=\n\
 -----END RSA PRIVATE KEY-----\n";
 
-const BW::string publicKey =
-"-----BEGIN PUBLIC KEY-----\n\
+    const BW::string publicKey = "-----BEGIN PUBLIC KEY-----\n\
 MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChXiKCstcIVvsccBq3C/38ITpH\n\
 rLSD4imW29q9wsUHBLfn2YveKrKzFeYc4mLsJbDjqTrnDjMBmk4n/PvkZpklKwiF\n\
 Ry0b0EY1BF1Zl6FG8vyheMwIUoBUEbL1WDL46GmEL5y3wx8Xs+Iis/zFO3tn8IpM\n\
 h/D4UUqjWk50rwzUMQIDAQAB\n\
 -----END PUBLIC KEY-----\n";
 
-
-const char BLOB_DATA[] = "Here is a blob";
-const int32 testInt = 0xdeadbeef;
-const BW::string testString( "some data" );
+    const char       BLOB_DATA[] = "Here is a blob";
+    const int32      testInt     = 0xdeadbeef;
+    const BW::string testString("some data");
 
 } // end namespace (anonymous)
 
-
-TEST( SignedChecksumScheme )
+TEST(SignedChecksumScheme)
 {
-	MemoryOStream base;
+    MemoryOStream base;
 
-	Mercury::PublicKeyCipher * pPrivateKeyCipher = 
-		Mercury::PublicKeyCipher::create( /* isPrivate */ true );
-	pPrivateKeyCipher->setKey( privateKey );
+    Mercury::PublicKeyCipher* pPrivateKeyCipher =
+      Mercury::PublicKeyCipher::create(/* isPrivate */ true);
+    pPrivateKeyCipher->setKey(privateKey);
 
-	CHECK( pPrivateKeyCipher->isGood() );
+    CHECK(pPrivateKeyCipher->isGood());
 
-	ChecksumSchemePtr pScheme = ChainedChecksumScheme::create(
-			MD5SumScheme::create(),
-			SignedChecksumScheme::create(
-				*pPrivateKeyCipher ) );
+    ChecksumSchemePtr pScheme = ChainedChecksumScheme::create(
+      MD5SumScheme::create(), SignedChecksumScheme::create(*pPrivateKeyCipher));
 
-	{
-		ChecksumOStream writer( base, pScheme );
-		BinaryOStream & stream = writer;
-		stream << testInt << testString;
+    {
+        ChecksumOStream writer(base, pScheme);
+        BinaryOStream&  stream = writer;
+        stream << testInt << testString;
 
-		stream.addBlob( BLOB_DATA, sizeof( BLOB_DATA ) );
+        stream.addBlob(BLOB_DATA, sizeof(BLOB_DATA));
 
-		int sizeBeforeFinalising = writer.size();
+        int sizeBeforeFinalising = writer.size();
 
-		// When writer is destructed, finalise() is called automatically, test
-		// here anyway so we can check sizes.
-		writer.finalise();
+        // When writer is destructed, finalise() is called automatically, test
+        // here anyway so we can check sizes.
+        writer.finalise();
 
-		size_t checksumSize = writer.size() - sizeBeforeFinalising;
+        size_t checksumSize = writer.size() - sizeBeforeFinalising;
 
-		CHECK_EQUAL( pScheme->streamSize(), checksumSize );
-	}
+        CHECK_EQUAL(pScheme->streamSize(), checksumSize);
+    }
 
-	bw_safe_delete( pPrivateKeyCipher );
+    bw_safe_delete(pPrivateKeyCipher);
 
-	base.rewind();
+    base.rewind();
 
-	Mercury::PublicKeyCipher * pPublicKeyCipher = 
-		Mercury::PublicKeyCipher::create( /* isPrivate */ false );
-	pPublicKeyCipher->setKey( publicKey );
-	CHECK( pPublicKeyCipher->isGood() );
+    Mercury::PublicKeyCipher* pPublicKeyCipher =
+      Mercury::PublicKeyCipher::create(/* isPrivate */ false);
+    pPublicKeyCipher->setKey(publicKey);
+    CHECK(pPublicKeyCipher->isGood());
 
-	pScheme = ChainedChecksumScheme::create(
-			MD5SumScheme::create(),
-			SignedChecksumScheme::create( *pPublicKeyCipher ) );
+    pScheme = ChainedChecksumScheme::create(
+      MD5SumScheme::create(), SignedChecksumScheme::create(*pPublicKeyCipher));
 
-	{
-		ChecksumIStream reader( base, pScheme );
+    {
+        ChecksumIStream reader(base, pScheme);
 
-		CHECK( !reader.error() );
+        CHECK(!reader.error());
 
-		int32 testIntActual = 0;
-		BW::string testStringActual;
-		reader >> testIntActual >> testStringActual;
+        int32      testIntActual = 0;
+        BW::string testStringActual;
+        reader >> testIntActual >> testStringActual;
 
-		CHECK_EQUAL( testIntActual, testInt );
-		CHECK_EQUAL( testStringActual, testString );
-		CHECK_EQUAL( reader.remainingLength(), int( sizeof( BLOB_DATA ) ) );
+        CHECK_EQUAL(testIntActual, testInt);
+        CHECK_EQUAL(testStringActual, testString);
+        CHECK_EQUAL(reader.remainingLength(), int(sizeof(BLOB_DATA)));
 
-		const void * blobData = reader.retrieve( reader.remainingLength() );
-		CHECK_EQUAL( memcmp( blobData, BLOB_DATA, sizeof( BLOB_DATA ) ), 0 );
+        const void* blobData = reader.retrieve(reader.remainingLength());
+        CHECK_EQUAL(memcmp(blobData, BLOB_DATA, sizeof(BLOB_DATA)), 0);
 
-		CHECK( reader.verify() );
+        CHECK(reader.verify());
 
-		CHECK( reader.remainingLength() == 0 );
-		CHECK( !reader.error() );
+        CHECK(reader.remainingLength() == 0);
+        CHECK(!reader.error());
 
-		CHECK( base.remainingLength() == 0 );
-		CHECK( !base.error() );
-	}
+        CHECK(base.remainingLength() == 0);
+        CHECK(!base.error());
+    }
 
-	bw_safe_delete( pPublicKeyCipher );
-	bw_safe_delete( pPrivateKeyCipher );
+    bw_safe_delete(pPublicKeyCipher);
+    bw_safe_delete(pPrivateKeyCipher);
 }
 
-
-TEST( SHAChecksumScheme )
+TEST(SHAChecksumScheme)
 {
-	MemoryOStream base;
+    MemoryOStream base;
 
-	ChecksumSchemePtr pScheme = SHAChecksumScheme::create();
+    ChecksumSchemePtr pScheme = SHAChecksumScheme::create();
 
-	{
-		ChecksumOStream writer( base, pScheme );
-		BinaryOStream & stream = writer;
-		stream << testInt << testString;
+    {
+        ChecksumOStream writer(base, pScheme);
+        BinaryOStream&  stream = writer;
+        stream << testInt << testString;
 
-		stream.addBlob( BLOB_DATA, sizeof( BLOB_DATA ) );
+        stream.addBlob(BLOB_DATA, sizeof(BLOB_DATA));
 
-		int sizeBeforeFinalising = writer.size();
+        int sizeBeforeFinalising = writer.size();
 
-		// When writer is destructed, finalise() is called automatically, test
-		// here anyway so we can check sizes.
-		writer.finalise();
+        // When writer is destructed, finalise() is called automatically, test
+        // here anyway so we can check sizes.
+        writer.finalise();
 
-		size_t checksumSize = writer.size() - sizeBeforeFinalising;
+        size_t checksumSize = writer.size() - sizeBeforeFinalising;
 
-		CHECK_EQUAL( pScheme->streamSize(), checksumSize );
-	}
+        CHECK_EQUAL(pScheme->streamSize(), checksumSize);
+    }
 
-	base.rewind();
-	pScheme = SHAChecksumScheme::create();
+    base.rewind();
+    pScheme = SHAChecksumScheme::create();
 
-	{
-		ChecksumIStream reader( base, pScheme );
+    {
+        ChecksumIStream reader(base, pScheme);
 
-		CHECK( !reader.error() );
+        CHECK(!reader.error());
 
-		int32 testIntActual = 0;
-		BW::string testStringActual;
-		reader >> testIntActual >> testStringActual;
+        int32      testIntActual = 0;
+        BW::string testStringActual;
+        reader >> testIntActual >> testStringActual;
 
-		CHECK_EQUAL( testIntActual, testInt );
-		CHECK_EQUAL( testStringActual, testString );
-		CHECK_EQUAL( reader.remainingLength(), int( sizeof( BLOB_DATA ) ) );
+        CHECK_EQUAL(testIntActual, testInt);
+        CHECK_EQUAL(testStringActual, testString);
+        CHECK_EQUAL(reader.remainingLength(), int(sizeof(BLOB_DATA)));
 
-		const void * blobData = reader.retrieve( reader.remainingLength() );
-		CHECK_EQUAL( memcmp( blobData, BLOB_DATA, sizeof( BLOB_DATA ) ), 0 );
+        const void* blobData = reader.retrieve(reader.remainingLength());
+        CHECK_EQUAL(memcmp(blobData, BLOB_DATA, sizeof(BLOB_DATA)), 0);
 
-		CHECK( reader.verify() );
-		CHECK( reader.remainingLength() == 0 );
-		CHECK( !reader.error() );
+        CHECK(reader.verify());
+        CHECK(reader.remainingLength() == 0);
+        CHECK(!reader.error());
 
-		CHECK( base.remainingLength() == 0 );
-		CHECK( !base.error() );
-	}
+        CHECK(base.remainingLength() == 0);
+        CHECK(!base.error());
+    }
 }
-
 
 BW_END_NAMESPACE
 

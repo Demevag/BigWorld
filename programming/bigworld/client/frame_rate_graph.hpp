@@ -1,9 +1,7 @@
 #ifndef FRAME_RATE_GRAPH_HPP
 #define FRAME_RATE_GRAPH_HPP
 
-
 #include "moo/device_callback.hpp"
-
 
 BW_BEGIN_NAMESPACE
 
@@ -13,21 +11,21 @@ BW_BEGIN_NAMESPACE
  */
 class FrameRateGraph : public Moo::DeviceCallback
 {
-public:
-	FrameRateGraph();
-	~FrameRateGraph();
+  public:
+    FrameRateGraph();
+    ~FrameRateGraph();
 
-	void graph( float t );
+    void graph(float t);
 
-private:
-	void createUnmanagedObjects();
+  private:
+    void createUnmanagedObjects();
 
-    uint valueIndex_;
-	float values_[100];
-	Moo::VertexTL verts_[100];
-	Moo::Material mat_;
-	Moo::VertexTL measuringLines_[6];
-	static bool s_display_;
+    uint          valueIndex_;
+    float         values_[100];
+    Moo::VertexTL verts_[100];
+    Moo::Material mat_;
+    Moo::VertexTL measuringLines_[6];
+    static bool   s_display_;
 };
 
 BW_END_NAMESPACE

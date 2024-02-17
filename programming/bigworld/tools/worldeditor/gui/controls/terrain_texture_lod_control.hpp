@@ -14,93 +14,101 @@
 BW_BEGIN_NAMESPACE
 
 /**
- * 
+ *
  * Interface for receiving  validation changes to the expand space control.
- * 
+ *
  */
 class ITerrainTextureLodValueChangedListener
 {
-public:
-	virtual void valueChanged() = 0;
+  public:
+    virtual void valueChanged() = 0;
 };
 
 /**
- * 
+ *
  * Common control for editing the terrain texture lod settings
  */
 class TerrainTextureLodControl : public controls::EmbeddableCDialog
 {
-	DECLARE_DYNAMIC(TerrainTextureLodControl)
+    DECLARE_DYNAMIC(TerrainTextureLodControl)
 
-	static bool wasSlider(CWnd const &testScrollBar, CWnd const &scrollBar);
-public:
-	enum { IDD = IDD_EDIT_TERRAIN_TEXTURE_LOD };
-	
-	TerrainTextureLodControl(
-		size_t & filterChange,
-		ITerrainTextureLodValueChangedListener * listener );
-	virtual ~TerrainTextureLodControl();
+    static bool wasSlider(CWnd const& testScrollBar, CWnd const& scrollBar);
 
-	void initializeToolTips();
+  public:
+    enum
+    {
+        IDD = IDD_EDIT_TERRAIN_TEXTURE_LOD
+    };
 
-	void terrainSettings( Terrain::TerrainSettingsPtr terrainSettings );
-	Terrain::TerrainSettingsPtr terrainSettings() const;
+    TerrainTextureLodControl(size_t& filterChange,
+                             ITerrainTextureLodValueChangedListener* listener);
+    virtual ~TerrainTextureLodControl();
 
-	void reinitialise();
-	void restoreSettings( bool disableInitialize );
+    void initializeToolTips();
 
-private:
-	float currentChunkSize();
-	void formatChunkToKms( CString& str, const CString& chunkSizeStr );
-	void formatPerChunkToPerMetre( CString &str );
-	void formatPerChunkToMetresPer( CString &str );
-	void editSpace(
-		const BW::wstring & spaceName,
-		int width, int height, float chunkSize,
-		uint32 heightMapSize, uint32 normalMapSize,
-		uint32 shadowMapSize, uint32 holeMapSize,
-		uint32 blendMapSize );
+    void terrainSettings(Terrain::TerrainSettingsPtr terrainSettings);
+    Terrain::TerrainSettingsPtr terrainSettings() const;
 
-	void OnTexLodEdit();
-	void syncAllDialogs();
+    void reinitialise();
+    void restoreSettings(bool disableInitialize);
 
-	Terrain::TerrainSettingsPtr terrainSettings_;
-	static BW::set< TerrainTextureLodControl * > s_dialogs_;
+  private:
+    float currentChunkSize();
+    void  formatChunkToKms(CString& str, const CString& chunkSizeStr);
+    void  formatPerChunkToPerMetre(CString& str);
+    void  formatPerChunkToMetresPer(CString& str);
+    void  editSpace(const BW::wstring& spaceName,
+                    int                width,
+                    int                height,
+                    float              chunkSize,
+                    uint32             heightMapSize,
+                    uint32             normalMapSize,
+                    uint32             shadowMapSize,
+                    uint32             holeMapSize,
+                    uint32             blendMapSize);
 
-protected:
-	enum SliderMovementState
-	{
-		SMS_STARTED,
-		SMS_MIDDLE,
-		SMS_DONE
-	};
+    void OnTexLodEdit();
+    void syncAllDialogs();
 
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+    Terrain::TerrainSettingsPtr               terrainSettings_;
+    static BW::set<TerrainTextureLodControl*> s_dialogs_;
 
-	afx_msg void OnHScroll(UINT /*sbcode*/, UINT /*pos*/, CScrollBar *scrollBar);
-	afx_msg HBRUSH OnCtlColor( CDC* pDC, CWnd* pWnd, UINT nCtlColor );
+  protected:
+    enum SliderMovementState
+    {
+        SMS_STARTED,
+        SMS_MIDDLE,
+        SMS_DONE
+    };
 
-	afx_msg void OnTexLodStartEditKillFocus();
-	afx_msg void OnTexLodBlendEditKillFocus();
-	afx_msg void OnTexLodPreloadEditKillFocus();
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 
-	void OnTexLodSlider(SliderMovementState sms);
+    afx_msg void   OnHScroll(UINT /*sbcode*/,
+                             UINT /*pos*/,
+                             CScrollBar* scrollBar);
+    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 
-	DECLARE_MESSAGE_MAP()
+    afx_msg void OnTexLodStartEditKillFocus();
+    afx_msg void OnTexLodBlendEditKillFocus();
+    afx_msg void OnTexLodPreloadEditKillFocus();
 
-	DECLARE_AUTO_TOOLTIP(TerrainTextureLodControl, controls::EmbeddableCDialog)
-public:
-	controls::EditNumeric						texLodStartEdit_;
-	LimitSlider									texLodStartSlider_;
-	controls::EditNumeric						texLodDistEdit_;
-	LimitSlider									texLodDistSlider_;
-	controls::EditNumeric						texLodPreloadEdit_;
-	LimitSlider									texLodPreloadSlider_;
-	size_t &									filterChange_;
-	ITerrainTextureLodValueChangedListener *	valueChangedListener_;
-	size_t										changesMade_;
-	bool										sliding_;
-	bool										disableInitialize_;
+    void OnTexLodSlider(SliderMovementState sms);
+
+    DECLARE_MESSAGE_MAP()
+
+    DECLARE_AUTO_TOOLTIP(TerrainTextureLodControl, controls::EmbeddableCDialog)
+  public:
+    controls::EditNumeric                   texLodStartEdit_;
+    LimitSlider                             texLodStartSlider_;
+    controls::EditNumeric                   texLodDistEdit_;
+    LimitSlider                             texLodDistSlider_;
+    controls::EditNumeric                   texLodPreloadEdit_;
+    LimitSlider                             texLodPreloadSlider_;
+    size_t&                                 filterChange_;
+    ITerrainTextureLodValueChangedListener* valueChangedListener_;
+    size_t                                  changesMade_;
+    bool                                    sliding_;
+    bool                                    disableInitialize_;
 };
 
 BW_END_NAMESPACE

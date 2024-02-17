@@ -99,14 +99,12 @@
 #include <sys/types.h>
 #include <sys/wait.h> // for waitpid
 
-
 // #define MF_USE_VALGRIND
 #ifdef MF_USE_VALGRIND
 #include <valgrind/memcheck.h>
 #endif
 
-DECLARE_DEBUG_COMPONENT( 0 )
-
+DECLARE_DEBUG_COMPONENT(0)
 
 BW_BEGIN_NAMESPACE
 
@@ -116,202 +114,189 @@ extern int PyScript_token;
 extern int PyChunk_token;
 extern int PyPhysics2_token;
 extern int PyURLRequest_token;
-static int s_moduleTokens =
-	Math_token | ResMgr_token | PyScript_token | 
-	PyChunk_token | PyPhysics2_token | PyURLRequest_token;
+static int s_moduleTokens = Math_token | ResMgr_token | PyScript_token |
+                            PyChunk_token | PyPhysics2_token |
+                            PyURLRequest_token;
 
 extern int PyUserDataObject_token;
 extern int UserDataObjectDescriptionMap_Token;
 extern int AppScriptTimers_token;
 
-static int s_tokenSet =
-	PyUserDataObject_token |
-	UserDataObjectDescriptionMap_Token |
-	AppScriptTimers_token;
+static int s_tokenSet = PyUserDataObject_token |
+                        UserDataObjectDescriptionMap_Token |
+                        AppScriptTimers_token;
 #ifndef CODE_INLINE
 #include "cellapp.ipp"
 #endif
 
-
 /// CellApp Singleton.
-BW_SINGLETON_STORAGE( CellApp )
+BW_SINGLETON_STORAGE(CellApp)
 
 namespace // (anonymous)
 {
-inline
-const char * asString( bool value )
-{
-	return value ? "True" : "False";
-}
-const double MAX_ENTITY_MESSAGE_BUFFER_TIME = 5.0;
-const int DEFAULT_PRELOADED_SPACE_ID = 0;
+    inline const char* asString(bool value)
+    {
+        return value ? "True" : "False";
+    }
+    const double MAX_ENTITY_MESSAGE_BUFFER_TIME = 5.0;
+    const int    DEFAULT_PRELOADED_SPACE_ID     = 0;
 
+    // -----------------------------------------------------------------------------
+    // Section: EntityChannelFinder
+    // -----------------------------------------------------------------------------
 
-// -----------------------------------------------------------------------------
-// Section: EntityChannelFinder
-// -----------------------------------------------------------------------------
+    /**
+     *	This class resolves ChannelIDs to entity channels.
+     */
+    class EntityChannelFinder : public Mercury::ChannelFinder
+    {
+      public:
+        virtual Mercury::UDPChannel* find(Mercury::ChannelID      id,
+                                          const Mercury::Address& srcAddr,
+                                          const Mercury::Packet*  pPacket,
+                                          bool& rHasBeenHandled);
+    };
 
-/**
- *	This class resolves ChannelIDs to entity channels.
- */
-class EntityChannelFinder : public Mercury::ChannelFinder
-{
-public:
-	virtual Mercury::UDPChannel * find( Mercury::ChannelID id,
-		const Mercury::Address & srcAddr,
-		const Mercury::Packet * pPacket,
-		bool & rHasBeenHandled );
-};
+    /**
+     *	This method resolves ChannelIDs to entity channels.
+     */
+    Mercury::UDPChannel* EntityChannelFinder::find(
+      Mercury::ChannelID      id,
+      const Mercury::Address& srcAddr,
+      const Mercury::Packet*  pPacket,
+      bool&                   rHasBeenHandled)
+    {
+        Entity* pEntity = CellApp::instance().findEntity((EntityID)id);
+        if (pEntity != NULL) {
+            if (pEntity->pReal() != NULL) {
+                Mercury::UDPChannel* pChannel = &pEntity->pReal()->channel();
 
+                if (pChannel->addr() == srcAddr) {
+                    return pChannel;
+                } else {
+                    WARNING_MSG("EntityChannelFinder::find: "
+                                "Found entity (%d) but from %s, not %s\n",
+                                id,
+                                srcAddr.c_str(),
+                                pChannel->addr().c_str());
+                    rHasBeenHandled = true;
+                    return NULL;
+                }
+            } else {
+                // If the entity is a ghost, then we forward the packet to the
+                // real on the CellAppChannel to ensure that it doesn't arrive
+                // before the offload data.
+                Mercury::ChannelSender sender(
+                  pEntity->pRealChannel()->channel());
+                Mercury::Bundle& bundle = sender.bundle();
+                bundle.startMessage(
+                  CellAppInterface::forwardedBaseEntityPacket);
 
-/**
- *	This method resolves ChannelIDs to entity channels.
- */
-Mercury::UDPChannel * EntityChannelFinder::find( Mercury::ChannelID id,
-	const Mercury::Address & srcAddr,
-	const Mercury::Packet * pPacket, bool & rHasBeenHandled )
-{
-	Entity *pEntity = CellApp::instance().findEntity( (EntityID)id );
-	if (pEntity != NULL)
-	{
-		if (pEntity->pReal() != NULL)
-		{
-			Mercury::UDPChannel * pChannel = &pEntity->pReal()->channel();
+                bundle << pEntity->id();
+                bundle << srcAddr;
+                bundle.addBlob(pPacket->data(), pPacket->totalSize());
 
-			if (pChannel->addr() == srcAddr)
-			{
-				return pChannel;
-			}
-			else
-			{
-				WARNING_MSG( "EntityChannelFinder::find: "
-							"Found entity (%d) but from %s, not %s\n",
-						id, srcAddr.c_str(), pChannel->addr().c_str() );
-				rHasBeenHandled = true;
-				return NULL;
-			}
-		}
-		else
-		{
-			// If the entity is a ghost, then we forward the packet to the real
-			// on the CellAppChannel to ensure that it doesn't arrive before the
-			// offload data.
-			Mercury::ChannelSender sender( pEntity->pRealChannel()->channel() );
-			Mercury::Bundle & bundle = sender.bundle();
-			bundle.startMessage( CellAppInterface::forwardedBaseEntityPacket );
+                rHasBeenHandled = true;
 
-			bundle << pEntity->id();
-			bundle << srcAddr;
-			bundle.addBlob( pPacket->data(), pPacket->totalSize() );
+                return NULL;
+            }
+        }
 
-			rHasBeenHandled = true;
+        else {
+            return NULL;
+        }
+    }
 
-			return NULL;
-		}
-	}
+    const int abandonEntityTimeout = 60000000;
 
-	else
-	{
-		return NULL;
-	}
-}
+    // -----------------------------------------------------------------------------
+    // Section: BaseRestoreConfirmHandler
+    // -----------------------------------------------------------------------------
 
+    /**
+     *  This class is for keeping track of base entity restoration. Because
+     * there is no guarentee that simply because an entity has a cell part that
+     * its base has been backed up, some cell entities may be orphaned in the
+     * process. When this timer expires all cell entities with a recently
+     * restored base part that has not responded will be destroyed.
+     */
+    class BaseRestoreConfirmHandler : public TimerHandler
+    {
+      public:
+        BaseRestoreConfirmHandler();
+        ~BaseRestoreConfirmHandler();
 
-const int abandonEntityTimeout = 60000000;
+        virtual void handleTimeout(TimerHandle handle, void* arg);
 
+      private:
+        TimerHandle                       abandonEntitiesTimer_;
+        static BaseRestoreConfirmHandler* s_pInstance_;
+    };
 
-// -----------------------------------------------------------------------------
-// Section: BaseRestoreConfirmHandler
-// -----------------------------------------------------------------------------
+    /**
+     *	The constructor for BaseRestoreConfirmHandler.
+     *
+     */
+    BaseRestoreConfirmHandler::BaseRestoreConfirmHandler()
+    {
+        delete s_pInstance_;
+        s_pInstance_          = this;
+        abandonEntitiesTimer_ = CellApp::instance().mainDispatcher().addTimer(
+          abandonEntityTimeout, this, NULL, "BaseRestoreConfirmHandler");
+    }
 
-/**
- *  This class is for keeping track of base entity restoration. Because there
- *  is no guarentee that simply because an entity has a cell part that its base
- *  has been backed up, some cell entities may be orphaned in the process.
- *  When this timer expires all cell entities with a recently restored base
- *  part that has not responded will be destroyed.
- */
-class BaseRestoreConfirmHandler : public TimerHandler
-{
-public:
-	BaseRestoreConfirmHandler();
-	~BaseRestoreConfirmHandler();
+    /**
+     *	Destructor.
+     */
+    BaseRestoreConfirmHandler::~BaseRestoreConfirmHandler()
+    {
+        abandonEntitiesTimer_.cancel();
+        s_pInstance_ = NULL;
+    }
 
-	virtual void handleTimeout( TimerHandle handle, void * arg );
+    /**
+     *	When this structure times out, any entities that should have been
+     *  restored on the BaseApp but have not received traffic are destroyed.
+     */
+    void BaseRestoreConfirmHandler::handleTimeout(TimerHandle handle, void* arg)
+    {
+        EntityPopulation::const_iterator iter;
+        for (iter = Entity::population().begin();
+             iter != Entity::population().end();
+             iter++) {
+            Entity& entity = *iter->second;
+            if (entity.isReal() && !entity.isDestroyed() &&
+                entity.pReal()->channel().version() != 0 &&
+                entity.pReal()->channel().wantsFirstPacket()) {
+                WARNING_MSG(
+                  "BaseRestoreConfirmHandler::handleTimeout: entity %d "
+                  "is assumed to have not been restored on its "
+                  "baseapp.\n",
+                  iter->first);
+                entity.destroy();
+            }
+        }
+        delete this;
+    }
 
-private:
-	TimerHandle abandonEntitiesTimer_;
-	static BaseRestoreConfirmHandler * s_pInstance_;
-};
+    BaseRestoreConfirmHandler* BaseRestoreConfirmHandler::s_pInstance_;
 
-/**
- *	The constructor for BaseRestoreConfirmHandler.
- *
- */
-BaseRestoreConfirmHandler::BaseRestoreConfirmHandler()
-{
-	delete s_pInstance_;
-	s_pInstance_ = this;
-	abandonEntitiesTimer_ =
-		CellApp::instance().mainDispatcher().addTimer( abandonEntityTimeout,
-			this, NULL, "BaseRestoreConfirmHandler" );
-}
+    // This set stores the id of the entity channels that are in danger of
+    // overflowing.
+    typedef BW::set<Mercury::ChannelID> OverflowIDs;
+    OverflowIDs                         s_overflowIDs;
 
+    // This callback function is called when an entity channel is in danger of
+    // overflowing.
+    void onSendWindowOverflow(const Mercury::UDPChannel& channel)
+    {
+        IF_NOT_MF_ASSERT_DEV(channel.isIndexed())
+        {
+            return;
+        }
 
-/**
- *	Destructor.
- */
-BaseRestoreConfirmHandler::~BaseRestoreConfirmHandler()
-{
-	abandonEntitiesTimer_.cancel();
-	s_pInstance_ = NULL;
-}
-
-
-/**
- *	When this structure times out, any entities that should have been
- *  restored on the BaseApp but have not received traffic are destroyed.
- */
-void BaseRestoreConfirmHandler::handleTimeout( TimerHandle handle, void * arg )
-{
-	EntityPopulation::const_iterator iter;
-	for (iter = Entity::population().begin();
-		 iter != Entity::population().end(); iter++)
-	{
-		Entity & entity = *iter->second;
-		if (entity.isReal() && !entity.isDestroyed() &&
-			entity.pReal()->channel().version() != 0 &&
-			entity.pReal()->channel().wantsFirstPacket())
-		{
-			WARNING_MSG( "BaseRestoreConfirmHandler::handleTimeout: entity %d "
-						 "is assumed to have not been restored on its "
-						 "baseapp.\n", iter->first );
-			entity.destroy();
-		}
-	}
-	delete this;
-}
-
-
-BaseRestoreConfirmHandler * BaseRestoreConfirmHandler::s_pInstance_;
-
-
-// This set stores the id of the entity channels that are in danger of
-// overflowing.
-typedef BW::set< Mercury::ChannelID > OverflowIDs;
-OverflowIDs s_overflowIDs;
-
-// This callback function is called when an entity channel is in danger of
-// overflowing.
-void onSendWindowOverflow( const Mercury::UDPChannel & channel )
-{
-	IF_NOT_MF_ASSERT_DEV( channel.isIndexed() )
-	{
-		return;
-	}
-
-	s_overflowIDs.insert( channel.id() );
-}
+        s_overflowIDs.insert(channel.id());
+    }
 
 } // end namespace // (anonymous)
 
@@ -322,120 +307,117 @@ void onSendWindowOverflow( const Mercury::UDPChannel & channel )
 /**
  *	Constructor.
  */
-CellApp::CellApp( Mercury::EventDispatcher & mainDispatcher,
-		Mercury::NetworkInterface & interface ) :
-	EntityApp( mainDispatcher, interface ),
-	cells_(),
-	pSpaces_( new Spaces ),
-	preloadedSpaces_(),
-	idClient_(),
-	cellAppMgr_( interface_ ),
-	dbAppAlpha_( interface_ ),
-	shutDownTime_( 0 ),
-	pTimeKeeper_( NULL ),
-	pPickler_( NULL ),
+CellApp::CellApp(Mercury::EventDispatcher&  mainDispatcher,
+                 Mercury::NetworkInterface& interface)
+  : EntityApp(mainDispatcher, interface)
+  , cells_()
+  , pSpaces_(new Spaces)
+  , preloadedSpaces_()
+  , idClient_()
+  , cellAppMgr_(interface_)
+  , dbAppAlpha_(interface_)
+  , shutDownTime_(0)
+  , pTimeKeeper_(NULL)
+  , pPickler_(NULL)
+  ,
 
-	timeoutPeriod_( 0.f ),
-	lastGameTickTime_( 0 ),
-	pCellAppData_( NULL ),
-	pGlobalData_( NULL ),
-	baseAppAddr_( 0, 0 ),
-	backupIndex_( 0 ),
-	gameTimer_(),
-	loadingTimer_(),
-	trimHistoryTimer_(),
-	reservedTickTime_( 0 ),
-	pViewerServer_( NULL ),
-	id_( -1 ),
-	persistentLoad_( 0.f ),
-	transientLoad_( 0.f ),
-	totalLoad_( 0.f ),
-	totalEntityLoad_( 0.f ),
-	totalAddedLoad_( 0.f ),
-	perEntityLoadShare_( 0.f ),
-	maxCellAppLoad_( 0.f ),
-	shouldOffload_( true ),
-	hasAckedCellAppMgrShutDown_( false ),
-	hasCalledWitnesses_( false ),
-	isReadyToStart_( false ),
-	pBufferedEntityMessages_( new BufferedEntityMessages() ),
-	pBufferedGhostMessages_( new BufferedGhostMessages() ),
-	pBufferedInputMessages_( new BufferedInputMessages() ),
-	pCellAppChannels_( NULL ),
-	witnesses_(),
-	pPyServicesMap_( NULL ),
-	nextSpaceEntryIDSalt_( 0 )
+  timeoutPeriod_(0.f)
+  , lastGameTickTime_(0)
+  , pCellAppData_(NULL)
+  , pGlobalData_(NULL)
+  , baseAppAddr_(0, 0)
+  , backupIndex_(0)
+  , gameTimer_()
+  , loadingTimer_()
+  , trimHistoryTimer_()
+  , reservedTickTime_(0)
+  , pViewerServer_(NULL)
+  , id_(-1)
+  , persistentLoad_(0.f)
+  , transientLoad_(0.f)
+  , totalLoad_(0.f)
+  , totalEntityLoad_(0.f)
+  , totalAddedLoad_(0.f)
+  , perEntityLoadShare_(0.f)
+  , maxCellAppLoad_(0.f)
+  , shouldOffload_(true)
+  , hasAckedCellAppMgrShutDown_(false)
+  , hasCalledWitnesses_(false)
+  , isReadyToStart_(false)
+  , pBufferedEntityMessages_(new BufferedEntityMessages())
+  , pBufferedGhostMessages_(new BufferedGhostMessages())
+  , pBufferedInputMessages_(new BufferedInputMessages())
+  , pCellAppChannels_(NULL)
+  , witnesses_()
+  , pPyServicesMap_(NULL)
+  , nextSpaceEntryIDSalt_(0)
 {
-	static EntityChannelFinder channelFinder;
+    static EntityChannelFinder channelFinder;
 
-	// Register the indexed channel finder for the interface
-	interface_.registerChannelFinder( &channelFinder );
+    // Register the indexed channel finder for the interface
+    interface_.registerChannelFinder(&channelFinder);
 
-	dbAppAlpha_.channel().isLocalRegular( false );
-	dbAppAlpha_.channel().isRemoteRegular( false );
+    dbAppAlpha_.channel().isLocalRegular(false);
+    dbAppAlpha_.channel().isRemoteRegular(false);
 }
-
 
 /**
  *	The destructor for CellApp.
  */
 CellApp::~CellApp()
 {
-	interface_.processUntilChannelsEmpty();
+    interface_.processUntilChannelsEmpty();
 
-	Py_XDECREF( pPyServicesMap_ );
-	pPyServicesMap_ = NULL;
+    Py_XDECREF(pPyServicesMap_);
+    pPyServicesMap_ = NULL;
 
-	gameTimer_.cancel();
-	loadingTimer_.cancel();
-	trimHistoryTimer_.cancel();
+    gameTimer_.cancel();
+    loadingTimer_.cancel();
+    trimHistoryTimer_.cancel();
 
-	// Stop loading thread so that we can clean up without fear.
-	INFO_MSG( "CellApp::~CellApp: Stopping background threads.\n" );
-	bgTaskManager_.stopAll();
-	fileIOTaskManager_.stopAll();
-	INFO_MSG( "CellApp::~CellApp: Stopped background threads.\n" );
+    // Stop loading thread so that we can clean up without fear.
+    INFO_MSG("CellApp::~CellApp: Stopping background threads.\n");
+    bgTaskManager_.stopAll();
+    fileIOTaskManager_.stopAll();
+    INFO_MSG("CellApp::~CellApp: Stopped background threads.\n");
 
-	// If we have lots of chunks loaded, this can take a long *LONG* time.  This
-	// can be long enough in some cases that the tools will stop waiting for the
-	// controlled shutdown to complete and start sending SIGQUITs, which means
-	// coredumps, which is bad, so we make cleaning up all the chunks optional.
-	// In "fastShutdown" mode we still need to correctly fre 
-	// the delegate-related resources. More specifically, we need
-	// to call pPhysicalSpace_->clear() (from within ~Space),
-	// so it will remove all the worlds that have been created.
-	if (!Config::fastShutdown() || IGameDelegate::instance() != NULL)
-	{
-		// Get spaces to mark loaded chunks as loaded, otherwise they won't
-		// be cleaned up.
-		pSpaces_->prepareNewlyLoadedChunksForDelete();
+    // If we have lots of chunks loaded, this can take a long *LONG* time.  This
+    // can be long enough in some cases that the tools will stop waiting for the
+    // controlled shutdown to complete and start sending SIGQUITs, which means
+    // coredumps, which is bad, so we make cleaning up all the chunks optional.
+    // In "fastShutdown" mode we still need to correctly fre
+    // the delegate-related resources. More specifically, we need
+    // to call pPhysicalSpace_->clear() (from within ~Space),
+    // so it will remove all the worlds that have been created.
+    if (!Config::fastShutdown() || IGameDelegate::instance() != NULL) {
+        // Get spaces to mark loaded chunks as loaded, otherwise they won't
+        // be cleaned up.
+        pSpaces_->prepareNewlyLoadedChunksForDelete();
 
-		PreloadedChunkSpaces::iterator it = preloadedSpaces_.begin();
-		while (it != preloadedSpaces_.end())
-		{
-			it->second->prepareNewlyLoadedChunksForDelete();
-			++it;
-		}
+        PreloadedChunkSpaces::iterator it = preloadedSpaces_.begin();
+        while (it != preloadedSpaces_.end()) {
+            it->second->prepareNewlyLoadedChunksForDelete();
+            ++it;
+        }
 
-		delete pTimeKeeper_;
+        delete pTimeKeeper_;
 
-		// TODO: Move this to the destructor of Cells. Presently, we must
-		// delete cells here before we delete spaces below.
-		cells_.destroyAll();
+        // TODO: Move this to the destructor of Cells. Presently, we must
+        // delete cells here before we delete spaces below.
+        cells_.destroyAll();
 
-		this->timeQueue().clear();
+        this->timeQueue().clear();
 
-		bw_safe_delete( pSpaces_ );
+        bw_safe_delete(pSpaces_);
 
-		it = preloadedSpaces_.begin();
-		while (it != preloadedSpaces_.end())
-		{
-			bw_safe_delete( it->second );
-			++it;
-		}
+        it = preloadedSpaces_.begin();
+        while (it != preloadedSpaces_.end()) {
+            bw_safe_delete(it->second);
+            ++it;
+        }
 
-		// This should only be done when retiring this app but not killing the
-		// server.
+        // This should only be done when retiring this app but not killing the
+        // server.
 #if 0
 		// TODO: Should this be done outside the fastShutdown_ block?
 		if (!this->isShuttingDown())
@@ -444,552 +426,516 @@ CellApp::~CellApp()
 		}
 #endif
 
-		bw_safe_delete( pBufferedEntityMessages_ );
-		bw_safe_delete( pBufferedGhostMessages_ );
-		bw_safe_delete( pBufferedInputMessages_ );
-		bw_safe_delete( pCellAppChannels_ );
-		bw_safe_delete( pPickler_ );
+        bw_safe_delete(pBufferedEntityMessages_);
+        bw_safe_delete(pBufferedGhostMessages_);
+        bw_safe_delete(pBufferedInputMessages_);
+        bw_safe_delete(pCellAppChannels_);
+        bw_safe_delete(pPickler_);
 
-		Py_XDECREF( pCellAppData_ );
-		pCellAppData_ = NULL;
+        Py_XDECREF(pCellAppData_);
+        pCellAppData_ = NULL;
 
-		Py_XDECREF( pGlobalData_ );
-		pGlobalData_ = NULL;
-	}
+        Py_XDECREF(pGlobalData_);
+        pGlobalData_ = NULL;
+    }
 
-	if (IGameDelegate::instance())
-	{
-		IGameDelegate::instance()->shutDown();
-	}
+    if (IGameDelegate::instance()) {
+        IGameDelegate::instance()->shutDown();
+    }
 
-	EntityType::clearStatics();
-	DataType::clearStaticsForReload();
-	UserDataObjectType::clearStatics();
+    EntityType::clearStatics();
+    DataType::clearStaticsForReload();
+    UserDataObjectType::clearStatics();
 
-	this->checkPython();
+    this->checkPython();
 
-	delete pViewerServer_;
+    delete pViewerServer_;
 }
-
 
 /**
  *	This method is a simple helper to convert from seconds to ticks.
  */
-int CellApp::secondsToTicks( float seconds, int lowerBound )
+int CellApp::secondsToTicks(float seconds, int lowerBound)
 {
-	return std::max( lowerBound,
-			int( floorf( seconds * Config::updateHertz() + 0.5f ) ) );
+    return std::max(lowerBound,
+                    int(floorf(seconds * Config::updateHertz() + 0.5f)));
 }
-
-
 
 /**
  *	This method is used to initialise the application.
  */
-bool CellApp::init( int argc, char * argv[] )
+bool CellApp::init(int argc, char* argv[])
 {
-	if (!EntityApp::init( argc, argv ))
-	{
-		return false;
-	}
+    if (!EntityApp::init(argc, argv)) {
+        return false;
+    }
 
-	if (!interface_.isGood())
-	{
-		NETWORK_ERROR_MSG( "CellApp::init: "
-				"Failed to create NetworkInterface on internal interface.\n" );
-		return false;
-	}
+    if (!interface_.isGood()) {
+        NETWORK_ERROR_MSG(
+          "CellApp::init: "
+          "Failed to create NetworkInterface on internal interface.\n");
+        return false;
+    }
 
-	if (Config::shouldResolveMailBoxes() && !Config::isProduction())
-	{
-		CONFIG_WARNING_MSG( "CellApp::init: shouldResolveMailBoxes is enabled. "
-			"This can lead to writing script that makes bad assumptions "
-			"as to locality of mailboxes.\n" );
-	}
+    if (Config::shouldResolveMailBoxes() && !Config::isProduction()) {
+        CONFIG_WARNING_MSG(
+          "CellApp::init: shouldResolveMailBoxes is enabled. "
+          "This can lead to writing script that makes bad assumptions "
+          "as to locality of mailboxes.\n");
+    }
 
-	if (BalanceConfig::demo() && Config::isProduction())
-	{
-		CONFIG_ERROR_MSG( "CellApp::init: "
-				"Production Mode: Demo load balancing enabled!\n" );
-	}
+    if (BalanceConfig::demo() && Config::isProduction()) {
+        CONFIG_ERROR_MSG("CellApp::init: "
+                         "Production Mode: Demo load balancing enabled!\n");
+    }
 
-	reservedTickTime_ =
-		int64( Config::reservedTickFraction()/ Config::updateHertz() *
-				stampsPerSecondD() );
+    reservedTickTime_ = int64(Config::reservedTickFraction() /
+                              Config::updateHertz() * stampsPerSecondD());
 
-	// Set entity specific configuration.
-	Entity::s_init();
+    // Set entity specific configuration.
+    Entity::s_init();
 
-	if (!AutoConfig::configureAllFrom( "resources.xml" ))
-	{
-		CRITICAL_MSG( "CellApp::init: Failed to load resources.xml\n" );
-	}
+    if (!AutoConfig::configureAllFrom("resources.xml")) {
+        CRITICAL_MSG("CellApp::init: Failed to load resources.xml\n");
+    }
 
-	PROC_IP_INFO_MSG( "Internal address = %s\n", interface_.address().c_str() );
+    PROC_IP_INFO_MSG("Internal address = %s\n", interface_.address().c_str());
 
-	// find the cell app manager.
-	if (!cellAppMgr_.init( "CellAppMgrInterface", Config::numStartupRetries(),
-			Config::maxMgrRegisterStagger() ))
-	{
-		NETWORK_DEBUG_MSG( "CellApp::init: Failed to find the CellAppMgr.\n" );
-		return false;
-	}
+    // find the cell app manager.
+    if (!cellAppMgr_.init("CellAppMgrInterface",
+                          Config::numStartupRetries(),
+                          Config::maxMgrRegisterStagger())) {
+        NETWORK_DEBUG_MSG("CellApp::init: Failed to find the CellAppMgr.\n");
+        return false;
+    }
 
-	// Register the fixed portion of our interface with the interface
-	CellAppInterface::registerWithInterface( interface_ );
+    // Register the fixed portion of our interface with the interface
+    CellAppInterface::registerWithInterface(interface_);
 
-	pViewerServer_ = new CellViewerServer( *this );
-	pViewerServer_->startup( this->mainDispatcher(), 0 );
+    pViewerServer_ = new CellViewerServer(*this);
+    pViewerServer_->startup(this->mainDispatcher(), 0);
 
-	// load any extensions (in DLLs)
-	if (!this->initExtensions())
-	{
-		ERROR_MSG( "CellApp::init: Failed to load plugins.\n" );
-		return false;
-	}
+    // load any extensions (in DLLs)
+    if (!this->initExtensions()) {
+        ERROR_MSG("CellApp::init: Failed to load plugins.\n");
+        return false;
+    }
 
-	if (IGameDelegate::instance() != NULL) 
-	{
-		BW::string resPaths;
+    if (IGameDelegate::instance() != NULL) {
+        BW::string resPaths;
 
-		for (int i = 0; i < BWResource::getPathNum(); ++i)
-		{
-			if (i!=0)
-			{
-				resPaths += ";";
-			}
-			resPaths += BWResource::getPath( i );
-		}
+        for (int i = 0; i < BWResource::getPathNum(); ++i) {
+            if (i != 0) {
+                resPaths += ";";
+            }
+            resPaths += BWResource::getPath(i);
+        }
 
-		INFO_MSG( "CellApp::init: Initializing IGameDelegate with resource paths: "
-				" %s\n", resPaths.c_str() );
-		
-		if (!IGameDelegate::instance()->initialize( resPaths.c_str() ))
-		{
-			ERROR_MSG( "CellApp::init: Failed to initialize IGameDelegate.\n" );
-			return false;
-		}
-	}
+        INFO_MSG(
+          "CellApp::init: Initializing IGameDelegate with resource paths: "
+          " %s\n",
+          resPaths.c_str());
 
-	fileIOTaskManager_.initWatchers( "FileIO" );
-	fileIOTaskManager_.startThreads( "FileIO", 1 );
+        if (!IGameDelegate::instance()->initialize(resPaths.c_str())) {
+            ERROR_MSG("CellApp::init: Failed to initialize IGameDelegate.\n");
+            return false;
+        }
+    }
 
-	bgTaskManager_.initWatchers( "CellApp" );
-	bgTaskManager_.startThreads( "BGTask Manager", 1 );
+    fileIOTaskManager_.initWatchers("FileIO");
+    fileIOTaskManager_.startThreads("FileIO", 1);
 
-	this->addWatchers();
+    bgTaskManager_.initWatchers("CellApp");
+    bgTaskManager_.startThreads("BGTask Manager", 1);
 
-	// start up the scripting system
-	if (!this->initScript())
-	{
-		return false;
-	}
+    this->addWatchers();
 
-	ProfileVal::setWarningPeriod( stampsPerSecond() / Config::updateHertz() );
-	CellProfileGroup::init();
+    // start up the scripting system
+    if (!this->initScript()) {
+        return false;
+    }
 
-	if (!EntityType::init())
-	{
-		ERROR_MSG( "EntityType::init: Failed\n" );
-		return false;
-	}
+    ProfileVal::setWarningPeriod(stampsPerSecond() / Config::updateHertz());
+    CellProfileGroup::init();
 
-	if (!UserDataObjectType::init())
-	{
-		ERROR_MSG( "EntityType::init: Failed\n" );
-		return false;
-	}
+    if (!EntityType::init()) {
+        ERROR_MSG("EntityType::init: Failed\n");
+        return false;
+    }
 
-	pTerrainManager_ = TerrainManagerPtr( new Terrain::Manager() );
-	if (!pTerrainManager_->isValid())
-	{
-		ERROR_MSG( "Terrain::Manager::init: Failed\n" );
-		return false;
-	}
+    if (!UserDataObjectType::init()) {
+        ERROR_MSG("EntityType::init: Failed\n");
+        return false;
+    }
 
-	// TODO: This is a bit dodgy. We do not want to trim all histories at once.
-	trimHistoryTimer_ =
-		this->mainDispatcher().addTimer( 4 * 60 * 1000000, // 4 minutes
-				this,
-				reinterpret_cast<void *>(TIMEOUT_TRIM_HISTORIES),
-				"TrimHistory" );
+    pTerrainManager_ = TerrainManagerPtr(new Terrain::Manager());
+    if (!pTerrainManager_->isValid()) {
+        ERROR_MSG("Terrain::Manager::init: Failed\n");
+        return false;
+    }
 
-	int loadingTickMicroseconds =
-		std::max( int( 1000000 * Config::chunkLoadingPeriod() ), 5000 );
-	loadingTimer_ =
-		CellApp::instance().mainDispatcher().addTimer( loadingTickMicroseconds,
-			this,
-			reinterpret_cast<void *>(TIMEOUT_LOADING_TICK),
-			"LoadingTick" );
+    // TODO: This is a bit dodgy. We do not want to trim all histories at once.
+    trimHistoryTimer_ = this->mainDispatcher().addTimer(
+      4 * 60 * 1000000, // 4 minutes
+      this,
+      reinterpret_cast<void*>(TIMEOUT_TRIM_HISTORIES),
+      "TrimHistory");
 
- 	mainDispatcher_.clearSpareTime();
+    int loadingTickMicroseconds =
+      std::max(int(1000000 * Config::chunkLoadingPeriod()), 5000);
+    loadingTimer_ = CellApp::instance().mainDispatcher().addTimer(
+      loadingTickMicroseconds,
+      this,
+      reinterpret_cast<void*>(TIMEOUT_LOADING_TICK),
+      "LoadingTick");
 
-	pCellAppChannels_ = new CellAppChannels(
-			int( 1000000 / Config::ghostUpdateHertz() ), mainDispatcher_ );
+    mainDispatcher_.clearSpareTime();
 
-	DataSectionPtr pWatcherValues =
-		BWConfig::getSection( "cellApp/watcherValues" );
-	if (pWatcherValues)
-	{
-		pWatcherValues->setWatcherValues();
-	}
+    pCellAppChannels_ = new CellAppChannels(
+      int(1000000 / Config::ghostUpdateHertz()), mainDispatcher_);
 
-	// Register ourselves with the CellAppMgr.  This post-registration init code
-	// is implemented as a reply handler so that it will be done as soon as the
-	// reply is received from the CellAppMgr.  This was formerly done using
-	// BlockingReplyHandler, however, doing it that way means that any
-	// out-of-order packets received before the reply would be processed before
-	// the remainder of the init code had been executed.
-	new AddToCellAppMgrHelper( *this, pViewerServer_->port() );
+    DataSectionPtr pWatcherValues =
+      BWConfig::getSection("cellApp/watcherValues");
+    if (pWatcherValues) {
+        pWatcherValues->setWatcherValues();
+    }
 
-	Mercury::UDPChannel::sendWindowCallbackThreshold(
-			Config::sendWindowCallbackThreshold() );
-	Mercury::UDPChannel::setSendWindowCallback( onSendWindowOverflow );
+    // Register ourselves with the CellAppMgr.  This post-registration init code
+    // is implemented as a reply handler so that it will be done as soon as the
+    // reply is received from the CellAppMgr.  This was formerly done using
+    // BlockingReplyHandler, however, doing it that way means that any
+    // out-of-order packets received before the reply would be processed before
+    // the remainder of the init code had been executed.
+    new AddToCellAppMgrHelper(*this, pViewerServer_->port());
 
-	WaypointStats::addWatchers();
+    Mercury::UDPChannel::sendWindowCallbackThreshold(
+      Config::sendWindowCallbackThreshold());
+    Mercury::UDPChannel::setSendWindowCallback(onSendWindowOverflow);
 
-	this->preloadSpaces();
+    WaypointStats::addWatchers();
 
-	return true;
+    this->preloadSpaces();
+
+    return true;
 }
-
 
 /**
  *  This method handles the portion of init after registering with the
  *  CellAppMgr.
  */
-bool CellApp::finishInit( const CellAppInitData & initData )
+bool CellApp::finishInit(const CellAppInitData& initData)
 {
-	// Make sure that nothing else is read in the main thread.
-	BWResource::watchAccessFromCallingThread( true );
+    // Make sure that nothing else is read in the main thread.
+    BWResource::watchAccessFromCallingThread(true);
 
-	if (int32( initData.id ) == -1)
-	{
-		ERROR_MSG( "CellApp::finishInit: "
-				"CellAppMgr refused to let us join.\n" );
-		return false;
-	}
+    if (int32(initData.id) == -1) {
+        ERROR_MSG("CellApp::finishInit: "
+                  "CellAppMgr refused to let us join.\n");
+        return false;
+    }
 
-	id_ = initData.id;
-	this->setStartTime( initData.time );
-	baseAppAddr_ = initData.baseAppAddr;
-	dbAppAlpha_.addr( initData.dbAppAlphaAddr );
-	isReadyToStart_ = initData.isReady;
+    id_ = initData.id;
+    this->setStartTime(initData.time);
+    baseAppAddr_ = initData.baseAppAddr;
+    dbAppAlpha_.addr(initData.dbAppAlphaAddr);
+    isReadyToStart_ = initData.isReady;
 
-	// Attach ourselves to an ID server (in this case, the Alpha DBApp).
-	if (!idClient_.init( &this->dbAppAlpha(),
-			DBAppInterface::getIDs,
-			DBAppInterface::putIDs,
-			IDConfig::criticallyLowSize(),
-			IDConfig::lowSize(),
-			IDConfig::desiredSize(),
-			IDConfig::highSize() ))
-	{
-		ERROR_MSG( "CellApp::finishInit: Failed to get IDs\n" );
-		return false;
-	}
+    // Attach ourselves to an ID server (in this case, the Alpha DBApp).
+    if (!idClient_.init(&this->dbAppAlpha(),
+                        DBAppInterface::getIDs,
+                        DBAppInterface::putIDs,
+                        IDConfig::criticallyLowSize(),
+                        IDConfig::lowSize(),
+                        IDConfig::desiredSize(),
+                        IDConfig::highSize())) {
+        ERROR_MSG("CellApp::finishInit: Failed to get IDs\n");
+        return false;
+    }
 
-	timeoutPeriod_ = initData.timeoutPeriod;
+    timeoutPeriod_ = initData.timeoutPeriod;
 
-	// Send app id to loggers
-	LoggerMessageForwarder::pInstance()->registerAppID( id_ );
+    // Send app id to loggers
+    LoggerMessageForwarder::pInstance()->registerAppID(id_);
 
-	if (isReadyToStart_)
-	{
-		this->startGameTime();
-	}
-	else
-	{
-		// Let startup() message handler start the game timer.
-		isReadyToStart_ = true;
-	}
+    if (isReadyToStart_) {
+        this->startGameTime();
+    } else {
+        // Let startup() message handler start the game timer.
+        isReadyToStart_ = true;
+    }
 
-	CONFIG_INFO_MSG( "\tCellApp ID            = %d\n", id_ );
-	CONFIG_INFO_MSG( "\tstarting time         = %.1f\n",
-		this->gameTimeInSeconds() );
+    CONFIG_INFO_MSG("\tCellApp ID            = %d\n", id_);
+    CONFIG_INFO_MSG("\tstarting time         = %.1f\n",
+                    this->gameTimeInSeconds());
 
-	CellAppInterface::registerWithMachined( this->interface(), id_ );
+    CellAppInterface::registerWithMachined(this->interface(), id_);
 
-	// We can safely register a birth listener now since we have mapped the
-	// interfaces we are serving.
-	Mercury::MachineDaemon::registerBirthListener(
-			this->interface().address(),
-			CellAppInterface::handleCellAppMgrBirth, "CellAppMgrInterface" );
+    // We can safely register a birth listener now since we have mapped the
+    // interfaces we are serving.
+    Mercury::MachineDaemon::registerBirthListener(
+      this->interface().address(),
+      CellAppInterface::handleCellAppMgrBirth,
+      "CellAppMgrInterface");
 
-	// init the watcher stuff
-	char	abrv[32];
-	bw_snprintf( abrv, sizeof(abrv), "cellapp%02d", id_ );
-	BW_REGISTER_WATCHER( id_, abrv, "cellApp",
-			mainDispatcher_, this->interface().address() );
+    // init the watcher stuff
+    char abrv[32];
+    bw_snprintf(abrv, sizeof(abrv), "cellapp%02d", id_);
+    BW_REGISTER_WATCHER(
+      id_, abrv, "cellApp", mainDispatcher_, this->interface().address());
 
-	int pythonPort = BWConfig::get( "cellApp/pythonPort",
-						PORT_PYTHON_CELLAPP + id_ );
-	this->startPythonServer( pythonPort, id_ );
+    int pythonPort =
+      BWConfig::get("cellApp/pythonPort", PORT_PYTHON_CELLAPP + id_);
+    this->startPythonServer(pythonPort, id_);
 
-	INFO_MSG( "CellApp::finishInit: CellAppMgr acknowledged our existence.\n" );
+    INFO_MSG("CellApp::finishInit: CellAppMgr acknowledged our existence.\n");
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method preloads spaces.
  */
 void CellApp::preloadSpaces()
 {
-	DataSectionPtr pTopSection =
-		BWConfig::getSection( "cellApp/preloadedGeometryMappings" );
+    DataSectionPtr pTopSection =
+      BWConfig::getSection("cellApp/preloadedGeometryMappings");
 
-	if (!pTopSection)
-	{
-		return;
-	}
+    if (!pTopSection) {
+        return;
+    }
 
-	CONFIG_INFO_MSG( "cellApp/preloadedGeometryMappings (from bw.xml) are:\n" );
+    CONFIG_INFO_MSG("cellApp/preloadedGeometryMappings (from bw.xml) are:\n");
 
-	BW::Matrix m;
+    BW::Matrix m;
 
-	DataSectionIterator iter = pTopSection->begin();
-	while (iter != pTopSection->end())
-	{
-		DataSectionPtr pSection = *iter;
-		++iter;
+    DataSectionIterator iter = pTopSection->begin();
+    while (iter != pTopSection->end()) {
+        DataSectionPtr pSection = *iter;
+        ++iter;
 
-		if (pSection->sectionName() == "preload")
-		{
-			BW::string path = pSection->asString();
+        if (pSection->sectionName() == "preload") {
+            BW::string path = pSection->asString();
 
-			PreloadedChunkSpaces::iterator it = preloadedSpaces_.find( path );
-			if (it != preloadedSpaces_.end())
-			{
-				WARNING_MSG( "CellApp::preloadSpaces: %s already created\n",
-						path.c_str() );
-				continue;
-			}
+            PreloadedChunkSpaces::iterator it = preloadedSpaces_.find(path);
+            if (it != preloadedSpaces_.end()) {
+                WARNING_MSG("CellApp::preloadSpaces: %s already created\n",
+                            path.c_str());
+                continue;
+            }
 
-			CONFIG_INFO_MSG( "  preload: %s\n", path.c_str() );
+            CONFIG_INFO_MSG("  preload: %s\n", path.c_str());
 
-			m.setIdentity();
+            m.setIdentity();
 
-			PreloadedChunkSpace * pSpace = new PreloadedChunkSpace(
-					m, path, this->nextSpaceEntryID(),
-					DEFAULT_PRELOADED_SPACE_ID, *this );
+            PreloadedChunkSpace* pSpace =
+              new PreloadedChunkSpace(m,
+                                      path,
+                                      this->nextSpaceEntryID(),
+                                      DEFAULT_PRELOADED_SPACE_ID,
+                                      *this);
 
-			preloadedSpaces_[ path ] = pSpace;
-		}
-	}
+            preloadedSpaces_[path] = pSpace;
+        }
+    }
 }
-
 
 /**
  *	This method handles the when a geometry mapping has been fully loaded.
  */
-void CellApp::onSpaceGeometryLoaded( SpaceID spaceID, const BW::string & name )
+void CellApp::onSpaceGeometryLoaded(SpaceID spaceID, const BW::string& name)
 {
-	this->scriptEvents().triggerEvent(
-			"onSpaceGeometryLoaded",
-			Py_BuildValue( "is", spaceID, name.c_str() ) );
+    this->scriptEvents().triggerEvent(
+      "onSpaceGeometryLoaded", Py_BuildValue("is", spaceID, name.c_str()));
 }
-
 
 /**
  *	This method is called when we are ready to start the game timer.
  */
 void CellApp::startGameTime()
 {
-	INFO_MSG( "CellApp is starting\n" );
+    INFO_MSG("CellApp is starting\n");
 
-	MF_ASSERT( !gameTimer_.isSet() && (pTimeKeeper_ == NULL) );
-	MF_ASSERT( cellAppMgr_.isInitialised() );
+    MF_ASSERT(!gameTimer_.isSet() && (pTimeKeeper_ == NULL));
+    MF_ASSERT(cellAppMgr_.isInitialised());
 
-	// start the game timer
-	gameTimer_ = this->mainDispatcher().addTimer(
-						1000000/Config::updateHertz(), this,
-							reinterpret_cast< void * >( TIMEOUT_GAME_TICK ),
-							"GameTick" );
+    // start the game timer
+    gameTimer_ = this->mainDispatcher().addTimer(
+      1000000 / Config::updateHertz(),
+      this,
+      reinterpret_cast<void*>(TIMEOUT_GAME_TICK),
+      "GameTick");
 
-	lastGameTickTime_ = timestamp();
-	gettimeofday( &oldTimeval_, NULL );
-	mainDispatcher_.clearSpareTime();
-	this->calcTransientLoadTime();
+    lastGameTickTime_ = timestamp();
+    gettimeofday(&oldTimeval_, NULL);
+    mainDispatcher_.clearSpareTime();
+    this->calcTransientLoadTime();
 
-	pTimeKeeper_ = new TimeKeeper( interface_, gameTimer_, time_,
-		Config::updateHertz(), cellAppMgr_.addr(),
-		&CellAppMgrInterface::gameTimeReading,
-		id_, Config::maxTickStagger() );
+    pTimeKeeper_ = new TimeKeeper(interface_,
+                                  gameTimer_,
+                                  time_,
+                                  Config::updateHertz(),
+                                  cellAppMgr_.addr(),
+                                  &CellAppMgrInterface::gameTimeReading,
+                                  id_,
+                                  Config::maxTickStagger());
 
-	// Now we're sending load updates to the CellAppMgr regularly
-	cellAppMgr_.isRegular( true );
+    // Now we're sending load updates to the CellAppMgr regularly
+    cellAppMgr_.isRegular(true);
 }
 
+namespace {
+    int numCells()
+    {
+        return CellApp::instance().cells().size();
+    }
 
-namespace
-{
-int numCells()
-{
-	return CellApp::instance().cells().size();
-}
+    uint64 runningTime()
+    {
+        return ProfileGroup::defaultGroup().runningTime();
+    }
 
-uint64 runningTime()
-{
-	return ProfileGroup::defaultGroup().runningTime();
-}
+    // Stats
+    float g_maxTickPeriod;
+    float g_allTimeMaxTickPeriod;
 
+    float getAndResetMaxTickPeriod()
+    {
+        float result = g_maxTickPeriod;
+        g_allTimeMaxTickPeriod =
+          std::max(g_allTimeMaxTickPeriod, g_maxTickPeriod);
 
-// Stats
-float g_maxTickPeriod;
-float g_allTimeMaxTickPeriod;
+        g_maxTickPeriod = 0.0;
 
-float getAndResetMaxTickPeriod()
-{
-	float result = g_maxTickPeriod;
-	g_allTimeMaxTickPeriod = std::max( g_allTimeMaxTickPeriod,
-			g_maxTickPeriod );
-
-	g_maxTickPeriod = 0.0;
-
-	return result;
-}
+        return result;
+    }
 
 } // namespace
-
 
 /**
  *	This method adds watchers to the CellApp.
  */
 void CellApp::addWatchers()
 {
-	Watcher & watcher = Watcher::rootWatcher();
+    Watcher& watcher = Watcher::rootWatcher();
 
-	MF_WATCH( "stats/stampsPerSecond", &stampsPerSecond );
-	MF_WATCH( "stats/runningTime", &runningTime );
+    MF_WATCH("stats/stampsPerSecond", &stampsPerSecond);
+    MF_WATCH("stats/runningTime", &runningTime);
 
-	MF_WATCH( "resetOnRead/maxTickPeriod", &getAndResetMaxTickPeriod );
-	MF_WATCH( "maxTickPeriod", g_allTimeMaxTickPeriod );
+    MF_WATCH("resetOnRead/maxTickPeriod", &getAndResetMaxTickPeriod);
+    MF_WATCH("maxTickPeriod", g_allTimeMaxTickPeriod);
 
-	MF_WATCH( "timeoutPeriod", timeoutPeriod_, Watcher::WT_READ_ONLY );
+    MF_WATCH("timeoutPeriod", timeoutPeriod_, Watcher::WT_READ_ONLY);
 
+    // The cells (profiles should possibly go in cells too).
 
-	// The cells (profiles should possibly go in cells too).
+    MF_WATCH("persistentLoad", persistentLoad_);
+    MF_WATCH("transientLoad", transientLoad_);
+    MF_WATCH("load", totalLoad_);
+    MF_WATCH("entityLoad", totalEntityLoad_);
+    MF_WATCH("perEntityLoadShare", perEntityLoadShare_);
+    MF_WATCH("addedArtificialLoad", totalAddedLoad_);
 
-	MF_WATCH( "persistentLoad", persistentLoad_ );
-	MF_WATCH( "transientLoad", transientLoad_ );
-	MF_WATCH( "load", totalLoad_ );
-	MF_WATCH( "entityLoad", totalEntityLoad_ );
-	MF_WATCH( "perEntityLoadShare", perEntityLoadShare_ );
-	MF_WATCH( "addedArtificialLoad", totalAddedLoad_ );
+    MF_WATCH("numCells", &numCells);
+    MF_WATCH("numSpaces", *this, &CellApp::numSpaces);
 
-	MF_WATCH( "numCells", &numCells );
-	MF_WATCH( "numSpaces", *this, &CellApp::numSpaces );
+    MF_WATCH("id", id_);
 
-	MF_WATCH( "id", id_ );
+    // OK, we want to make a watcher for the type 'EntityPopulation',
+    // but EntityPopulation is a Map of Entity *, not of Entity. So
+    // to do this we first make a map watcher...
+    MapWatcher<EntityPopulation>* pWatchEntities =
+      new MapWatcher<EntityPopulation>();
+    // then we add a 'BaseDereference' watcher to it which passes
+    // on all its functions to its child watcher, after dereferencing
+    // any base address. Easy!
+    pWatchEntities->addChild("*",
+                             new BaseDereferenceWatcher(Entity::pWatcher()));
+    watcher.addChild("entities", pWatchEntities, (void*)&Entity::population());
 
-	// OK, we want to make a watcher for the type 'EntityPopulation',
-	// but EntityPopulation is a Map of Entity *, not of Entity. So
-	// to do this we first make a map watcher...
-	MapWatcher<EntityPopulation> * pWatchEntities =
-										new MapWatcher<EntityPopulation>();
-	// then we add a 'BaseDereference' watcher to it which passes
-	// on all its functions to its child watcher, after dereferencing
-	// any base address. Easy!
-	pWatchEntities->addChild( "*", new BaseDereferenceWatcher(
-		Entity::pWatcher() ) );
-	watcher.addChild( "entities", pWatchEntities,
-		(void*)&Entity::population() );
+    watcher.addChild("cells", Cells::pWatcher(), (void*)&cells_);
 
-	watcher.addChild( "cells", Cells::pWatcher(), (void*)&cells_ );
+    watcher.addChild("spaces", pSpaces_->pWatcher());
 
-	watcher.addChild( "spaces", pSpaces_->pWatcher() );
+    watcher.addChild("entityTypes", EntityType::pWatcher());
 
-	watcher.addChild( "entityTypes", EntityType::pWatcher() );
+    this->EntityApp::addWatchers(watcher);
 
-	this->EntityApp::addWatchers( watcher );
+    Entity::addWatchers();
 
-	Entity::addWatchers();
+    watcher.addChild("throttle", EmergencyThrottle::pWatcher(), &throttle_);
 
-	watcher.addChild( "throttle", EmergencyThrottle::pWatcher(), &throttle_ );
+    cellAppMgr_.addWatchers("cellAppMgr", Watcher::rootWatcher());
 
-	cellAppMgr_.addWatchers( "cellAppMgr", Watcher::rootWatcher() );
-
-	watcher.addChild( "dbAppAlpha", makeWatcher( &Mercury::ChannelOwner::addr ),
-		&dbAppAlpha_ );
+    watcher.addChild(
+      "dbAppAlpha", makeWatcher(&Mercury::ChannelOwner::addr), &dbAppAlpha_);
 }
-
 
 /**
  *	This method is called by different components. When all things we are
  *	waiting for are ready, we call the callback.
  */
-void CellApp::onGetFirstCell( bool isFromDB )
+void CellApp::onGetFirstCell(bool isFromDB)
 {
-	this->scriptEvents().triggerTwoEvents( "onAppReady", "onCellAppReady",
-		Py_BuildValue( "(i)", isFromDB ) );
+    this->scriptEvents().triggerTwoEvents(
+      "onAppReady", "onCellAppReady", Py_BuildValue("(i)", isFromDB));
 }
-
 
 /**
  *	This method returns the number of spaces this CellApp handles.
  */
 size_t CellApp::numSpaces() const
 {
-	return pSpaces_->size();
+    return pSpaces_->size();
 }
-
 
 /**
  *	This method handles timeout events.
  */
-void CellApp::handleTimeout( TimerHandle /*handle*/, void * arg )
+void CellApp::handleTimeout(TimerHandle /*handle*/, void* arg)
 {
-	switch (reinterpret_cast<uintptr>( arg ))
-	{
-		case TIMEOUT_GAME_TICK:
-			this->handleGameTickTimeSlice();
-			break;
+    switch (reinterpret_cast<uintptr>(arg)) {
+        case TIMEOUT_GAME_TICK:
+            this->handleGameTickTimeSlice();
+            break;
 
-		case TIMEOUT_TRIM_HISTORIES:
-			this->handleTrimHistoriesTimeSlice();
-			break;
+        case TIMEOUT_TRIM_HISTORIES:
+            this->handleTrimHistoriesTimeSlice();
+            break;
 
-		case TIMEOUT_LOADING_TICK:
-		{
-			// TODO: Could do this in an OpportunisticPoller
-			bgTaskManager_.tick();
-			fileIOTaskManager_.tick();
+        case TIMEOUT_LOADING_TICK: {
+            // TODO: Could do this in an OpportunisticPoller
+            bgTaskManager_.tick();
+            fileIOTaskManager_.tick();
 
-			{
-				SCOPED_PROFILE( TRANSIENT_LOAD_PROFILE );
+            {
+                SCOPED_PROFILE(TRANSIENT_LOAD_PROFILE);
 
-				PreloadedChunkSpaces::iterator it = preloadedSpaces_.begin();
-				while (it != preloadedSpaces_.end())
-				{
-					it->second->chunkTick();
-					++it;
-				}
-			}
-			pSpaces_->tickChunks();
-			break;
-		}
-	}
+                PreloadedChunkSpaces::iterator it = preloadedSpaces_.begin();
+                while (it != preloadedSpaces_.end()) {
+                    it->second->chunkTick();
+                    ++it;
+                }
+            }
+            pSpaces_->tickChunks();
+            break;
+        }
+    }
 }
-
 
 /**
  *
  */
 void CellApp::tickShutdown()
 {
-	if (!hasAckedCellAppMgrShutDown_)
-	{
-		this->sendShutdownAck( SHUTDOWN_INFORM );
+    if (!hasAckedCellAppMgrShutDown_) {
+        this->sendShutdownAck(SHUTDOWN_INFORM);
 
-		// No longer regularly sending the load from now on.
-		cellAppMgr_.isRegular( false );
+        // No longer regularly sending the load from now on.
+        cellAppMgr_.isRegular(false);
 
-		hasAckedCellAppMgrShutDown_ = true;
-	}
+        hasAckedCellAppMgrShutDown_ = true;
+    }
 }
-
 
 /**
  *	This method returns the number of seconds since this method was last called.
@@ -997,42 +943,41 @@ void CellApp::tickShutdown()
  */
 uint64 CellApp::calcTickPeriod()
 {
-	uint64 newTime = timestamp();
-	uint64 deltaTime = newTime - lastGameTickTime_;
-	lastGameTickTime_ = newTime;
+    uint64 newTime    = timestamp();
+    uint64 deltaTime  = newTime - lastGameTickTime_;
+    lastGameTickTime_ = newTime;
 
-	timeval newTimeval;
-	gettimeofday( &newTimeval, NULL );
+    timeval newTimeval;
+    gettimeofday(&newTimeval, NULL);
 
-	if (time_ % 20 == 0)
-	{
-		double lastTickPeriod = stampsToSeconds( deltaTime );
+    if (time_ % 20 == 0) {
+        double lastTickPeriod = stampsToSeconds(deltaTime);
 
-		double lastTickPeriodCheck =
-			double(newTimeval.tv_sec - oldTimeval_.tv_sec) +
-				double(newTimeval.tv_usec - oldTimeval_.tv_usec) / 1000000.0;
+        double lastTickPeriodCheck =
+          double(newTimeval.tv_sec - oldTimeval_.tv_sec) +
+          double(newTimeval.tv_usec - oldTimeval_.tv_usec) / 1000000.0;
 
-		if ((lastTickPeriodCheck < 0.9 * lastTickPeriod) ||
-			(1.1 * lastTickPeriod < lastTickPeriodCheck))
-		{
-			WARNING_MSG( "CellApp::calcTickPeriod: "
-				"Time calculation off by %.1f%%. %.3fs instead of %.3fs\n"
-					"This may be caused by Speedstep technology that "
-					"changes the CPU frequency, often found in laptops or "
-					"unsynchronised Time Stamp Counter in dual core "
-					"systems.\n"
-					"See the Server Operations Guide for how to change to "
-					"the gettimeofday timing method.\n",
-				(lastTickPeriod/lastTickPeriodCheck)*100.f,
-				lastTickPeriod, lastTickPeriodCheck );
-		}
-	}
+        if ((lastTickPeriodCheck < 0.9 * lastTickPeriod) ||
+            (1.1 * lastTickPeriod < lastTickPeriodCheck)) {
+            WARNING_MSG(
+              "CellApp::calcTickPeriod: "
+              "Time calculation off by %.1f%%. %.3fs instead of %.3fs\n"
+              "This may be caused by Speedstep technology that "
+              "changes the CPU frequency, often found in laptops or "
+              "unsynchronised Time Stamp Counter in dual core "
+              "systems.\n"
+              "See the Server Operations Guide for how to change to "
+              "the gettimeofday timing method.\n",
+              (lastTickPeriod / lastTickPeriodCheck) * 100.f,
+              lastTickPeriod,
+              lastTickPeriodCheck);
+        }
+    }
 
-	oldTimeval_ = newTimeval;
+    oldTimeval_ = newTimeval;
 
-	return deltaTime;
+    return deltaTime;
 }
-
 
 /**
  *	This method calculates any temporary load time. This is the time in the last
@@ -1041,15 +986,14 @@ uint64 CellApp::calcTickPeriod()
  */
 double CellApp::calcTransientLoadTime()
 {
-	static uint64 lastSumTime = 0;
-	uint64 sumTime = TRANSIENT_LOAD_PROFILE.sumTime_;
+    static uint64 lastSumTime = 0;
+    uint64        sumTime     = TRANSIENT_LOAD_PROFILE.sumTime_;
 
-	double time = stampsToSeconds( sumTime - lastSumTime );
-	lastSumTime = sumTime;
+    double time = stampsToSeconds(sumTime - lastSumTime);
+    lastSumTime = sumTime;
 
-	return time;
+    return time;
 }
-
 
 /**
  *	This method calculates the number of seconds spent idling since this was
@@ -1057,12 +1001,11 @@ double CellApp::calcTransientLoadTime()
  */
 double CellApp::calcSpareTime()
 {
-	double spareTime = stampsToSeconds( mainDispatcher_.getSpareTime() );
-	mainDispatcher_.clearSpareTime();
+    double spareTime = stampsToSeconds(mainDispatcher_.getSpareTime());
+    mainDispatcher_.clearSpareTime();
 
-	return spareTime;
+    return spareTime;
 }
-
 
 /**
  *	This method calculates the number of seconds spent doing work that is
@@ -1070,74 +1013,71 @@ double CellApp::calcSpareTime()
  */
 double CellApp::calcThrottledLoadTime()
 {
-	static uint64 lastSumTime = 0;
-	uint64 sumTime = CLIENT_UPDATE_PROFILE.sumTime_;
+    static uint64 lastSumTime = 0;
+    uint64        sumTime     = CLIENT_UPDATE_PROFILE.sumTime_;
 
-	double time = stampsToSeconds( sumTime - lastSumTime );
-	lastSumTime = sumTime;
+    double time = stampsToSeconds(sumTime - lastSumTime);
+    lastSumTime = sumTime;
 
-	return time;
+    return time;
 }
-
 
 /**
  *	This method displays warnings if a game tick has taken too long.
  */
-void CellApp::checkTickWarnings( double persistentLoadTime,
-		double lastTickPeriod, double spareTime )
+void CellApp::checkTickWarnings(double persistentLoadTime,
+                                double lastTickPeriod,
+                                double spareTime)
 {
-	// Did the last tick take more than 2 ticks amount of time?
-	if (lastTickPeriod * Config::updateHertz() > 2.f)
-	{
-		WARNING_MSG( "CellApp::checkTickWarnings: "
-				"Last game tick took %.2f seconds. "
-				"Persistent load time = %.2f. Spare time %.2f.\n",
-			lastTickPeriod, persistentLoadTime, spareTime );
-	}
+    // Did the last tick take more than 2 ticks amount of time?
+    if (lastTickPeriod * Config::updateHertz() > 2.f) {
+        WARNING_MSG("CellApp::checkTickWarnings: "
+                    "Last game tick took %.2f seconds. "
+                    "Persistent load time = %.2f. Spare time %.2f.\n",
+                    lastTickPeriod,
+                    persistentLoadTime,
+                    spareTime);
+    }
 
-	if (!Config::allowInteractiveDebugging() &&
-		lastTickPeriod > timeoutPeriod_)
-	{
-		CRITICAL_MSG( "CellApp::checkTickWarnings: Last game tick took %.2f "
-			"seconds. cellAppMgr/cellAppTimeout is %.2f. "
-			"This process should have been stopped by CellAppMgr. This "
-			"process will now be terminated.\n",
-			lastTickPeriod,
-			timeoutPeriod_ );
-	}
+    if (!Config::allowInteractiveDebugging() &&
+        lastTickPeriod > timeoutPeriod_) {
+        CRITICAL_MSG(
+          "CellApp::checkTickWarnings: Last game tick took %.2f "
+          "seconds. cellAppMgr/cellAppTimeout is %.2f. "
+          "This process should have been stopped by CellAppMgr. This "
+          "process will now be terminated.\n",
+          lastTickPeriod,
+          timeoutPeriod_);
+    }
 
-	{
-		static uint64 scriptTime = SCRIPT_CALL_PROFILE.sumTime_;
-		uint64 newScriptTime = SCRIPT_CALL_PROFILE.sumTime_;
-		uint64 deltaScriptTime = newScriptTime - scriptTime;
-		scriptTime = newScriptTime;
-		if (deltaScriptTime * Config::updateHertz() / 2 > stampsPerSecond())
-		{
-			WARNING_MSG( "CellApp::checkTickWarnings: "
-							"Last game tick, script took %.2f seconds\n",
-						stampsToSeconds( deltaScriptTime ) );
-		}
-	}
+    {
+        static uint64 scriptTime      = SCRIPT_CALL_PROFILE.sumTime_;
+        uint64        newScriptTime   = SCRIPT_CALL_PROFILE.sumTime_;
+        uint64        deltaScriptTime = newScriptTime - scriptTime;
+        scriptTime                    = newScriptTime;
+        if (deltaScriptTime * Config::updateHertz() / 2 > stampsPerSecond()) {
+            WARNING_MSG("CellApp::checkTickWarnings: "
+                        "Last game tick, script took %.2f seconds\n",
+                        stampsToSeconds(deltaScriptTime));
+        }
+    }
 
-	if ((persistentLoadTime < 0.f) || (lastTickPeriod < persistentLoadTime))
-	{
-		if (g_timingMethod == RDTSC_TIMING_METHOD)
-		{
-			CRITICAL_MSG( "CellApp::checkTickWarnings: "
-					"Invalid timing result %.3f.\n"
-					"This is likely due to running on a multicore system that "
-					"does not have synchronised Time Stamp Counters. Refer to "
-					"server_installation_guide.html regarding TimingMethod.\n",
-				lastTickPeriod );
-		}
-		else
-		{
-			CRITICAL_MSG( "CellApp::checkTickWarnings: "
-				"Invalid timing result %.3f.\n", lastTickPeriod );
-		}
-	}
+    if ((persistentLoadTime < 0.f) || (lastTickPeriod < persistentLoadTime)) {
+        if (g_timingMethod == RDTSC_TIMING_METHOD) {
+            CRITICAL_MSG(
+              "CellApp::checkTickWarnings: "
+              "Invalid timing result %.3f.\n"
+              "This is likely due to running on a multicore system that "
+              "does not have synchronised Time Stamp Counters. Refer to "
+              "server_installation_guide.html regarding TimingMethod.\n",
+              lastTickPeriod);
+        } else {
+            CRITICAL_MSG("CellApp::checkTickWarnings: "
+                         "Invalid timing result %.3f.\n",
+                         lastTickPeriod);
+        }
+    }
 }
-
 
 /**
  *	This method returns the number of seconds since the current tick should have
@@ -1146,16 +1086,15 @@ void CellApp::checkTickWarnings( double persistentLoadTime,
  */
 float CellApp::numSecondsBehind() const
 {
-	uint64 now = timestamp();
-	uint64 next = mainDispatcher_.timerDeliveryTime( gameTimer_ );
-	uint64 toNext = next - now;
+    uint64 now    = timestamp();
+    uint64 next   = mainDispatcher_.timerDeliveryTime(gameTimer_);
+    uint64 toNext = next - now;
 
-	// Check if toNext is 'negative' (unsigned arthimetic).
-	return (2 * toNext < toNext) ?
-		Config::expectedTickPeriod() + stampsToSeconds( now - next ) :
-		Config::expectedTickPeriod() - stampsToSeconds( toNext );
+    // Check if toNext is 'negative' (unsigned arthimetic).
+    return (2 * toNext < toNext)
+             ? Config::expectedTickPeriod() + stampsToSeconds(now - next)
+             : Config::expectedTickPeriod() - stampsToSeconds(toNext);
 }
-
 
 /**
  *	This method factors in the time spent in the last tick to the load result.
@@ -1163,76 +1102,68 @@ float CellApp::numSecondsBehind() const
  *	@param timeSpent	The number of seconds spent in the last tick.
  *	@param result		The load property that will be updated.
  */
-void CellApp::addToLoad( float timeSpent, float & result ) const
+void CellApp::addToLoad(float timeSpent, float& result) const
 {
-	float bias = Config::loadSmoothingBias();
+    float bias = Config::loadSmoothingBias();
 
-	result = (1-bias) * result + bias * timeSpent * Config::updateHertz();
+    result = (1 - bias) * result + bias * timeSpent * Config::updateHertz();
 }
-
 
 /**
  *	This method updates what the load is associated with the app.
  */
 void CellApp::updateLoad()
 {
-	uint64 lastTickTimeInStamps = this->calcTickPeriod();
-	double tickTime = stampsToSeconds( lastTickTimeInStamps );
+    uint64 lastTickTimeInStamps = this->calcTickPeriod();
+    double tickTime             = stampsToSeconds(lastTickTimeInStamps);
 
-	this->tickProfilers( lastTickTimeInStamps );
+    this->tickProfilers(lastTickTimeInStamps);
 
-	double spareTime = this->calcSpareTime();
-	double transientLoadTime = this->calcTransientLoadTime();
+    double spareTime         = this->calcSpareTime();
+    double transientLoadTime = this->calcTransientLoadTime();
 
-	double persistentLoadTime = tickTime - spareTime - transientLoadTime;
+    double persistentLoadTime = tickTime - spareTime - transientLoadTime;
 
-	double estimatedPersistentLoadTime = throttle_.estimatePersistentLoadTime(
-												persistentLoadTime,
-												this->calcThrottledLoadTime() );
+    double estimatedPersistentLoadTime = throttle_.estimatePersistentLoadTime(
+      persistentLoadTime, this->calcThrottledLoadTime());
 
-	throttle_.update( this->numSecondsBehind(),
-						spareTime, Config::expectedTickPeriod() );
+    throttle_.update(
+      this->numSecondsBehind(), spareTime, Config::expectedTickPeriod());
 
-	this->checkTickWarnings( persistentLoadTime, tickTime, spareTime );
+    this->checkTickWarnings(persistentLoadTime, tickTime, spareTime);
 
-	// Factor these times into the load values.
-	float artificialTime = totalAddedLoad_ / Config::updateHertz();
+    // Factor these times into the load values.
+    float artificialTime = totalAddedLoad_ / Config::updateHertz();
 
-	this->addToLoad( estimatedPersistentLoadTime + artificialTime,
-			persistentLoad_ );
-	this->addToLoad( transientLoadTime, transientLoad_ );
-	this->addToLoad( tickTime - spareTime, totalLoad_ );
+    this->addToLoad(estimatedPersistentLoadTime + artificialTime,
+                    persistentLoad_);
+    this->addToLoad(transientLoadTime, transientLoad_);
+    this->addToLoad(tickTime - spareTime, totalLoad_);
 
+    int numRealEntities = this->numRealEntities();
 
-	int numRealEntities = this->numRealEntities();
+    if (BalanceConfig::demo()) {
+        // oldstyle demo load balancing
+        persistentLoad_ =
+          (float)numRealEntities / BalanceConfig::demoNumEntitiesPerCell();
+    }
 
-	if (BalanceConfig::demo())
-	{
-		// oldstyle demo load balancing
-		persistentLoad_ =
-			(float)numRealEntities / BalanceConfig::demoNumEntitiesPerCell();
-	}
-
-	if (persistentLoad_ > totalEntityLoad_)
-	{
-		perEntityLoadShare_ = (persistentLoad_ - totalEntityLoad_) / numRealEntities;
-	}
-	else
-	{
-		perEntityLoadShare_ = 0.f;
-	}
-
+    if (persistentLoad_ > totalEntityLoad_) {
+        perEntityLoadShare_ =
+          (persistentLoad_ - totalEntityLoad_) / numRealEntities;
+    } else {
+        perEntityLoadShare_ = 0.f;
+    }
 }
-
 
 /**
  * This method ticks entity and entity type profilers
  */
-void CellApp::tickProfilers( uint64 lastTickInStamps )
+void CellApp::tickProfilers(uint64 lastTickInStamps)
 {
-	cells_.tickProfilers( lastTickInStamps, Config::loadSmoothingBias() );
+    cells_.tickProfilers(lastTickInStamps, Config::loadSmoothingBias());
 
-	EntityType::tickProfilers( totalEntityLoad_, totalAddedLoad_ );
+    EntityType::tickProfilers(totalEntityLoad_, totalAddedLoad_);
 }
 
 /**
@@ -1240,29 +1171,26 @@ void CellApp::tickProfilers( uint64 lastTickInStamps )
  */
 void CellApp::updateBoundary()
 {
-	AUTO_SCOPED_PROFILE( "calcBoundary" );
-	// TODO: We could probably only send this at the load balancing rate or
-	//	it could be part of informOfLoad?
+    AUTO_SCOPED_PROFILE("calcBoundary");
+    // TODO: We could probably only send this at the load balancing rate or
+    //	it could be part of informOfLoad?
 
-	cellAppMgr_.updateBounds( cells_ );
+    cellAppMgr_.updateBounds(cells_);
 }
-
 
 /**
  *	This method backs up some of the entities. It should be called each tick.
  */
 void CellApp::tickBackup()
 {
-	int backupPeriod = Config::backupPeriodInTicks();
+    int backupPeriod = Config::backupPeriodInTicks();
 
-	if (backupPeriod != 0)
-	{
-		AUTO_SCOPED_PROFILE( "backup" );
-		cells_.backup( backupIndex_, backupPeriod );
-			backupIndex_ = (backupIndex_ + 1) % backupPeriod;
-	}
+    if (backupPeriod != 0) {
+        AUTO_SCOPED_PROFILE("backup");
+        cells_.backup(backupIndex_, backupPeriod);
+        backupIndex_ = (backupIndex_ + 1) % backupPeriod;
+    }
 }
-
 
 /**
  *	This method checks whether any entities should be offloaded or ghosts
@@ -1270,12 +1198,10 @@ void CellApp::tickBackup()
  */
 void CellApp::checkOffloads()
 {
-	if ((time_ % Config::checkOffloadsPeriodInTicks()) == 0)
-	{
-		cells_.checkOffloads();
-	}
+    if ((time_ % Config::checkOffloadsPeriodInTicks()) == 0) {
+        cells_.checkOffloads();
+    }
 }
-
 
 /**
  *	This method is used to make sure that the time is synchronised between
@@ -1283,60 +1209,56 @@ void CellApp::checkOffloads()
  */
 void CellApp::syncTime()
 {
-	// TODO: Move this to ServerApp
-	if ((time_ % Config::timeSyncPeriodInTicks()) == 0)
-	{
-		if (pTimeKeeper_)
-		{
-			// send a reading of our time to the cell app manager...
-			// ... and get a better one back to sync our tick with
-			pTimeKeeper_->synchroniseWithMaster();
-		}
-	}
+    // TODO: Move this to ServerApp
+    if ((time_ % Config::timeSyncPeriodInTicks()) == 0) {
+        if (pTimeKeeper_) {
+            // send a reading of our time to the cell app manager...
+            // ... and get a better one back to sync our tick with
+            pTimeKeeper_->synchroniseWithMaster();
+        }
+    }
 }
-
 
 /**
  *	This method handles the game tick time slice.
  */
 void CellApp::handleGameTickTimeSlice()
 {
-	AUTO_SCOPED_PROFILE( "gameTick" );
+    AUTO_SCOPED_PROFILE("gameTick");
 
-	if (this->inShutDownPause())
-	{
-		this->tickShutdown();
-		return;
-	}
+    if (this->inShutDownPause()) {
+        this->tickShutdown();
+        return;
+    }
 
-	this->updateLoad();
+    this->updateLoad();
 
-	cellAppMgr_.informOfLoad( persistentLoad_ );
+    cellAppMgr_.informOfLoad(persistentLoad_);
 
-	this->updateBoundary();
+    this->updateBoundary();
 
-	// Increment the time - we are now into the quantum of the next tick
-	this->advanceTime();
+    // Increment the time - we are now into the quantum of the next tick
+    this->advanceTime();
 
-	this->tickBackup();
+    this->tickBackup();
 
-	this->checkSendWindowOverflows();
+    this->checkSendWindowOverflows();
 
-	// ---- Jobs that can just take up remaining time should go last ----
+    // ---- Jobs that can just take up remaining time should go last ----
 
-	this->checkOffloads();
+    this->checkOffloads();
 
-	pSpaces_->deleteOldSpaces();
+    pSpaces_->deleteOldSpaces();
 
-	this->syncTime();
+    this->syncTime();
 
-	this->tickStats();
+    this->tickStats();
 
-	this->bufferedEntityMessages().playBufferedMessages( *this );
+    this->bufferedEntityMessages().playBufferedMessages(*this);
 
-	this->bufferedInputMessages().playBufferedMessages( *this );
+    this->bufferedInputMessages().playBufferedMessages(*this);
 
-	cells_.tickRecordings();
+    cells_.tickRecordings();
 }
 
 /**
@@ -1345,12 +1267,11 @@ void CellApp::handleGameTickTimeSlice()
  */
 void CellApp::onStartOfTick()
 {
-	this->EntityApp::onStartOfTick();
+    this->EntityApp::onStartOfTick();
 
-	if (IGameDelegate::instance() != NULL)
-	{
-		IGameDelegate::instance()->update();
-	}	
+    if (IGameDelegate::instance() != NULL) {
+        IGameDelegate::instance()->update();
+    }
 }
 
 /**
@@ -1359,12 +1280,11 @@ void CellApp::onStartOfTick()
  */
 void CellApp::onEndOfTick()
 {
-	pCellAppChannels_->stopTimer();
-	pCellAppChannels_->sendAll();
+    pCellAppChannels_->stopTimer();
+    pCellAppChannels_->sendAll();
 
-	this->callWitnesses( /* checkReceivedTime = */ false );
+    this->callWitnesses(/* checkReceivedTime = */ false);
 }
-
 
 /**
  *	This method flushes cell-cell channels and re-enables the flush-timer
@@ -1372,16 +1292,15 @@ void CellApp::onEndOfTick()
  */
 void CellApp::onTickProcessingComplete()
 {
-	this->EntityApp::onTickProcessingComplete();
-	pCellAppChannels_->sendTickCompleteToAll( this->time() );
-	pCellAppChannels_->startTimer( int( 1000000 / Config::ghostUpdateHertz() ),
-		mainDispatcher_ );
+    this->EntityApp::onTickProcessingComplete();
+    pCellAppChannels_->sendTickCompleteToAll(this->time());
+    pCellAppChannels_->startTimer(int(1000000 / Config::ghostUpdateHertz()),
+                                  mainDispatcher_);
 
-	hasCalledWitnesses_ = false;
+    hasCalledWitnesses_ = false;
 
-	this->callWitnesses( /* checkReceivedTime = */ true );
+    this->callWitnesses(/* checkReceivedTime = */ true);
 }
-
 
 /**
  *	This method handles the trim histories time slice.
@@ -1390,472 +1309,414 @@ void CellApp::onTickProcessingComplete()
  */
 void CellApp::handleTrimHistoriesTimeSlice()
 {
-	// Keep iterator in tact. This is necessary as trimEventHistory can call
-	// onWitnessed (which it probably should not do).
-	Entity::callbacksPermitted( false );
-	{
-		EntityPopulation::const_iterator iter = Entity::population().begin();
+    // Keep iterator in tact. This is necessary as trimEventHistory can call
+    // onWitnessed (which it probably should not do).
+    Entity::callbacksPermitted(false);
+    {
+        EntityPopulation::const_iterator iter = Entity::population().begin();
 
-		while (iter != Entity::population().end())
-		{
-			// TODO: Could skip dead entities.
-			iter->second->trimEventHistory( 0 );
+        while (iter != Entity::population().end()) {
+            // TODO: Could skip dead entities.
+            iter->second->trimEventHistory(0);
 
-			iter++;
-		}
-	}
-	Entity::callbacksPermitted( true );
+            iter++;
+        }
+    }
+    Entity::callbacksPermitted(true);
 
-	Entity::population().expireRealChannels();
+    Entity::population().expireRealChannels();
 }
-
 
 /**
  *	This method kills a cell.
  */
-void CellApp::destroyCell( Cell * pCell )
+void CellApp::destroyCell(Cell* pCell)
 {
-	cells_.destroy( pCell );
+    cells_.destroy(pCell);
 }
-
 
 /**
  *	Shut down this application.
  */
 void CellApp::shutDown()
 {
-	this->ServerApp::shutDown();
+    this->ServerApp::shutDown();
 }
 
 // -----------------------------------------------------------------------------
 // Section: Mercury Message Handlers
 // -----------------------------------------------------------------------------
 
-
 /**
  *	This method handles a shutDown message.
  */
-void CellApp::shutDown( const CellAppInterface::shutDownArgs & /*args*/ )
+void CellApp::shutDown(const CellAppInterface::shutDownArgs& /*args*/)
 {
-	TRACE_MSG( "CellApp::shutDown: Told to shut down\n" );
-	this->shutDown();
+    TRACE_MSG("CellApp::shutDown: Told to shut down\n");
+    this->shutDown();
 }
-
 
 /**
  *	This method handles a message telling us to shut down in a controlled way.
  */
 void CellApp::controlledShutDown(
-		const CellAppInterface::controlledShutDownArgs & args )
+  const CellAppInterface::controlledShutDownArgs& args)
 {
-	switch (args.stage)
-	{
-		case SHUTDOWN_INFORM:
-		{
-			if (shutDownTime_ != 0)
-			{
-				ERROR_MSG( "CellApp::controlledShutDown: "
-						"Setting shutDownTime_ to %u when already set to %u\n",
-					args.shutDownTime, shutDownTime_ );
-			}
+    switch (args.stage) {
+        case SHUTDOWN_INFORM: {
+            if (shutDownTime_ != 0) {
+                ERROR_MSG(
+                  "CellApp::controlledShutDown: "
+                  "Setting shutDownTime_ to %u when already set to %u\n",
+                  args.shutDownTime,
+                  shutDownTime_);
+            }
 
-			shutDownTime_ = args.shutDownTime;
+            shutDownTime_ = args.shutDownTime;
 
-			hasAckedCellAppMgrShutDown_ = false;
+            hasAckedCellAppMgrShutDown_ = false;
 
-			if (this->hasStarted())
-			{
-				this->scriptEvents().triggerTwoEvents(
-					"onAppShuttingDown", "onCellAppShuttingDown",
-					Py_BuildValue( "(d)",
-						(double)shutDownTime_/Config::updateHertz() ) );
+            if (this->hasStarted()) {
+                this->scriptEvents().triggerTwoEvents(
+                  "onAppShuttingDown",
+                  "onCellAppShuttingDown",
+                  Py_BuildValue("(d)",
+                                (double)shutDownTime_ / Config::updateHertz()));
 
-				// Don't send ack immediately to allow scripts to do stuff.
-			}
-			else
-			{
-				this->sendShutdownAck( SHUTDOWN_INFORM );
-			}
-		}
-		break;
+                // Don't send ack immediately to allow scripts to do stuff.
+            } else {
+                this->sendShutdownAck(SHUTDOWN_INFORM);
+            }
+        } break;
 
-		case SHUTDOWN_PERFORM:
-		{
-			ERROR_MSG( "CellApp::controlledShutDown: "
-					"CellApp does not do SHUTDOWN_PERFORM stage.\n" );
-			// TODO: It could be good to call this so that we can call a script
-			// method.
-			break;
-		}
+        case SHUTDOWN_PERFORM: {
+            ERROR_MSG("CellApp::controlledShutDown: "
+                      "CellApp does not do SHUTDOWN_PERFORM stage.\n");
+            // TODO: It could be good to call this so that we can call a script
+            // method.
+            break;
+        }
 
-		case SHUTDOWN_NONE:
-		case SHUTDOWN_REQUEST:
-		case SHUTDOWN_DISCONNECT_PROXIES:
-		case SHUTDOWN_TRIGGER:
-			break;
-	}
+        case SHUTDOWN_NONE:
+        case SHUTDOWN_REQUEST:
+        case SHUTDOWN_DISCONNECT_PROXIES:
+        case SHUTDOWN_TRIGGER:
+            break;
+    }
 }
-
 
 /**
  * 	This method sends an ack to the CellAppMgr to indicate that we've
  * 	finished one of our shutdown stages.
  */
-void CellApp::sendShutdownAck( ShutDownStage stage )
+void CellApp::sendShutdownAck(ShutDownStage stage)
 {
-	cellAppMgr_.ackShutdown( stage );
+    cellAppMgr_.ackShutdown(stage);
 }
-
 
 /**
  *	This method handles a message to add a cell to this cell application.
  */
-void CellApp::addCell( const Mercury::Address & srcAddr,
-		const Mercury::UnpackedMessageHeader & header,
-		BinaryIStream & data )
+void CellApp::addCell(const Mercury::Address&               srcAddr,
+                      const Mercury::UnpackedMessageHeader& header,
+                      BinaryIStream&                        data)
 {
-	if (header.replyID != 0)
-	{
-		if (srcAddr == cellAppMgr_.addr())
-		{
-			cellAppMgr_.bundle().startReply( header.replyID );
-			cellAppMgr_.send();
-		}
-		else
-		{
-			WARNING_MSG( "CellApp::addCell: "
-							"Request came from %s instead of CellAppMgr %s\n",
-						srcAddr.c_str(), cellAppMgr_.addr().c_str() );
-			Mercury::UDPBundle bundle;
-			bundle.startReply( header.replyID );
-			this->interface().send( srcAddr, bundle );
-		}
-	}
+    if (header.replyID != 0) {
+        if (srcAddr == cellAppMgr_.addr()) {
+            cellAppMgr_.bundle().startReply(header.replyID);
+            cellAppMgr_.send();
+        } else {
+            WARNING_MSG("CellApp::addCell: "
+                        "Request came from %s instead of CellAppMgr %s\n",
+                        srcAddr.c_str(),
+                        cellAppMgr_.addr().c_str());
+            Mercury::UDPBundle bundle;
+            bundle.startReply(header.replyID);
+            this->interface().send(srcAddr, bundle);
+        }
+    }
 
-	SpaceID spaceID;
-	data >> spaceID;
-	Space * pSpace = this->findSpace( spaceID );
+    SpaceID spaceID;
+    data >> spaceID;
+    Space* pSpace = this->findSpace(spaceID);
 
-	if (pSpace)
-	{
-		INFO_MSG( "CellApp::addCell: Re-using space %d\n", spaceID );
-		pSpace->reuse();
-	}
-	else
-	{
-		pSpace = pSpaces_->create( spaceID );
-	}
+    if (pSpace) {
+        INFO_MSG("CellApp::addCell: Re-using space %d\n", spaceID);
+        pSpace->reuse();
+    } else {
+        pSpace = pSpaces_->create(spaceID);
+    }
 
-	INFO_MSG( "CellApp::addCell: Space = %u\n", spaceID );
+    INFO_MSG("CellApp::addCell: Space = %u\n", spaceID);
 
-	MF_ASSERT( pSpace );
+    MF_ASSERT(pSpace);
 
-	pSpace->updateGeometry( data );
+    pSpace->updateGeometry(data);
 
-	CellInfo * pCellInfo = pSpace->findCell( interface_.address() );
+    CellInfo* pCellInfo = pSpace->findCell(interface_.address());
 
-	if (pCellInfo)
-	{
-		Cell * pNewCell = pSpace->pCell();
+    if (pCellInfo) {
+        Cell* pNewCell = pSpace->pCell();
 
-		if (pNewCell)
-		{
-			WARNING_MSG( "CellApp::addCell: "
-					"Cell did not fully remove; reusing.\n" );
-			MF_ASSERT( pCellInfo == &pNewCell->cellInfo() );
-			pNewCell->reuse();
-		}
-		else
-		{
-			pNewCell = new Cell( *pSpace, *pCellInfo );
-			cells_.add( pNewCell );
-		}
+        if (pNewCell) {
+            WARNING_MSG("CellApp::addCell: "
+                        "Cell did not fully remove; reusing.\n");
+            MF_ASSERT(pCellInfo == &pNewCell->cellInfo());
+            pNewCell->reuse();
+        } else {
+            pNewCell = new Cell(*pSpace, *pCellInfo);
+            cells_.add(pNewCell);
+        }
 
-		bool isFirstCell;
-		data >> isFirstCell;
+        bool isFirstCell;
+        data >> isFirstCell;
 
-		bool isFromDB;
-		data >> isFromDB;
+        bool isFromDB;
+        data >> isFromDB;
 
-		if (data.remainingLength() > 0)
-		{
-			pSpace->allSpaceData( data );
-		}
+        if (data.remainingLength() > 0) {
+            pSpace->allSpaceData(data);
+        }
 
-		// The first cell in the first space.
-		if (isFirstCell && Config::useDefaultSpace() && spaceID == 1)
-		{
-			this->onGetFirstCell( isFromDB );
-		}
-	}
-	else
-	{
-		CRITICAL_MSG( "CellApp::addCell: Failed to add a cell for space %u\n",
-				spaceID );
-	}
+        // The first cell in the first space.
+        if (isFirstCell && Config::useDefaultSpace() && spaceID == 1) {
+            this->onGetFirstCell(isFromDB);
+        }
+    } else {
+        CRITICAL_MSG("CellApp::addCell: Failed to add a cell for space %u\n",
+                     spaceID);
+    }
 }
-
 
 /**
  *	This method handles a message from the CellAppMgr telling us to set our
  * 	game time.
  */
-void CellApp::setGameTime( const CellAppInterface::setGameTimeArgs & args )
+void CellApp::setGameTime(const CellAppInterface::setGameTimeArgs& args)
 {
-	MF_ASSERT( !gameTimer_.isSet() );	// Not started yet.
+    MF_ASSERT(!gameTimer_.isSet()); // Not started yet.
 
-	time_ = args.gameTime;
+    time_ = args.gameTime;
 
-	INFO_MSG( "CellApp::setGameTime: gametime = %.1f\n",
-			this->gameTimeInSeconds() );
+    INFO_MSG("CellApp::setGameTime: gametime = %.1f\n",
+             this->gameTimeInSeconds());
 }
-
 
 /**
  *	This method handles a message from the CellAppMgr telling us to start.
  */
-void CellApp::startup( const CellAppInterface::startupArgs & args )
+void CellApp::startup(const CellAppInterface::startupArgs& args)
 {
-	baseAppAddr_ = args.baseAppAddr;
+    baseAppAddr_ = args.baseAppAddr;
 
-	if (isReadyToStart_)
-	{
-		this->startGameTime();
-	}
-	else
-	{
-		// The cell app initialisation hasn't completed yet -- this may happen
-		// when a nested dispatch loop is being executed for a blocking request
-		// inside finishInit().
-		isReadyToStart_ = true;
-	}
+    if (isReadyToStart_) {
+        this->startGameTime();
+    } else {
+        // The cell app initialisation hasn't completed yet -- this may happen
+        // when a nested dispatch loop is being executed for a blocking request
+        // inside finishInit().
+        isReadyToStart_ = true;
+    }
 }
-
 
 /**
  *	This method handles a message that lets us know that there is a new cell
  *	manager.
  */
 void CellApp::handleCellAppMgrBirth(
-					const CellAppInterface::handleCellAppMgrBirthArgs & args )
+  const CellAppInterface::handleCellAppMgrBirthArgs& args)
 {
-	INFO_MSG( "CellApp::handleCellAppMgrBirth: %s\n", args.addr.c_str() );
-	cellAppMgr_.onManagerRebirth( *this, args.addr );
+    INFO_MSG("CellApp::handleCellAppMgrBirth: %s\n", args.addr.c_str());
+    cellAppMgr_.onManagerRebirth(*this, args.addr);
 
-	if (pTimeKeeper_)
-	{
-		pTimeKeeper_->masterAddress( cellAppMgr_.addr() );
-	}
+    if (pTimeKeeper_) {
+        pTimeKeeper_->masterAddress(cellAppMgr_.addr());
+    }
 }
-
 
 /**
  *
  */
-void CellApp::addCellAppMgrRebirthData( BinaryOStream & stream )
+void CellApp::addCellAppMgrRebirthData(BinaryOStream& stream)
 {
-	stream << interface_.address();
-	stream << pViewerServer_->port();
-	stream << id_ << time_;
+    stream << interface_.address();
+    stream << pViewerServer_->port();
+    stream << id_ << time_;
 
-	pCellAppData_->addToStream( stream );
-	pGlobalData_->addToStream( stream );
+    pCellAppData_->addToStream(stream);
+    pGlobalData_->addToStream(stream);
 
-	pSpaces_->writeRecoveryData( stream );
+    pSpaces_->writeRecoveryData(stream);
 }
-
 
 /**
  *	This method handles a message from the cell app manager informing us that a
  *	CellApp has died.
  */
 void CellApp::handleCellAppDeath(
-	const CellAppInterface::handleCellAppDeathArgs & args )
+  const CellAppInterface::handleCellAppDeathArgs& args)
 {
-	NETWORK_INFO_MSG( "CellApp::handleCellAppDeath: %s\n", args.addr.c_str() );
+    NETWORK_INFO_MSG("CellApp::handleCellAppDeath: %s\n", args.addr.c_str());
 
-	MF_ASSERT( args.addr.port != 0 );
+    MF_ASSERT(args.addr.port != 0);
 
-	cells_.handleCellAppDeath( args.addr );
+    cells_.handleCellAppDeath(args.addr);
 
-	// This helper object decides when it's safe to send the ACK back to the
-	// CellAppMgr.  See the header comment for this class for more details on
-	// the ins and outs of this problem.
-	AckCellAppDeathHelper * pAckHelper = new AckCellAppDeathHelper( *this,
-		args.addr );
+    // This helper object decides when it's safe to send the ACK back to the
+    // CellAppMgr.  See the header comment for this class for more details on
+    // the ins and outs of this problem.
+    AckCellAppDeathHelper* pAckHelper =
+      new AckCellAppDeathHelper(*this, args.addr);
 
-	// Destroy the ghosts that are associated with real entities that are lost.
-	// TODO: Probably don't want to do this. We should bring the reals back so
-	// that these ghosts do not disappear.
-	// TODO: More of a reason not to do this is that we cannot be sure that this
-	// information is correct. We may not delete a ghost when we should, or
-	// worse, delete a ghost when we should not have.
+    // Destroy the ghosts that are associated with real entities that are lost.
+    // TODO: Probably don't want to do this. We should bring the reals back so
+    // that these ghosts do not disappear.
+    // TODO: More of a reason not to do this is that we cannot be sure that this
+    // information is correct. We may not delete a ghost when we should, or
+    // worse, delete a ghost when we should not have.
 
-	typedef BW::vector< EntityPtr > EntityPtrs;
-	EntityPtrs zombies;
+    typedef BW::vector<EntityPtr> EntityPtrs;
+    EntityPtrs                    zombies;
 
-	EntityPopulation::const_iterator iter = Entity::population().begin();
+    EntityPopulation::const_iterator iter = Entity::population().begin();
 
-	while (iter != Entity::population().end())
-	{
-		Entity * pEntity = iter->second;
+    while (iter != Entity::population().end()) {
+        Entity* pEntity = iter->second;
 
-		// We must clear haunts on the dead app for each real
-		if (pEntity->isReal())
-		{
-			RealEntity::Haunts::iterator iter = pEntity->pReal()->hauntsBegin();
+        // We must clear haunts on the dead app for each real
+        if (pEntity->isReal()) {
+            RealEntity::Haunts::iterator iter = pEntity->pReal()->hauntsBegin();
 
-			while (iter != pEntity->pReal()->hauntsEnd())
-			{
-				RealEntity::Haunt & haunt = *iter;
+            while (iter != pEntity->pReal()->hauntsEnd()) {
+                RealEntity::Haunt& haunt = *iter;
 
-				if (haunt.addr() == args.addr)
-				{
-					iter = pEntity->pReal()->delHaunt( iter );
-				}
-				else
-				{
-					++iter;
-				}
-			}
-		}
-		else if (pEntity->checkIfZombied( args.addr ))
-		{
-			zombies.push_back( pEntity );
-		}
+                if (haunt.addr() == args.addr) {
+                    iter = pEntity->pReal()->delHaunt(iter);
+                } else {
+                    ++iter;
+                }
+            }
+        } else if (pEntity->checkIfZombied(args.addr)) {
+            zombies.push_back(pEntity);
+        }
 
-		// Any real whose base channel is in a critical state must be
-		// considered to be a recent onload.
-		if (pEntity->isReal() &&
-			pEntity->pReal()->channel().hasUnackedCriticals())
-		{
-			pAckHelper->addCriticalEntity( pEntity );
-		}
+        // Any real whose base channel is in a critical state must be
+        // considered to be a recent onload.
+        if (pEntity->isReal() &&
+            pEntity->pReal()->channel().hasUnackedCriticals()) {
+            pAckHelper->addCriticalEntity(pEntity);
+        }
 
-		iter++;
-	}
+        iter++;
+    }
 
-	// Send a message to the base entities just in case they still think
-	// that we have the real entity.
-	Mercury::BundleSendingMap bundles( interface_ );
+    // Send a message to the base entities just in case they still think
+    // that we have the real entity.
+    Mercury::BundleSendingMap bundles(interface_);
 
-	EntityPtrs::iterator ghostIter = zombies.begin();
+    EntityPtrs::iterator ghostIter = zombies.begin();
 
-	while (ghostIter != zombies.end())
-	{
-		EntityPtr pEntity = *ghostIter;
+    while (ghostIter != zombies.end()) {
+        EntityPtr pEntity = *ghostIter;
 
-		if (!pEntity->isDestroyed())
-		{
-			if (pEntity->hasBase())
-			{
-				Mercury::Bundle & bundle = bundles[ pEntity->baseAddr() ];
+        if (!pEntity->isDestroyed()) {
+            if (pEntity->hasBase()) {
+                Mercury::Bundle& bundle = bundles[pEntity->baseAddr()];
 
-				// We could be smarter about sending this. We only really
-				// need to do it if we were the last ones to have the real
-				// entity.  For simplicity, always sending it. Probably
-				// doesn't save us enough.
-				BaseAppIntInterface::setClientArgs setClientArgs =
-					{ pEntity->id() };
-				bundle << setClientArgs;
+                // We could be smarter about sending this. We only really
+                // need to do it if we were the last ones to have the real
+                // entity.  For simplicity, always sending it. Probably
+                // doesn't save us enough.
+                BaseAppIntInterface::setClientArgs setClientArgs = {
+                    pEntity->id()
+                };
+                bundle << setClientArgs;
 
-				bundle.startRequest(
-					BaseAppIntInterface::emergencySetCurrentCell,
-					pAckHelper,
-					reinterpret_cast< void * >( pEntity->id() ) );
+                bundle.startRequest(
+                  BaseAppIntInterface::emergencySetCurrentCell,
+                  pAckHelper,
+                  reinterpret_cast<void*>(pEntity->id()));
 
-				bundle << pEntity->space().id();
-				bundle << pEntity->realAddr();
+                bundle << pEntity->space().id();
+                bundle << pEntity->realAddr();
 
-				// Remember that we're expecting another reply.
-				pAckHelper->addBadGhost();
-			}
+                // Remember that we're expecting another reply.
+                pAckHelper->addBadGhost();
+            }
 
-			// Buffered lifespans may revive a ghost, real, or zombie.
-			do
-			{
-				pEntity->destroy();
-			}
-			while (pEntity->checkIfZombied( args.addr ));
-		}
+            // Buffered lifespans may revive a ghost, real, or zombie.
+            do {
+                pEntity->destroy();
+            } while (pEntity->checkIfZombied(args.addr));
+        }
 
-		++ghostIter;
-	}
+        ++ghostIter;
+    }
 
-	Entity::population().notifyBasesOfCellAppDeath( args.addr, bundles, pAckHelper );
+    Entity::population().notifyBasesOfCellAppDeath(
+      args.addr, bundles, pAckHelper);
 
-	// Send all the zombie info to the baseapps.
-	bundles.sendAll();
+    // Send all the zombie info to the baseapps.
+    bundles.sendAll();
 
-	pAckHelper->startTimer();
+    pAckHelper->startTimer();
 
-	// Notify any listeners that the CellAppChannel is about to disappear.
-	CellAppDeathListeners::instance().handleCellAppDeath( args.addr );
+    // Notify any listeners that the CellAppChannel is about to disappear.
+    CellAppDeathListeners::instance().handleCellAppDeath(args.addr);
 
-	// Now it's safe to delete the CellAppChannel to the dead app.
-	pCellAppChannels_->remoteFailure( args.addr );
+    // Now it's safe to delete the CellAppChannel to the dead app.
+    pCellAppChannels_->remoteFailure(args.addr);
 }
-
 
 /**
  *	This method handles a message from the CellAppMgr informing us that a
  *	BaseApp has died.
  */
-void CellApp::handleBaseAppDeath( BinaryIStream & data )
+void CellApp::handleBaseAppDeath(BinaryIStream& data)
 {
-	Mercury::Address deadAddr;
-	BackupHash backupHash;
-	uint8 isService = 0;
-	data >> deadAddr >> isService >> backupHash;
+    Mercury::Address deadAddr;
+    BackupHash       backupHash;
+    uint8            isService = 0;
+    data >> deadAddr >> isService >> backupHash;
 
-	if (isService)
-	{
-		INFO_MSG( "CellApp::handleBaseAppDeath: ServiceApp %s has died\n",
-			deadAddr.c_str() );
+    if (isService) {
+        INFO_MSG("CellApp::handleBaseAppDeath: ServiceApp %s has died\n",
+                 deadAddr.c_str());
 
-		pPyServicesMap_->map().removeFragmentsForAddress( deadAddr );
-	}
-	else
-	{
-		INFO_MSG( "CellApp::handleBaseAppDeath: BaseApp %s has died. "
-				"%u backups\n",
-			deadAddr.c_str(), 
-			backupHash.size() );
-	}
+        pPyServicesMap_->map().removeFragmentsForAddress(deadAddr);
+    } else {
+        INFO_MSG("CellApp::handleBaseAppDeath: BaseApp %s has died. "
+                 "%u backups\n",
+                 deadAddr.c_str(),
+                 backupHash.size());
+    }
 
-	if (backupHash.empty())
-	{
-		ERROR_MSG( "CellApp::handleBaseAppDeath: "
-				"Unable to recover from BaseApp death. Shutting down.\n" );
-		this->shutDown();
-		return;
-	}
+    if (backupHash.empty()) {
+        ERROR_MSG("CellApp::handleBaseAppDeath: "
+                  "Unable to recover from BaseApp death. Shutting down.\n");
+        this->shutDown();
+        return;
+    }
 
+    const EntityPopulation&          pop  = Entity::population();
+    EntityPopulation::const_iterator iter = pop.begin();
+    // This object will free itself when it times out.
+    new BaseRestoreConfirmHandler();
 
-	const EntityPopulation & pop = Entity::population();
-	EntityPopulation::const_iterator iter = pop.begin();
-	// This object will free itself when it times out.
-	new BaseRestoreConfirmHandler();
+    while (iter != pop.end()) {
+        if (iter->second->baseAddr() == deadAddr) {
+            iter->second->adjustForDeadBaseApp(backupHash);
+        }
 
-	while (iter != pop.end())
-	{
-		if (iter->second->baseAddr() == deadAddr)
-		{
-			iter->second->adjustForDeadBaseApp( backupHash );
-		}
+        ++iter;
+    }
 
-		++iter;
-	}
+    ServerEntityMailBox::adjustForDeadBaseApp(deadAddr, backupHash);
 
-	ServerEntityMailBox::adjustForDeadBaseApp( deadAddr, backupHash );
-
-	this->scriptEvents().triggerEvent( 
-		(isService ? "onServiceAppDeath" : "onBaseAppDeath"),
-		Py_BuildValue( "((sH))", 
-			deadAddr.ipAsString(),
-			ntohs( deadAddr.port ) ) );
+    this->scriptEvents().triggerEvent(
+      (isService ? "onServiceAppDeath" : "onBaseAppDeath"),
+      Py_BuildValue("((sH))", deadAddr.ipAsString(), ntohs(deadAddr.port)));
 }
-
 
 /**
  * This method receives a forwarded watcher set request from the CellAppMgr
@@ -1866,328 +1727,303 @@ void CellApp::handleBaseAppDeath( BinaryIStream & data )
  * @param header   The mercury header.
  * @param data     The data stream containing the watcher data to set.
  */
-void CellApp::callWatcher( const Mercury::Address& srcAddr,
-		const Mercury::UnpackedMessageHeader& header,
-		BinaryIStream & data)
+void CellApp::callWatcher(const Mercury::Address&               srcAddr,
+                          const Mercury::UnpackedMessageHeader& header,
+                          BinaryIStream&                        data)
 {
-	BW::string path;
-	data >> path;
+    BW::string path;
+    data >> path;
 
-	DeferrableWatcherPathRequest * pPathRequest = 
-		new DeferrableWatcherPathRequest( path, interface_, srcAddr,
-				header.replyID );
+    DeferrableWatcherPathRequest* pPathRequest =
+      new DeferrableWatcherPathRequest(
+        path, interface_, srcAddr, header.replyID);
 
-	pPathRequest->setPacketData( data );
-	pPathRequest->setWatcherValue();
+    pPathRequest->setPacketData(data);
+    pPathRequest->setWatcherValue();
 }
-
 
 /**
  *	This method is called by the CellAppMgr to inform us that a shared value has
  *	changed. This value may be shared between CellApps or CellApps and BaseApps.
  */
-void CellApp::setSharedData( BinaryIStream & data )
+void CellApp::setSharedData(BinaryIStream& data)
 {
-	// This code is nearly identical to the code in BaseApp::setSharedData.
-	// We could look at sharing the code somehow.
-	SharedDataType dataType;
-	BW::string key;
-	BW::string value;
+    // This code is nearly identical to the code in BaseApp::setSharedData.
+    // We could look at sharing the code somehow.
+    SharedDataType dataType;
+    BW::string     key;
+    BW::string     value;
 
-	data >> dataType >> key >> value;
+    data >> dataType >> key >> value;
 
-	Mercury::Address originalSrcAddr = Mercury::Address::NONE;
+    Mercury::Address originalSrcAddr = Mercury::Address::NONE;
 
-	if (data.remainingLength() == sizeof( Mercury::Address ))
-	{
-		data >> originalSrcAddr;
-	}
+    if (data.remainingLength() == sizeof(Mercury::Address)) {
+        data >> originalSrcAddr;
+    }
 
-	IF_NOT_MF_ASSERT_DEV( (data.remainingLength() == 0) && !data.error() )
-	{
-		ERROR_MSG( "CellApp::setSharedData: Invalid data!!\n" );
-		return;
-	}
+    IF_NOT_MF_ASSERT_DEV((data.remainingLength() == 0) && !data.error())
+    {
+        ERROR_MSG("CellApp::setSharedData: Invalid data!!\n");
+        return;
+    }
 
-	// The original change was made by this CellApp. Therefore, treat
-	// this message as an ack.
-	bool isAck =
-		(originalSrcAddr == this->interface().address());
+    // The original change was made by this CellApp. Therefore, treat
+    // this message as an ack.
+    bool isAck = (originalSrcAddr == this->interface().address());
 
-	switch (dataType)
-	{
-	case SHARED_DATA_TYPE_CELL_APP:
-		pCellAppData_->setValue( key, value, isAck );
-		break;
+    switch (dataType) {
+        case SHARED_DATA_TYPE_CELL_APP:
+            pCellAppData_->setValue(key, value, isAck);
+            break;
 
-	case SHARED_DATA_TYPE_GLOBAL:
-		pGlobalData_->setValue( key, value, isAck );
-		break;
+        case SHARED_DATA_TYPE_GLOBAL:
+            pGlobalData_->setValue(key, value, isAck);
+            break;
 
-	default:
-		ERROR_MSG( "CellApp::setValue: Invalid dataType %d\n", dataType );
-		break;
-	}
+        default:
+            ERROR_MSG("CellApp::setValue: Invalid dataType %d\n", dataType);
+            break;
+    }
 }
-
 
 /**
  *	This method is called by the CellAppMgr to inform us that a shared value was
  *	deleted. This value may be shared between CellApps or CellApps and BaseApps.
  */
-void CellApp::delSharedData( BinaryIStream & data )
+void CellApp::delSharedData(BinaryIStream& data)
 {
-	// This code is nearly identical to the code in BaseApp::delSharedData.
-	// We could look at sharing the code somehow.
-	SharedDataType dataType;
-	BW::string key;
+    // This code is nearly identical to the code in BaseApp::delSharedData.
+    // We could look at sharing the code somehow.
+    SharedDataType dataType;
+    BW::string     key;
 
-	data >> dataType >> key;
+    data >> dataType >> key;
 
-	Mercury::Address originalSrcAddr = Mercury::Address::NONE;
+    Mercury::Address originalSrcAddr = Mercury::Address::NONE;
 
-	if (data.remainingLength() == sizeof( Mercury::Address ))
-	{
-		data >> originalSrcAddr;
-	}
+    if (data.remainingLength() == sizeof(Mercury::Address)) {
+        data >> originalSrcAddr;
+    }
 
-	IF_NOT_MF_ASSERT_DEV( (data.remainingLength() == 0) && !data.error() )
-	{
-		ERROR_MSG( "CellApp::delSharedData: Invalid data!!\n" );
-		return;
-	}
+    IF_NOT_MF_ASSERT_DEV((data.remainingLength() == 0) && !data.error())
+    {
+        ERROR_MSG("CellApp::delSharedData: Invalid data!!\n");
+        return;
+    }
 
-	// The original change was made by this CellApp. Therefore, treat this
-	// message as an ack.
-	bool isAck =
-		(originalSrcAddr == this->interface().address());
+    // The original change was made by this CellApp. Therefore, treat this
+    // message as an ack.
+    bool isAck = (originalSrcAddr == this->interface().address());
 
-	switch (dataType)
-	{
-	case SHARED_DATA_TYPE_CELL_APP:
-		pCellAppData_->delValue( key, isAck );
-		break;
+    switch (dataType) {
+        case SHARED_DATA_TYPE_CELL_APP:
+            pCellAppData_->delValue(key, isAck);
+            break;
 
-	case SHARED_DATA_TYPE_GLOBAL:
-		pGlobalData_->delValue( key, isAck );
-		break;
+        case SHARED_DATA_TYPE_GLOBAL:
+            pGlobalData_->delValue(key, isAck);
+            break;
 
-	default:
-		ERROR_MSG( "CellApp::delValue: Invalid dataType %d\n", dataType );
-		break;
-	}
+        default:
+            ERROR_MSG("CellApp::delValue: Invalid dataType %d\n", dataType);
+            break;
+    }
 }
-
 
 /**
  *	This method handles a message to add a service fragment.
  *
  *	@param data 	The message payload.
  */
-void CellApp::addServiceFragment( BinaryIStream & data )
+void CellApp::addServiceFragment(BinaryIStream& data)
 {
-	BW::string serviceName;
-	EntityMailBoxRef fragmentMailBox;
-	data >> serviceName >> fragmentMailBox;
+    BW::string       serviceName;
+    EntityMailBoxRef fragmentMailBox;
+    data >> serviceName >> fragmentMailBox;
 
-	pPyServicesMap_->map().addFragment( serviceName, fragmentMailBox );
+    pPyServicesMap_->map().addFragment(serviceName, fragmentMailBox);
 }
-
 
 /**
  *	This method handles a message to delete a service fragment.
  *
  *	@param data 	The message payload.
  */
-void CellApp::delServiceFragment( BinaryIStream & data )
+void CellApp::delServiceFragment(BinaryIStream& data)
 {
-	BW::string serviceName;
-	Mercury::Address fragmentAddress;
-	data >> serviceName >> fragmentAddress;
+    BW::string       serviceName;
+    Mercury::Address fragmentAddress;
+    data >> serviceName >> fragmentAddress;
 
-	pPyServicesMap_->map().removeFragment( serviceName, fragmentAddress );
+    pPyServicesMap_->map().removeFragment(serviceName, fragmentAddress);
 }
-
 
 /**
  *	This method is used to tell the CellApp which BaseApp it should use when
  *	BigWorld.createEntityOnBase is called.
  */
-void CellApp::setBaseApp( const CellAppInterface::setBaseAppArgs & args )
+void CellApp::setBaseApp(const CellAppInterface::setBaseAppArgs& args)
 {
-	baseAppAddr_ = args.baseAppAddr;
+    baseAppAddr_ = args.baseAppAddr;
 }
-
 
 /**
  *	This method handles notification from the CellAppMgr about which DBApp to
  *	use as the Alpha.
  */
-void CellApp::setDBAppAlpha( const CellAppInterface::setDBAppAlphaArgs & args )
+void CellApp::setDBAppAlpha(const CellAppInterface::setDBAppAlphaArgs& args)
 {
-	TRACE_MSG( "CellApp::setDBAppAlpha: %s\n", args.addr.c_str() );
-	dbAppAlpha_.addr( args.addr );
+    TRACE_MSG("CellApp::setDBAppAlpha: %s\n", args.addr.c_str());
+    dbAppAlpha_.addr(args.addr);
 }
-
 
 /**
  *	This method is used to teleport an entity. If the teleport fails, the
  *	accompanying onload message is sent back to the originator.
  */
-void CellApp::onloadTeleportedEntity( const Mercury::Address & srcAddr,
-		const Mercury::UnpackedMessageHeader & header,
-		BinaryIStream & data )
+void CellApp::onloadTeleportedEntity(
+  const Mercury::Address&               srcAddr,
+  const Mercury::UnpackedMessageHeader& header,
+  BinaryIStream&                        data)
 {
-	EntityID nearbyID = 0;
-	uint32 createGhostDataLen = 0;
-	data >> nearbyID >> createGhostDataLen;
+    EntityID nearbyID           = 0;
+    uint32   createGhostDataLen = 0;
+    data >> nearbyID >> createGhostDataLen;
 
-	EntityID teleportingID = 0;
-	EntityPtr pNearbyEntity = CellApp::instance().findEntity( nearbyID );
+    EntityID  teleportingID = 0;
+    EntityPtr pNearbyEntity = CellApp::instance().findEntity(nearbyID);
 
+    if (pNearbyEntity != NULL) {
+        // We need to split up the messages because createGhost looks at the
+        // remainingLength of the message data it is passed
+        MemoryOStream createGhostData(createGhostDataLen + sizeof(SpaceID));
+        data >> teleportingID;
+        createGhostData << pNearbyEntity->space().id();
+        createGhostData << teleportingID;
+        createGhostData.transfer(data,
+                                 createGhostDataLen - sizeof(teleportingID));
 
-	if (pNearbyEntity != NULL)
-	{
-		// We need to split up the messages because createGhost looks at the
-		// remainingLength of the message data it is passed
-		MemoryOStream createGhostData( createGhostDataLen + sizeof( SpaceID ) );
-		data >> teleportingID;
-		createGhostData << pNearbyEntity->space().id();
-		createGhostData << teleportingID;
-		createGhostData.transfer( data, 
-							  createGhostDataLen - sizeof (teleportingID) );
+        // This prevents an annoying case where a create ghost message is
+        // waiting for a destroy ghost message to arrive, which will only be
+        // sent once that ghost is created.
+        if (srcAddr == this->interface().address()) {
+            Entity* pEntity = this->findEntity(teleportingID);
 
-		// This prevents an annoying case where a create ghost message is
-		// waiting for a destroy ghost message to arrive, which will only be
-		// sent once that ghost is created.
-		if (srcAddr == this->interface().address())
-		{
-			Entity * pEntity = this->findEntity( teleportingID );
+            if (pEntity) {
+                pEntity->destroy();
+            }
+        }
 
-			if (pEntity)
-			{
-				pEntity->destroy();
-			}
-		}
+        Mercury::UnpackedMessageHeader dummyHeader = header;
+        dummyHeader.identifier = CellAppInterface::createGhost.id();
+        dummyHeader.length     = createGhostData.remainingLength();
 
-		Mercury::UnpackedMessageHeader dummyHeader = header;
-		dummyHeader.identifier = CellAppInterface::createGhost.id();
-		dummyHeader.length = createGhostData.remainingLength();
+        CellAppInterface::createGhost.pHandler()->handleMessage(
+          srcAddr, dummyHeader, createGhostData);
 
-		CellAppInterface::createGhost.pHandler()->
-			handleMessage( srcAddr, dummyHeader, createGhostData );
+        dummyHeader.identifier = CellAppInterface::onload.id();
+        dummyHeader.length     = data.remainingLength();
 
-		dummyHeader.identifier = CellAppInterface::onload.id();
-		dummyHeader.length = data.remainingLength();
+        CellAppInterface::onload.pHandler()->handleMessage(
+          srcAddr, dummyHeader, data);
 
-		CellAppInterface::onload.pHandler()->
-			handleMessage( srcAddr, dummyHeader, data );
+        Entity* pNewEntity = this->findEntity(teleportingID);
 
-		Entity * pNewEntity = this->findEntity( teleportingID );
+        MF_ASSERT(pNewEntity != NULL);
 
-		MF_ASSERT( pNewEntity != NULL );
+        pNewEntity->onTeleportSuccess(pNearbyEntity.get());
 
-		pNewEntity->onTeleportSuccess( pNearbyEntity.get() );
+        // If the entity is non-volatile, then the above call to the onload
+        // handler will have added the detailed position
+        if (pNewEntity->volatileInfo().hasVolatile(0.f)) {
+            pNewEntity->addDetailedPositionToHistory(
+              /* isLocalOnly */ false);
+        }
 
-		// If the entity is non-volatile, then the above call to the onload
-		// handler will have added the detailed position
-		if (pNewEntity->volatileInfo().hasVolatile( 0.f ))
-		{
-			pNewEntity->addDetailedPositionToHistory(
-					/* isLocalOnly */ false );
-		}
+        if (pNewEntity->cell().pReplayData()) {
+            pNewEntity->cell().pReplayData()->addEntityState(*pNewEntity);
+        }
+    } else {
+        // Stream off the rest of the createGhost message, it is discarded
+        data.retrieve(createGhostDataLen);
 
-		if (pNewEntity->cell().pReplayData())
-		{
-			pNewEntity->cell().pReplayData()->addEntityState( *pNewEntity );
-		}
-	}
-	else
-	{
-		// Stream off the rest of the createGhost message, it is discarded
-		data.retrieve( createGhostDataLen );
+        // Stream off the start of the offload message
+        bool teleportFailure; // we discard this, as this should always be
+                              // false, because we set it from here
+        data >> teleportingID >> teleportFailure;
 
-		// Stream off the start of the offload message
-		bool teleportFailure; 	// we discard this, as this should always be
-								// false, because we set it from here
-		data >> teleportingID >> teleportFailure;
+        ERROR_MSG("CellApp::onloadTeleportedEntity: "
+                  "nearby entity (id %u) does not exist on this CellApp, "
+                  "while teleporting entity %u (from %s)\n",
+                  nearbyID,
+                  teleportingID,
+                  srcAddr.c_str());
 
-		ERROR_MSG( "CellApp::onloadTeleportedEntity: "
-				"nearby entity (id %u) does not exist on this CellApp, "
-				"while teleporting entity %u (from %s)\n",
-			nearbyID, teleportingID, srcAddr.c_str() );
+        Mercury::Channel& srcChannel = CellApp::getChannel(srcAddr);
+        Mercury::Bundle&  bundle     = srcChannel.bundle();
 
-		Mercury::Channel & srcChannel = CellApp::getChannel( srcAddr );
-		Mercury::Bundle & bundle = srcChannel.bundle();
+        bundle.startMessage(CellAppInterface::onload);
 
-		bundle.startMessage( CellAppInterface::onload );
-
-		// Send back the rest of the onload message to the originator
-		bundle << teleportingID << true /*teleportFailure*/;
-		bundle.transfer( data, data.remainingLength() );
-	}
+        // Send back the rest of the onload message to the originator
+        bundle << teleportingID << true /*teleportFailure*/;
+        bundle.transfer(data, data.remainingLength());
+    }
 }
-
 
 /**
  *	This method is called regularly by the CellAppMgr to inform the CellApp
  *	about general information it should know about.
  */
-void CellApp::cellAppMgrInfo(
-		const CellAppInterface::cellAppMgrInfoArgs & args )
+void CellApp::cellAppMgrInfo(const CellAppInterface::cellAppMgrInfoArgs& args)
 {
-	maxCellAppLoad_ = args.maxCellAppLoad;
+    maxCellAppLoad_ = args.maxCellAppLoad;
 }
-
 
 /**
  * This method is called when a failure occurs in handling
  * onBaseOffloaded message
  */
-void CellApp::handleOnBaseOffloadedFailure( EntityID entityID,
-		const Mercury::Address &oldBaseAddr,
-		const CellAppInterface::onBaseOffloadedArgs & args )
+void CellApp::handleOnBaseOffloadedFailure(
+  EntityID                                     entityID,
+  const Mercury::Address&                      oldBaseAddr,
+  const CellAppInterface::onBaseOffloadedArgs& args)
 {
-	INFO_MSG( "CellApp::handleOnBaseOffloadedFailure: "
-		"Failed to deliver onBaseOffloaded message to "
-		"non-existing entity %d\n", entityID );
+    INFO_MSG("CellApp::handleOnBaseOffloadedFailure: "
+             "Failed to deliver onBaseOffloaded message to "
+             "non-existing entity %d\n",
+             entityID);
 
-	Mercury::UDPChannel * pChannel =
-			interface_.condemnedChannels().find(
-					Mercury::ChannelID ( entityID ) );
-	if (pChannel != NULL)
-	{
-		INFO_MSG( "CellApp::handleOnBaseOffloadedFailure: "
-				"Switching a dead entity's (%d) channel from "
-				"address %s to %s\n",
-				entityID,
-				oldBaseAddr.c_str(),
-				args.newBaseAddr.c_str() );
+    Mercury::UDPChannel* pChannel =
+      interface_.condemnedChannels().find(Mercury::ChannelID(entityID));
+    if (pChannel != NULL) {
+        INFO_MSG("CellApp::handleOnBaseOffloadedFailure: "
+                 "Switching a dead entity's (%d) channel from "
+                 "address %s to %s\n",
+                 entityID,
+                 oldBaseAddr.c_str(),
+                 args.newBaseAddr.c_str());
 
-		pChannel->setAddress( args.newBaseAddr );
-	}
-	else
-	{
-		WARNING_MSG( "CellApp::handleOnBaseOffloadedFailure: "
-				"Failed to find a dead entity's (%d) condemned channel",
-				entityID );
-	}
-
+        pChannel->setAddress(args.newBaseAddr);
+    } else {
+        WARNING_MSG("CellApp::handleOnBaseOffloadedFailure: "
+                    "Failed to find a dead entity's (%d) condemned channel",
+                    entityID);
+    }
 }
-
 
 /**
  * This method receives the latest tick from a remote cellapp
  */
-void CellApp::onRemoteTickComplete( const Mercury::Address & srcAddr,
-		const Mercury::UnpackedMessageHeader & header,
-		const CellAppInterface::onRemoteTickCompleteArgs & args )
+void CellApp::onRemoteTickComplete(
+  const Mercury::Address&                           srcAddr,
+  const Mercury::UnpackedMessageHeader&             header,
+  const CellAppInterface::onRemoteTickCompleteArgs& args)
 {
-	pCellAppChannels_->onRemoteTickComplete( srcAddr, args.gameTime );
+    pCellAppChannels_->onRemoteTickComplete(srcAddr, args.gameTime);
 
-	this->callWitnesses( /* checkReceivedTime = */ true );
+    this->callWitnesses(/* checkReceivedTime = */ true);
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Utility methods
@@ -2196,82 +2032,72 @@ void CellApp::onRemoteTickComplete( const Mercury::Address & srcAddr,
 /**
  * 	This method finds the entity with the given id.
  */
-Entity * CellApp::findEntity( EntityID id ) const
+Entity* CellApp::findEntity(EntityID id) const
 {
-	AUTO_SCOPED_PROFILE( "findEntity" );
+    AUTO_SCOPED_PROFILE("findEntity");
 
-	EntityPopulation::const_iterator iter = Entity::population().find( id );
+    EntityPopulation::const_iterator iter = Entity::population().find(id);
 
-	Entity * pEntity =
-		(iter != Entity::population().end()) ? iter->second : NULL;
+    Entity* pEntity =
+      (iter != Entity::population().end()) ? iter->second : NULL;
 
-	return ((pEntity != NULL) && !pEntity->isDestroyed()) ? pEntity : NULL;
+    return ((pEntity != NULL) && !pEntity->isDestroyed()) ? pEntity : NULL;
 }
-
 
 /**
  *	This method returns a list of all entity IDs in the app.
  */
-void CellApp::entityKeys( PyObject * pList ) const
+void CellApp::entityKeys(PyObject* pList) const
 {
-	EntityPopulation::const_iterator iter = Entity::population().begin();
+    EntityPopulation::const_iterator iter = Entity::population().begin();
 
-	while (iter != Entity::population().end())
-	{
-		if (!iter->second->isDestroyed())
-		{
-			PyObject * pInt = PyInt_FromLong( iter->first );
-			PyList_Append( pList, pInt );
-			Py_DECREF( pInt );
-		}
+    while (iter != Entity::population().end()) {
+        if (!iter->second->isDestroyed()) {
+            PyObject* pInt = PyInt_FromLong(iter->first);
+            PyList_Append(pList, pInt);
+            Py_DECREF(pInt);
+        }
 
-		iter++;
-	}
+        iter++;
+    }
 }
-
 
 /**
  *	This method returns a list of all entity objects in the app.
  */
-void CellApp::entityValues( PyObject * pList ) const
+void CellApp::entityValues(PyObject* pList) const
 {
-	EntityPopulation::const_iterator iter = Entity::population().begin();
+    EntityPopulation::const_iterator iter = Entity::population().begin();
 
-	while (iter != Entity::population().end())
-	{
-		if (!iter->second->isDestroyed())
-		{
-			PyList_Append( pList, iter->second );
-		}
+    while (iter != Entity::population().end()) {
+        if (!iter->second->isDestroyed()) {
+            PyList_Append(pList, iter->second);
+        }
 
-		iter++;
-	}
+        iter++;
+    }
 }
-
 
 /**
  *	This method returns a list of all entity id/object pairs in the app.
  */
-void CellApp::entityItems( PyObject * pList ) const
+void CellApp::entityItems(PyObject* pList) const
 {
-	EntityPopulation::const_iterator iter = Entity::population().begin();
+    EntityPopulation::const_iterator iter = Entity::population().begin();
 
-	while (iter != Entity::population().end())
-	{
-		if (!iter->second->isDestroyed())
-		{
-			PyObject * pTuple = PyTuple_New( 2 );
-			PyTuple_SetItem( pTuple, 0, PyInt_FromLong( iter->first ) );
-			Py_INCREF( iter->second );
-			PyTuple_SetItem( pTuple, 1, iter->second );
-			PyList_Append( pList, pTuple );
-			Py_DECREF( pTuple );
-		}
+    while (iter != Entity::population().end()) {
+        if (!iter->second->isDestroyed()) {
+            PyObject* pTuple = PyTuple_New(2);
+            PyTuple_SetItem(pTuple, 0, PyInt_FromLong(iter->first));
+            Py_INCREF(iter->second);
+            PyTuple_SetItem(pTuple, 1, iter->second);
+            PyList_Append(pList, pTuple);
+            Py_DECREF(pTuple);
+        }
 
-		iter++;
-	}
+        iter++;
+    }
 }
-
 
 /**
  *	This method finds the cell with the given id.
@@ -2280,13 +2106,12 @@ void CellApp::entityItems( PyObject * pList ) const
  *
  *	@return		The cell with the input id. NULL if no such cell is found.
  */
-Cell * CellApp::findCell( SpaceID id ) const
+Cell* CellApp::findCell(SpaceID id) const
 {
-	Space * pSpace = this->findSpace( id );
+    Space* pSpace = this->findSpace(id);
 
-	return pSpace ? pSpace->pCell() : NULL;
+    return pSpace ? pSpace->pCell() : NULL;
 }
-
 
 /**
  *	This method finds the space with the given id.
@@ -2295,124 +2120,114 @@ Cell * CellApp::findCell( SpaceID id ) const
  *
  *	@return		The space with the input id. NULL if no such space is found.
  */
-Space * CellApp::findSpace( SpaceID id ) const
+Space* CellApp::findSpace(SpaceID id) const
 {
-	return pSpaces_->find( id );
+    return pSpaces_->find(id);
 }
-
 
 /**
  *	This method adjusts the persistent load immediately for an entity offload or
  *	onload.
  */
-void CellApp::adjustLoadForOffload( float entityLoad )
+void CellApp::adjustLoadForOffload(float entityLoad)
 {
-	persistentLoad_ -= entityLoad;
+    persistentLoad_ -= entityLoad;
 
-	if (persistentLoad_ < 0.f)
-	{
-		persistentLoad_ = 0.f;
-	}
+    if (persistentLoad_ < 0.f) {
+        persistentLoad_ = 0.f;
+    }
 }
-
 
 /**
  *	This method reloads the scripts.
  */
-bool CellApp::reloadScript( bool isFullReload )
+bool CellApp::reloadScript(bool isFullReload)
 {
-	SCRIPT_NOTICE_MSG( "CellApp::reloadScript: "
-				"reloadScript should be used with caution, and never in a "
-				"production environment.\n" );
+    SCRIPT_NOTICE_MSG(
+      "CellApp::reloadScript: "
+      "reloadScript should be used with caution, and never in a "
+      "production environment.\n");
 
-	// Load entity defs in new Python interpreter.
-	PyThreadState* pNewPyIntrep = Script::createInterpreter();
-	PyThreadState* pOldPyIntrep = Script::swapInterpreter( pNewPyIntrep );
+    // Load entity defs in new Python interpreter.
+    PyThreadState* pNewPyIntrep = Script::createInterpreter();
+    PyThreadState* pOldPyIntrep = Script::swapInterpreter(pNewPyIntrep);
 
-	bool isOK = (isFullReload) ? EntityType::init( true/*isReload*/ ) :
-					EntityType::reloadScript();
+    bool isOK = (isFullReload) ? EntityType::init(true /*isReload*/)
+                               : EntityType::reloadScript();
 
-	// Load UDO modules
-	UserDataObjectTypes udoTypes;
-	UserDataObjectTypesInDifferentDomain udoTypesInDifferentDomain;
+    // Load UDO modules
+    UserDataObjectTypes                  udoTypes;
+    UserDataObjectTypesInDifferentDomain udoTypesInDifferentDomain;
 
-	if (isOK)
-		isOK = UserDataObjectType::load( udoTypes, udoTypesInDifferentDomain );
+    if (isOK)
+        isOK = UserDataObjectType::load(udoTypes, udoTypesInDifferentDomain);
 
-	if (isOK)
-	{
-		// Restore original Python interpreter. EntityType::init() got a copy
-		// of the loaded modules. And EntityType::migrate() will replace the
-		// modules in the original Python interpreter with new modules.
-		// __kyl__ (8/2/2006) Can't simply throw away old interpreter and
-		// use new interpreter since we are currently inside a Python call
-		// so the old interpreter is still on the callstack.
-		Script::swapInterpreter( pOldPyIntrep );
-		Script::destroyInterpreter( pNewPyIntrep );
+    if (isOK) {
+        // Restore original Python interpreter. EntityType::init() got a copy
+        // of the loaded modules. And EntityType::migrate() will replace the
+        // modules in the original Python interpreter with new modules.
+        // __kyl__ (8/2/2006) Can't simply throw away old interpreter and
+        // use new interpreter since we are currently inside a Python call
+        // so the old interpreter is still on the callstack.
+        Script::swapInterpreter(pOldPyIntrep);
+        Script::destroyInterpreter(pNewPyIntrep);
 
-		EntityType::migrate( isFullReload );
-		UserDataObjectType::migrate( udoTypes, udoTypesInDifferentDomain );
-		ServerEntityMailBox::migrateMailBoxes();
+        EntityType::migrate(isFullReload);
+        UserDataObjectType::migrate(udoTypes, udoTypesInDifferentDomain);
+        ServerEntityMailBox::migrateMailBoxes();
 
-		// Migrate entities
-		for (EntityPopulation::const_iterator iter = Entity::population().begin();
-				iter != Entity::population().end(); ++iter)
-		{
-			MF_VERIFY( iter->second->migrate() );
-		}
+        // Migrate entities
+        for (EntityPopulation::const_iterator iter =
+               Entity::population().begin();
+             iter != Entity::population().end();
+             ++iter) {
+            MF_VERIFY(iter->second->migrate());
+        }
 
-		EntityType::cleanupAfterReload( isFullReload );
+        EntityType::cleanupAfterReload(isFullReload);
 
-		return true;
-	}
-	else
-	{
-		// Restore original Python interpreter.
-		Script::swapInterpreter( pOldPyIntrep );
+        return true;
+    } else {
+        // Restore original Python interpreter.
+        Script::swapInterpreter(pOldPyIntrep);
 
-		if (!isFullReload)
-		{
-			// Try using the old scripts again.
-			// NOTE: This works (mostly) because when we try to import a module
-			// that's already imported, it doesn't try to read it from the
-			// disk.
-			MF_VERIFY( EntityType::reloadScript( true ) );
-		}
+        if (!isFullReload) {
+            // Try using the old scripts again.
+            // NOTE: This works (mostly) because when we try to import a module
+            // that's already imported, it doesn't try to read it from the
+            // disk.
+            MF_VERIFY(EntityType::reloadScript(true));
+        }
 
-		EntityType::cleanupAfterReload( isFullReload );
-		Script::destroyInterpreter( pNewPyIntrep );
-		return false;
-	}
+        EntityType::cleanupAfterReload(isFullReload);
+        Script::destroyInterpreter(pNewPyIntrep);
+        return false;
+    }
 }
-
 
 /**
  *	This method handles the case where we detect that other cell apps are
  *	dead.
  */
-void CellApp::detectDeadCellApps( const BW::vector<Mercury::Address> & addrs )
+void CellApp::detectDeadCellApps(const BW::vector<Mercury::Address>& addrs)
 {
-	BW::vector<Mercury::Address>::const_iterator iter = addrs.begin();
+    BW::vector<Mercury::Address>::const_iterator iter = addrs.begin();
 
-	while (iter != addrs.end())
-	{
-		INFO_MSG( "CellApp::detectDeadCellApps: %s has died\n",
-				iter->c_str() );
-		cellAppMgr_.handleCellAppDeath( *iter );
+    while (iter != addrs.end()) {
+        INFO_MSG("CellApp::detectDeadCellApps: %s has died\n", iter->c_str());
+        cellAppMgr_.handleCellAppDeath(*iter);
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 /**
  *	This method returns the number of real entities on this application.
  */
 int CellApp::numRealEntities() const
 {
-	return cells_.numRealEntities();
+    return cells_.numRealEntities();
 }
-
 
 /**
  *	This method checks whether there are any entity channels that are close to
@@ -2420,37 +2235,33 @@ int CellApp::numRealEntities() const
  */
 void CellApp::checkSendWindowOverflows()
 {
-	OverflowIDs::iterator iter = s_overflowIDs.begin();
+    OverflowIDs::iterator iter = s_overflowIDs.begin();
 
-	while (iter != s_overflowIDs.end())
-	{
-		Entity * pEntity = this->findEntity( *iter );
+    while (iter != s_overflowIDs.end()) {
+        Entity* pEntity = this->findEntity(*iter);
 
-		if (pEntity && pEntity->isReal())
-		{
-			Script::call( PyObject_GetAttrString( pEntity, "onWindowOverflow" ),
-					PyTuple_New( 0 ), "onWindowOverflow", true );
-		}
-		else
-		{
-			if (pEntity)
-			{
-				NETWORK_WARNING_MSG( "CellApp::checkSendWindowOverflows: "
-					"Entity %u is not real\n", *iter );
-			}
-			else
-			{
-				NETWORK_WARNING_MSG( "CellApp::checkSendWindowOverflows: "
-					"Could not find entity %u\n", *iter );
-			}
-		}
+        if (pEntity && pEntity->isReal()) {
+            Script::call(PyObject_GetAttrString(pEntity, "onWindowOverflow"),
+                         PyTuple_New(0),
+                         "onWindowOverflow",
+                         true);
+        } else {
+            if (pEntity) {
+                NETWORK_WARNING_MSG("CellApp::checkSendWindowOverflows: "
+                                    "Entity %u is not real\n",
+                                    *iter);
+            } else {
+                NETWORK_WARNING_MSG("CellApp::checkSendWindowOverflows: "
+                                    "Could not find entity %u\n",
+                                    *iter);
+            }
+        }
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	s_overflowIDs.clear();
+    s_overflowIDs.clear();
 }
-
 
 /**
  *	This method returns whether or not the next tick is pending. If the previous
@@ -2459,10 +2270,10 @@ void CellApp::checkSendWindowOverflows()
  */
 bool CellApp::nextTickPending() const
 {
-	// If we haven't started yet, the gameTimer_ may not be set.
-	return gameTimer_.isSet() &&
-		((timestamp() + reservedTickTime_) >
-					mainDispatcher_.timerDeliveryTime( gameTimer_ ));
+    // If we haven't started yet, the gameTimer_ may not be set.
+    return gameTimer_.isSet() &&
+           ((timestamp() + reservedTickTime_) >
+            mainDispatcher_.timerDeliveryTime(gameTimer_));
 }
 
 /**
@@ -2470,17 +2281,16 @@ bool CellApp::nextTickPending() const
  */
 void CellApp::triggerControlledShutDown()
 {
-	CellAppMgrGateway & cellAppMgr = this->cellAppMgr();
-	Mercury::Bundle & bundle = cellAppMgr.bundle();
+    CellAppMgrGateway& cellAppMgr = this->cellAppMgr();
+    Mercury::Bundle&   bundle     = cellAppMgr.bundle();
 
-	CellAppMgrInterface::controlledShutDownArgs &args =
-		CellAppMgrInterface::controlledShutDownArgs::start( bundle );
+    CellAppMgrInterface::controlledShutDownArgs& args =
+      CellAppMgrInterface::controlledShutDownArgs::start(bundle);
 
-	args.stage = SHUTDOWN_TRIGGER;
+    args.stage = SHUTDOWN_TRIGGER;
 
-	cellAppMgr.send();
+    cellAppMgr.send();
 }
-
 
 /*~ function BigWorld.isNextTickPending
  *	@components{ cell }
@@ -2489,17 +2299,17 @@ void CellApp::triggerControlledShutDown()
  *	relinquish control of expensive computations to allow the next tick to
  *	execute.
  *
- *	This can be controlled by the cellApp/reservedTickFraction setting in bw.xml.
+ *	This can be controlled by the cellApp/reservedTickFraction setting in
+ *bw.xml.
  *
  *	@return isNextTickPending returns True if the next tick is pending, False
  *	otherwise.
  */
 bool isNextTickPending()
 {
-	return CellApp::instance().nextTickPending();
+    return CellApp::instance().nextTickPending();
 }
-PY_AUTO_MODULE_FUNCTION( RETDATA, isNextTickPending, END, BigWorld )
-
+PY_AUTO_MODULE_FUNCTION(RETDATA, isNextTickPending, END, BigWorld)
 
 // -----------------------------------------------------------------------------
 // Section: Script related
@@ -2511,56 +2321,55 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, isNextTickPending, END, BigWorld )
  */
 class CreateBaseReplyHandler : public Mercury::ShutdownSafeReplyMessageHandler
 {
-public:
-	CreateBaseReplyHandler( PyObjectPtr pCallbackFunc ) :
-		pCallbackFunc_( pCallbackFunc )
-	{
-	}
+  public:
+    CreateBaseReplyHandler(PyObjectPtr pCallbackFunc)
+      : pCallbackFunc_(pCallbackFunc)
+    {
+    }
 
-private:
-	void handleMessage( const Mercury::Address& /*srcAddr*/,
-		Mercury::UnpackedMessageHeader& /*header*/,
-		BinaryIStream& data, void * /*arg*/ )
-	{
-		EntityMailBoxRef baseRef;
-		data >> baseRef;
+  private:
+    void handleMessage(const Mercury::Address& /*srcAddr*/,
+                       Mercury::UnpackedMessageHeader& /*header*/,
+                       BinaryIStream& data,
+                       void* /*arg*/)
+    {
+        EntityMailBoxRef baseRef;
+        data >> baseRef;
 
-		INFO_MSG( "CreateBaseReplyHandler::handleMessage: "
-					"Base (%u) created at %s\n",
-				baseRef.id, baseRef.addr.c_str() );
+        INFO_MSG("CreateBaseReplyHandler::handleMessage: "
+                 "Base (%u) created at %s\n",
+                 baseRef.id,
+                 baseRef.addr.c_str());
 
-		if (pCallbackFunc_)
-		{
-			PyObjectPtr baseMb( BaseEntityMailBox::constructFromRef( baseRef ),
-				PyObjectPtr::STEAL_REFERENCE );
+        if (pCallbackFunc_) {
+            PyObjectPtr baseMb(BaseEntityMailBox::constructFromRef(baseRef),
+                               PyObjectPtr::STEAL_REFERENCE);
 
-			Py_INCREF( pCallbackFunc_.get() );
-			Script::call( pCallbackFunc_.get(),
-					Py_BuildValue( "(O)", baseMb.get() ),
-					"BigWorld.createEntityOnBaseApp: " );
-		}
-		delete this;
-	}
+            Py_INCREF(pCallbackFunc_.get());
+            Script::call(pCallbackFunc_.get(),
+                         Py_BuildValue("(O)", baseMb.get()),
+                         "BigWorld.createEntityOnBaseApp: ");
+        }
+        delete this;
+    }
 
-	void handleException( const Mercury::NubException& /*ne*/, void* /*arg*/ )
-	{
-		ERROR_MSG( "CreateBaseReplyHandler::handleException: "
-			"Failed to create base\n" );
+    void handleException(const Mercury::NubException& /*ne*/, void* /*arg*/)
+    {
+        ERROR_MSG("CreateBaseReplyHandler::handleException: "
+                  "Failed to create base\n");
 
-		if (pCallbackFunc_)
-		{
-			Py_INCREF( pCallbackFunc_.get() );
-			Script::call( pCallbackFunc_.get(),
-					Py_BuildValue( "(O)", Py_None ),
-					"BigWorld.createEntityOnBaseApp: "  );
-		}
+        if (pCallbackFunc_) {
+            Py_INCREF(pCallbackFunc_.get());
+            Script::call(pCallbackFunc_.get(),
+                         Py_BuildValue("(O)", Py_None),
+                         "BigWorld.createEntityOnBaseApp: ");
+        }
 
-		delete this;
-	}
+        delete this;
+    }
 
-	PyObjectPtr pCallbackFunc_;
+    PyObjectPtr pCallbackFunc_;
 };
-
 
 /*~ function BigWorld.createEntityOnBaseApp
  *	@components{ cell }
@@ -2583,104 +2392,109 @@ private:
  *	@return True on success, false otherwise. If false is returned, the Python
  *				error state is set.
  */
-static bool createEntityOnBaseApp( const BW::string & entityType,
-	 PyObjectPtr pDict, PyObjectPtr pCallbackFunc )
+static bool createEntityOnBaseApp(const BW::string& entityType,
+                                  PyObjectPtr       pDict,
+                                  PyObjectPtr       pCallbackFunc)
 {
-	if (!pDict || pDict == Py_None)
-	{
-		PyErr_SetString( PyExc_TypeError,
-			"BigWorld.createEntityOnBaseApp: Argument must be a dictionary" );
-		return false;
-	}
+    if (!pDict || pDict == Py_None) {
+        PyErr_SetString(
+          PyExc_TypeError,
+          "BigWorld.createEntityOnBaseApp: Argument must be a dictionary");
+        return false;
+    }
 
-	if (!PyDict_Check( pDict.get() ))
-	{
-		PyErr_SetString( PyExc_TypeError,
-			"BigWorld.createEntityOnBaseApp: Argument must be a dictionary" );
-		return false;
-	}
+    if (!PyDict_Check(pDict.get())) {
+        PyErr_SetString(
+          PyExc_TypeError,
+          "BigWorld.createEntityOnBaseApp: Argument must be a dictionary");
+        return false;
+    }
 
-	EntityTypePtr pEntityType = EntityType::getType( entityType.c_str() );
-	if (!pEntityType)
-	{
-		PyErr_Format( PyExc_ValueError, "BigWorld.createEntityOnBaseApp: "
-			"Unknown entity type %s", entityType.c_str() );
-		return false;
-	}
+    EntityTypePtr pEntityType = EntityType::getType(entityType.c_str());
+    if (!pEntityType) {
+        PyErr_Format(PyExc_ValueError,
+                     "BigWorld.createEntityOnBaseApp: "
+                     "Unknown entity type %s",
+                     entityType.c_str());
+        return false;
+    }
 
-	if (pCallbackFunc && !PyCallable_Check( pCallbackFunc.get() ) )
-	{
-		PyErr_SetString( PyExc_TypeError, "BigWorld.createEntityOnBaseApp() "
-			"callback must be a callable object if specified" );
-		return false;
-	}
+    if (pCallbackFunc && !PyCallable_Check(pCallbackFunc.get())) {
+        PyErr_SetString(PyExc_TypeError,
+                        "BigWorld.createEntityOnBaseApp() "
+                        "callback must be a callable object if specified");
+        return false;
+    }
 
+    const EntityDescription& entityDesc   = pEntityType->description();
+    EntityTypeID             entityTypeID = entityDesc.index();
 
-	const EntityDescription & entityDesc = pEntityType->description();
-	EntityTypeID entityTypeID = entityDesc.index();
+    if (!entityDesc.canBeOnBase()) {
+        PyErr_Format(PyExc_ValueError,
+                     "BigWorld.createEntityOnBaseApp: "
+                     "Entity type %s has no base entity class",
+                     entityType.c_str());
+        return false;
+    }
 
-	if (!entityDesc.canBeOnBase())
-	{
-		PyErr_Format( PyExc_ValueError, "BigWorld.createEntityOnBaseApp: "
-			"Entity type %s has no base entity class", entityType.c_str() );
-		return false;
-	}
+    std::auto_ptr<CreateBaseReplyHandler> pHandler(
+      new CreateBaseReplyHandler(pCallbackFunc));
 
-	std::auto_ptr< CreateBaseReplyHandler > pHandler(
-		new CreateBaseReplyHandler( pCallbackFunc ) );
+    Mercury::Channel& channel =
+      CellApp::getChannel(CellApp::instance().baseAppAddr());
 
-	Mercury::Channel & channel = CellApp::getChannel( 
-		CellApp::instance().baseAppAddr() );
+    // We don't use the channel's own bundle here because the streaming might
+    // fail and the message might need to be aborted halfway through.
+    std::auto_ptr<Mercury::Bundle> pBundle(channel.newBundle());
+    pBundle->startRequest(BaseAppIntInterface::createBaseWithCellData,
+                          pHandler.get());
 
-	// We don't use the channel's own bundle here because the streaming might
-	// fail and the message might need to be aborted halfway through.
-	std::auto_ptr< Mercury::Bundle > pBundle( channel.newBundle() );
-	pBundle->startRequest( BaseAppIntInterface::createBaseWithCellData,
-		pHandler.get() );
+    *pBundle << EntityID(0) << entityTypeID << DatabaseID(0);
+    *pBundle << Mercury::Address(0, 0); // dummy client address.
+    *pBundle << BW::string();           // encryptionKey
+    *pBundle << false;                  // No logOnData
+    *pBundle << false;                  // Not persistent-only.
 
-	*pBundle << EntityID( 0 ) << entityTypeID << DatabaseID( 0 );
-	*pBundle << Mercury::Address( 0, 0 ); // dummy client address.
-	*pBundle << BW::string(); // encryptionKey
-	*pBundle << false;		// No logOnData
-	*pBundle << false;		// Not persistent-only.
+    if (!entityDesc.addDictionaryToStream(ScriptDict(pDict),
+                                          *pBundle,
+                                          EntityDescription::BASE_DATA |
+                                            EntityDescription::CELL_DATA)) {
+        PyErr_Format(PyExc_ValueError,
+                     "BigWorld.createEntityOnBaseApp: Bad dictionary");
 
-	if (!entityDesc.addDictionaryToStream( ScriptDict( pDict ), *pBundle,
-			EntityDescription::BASE_DATA | EntityDescription::CELL_DATA ))
-	{
-		PyErr_Format( PyExc_ValueError,
-				"BigWorld.createEntityOnBaseApp: Bad dictionary" );
+        return false;
+    }
 
-		return false;
-	}
+    if (entityDesc.canBeOnCell()) {
+        Vector3 position(0, 0, 0);
+        Vector3 direction(0, 0, 0);
+        SpaceID spaceID = 0;
 
-	if (entityDesc.canBeOnCell())
-	{
-		Vector3 position( 0, 0, 0 );
-		Vector3 direction( 0, 0, 0 );
-		SpaceID spaceID = 0;
+        if (!Script::getValueFromDict(
+              pDict.get(), POSITION_PROPERTY_NAME, position) ||
+            !Script::getValueFromDict(
+              pDict.get(), DIRECTION_PROPERTY_NAME, direction) ||
+            !Script::getValueFromDict(
+              pDict.get(), SPACE_ID_PROPERTY_NAME, spaceID)) {
+            return false;
+        }
 
-		if (!Script::getValueFromDict( pDict.get(), POSITION_PROPERTY_NAME, position ) ||
-			!Script::getValueFromDict( pDict.get(), DIRECTION_PROPERTY_NAME, direction ) ||
-			!Script::getValueFromDict( pDict.get(), SPACE_ID_PROPERTY_NAME, spaceID ))
-		{
-			return false;
-		}
+        *pBundle << position << direction << spaceID;
+    }
 
-		*pBundle << position << direction << spaceID;
-	}
+    channel.send(pBundle.get());
+    pHandler.release(); // handler deletes itself on callback
 
-	channel.send( pBundle.get() );
-	pHandler.release(); // handler deletes itself on callback
-
-	return true;
+    return true;
 }
-PY_AUTO_MODULE_FUNCTION( RETOK, createEntityOnBaseApp,
-			ARG( BW::string, ARG( PyObjectPtr,
-				OPTARG( PyObjectPtr, NULL, END ) ) ),
-			BigWorld )
+PY_AUTO_MODULE_FUNCTION(RETOK,
+                        createEntityOnBaseApp,
+                        ARG(BW::string,
+                            ARG(PyObjectPtr, OPTARG(PyObjectPtr, NULL, END))),
+                        BigWorld)
 
 // Deprecated name
-PY_MODULE_FUNCTION_ALIAS( createEntityOnBaseApp, createEntityOnBase, BigWorld )
+PY_MODULE_FUNCTION_ALIAS(createEntityOnBaseApp, createEntityOnBase, BigWorld)
 
 typedef SmartPointer<PyObject> PyObjectPtr;
 
@@ -2718,113 +2532,115 @@ typedef SmartPointer<PyObject> PyObjectPtr;
 /**
  *	This method creates a new entity.
  */
-static PyObject * createEntity( const BW::string & typeName, SpaceID spaceID,
-	const Vector3 & position, const Vector3 & direction,
-	const ScriptObject & state )
+static PyObject* createEntity(const BW::string&   typeName,
+                              SpaceID             spaceID,
+                              const Vector3&      position,
+                              const Vector3&      direction,
+                              const ScriptObject& state)
 {
-	// check that the space is OK
-	Space * pSpace = CellApp::instance().findSpace( spaceID );
-	if (pSpace == NULL)
-	{
-		PyErr_Format( PyExc_ValueError, "BigWorld.createEntity(): "
-			"No space ID %d.", int(spaceID) );
-		return NULL;
-	}
-	if (pSpace->pCell() == NULL)
-	{
-		PyErr_Format( PyExc_ValueError, "BigWorld.createEntity(): "
-			"Space ID %d is not real.", int(spaceID) );
-		return NULL;
-	}
+    // check that the space is OK
+    Space* pSpace = CellApp::instance().findSpace(spaceID);
+    if (pSpace == NULL) {
+        PyErr_Format(PyExc_ValueError,
+                     "BigWorld.createEntity(): "
+                     "No space ID %d.",
+                     int(spaceID));
+        return NULL;
+    }
+    if (pSpace->pCell() == NULL) {
+        PyErr_Format(PyExc_ValueError,
+                     "BigWorld.createEntity(): "
+                     "Space ID %d is not real.",
+                     int(spaceID));
+        return NULL;
+    }
 
-	// check that the class is OK
-	EntityTypePtr pType = EntityType::getType( typeName.c_str() );
+    // check that the class is OK
+    EntityTypePtr pType = EntityType::getType(typeName.c_str());
 
-	if (!pType || !pType->canBeOnCell())
-	{
-		PyErr_Format( PyExc_ValueError, "BigWorld.createEntity(): "
-			"Class '%s' is not a cell entity class", typeName.c_str() );
-		return NULL;
-	}
+    if (!pType || !pType->canBeOnCell()) {
+        PyErr_Format(PyExc_ValueError,
+                     "BigWorld.createEntity(): "
+                     "Class '%s' is not a cell entity class",
+                     typeName.c_str());
+        return NULL;
+    }
 
-	bool isTemplate = false;
-	ScriptDict properties;
-	BW::string templateID;
+    bool       isTemplate = false;
+    ScriptDict properties;
+    BW::string templateID;
 
-	if (ScriptString::check( state ))
-	{
-		isTemplate = true;
-		ScriptString( state ).getString( templateID );
-	}
-	else if (ScriptDict::check( state ))
-	{
-		properties = ScriptDict( state );
-	}
-	else if (state.isNone())
-	{
-		properties = ScriptDict::create();
-	}
-	else
-	{
-		PyErr_Format( PyExc_TypeError, "BigWorld.createEntity(): "
-			"Entity properties argument must be a mapping, string or None." );
-		return NULL;
-	}
+    if (ScriptString::check(state)) {
+        isTemplate = true;
+        ScriptString(state).getString(templateID);
+    } else if (ScriptDict::check(state)) {
+        properties = ScriptDict(state);
+    } else if (state.isNone()) {
+        properties = ScriptDict::create();
+    } else {
+        PyErr_Format(
+          PyExc_TypeError,
+          "BigWorld.createEntity(): "
+          "Entity properties argument must be a mapping, string or None.");
+        return NULL;
+    }
 
-	// so make the creation stream then
+    // so make the creation stream then
 
-	StreamHelper::AddEntityData entityData(
-		NULL_ENTITY_ID, /* to allocate a unique id */
-		position,
-		/* isOnGround */ false,
-		pType->description().index(),
-		Direction3D( direction ), // Note: Vector3 taken as (Roll, Pitch, Yaw)
-		isTemplate
-		);
-	MemoryOStream stream(8192);
+    StreamHelper::AddEntityData entityData(
+      NULL_ENTITY_ID, /* to allocate a unique id */
+      position,
+      /* isOnGround */ false,
+      pType->description().index(),
+      Direction3D(direction), // Note: Vector3 taken as (Roll, Pitch, Yaw)
+      isTemplate);
+    MemoryOStream stream(8192);
 
-	StreamHelper::addEntity( stream, entityData );
+    StreamHelper::addEntity(stream, entityData);
 
-	// See Entity::readRealDataInEntityFromStreamForInitOrRestore
-	// We must either provide a ScriptDict object, or set the
-	// isTemplate flag and provide a template.
-	// Alternatively a full EntityDescription::CELL_DATA stream would
-	// work too, and simplify that code at the cost of streaming our
-	// dictionary into the MemoryOStream and back
-	MF_ASSERT( isTemplate || properties );
+    // See Entity::readRealDataInEntityFromStreamForInitOrRestore
+    // We must either provide a ScriptDict object, or set the
+    // isTemplate flag and provide a template.
+    // Alternatively a full EntityDescription::CELL_DATA stream would
+    // work too, and simplify that code at the cost of streaming our
+    // dictionary into the MemoryOStream and back
+    MF_ASSERT(isTemplate || properties);
 
-	if (isTemplate)
-	{
-		stream << templateID;
-	}
+    if (isTemplate) {
+        stream << templateID;
+    }
 
-	// The following is streamed off by RealEntity constructor.
-	StreamHelper::addRealEntity( stream );
+    // The following is streamed off by RealEntity constructor.
+    StreamHelper::addRealEntity(stream);
 
-	stream << '-';	// no Witness
+    stream << '-'; // no Witness
 
-	stream.writePackedInt( 0 ); // no BASE_AND_CLIENT data.
+    stream.writePackedInt(0); // no BASE_AND_CLIENT data.
 
-	// And actually make the entity!
-	EntityPtr pEntity =	pSpace->pCell()->createEntityInternal( 
-		stream, properties );
+    // And actually make the entity!
+    EntityPtr pEntity =
+      pSpace->pCell()->createEntityInternal(stream, properties);
 
-	if (pEntity == NULL)
-	{
-		PyErr_Format( PyExc_SystemError, "BigWorld.createEntity(): "
-			"Could not create entity of type %s: internal error",
-			pType->name() );
-		return NULL;
-	}
+    if (pEntity == NULL) {
+        PyErr_Format(PyExc_SystemError,
+                     "BigWorld.createEntity(): "
+                     "Could not create entity of type %s: internal error",
+                     pType->name());
+        return NULL;
+    }
 
-	// Return it
-	Py_INCREF( pEntity.get() );
-	return pEntity.get();
+    // Return it
+    Py_INCREF(pEntity.get());
+    return pEntity.get();
 }
-PY_AUTO_MODULE_FUNCTION( RETOWN, createEntity,
-	ARG( BW::string, ARG( SpaceID, ARG( Vector3, ARG( Vector3,
-		OPTARG( ScriptObject, ScriptObject::none(), END ) ) ) ) ), BigWorld )
-
+PY_AUTO_MODULE_FUNCTION(
+  RETOWN,
+  createEntity,
+  ARG(BW::string,
+      ARG(SpaceID,
+          ARG(Vector3,
+              ARG(Vector3, OPTARG(ScriptObject, ScriptObject::none(), END))))),
+  BigWorld)
 
 /*~ function BigWorld.time
  *	@components{ cell }
@@ -2847,9 +2663,9 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, createEntity,
  */
 static double time()
 {
-	return (double)CellApp::instance().time()/CellAppConfig::updateHertz();
+    return (double)CellApp::instance().time() / CellAppConfig::updateHertz();
 }
-PY_AUTO_MODULE_FUNCTION( RETDATA, time, END, BigWorld )
+PY_AUTO_MODULE_FUNCTION(RETDATA, time, END, BigWorld)
 
 /*~ function BigWorld.timeInTicks
  *	@components{ cell }
@@ -2863,10 +2679,9 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, time, END, BigWorld )
  */
 static double timeInTicks()
 {
-	return (double)CellApp::instance().time();
+    return (double)CellApp::instance().time();
 }
-PY_AUTO_MODULE_FUNCTION( RETDATA, timeInTicks, END, BigWorld )
-
+PY_AUTO_MODULE_FUNCTION(RETDATA, timeInTicks, END, BigWorld)
 
 /*~ function BigWorld.getLoad
  *	@components{ cell }
@@ -2881,30 +2696,29 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, timeInTicks, END, BigWorld )
  */
 static float getLoad()
 {
-	return CellApp::instance().getLoad();
+    return CellApp::instance().getLoad();
 }
-PY_AUTO_MODULE_FUNCTION( RETDATA, getLoad, END, BigWorld )
-
+PY_AUTO_MODULE_FUNCTION(RETDATA, getLoad, END, BigWorld)
 
 /**
  *	This method implements the BigWorld.executeRawDatabaseCommand function.
  *  See DBAppInterfaceUtils::executeRawDatabaseCommand for more details.
  */
-static bool executeRawDatabaseCommand( const BW::string & command,
-	PyObjectPtr pResultHandler )
+static bool executeRawDatabaseCommand(const BW::string& command,
+                                      PyObjectPtr       pResultHandler)
 {
-	CellApp & app = CellApp::instance();
+    CellApp& app = CellApp::instance();
 
-	// TODO: Scalable DB:
-	// Propagate the full DBApp hash so we can use a partitionKey to determine
-	// the actual DBApp instead of always asking DBApp Alpha.
-	return DBAppInterfaceUtils::executeRawDatabaseCommand( command,
-		pResultHandler, app.dbAppAlpha().channel() );
+    // TODO: Scalable DB:
+    // Propagate the full DBApp hash so we can use a partitionKey to determine
+    // the actual DBApp instead of always asking DBApp Alpha.
+    return DBAppInterfaceUtils::executeRawDatabaseCommand(
+      command, pResultHandler, app.dbAppAlpha().channel());
 }
-PY_AUTO_MODULE_FUNCTION( RETOK, executeRawDatabaseCommand,
-	ARG( BW::string, OPTARG( PyObjectPtr, NULL, END ) ),
-	BigWorld )
-
+PY_AUTO_MODULE_FUNCTION(RETOK,
+                        executeRawDatabaseCommand,
+                        ARG(BW::string, OPTARG(PyObjectPtr, NULL, END)),
+                        BigWorld)
 
 /*~ function BigWorld.debugDump
  *	@components{ cell }
@@ -2916,22 +2730,19 @@ PY_AUTO_MODULE_FUNCTION( RETOK, executeRawDatabaseCommand,
  */
 static void debugDump()
 {
-	CellApp::instance().cells().debugDump();
+    CellApp::instance().cells().debugDump();
 }
-PY_AUTO_MODULE_FUNCTION( RETVOID, debugDump, END, BigWorld )
-
+PY_AUTO_MODULE_FUNCTION(RETVOID, debugDump, END, BigWorld)
 
 #ifdef MF_USE_VALGRIND
 static void valgrindDump()
 {
-	if (RUNNING_ON_VALGRIND)
-	{
-		VALGRIND_DO_LEAK_CHECK;
-	}
+    if (RUNNING_ON_VALGRIND) {
+        VALGRIND_DO_LEAK_CHECK;
+    }
 }
-PY_AUTO_MODULE_FUNCTION( RETVOID, valgrindDump, END, BigWorld )
+PY_AUTO_MODULE_FUNCTION(RETVOID, valgrindDump, END, BigWorld)
 #endif
-
 
 /*~ function BigWorld.reloadScript
  * @components{ cell }
@@ -2971,27 +2782,27 @@ PY_AUTO_MODULE_FUNCTION( RETVOID, valgrindDump, END, BigWorld )
 /**
  *	This method implements the Python function that reloads the scripts.
  */
-static bool reloadScript( bool isFullReload )
+static bool reloadScript(bool isFullReload)
 {
-	return CellApp::instance().reloadScript( isFullReload );
+    return CellApp::instance().reloadScript(isFullReload);
 }
-PY_AUTO_MODULE_FUNCTION( RETDATA, reloadScript, OPTARG( bool, true, END ),
-		BigWorld )
-
+PY_AUTO_MODULE_FUNCTION(RETDATA,
+                        reloadScript,
+                        OPTARG(bool, true, END),
+                        BigWorld)
 
 /**
  *	This function implements the BigWorld.hasStarted script method.
  */
-static PyObject * py_hasStarted( PyObject * args )
+static PyObject* py_hasStarted(PyObject* args)
 {
-	if (PyTuple_Size( args ) != 0)
-	{
-		PyErr_SetString( PyExc_TypeError,
-				"BigWorld.hasStarted: Excepted no arguments." );
-		return NULL;
-	}
+    if (PyTuple_Size(args) != 0) {
+        PyErr_SetString(PyExc_TypeError,
+                        "BigWorld.hasStarted: Excepted no arguments.");
+        return NULL;
+    }
 
-	return Script::getData( CellApp::instance().hasStarted() );
+    return Script::getData(CellApp::instance().hasStarted());
 }
 /*~ function BigWorld.hasStarted
  *  @components{ cell }
@@ -2999,22 +2810,20 @@ static PyObject * py_hasStarted( PyObject * args )
  *	can be useful for identifying entities that are being created from the
  *	database during a controlled start-up.
  */
-PY_MODULE_FUNCTION( hasStarted, BigWorld );
-
+PY_MODULE_FUNCTION(hasStarted, BigWorld);
 
 /**
  *	This function implements the BigWorld.isShuttingDown script method.
  */
-static PyObject * py_isShuttingDown( PyObject * args )
+static PyObject* py_isShuttingDown(PyObject* args)
 {
-	if (PyTuple_Size( args ) != 0)
-	{
-		PyErr_SetString( PyExc_TypeError,
-				"BigWorld.isShuttingDown: Accepts no arguments." );
-		return NULL;
-	}
+    if (PyTuple_Size(args) != 0) {
+        PyErr_SetString(PyExc_TypeError,
+                        "BigWorld.isShuttingDown: Accepts no arguments.");
+        return NULL;
+    }
 
-	return Script::getData( CellApp::instance().isShuttingDown() );
+    return Script::getData(CellApp::instance().isShuttingDown());
 }
 /*~ function BigWorld.isShuttingDown
  *  @components{ cell }
@@ -3023,67 +2832,65 @@ static PyObject * py_isShuttingDown( PyObject * args )
  *	has been called. It can be useful for not allowing operations to start when
  *	in the process of shutting down.
  */
-PY_MODULE_FUNCTION( isShuttingDown, BigWorld );
+PY_MODULE_FUNCTION(isShuttingDown, BigWorld);
 
+namespace Util {
+    /**
+     *	This function sets a shared data value.
+     */
+    void setSharedData(const BW::string& key,
+                       const BW::string& value,
+                       SharedDataType    dataType)
+    {
+        CellAppMgrGateway& cellAppMgr = CellApp::instance().cellAppMgr();
+        Mercury::Bundle&   bundle     = cellAppMgr.bundle();
+        bundle.startMessage(CellAppMgrInterface::setSharedData);
+        bundle << dataType << key << value;
 
-namespace Util
-{
-/**
- *	This function sets a shared data value.
- */
-void setSharedData( const BW::string & key, const BW::string & value,
-		SharedDataType dataType )
-{
-	CellAppMgrGateway & cellAppMgr = CellApp::instance().cellAppMgr();
-	Mercury::Bundle & bundle = cellAppMgr.bundle();
-	bundle.startMessage( CellAppMgrInterface::setSharedData );
-	bundle << dataType << key << value;
+        cellAppMgr.send();
+    }
 
-	cellAppMgr.send();
-}
+    /**
+     *	This method is called when a shared data value is set.
+     */
+    void onSetSharedData(PyObject*      pKey,
+                         PyObject*      pValue,
+                         SharedDataType dataType)
+    {
+        const char* methodName = (dataType == SHARED_DATA_TYPE_CELL_APP)
+                                   ? "onCellAppData"
+                                   : "onGlobalData";
 
+        CellApp::instance().scriptEvents().triggerEvent(
+          methodName, PyTuple_Pack(2, pKey, pValue));
+    }
 
-/**
- *	This method is called when a shared data value is set.
- */
-void onSetSharedData( PyObject * pKey, PyObject * pValue,
-		SharedDataType dataType )
-{
-	const char * methodName = (dataType == SHARED_DATA_TYPE_CELL_APP) ?
-								"onCellAppData" : "onGlobalData";
+    /**
+     *	This function deletes a shared data value.
+     */
+    void delSharedData(const BW::string& key, SharedDataType dataType)
+    {
+        CellAppMgrGateway& cellAppMgr = CellApp::instance().cellAppMgr();
+        Mercury::Bundle&   bundle     = cellAppMgr.bundle();
+        bundle.startMessage(CellAppMgrInterface::delSharedData);
+        bundle << dataType << key;
 
-	CellApp::instance().scriptEvents().triggerEvent( methodName,
-			PyTuple_Pack( 2, pKey, pValue ) );
-}
+        cellAppMgr.send();
+    }
 
-
-/**
- *	This function deletes a shared data value.
- */
-void delSharedData( const BW::string & key, SharedDataType dataType )
-{
-	CellAppMgrGateway & cellAppMgr = CellApp::instance().cellAppMgr();
-	Mercury::Bundle & bundle = cellAppMgr.bundle();
-	bundle.startMessage( CellAppMgrInterface::delSharedData );
-	bundle << dataType << key;
-
-	cellAppMgr.send();
-}
-
-
-/**
- *	This method is called when a shared data value is set.
- */
-void onDelSharedData( PyObject * pKey, SharedDataType dataType )
-{
-	const char * methodName = (dataType == SHARED_DATA_TYPE_CELL_APP) ?
-								"onDelCellAppData" : "onDelGlobalData";
-	CellApp::instance().scriptEvents().triggerEvent( methodName,
-			PyTuple_Pack( 1, pKey ) );
-}
+    /**
+     *	This method is called when a shared data value is set.
+     */
+    void onDelSharedData(PyObject* pKey, SharedDataType dataType)
+    {
+        const char* methodName = (dataType == SHARED_DATA_TYPE_CELL_APP)
+                                   ? "onDelCellAppData"
+                                   : "onDelGlobalData";
+        CellApp::instance().scriptEvents().triggerEvent(methodName,
+                                                        PyTuple_Pack(1, pKey));
+    }
 
 } // namespace Util
-
 
 /*~ function BigWorld.setBaseAppData
  *	@components{ cell }
@@ -3100,40 +2907,36 @@ void onDelSharedData( PyObject * pKey, SharedDataType dataType )
  *	Note: Care should be taken using this functionality. It does not scale well
  *	and should be used sparingly.
  */
-PyObject * py_setBaseAppData( PyObject * args )
+PyObject* py_setBaseAppData(PyObject* args)
 {
-	PyObject * pKey = NULL;
-	PyObject * pValue = NULL;
+    PyObject* pKey   = NULL;
+    PyObject* pValue = NULL;
 
-	if (!PyArg_ParseTuple( args, "OO:setBaseAppData", &pKey, &pValue ))
-	{
-		return NULL;
-	}
+    if (!PyArg_ParseTuple(args, "OO:setBaseAppData", &pKey, &pValue)) {
+        return NULL;
+    }
 
-	BW::string key = CellApp::instance().pickle( 
-		ScriptObject( pKey, ScriptObject::FROM_BORROWED_REFERENCE ) );
+    BW::string key = CellApp::instance().pickle(
+      ScriptObject(pKey, ScriptObject::FROM_BORROWED_REFERENCE));
 
-	if (key.empty())
-	{
-		PyErr_SetString( PyExc_TypeError, "key could not be pickled" );
-		return NULL;
-	}
+    if (key.empty()) {
+        PyErr_SetString(PyExc_TypeError, "key could not be pickled");
+        return NULL;
+    }
 
-	BW::string value = CellApp::instance().pickle( 
-		ScriptObject( pValue, ScriptObject::FROM_BORROWED_REFERENCE ) );
+    BW::string value = CellApp::instance().pickle(
+      ScriptObject(pValue, ScriptObject::FROM_BORROWED_REFERENCE));
 
-	if (value.empty())
-	{
-		PyErr_SetString( PyExc_TypeError, "value could not be pickled" );
-		return NULL;
-	}
+    if (value.empty()) {
+        PyErr_SetString(PyExc_TypeError, "value could not be pickled");
+        return NULL;
+    }
 
-	Util::setSharedData( key, value, SHARED_DATA_TYPE_BASE_APP );
+    Util::setSharedData(key, value, SHARED_DATA_TYPE_BASE_APP);
 
-	Py_RETURN_NONE;
+    Py_RETURN_NONE;
 }
-PY_MODULE_FUNCTION( setBaseAppData, BigWorld )
-
+PY_MODULE_FUNCTION(setBaseAppData, BigWorld)
 
 /*~ function BigWorld.delBaseAppData
  *	@components{ cell }
@@ -3149,30 +2952,27 @@ PY_MODULE_FUNCTION( setBaseAppData, BigWorld )
  *	Note: Care should be taken using this functionality. It does not scale well
  *	and should be used sparingly.
  */
-PyObject * py_delBaseAppData( PyObject * args )
+PyObject* py_delBaseAppData(PyObject* args)
 {
-	PyObject * pKey = NULL;
+    PyObject* pKey = NULL;
 
-	if (!PyArg_ParseTuple( args, "O:delBaseAppData", &pKey ))
-	{
-		return NULL;
-	}
+    if (!PyArg_ParseTuple(args, "O:delBaseAppData", &pKey)) {
+        return NULL;
+    }
 
-	BW::string key = CellApp::instance().pickle( 
-		ScriptObject( pKey, ScriptObject::FROM_BORROWED_REFERENCE ) );
+    BW::string key = CellApp::instance().pickle(
+      ScriptObject(pKey, ScriptObject::FROM_BORROWED_REFERENCE));
 
-	if (key.empty())
-	{
-		PyErr_SetString( PyExc_TypeError, "key could not be pickled" );
-		return NULL;
-	}
+    if (key.empty()) {
+        PyErr_SetString(PyExc_TypeError, "key could not be pickled");
+        return NULL;
+    }
 
-	Util::delSharedData( key, SHARED_DATA_TYPE_BASE_APP );
+    Util::delSharedData(key, SHARED_DATA_TYPE_BASE_APP);
 
-	Py_RETURN_NONE;
+    Py_RETURN_NONE;
 }
-PY_MODULE_FUNCTION( delBaseAppData, BigWorld )
-
+PY_MODULE_FUNCTION(delBaseAppData, BigWorld)
 
 /*~ function BigWorld.maxCellAppLoad
  *	@components{ cell }
@@ -3183,10 +2983,9 @@ PY_MODULE_FUNCTION( delBaseAppData, BigWorld )
  */
 float maxCellAppLoad()
 {
-	return CellApp::instance().maxCellAppLoad();
+    return CellApp::instance().maxCellAppLoad();
 }
-PY_AUTO_MODULE_FUNCTION( RETDATA, maxCellAppLoad, END, BigWorld )
-
+PY_AUTO_MODULE_FUNCTION(RETDATA, maxCellAppLoad, END, BigWorld)
 
 /*~ function BigWorld.load
  *	@components{ cell }
@@ -3196,10 +2995,9 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, maxCellAppLoad, END, BigWorld )
  */
 float load()
 {
-	return CellApp::instance().getLoad();
+    return CellApp::instance().getLoad();
 }
-PY_AUTO_MODULE_FUNCTION( RETDATA, load, END, BigWorld )
-
+PY_AUTO_MODULE_FUNCTION(RETDATA, load, END, BigWorld)
 
 /*~ function BigWorld.shutDownApp
  *	@components{ cell }
@@ -3208,10 +3006,9 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, load, END, BigWorld )
  */
 void shutDownApp()
 {
-	CellApp::instance().shutDown();
+    CellApp::instance().shutDown();
 }
-PY_AUTO_MODULE_FUNCTION( RETVOID, shutDownApp, END, BigWorld )
-
+PY_AUTO_MODULE_FUNCTION(RETVOID, shutDownApp, END, BigWorld)
 
 /*~ function BigWorld.controlledShutDown
  *	@components{ cell }
@@ -3220,34 +3017,32 @@ PY_AUTO_MODULE_FUNCTION( RETVOID, shutDownApp, END, BigWorld )
  */
 void controlledShutDown()
 {
-	CellApp::instance().triggerControlledShutDown();
+    CellApp::instance().triggerControlledShutDown();
 }
-PY_AUTO_MODULE_FUNCTION( RETVOID, controlledShutDown, END, BigWorld )
-
+PY_AUTO_MODULE_FUNCTION(RETVOID, controlledShutDown, END, BigWorld)
 
 /**
  *	This method loads any extensions (which live in DLLs)
  */
 bool CellApp::initExtensions()
 {
-	return PluginLibrary::loadAllFromDirRelativeToApp( true, "-extensions" );
+    return PluginLibrary::loadAllFromDirRelativeToApp(true, "-extensions");
 }
-
 
 /* The following comments reside here because it doesn't seem right to have
  * declaration comments in executable code.
  */
 /*~ attribute BigWorld entities
  *  @components{ cell }
- *  entities contains a list of all the entities which currently reside on the cell,
- *  including ghost entities.
+ *  entities contains a list of all the entities which currently reside on the
+ * cell, including ghost entities.
  *  @type PyEntities
  */
-/*~ attribute BigWorld services                                                                
- *  @components{ cell }                                                                             
+/*~ attribute BigWorld services
+ *  @components{ cell }
  *  services is a map that keys a service name to a corresponding service
  *  fragment on one of the ServiceApps that offer it.
- *  @type PyBases                                                                                   
+ *  @type PyBases
  */
 /*~ attribute BigWorld VOLATILE_ALWAYS
  *  @components{ cell }
@@ -3363,20 +3158,16 @@ bool CellApp::initExtensions()
  */
 
 template <class T>
-void addToModule( PyObject * pModule, T value, const char * pName )
+void addToModule(PyObject* pModule, T value, const char* pName)
 {
-	PyObject * pObj = Script::getData( value );
-	if (pObj)
-	{
-		PyObject_SetAttrString( pModule, pName, pObj );
-		Py_DECREF( pObj );
-	}
-	else
-	{
-		PyErr_Clear();
-	}
+    PyObject* pObj = Script::getData(value);
+    if (pObj) {
+        PyObject_SetAttrString(pModule, pName, pObj);
+        Py_DECREF(pObj);
+    } else {
+        PyErr_Clear();
+    }
 }
-
 
 /**
  * 	This method is used to initialise the script associated with this
@@ -3384,192 +3175,187 @@ void addToModule( PyObject * pModule, T value, const char * pName )
  */
 bool CellApp::initScript()
 {
-	this->scriptEvents().createEventType( "onAllSpaceGeometryLoaded" );
-	this->scriptEvents().createEventType( "onAppReady" );
-	this->scriptEvents().createEventType( "onAppShuttingDown" );
-	this->scriptEvents().createEventType( "onBaseAppDeath" );
-	this->scriptEvents().createEventType( "onCellAppData" );
-	this->scriptEvents().createEventType( "onCellAppReady" );
-	this->scriptEvents().createEventType( "onCellAppShuttingDown" );
-	this->scriptEvents().createEventType( "onDelCellAppData" );
-	this->scriptEvents().createEventType( "onDelGlobalData" );
-	this->scriptEvents().createEventType( "onGlobalData" );
-	this->scriptEvents().createEventType( "onServiceAppDeath" );
-	this->scriptEvents().createEventType( "onSpaceData" );
-	this->scriptEvents().createEventType( "onSpaceDataDeleted" );
-	this->scriptEvents().createEventType( "onSpaceGeometryLoaded" );
-	this->scriptEvents().createEventType( "onRecordingStarted" );
-	this->scriptEvents().createEventType( "onRecordingTickData" );
-	this->scriptEvents().createEventType( "onRecordingStopped" );
+    this->scriptEvents().createEventType("onAllSpaceGeometryLoaded");
+    this->scriptEvents().createEventType("onAppReady");
+    this->scriptEvents().createEventType("onAppShuttingDown");
+    this->scriptEvents().createEventType("onBaseAppDeath");
+    this->scriptEvents().createEventType("onCellAppData");
+    this->scriptEvents().createEventType("onCellAppReady");
+    this->scriptEvents().createEventType("onCellAppShuttingDown");
+    this->scriptEvents().createEventType("onDelCellAppData");
+    this->scriptEvents().createEventType("onDelGlobalData");
+    this->scriptEvents().createEventType("onGlobalData");
+    this->scriptEvents().createEventType("onServiceAppDeath");
+    this->scriptEvents().createEventType("onSpaceData");
+    this->scriptEvents().createEventType("onSpaceDataDeleted");
+    this->scriptEvents().createEventType("onSpaceGeometryLoaded");
+    this->scriptEvents().createEventType("onRecordingStarted");
+    this->scriptEvents().createEventType("onRecordingTickData");
+    this->scriptEvents().createEventType("onRecordingStopped");
 
-	if (!this->ScriptApp::initScript( "cell",
-				EntityDef::Constants::entitiesCellPath() ) ||
+    if (!this->ScriptApp::initScript(
+          "cell", EntityDef::Constants::entitiesCellPath()) ||
 #ifdef BUILD_PY_URLREQUEST
-			!URL::Manager::init( this->mainDispatcher() ) ||
+        !URL::Manager::init(this->mainDispatcher()) ||
 #endif
-			!PyNetwork::init( this->mainDispatcher(), interface_ ))
-	{
-		return false;
-	}
+        !PyNetwork::init(this->mainDispatcher(), interface_)) {
+        return false;
+    }
 
-	Script::initExceptionHook( &mainDispatcher_ );
+    Script::initExceptionHook(&mainDispatcher_);
 
-	// Pickler must be initialised after Python.
-	pPickler_ = new Pickler();
+    // Pickler must be initialised after Python.
+    pPickler_ = new Pickler();
 
-	DataSectionPtr pSection =
-		BWResource::openSection( EntityDef::Constants::entitiesFile() );
+    DataSectionPtr pSection =
+      BWResource::openSection(EntityDef::Constants::entitiesFile());
 
-	if (!pSection)
-	{
-		ERROR_MSG("CellApp::initScript: Could not load entities.xml\n");
-		return false;
-	}
+    if (!pSection) {
+        ERROR_MSG("CellApp::initScript: Could not load entities.xml\n");
+        return false;
+    }
 
-	// Initialise the CellApp module
-	PyObject * pModule = PyImport_AddModule( "BigWorld" );
+    // Initialise the CellApp module
+    PyObject* pModule = PyImport_AddModule("BigWorld");
 
-	PyObjectPtr pEntities( new PyEntities(), PyObjectPtr::STEAL_REFERENCE );
+    PyObjectPtr pEntities(new PyEntities(), PyObjectPtr::STEAL_REFERENCE);
 
-	if (PyObject_SetAttrString( pModule,
-			"entities",
-			pEntities.get() ) == -1)
-	{
-		ERROR_MSG( "CellApp::initScript: Failed to set entities\n" );
+    if (PyObject_SetAttrString(pModule, "entities", pEntities.get()) == -1) {
+        ERROR_MSG("CellApp::initScript: Failed to set entities\n");
 
-		return false;
-	}
+        return false;
+    }
 
-	// Initalize the service map now that python has started
-	pPyServicesMap_ = new PyServicesMap();
+    // Initalize the service map now that python has started
+    pPyServicesMap_ = new PyServicesMap();
 
-	if (PyObject_SetAttrString( pModule,
-			"services",
-			pPyServicesMap_ ) == -1)
-	{
-		ERROR_MSG( "CellApp::initScript: Failed to set services\n" );
+    if (PyObject_SetAttrString(pModule, "services", pPyServicesMap_) == -1) {
+        ERROR_MSG("CellApp::initScript: Failed to set services\n");
 
-		return false;
-	}
+        return false;
+    }
 
-	PyObject_SetAttrString( pModule, "VOLATILE_ALWAYS",
-			ScriptObject::createFrom( VolatileInfo::ALWAYS ).get() );
-	PyObject_SetAttrString( pModule, "VOLATILE_NEVER", Py_None );
+    PyObject_SetAttrString(
+      pModule,
+      "VOLATILE_ALWAYS",
+      ScriptObject::createFrom(VolatileInfo::ALWAYS).get());
+    PyObject_SetAttrString(pModule, "VOLATILE_NEVER", Py_None);
 
-	PyObject_SetAttrString( pModule, "SPACE_DATA_FIRST_USER_KEY",
-			ScriptObject::createFrom( SPACE_DATA_FIRST_USER_KEY ).get() );
-	PyObject_SetAttrString( pModule, "SPACE_DATA_FINAL_USER_KEY",
-			ScriptObject::createFrom( SPACE_DATA_FINAL_USER_KEY ).get() );
-	PyObject_SetAttrString( pModule, "SPACE_DATA_FIRST_CELL_ONLY_KEY",
-			ScriptObject::createFrom( SPACE_DATA_FIRST_CELL_ONLY_KEY ).get() );
+    PyObject_SetAttrString(
+      pModule,
+      "SPACE_DATA_FIRST_USER_KEY",
+      ScriptObject::createFrom(SPACE_DATA_FIRST_USER_KEY).get());
+    PyObject_SetAttrString(
+      pModule,
+      "SPACE_DATA_FINAL_USER_KEY",
+      ScriptObject::createFrom(SPACE_DATA_FINAL_USER_KEY).get());
+    PyObject_SetAttrString(
+      pModule,
+      "SPACE_DATA_FIRST_CELL_ONLY_KEY",
+      ScriptObject::createFrom(SPACE_DATA_FIRST_CELL_ONLY_KEY).get());
 
-	AutoBackupAndArchive::addNextOnlyConstant( pModule );
+    AutoBackupAndArchive::addNextOnlyConstant(pModule);
 
-	// Add the watcher forwarding hints
-	addToModule( pModule,
-			ForwardingWatcher::CELL_APPS,          "EXPOSE_CELL_APPS" );
-	addToModule( pModule,
-			ForwardingWatcher::LEAST_LOADED, "EXPOSE_LEAST_LOADED" );
-	// TODO: Add the following hints when the CellAppMgr support is
-	//       implemented.
-	//addToModule( pModule,
-	//		ForwardingWatcher::WITH_ENTITY,  "EXPOSE_WITH_ENTITY" );
-	//addToModule( pModule,
-	//		ForwardingWatcher::WITH_SPACE,   "EXPOSE_WITH_SPACE" );
+    // Add the watcher forwarding hints
+    addToModule(pModule, ForwardingWatcher::CELL_APPS, "EXPOSE_CELL_APPS");
+    addToModule(
+      pModule, ForwardingWatcher::LEAST_LOADED, "EXPOSE_LEAST_LOADED");
+    // TODO: Add the following hints when the CellAppMgr support is
+    //       implemented.
+    // addToModule( pModule,
+    //		ForwardingWatcher::WITH_ENTITY,  "EXPOSE_WITH_ENTITY" );
+    // addToModule( pModule,
+    //		ForwardingWatcher::WITH_SPACE,   "EXPOSE_WITH_SPACE" );
 
-	addToModule( pModule, Entity::INVALID_POSITION, "INVALID_POSITION" );
+    addToModule(pModule, Entity::INVALID_POSITION, "INVALID_POSITION");
 
-	addToModule( pModule, (uint16) TRIANGLE_WATER, "TRIANGLE_WATER" );
-	addToModule( pModule, (uint16) TRIANGLE_TERRAIN, "TRIANGLE_TERRAIN" );
+    addToModule(pModule, (uint16)TRIANGLE_WATER, "TRIANGLE_WATER");
+    addToModule(pModule, (uint16)TRIANGLE_TERRAIN, "TRIANGLE_TERRAIN");
 
-	if (PyObject_SetAttrString( pModule,
-			"Entity",
-			reinterpret_cast<PyObject *>(&Entity::s_type_) ) == -1)
-	{
-		return false;
-	}
-	if (PyObject_SetAttrString( pModule,
-			"UserDataObject",
-			reinterpret_cast<PyObject *>(&UserDataObject::s_type_) ) == -1)
-	{
-		return false;
-	}
+    if (PyObject_SetAttrString(
+          pModule, "Entity", reinterpret_cast<PyObject*>(&Entity::s_type_)) ==
+        -1) {
+        return false;
+    }
+    if (PyObject_SetAttrString(
+          pModule,
+          "UserDataObject",
+          reinterpret_cast<PyObject*>(&UserDataObject::s_type_)) == -1) {
+        return false;
+    }
 
-	MF_ASSERT( pCellAppData_ == NULL );
-	pCellAppData_ = new SharedData( SHARED_DATA_TYPE_CELL_APP,
-		   Util::setSharedData, Util::delSharedData,
-		   Util::onSetSharedData, Util::onDelSharedData,
-		   pPickler_ );
+    MF_ASSERT(pCellAppData_ == NULL);
+    pCellAppData_ = new SharedData(SHARED_DATA_TYPE_CELL_APP,
+                                   Util::setSharedData,
+                                   Util::delSharedData,
+                                   Util::onSetSharedData,
+                                   Util::onDelSharedData,
+                                   pPickler_);
 
-	if (PyObject_SetAttrString( pModule, "cellAppData", pCellAppData_ ) == -1)
-	{
-		PyErr_Print();
-		return false;
-	}
+    if (PyObject_SetAttrString(pModule, "cellAppData", pCellAppData_) == -1) {
+        PyErr_Print();
+        return false;
+    }
 
-	MF_ASSERT( pGlobalData_ == NULL );
-	pGlobalData_ = new SharedData( SHARED_DATA_TYPE_GLOBAL,
-		   Util::setSharedData, Util::delSharedData,
-		   Util::onSetSharedData, Util::onDelSharedData,
-		   pPickler_ );
+    MF_ASSERT(pGlobalData_ == NULL);
+    pGlobalData_ = new SharedData(SHARED_DATA_TYPE_GLOBAL,
+                                  Util::setSharedData,
+                                  Util::delSharedData,
+                                  Util::onSetSharedData,
+                                  Util::onDelSharedData,
+                                  pPickler_);
 
-	if (PyObject_SetAttrString( pModule, "globalData", pGlobalData_ ) == -1)
-	{
-		PyErr_Print();
-		return false;
-	}
+    if (PyObject_SetAttrString(pModule, "globalData", pGlobalData_) == -1) {
+        PyErr_Print();
+        return false;
+    }
 
-	// Initialise the personality module
-	if (!this->initPersonality())
-	{
-		return false;
-	}
+    // Initialise the personality module
+    if (!this->initPersonality()) {
+        return false;
+    }
 
-	return true;
+    return true;
 }
-
 
 /**
  * 	This is a helper method pickles the input Python object.
  */
-BW::string CellApp::pickle( ScriptObject args )
+BW::string CellApp::pickle(ScriptObject args)
 {
-	AUTO_SCOPED_PROFILE( "pickle" );
-	return pPickler_->pickle( args );
+    AUTO_SCOPED_PROFILE("pickle");
+    return pPickler_->pickle(args);
 }
-
 
 /**
  *  This is a helper method used to unpickle the input data.
  */
-ScriptObject CellApp::unpickle( const BW::string & str )
+ScriptObject CellApp::unpickle(const BW::string& str)
 {
-	AUTO_SCOPED_PROFILE( "unpickle" );
-	return pPickler_->unpickle( str );
+    AUTO_SCOPED_PROFILE("unpickle");
+    return pPickler_->unpickle(str);
 }
-
 
 /**
  *	This is a helper method used to create an instance of a class without
  *	calling the __init__ method.
  */
-PyObject * CellApp::newClassInstance( PyObject * pyClass,
-		PyObject * pDictionary )
+PyObject* CellApp::newClassInstance(PyObject* pyClass, PyObject* pDictionary)
 {
-	// This code was inspired by new_instance function in Modules/newmodule.c in
-	// the Python source code.
+    // This code was inspired by new_instance function in Modules/newmodule.c in
+    // the Python source code.
 
-	PyInstanceObject * pNewObject =
-		PyObject_New( PyInstanceObject, &PyInstance_Type );
+    PyInstanceObject* pNewObject =
+      PyObject_New(PyInstanceObject, &PyInstance_Type);
 
-	Py_INCREF( pyClass );
-	Py_INCREF( pDictionary );
-	pNewObject->in_class = (PyClassObject *)pyClass;
-	pNewObject->in_dict = pDictionary;
+    Py_INCREF(pyClass);
+    Py_INCREF(pDictionary);
+    pNewObject->in_class = (PyClassObject*)pyClass;
+    pNewObject->in_dict  = pDictionary;
 
-	PyObject_GC_Init( pNewObject );
+    PyObject_GC_Init(pNewObject);
 
-	return (PyObject *)pNewObject;
+    return (PyObject*)pNewObject;
 }
 
 /**
@@ -3579,47 +3365,43 @@ PyObject * CellApp::newClassInstance( PyObject * pyClass,
 void CellApp::checkPython()
 {
 #ifdef Py_DEBUG
-	PyObject* head = PyInt_FromLong(1000000);
-	PyObject* p = head;
+    PyObject* head = PyInt_FromLong(1000000);
+    PyObject* p    = head;
 
-	SCRIPT_INFO_MSG( "Checking python objects..." );
+    SCRIPT_INFO_MSG("Checking python objects...");
 
-	while (p && p->_ob_next != head)
-	{
-		if ((p->_ob_prev->_ob_next != p) || (p->_ob_next->_ob_prev != p))
-		{
-			SCRIPT_CRITICAL_MSG( "Python object %0.8X is screwed\n", p );
-		}
+    while (p && p->_ob_next != head) {
+        if ((p->_ob_prev->_ob_next != p) || (p->_ob_next->_ob_prev != p)) {
+            SCRIPT_CRITICAL_MSG("Python object %0.8X is screwed\n", p);
+        }
 
-		p = p->_ob_next;
-	}
+        p = p->_ob_next;
+    }
 
-	Py_DECREF(head);
-	SCRIPT_INFO_MSG( "Python objects are Ok.\n" );
+    Py_DECREF(head);
+    SCRIPT_INFO_MSG("Python objects are Ok.\n");
 #endif
 }
-
 
 /**
  *	Signal handler.
  */
-void CellApp::onSignalled( int sigNum )
+void CellApp::onSignalled(int sigNum)
 {
-	if (sigNum == SIGQUIT)
-	{
-		// Just print out some information, and pass it up to EntityApp to dump
-		// core.
+    if (sigNum == SIGQUIT) {
+        // Just print out some information, and pass it up to EntityApp to dump
+        // core.
 
-		ERROR_MSG( "CellApp::onSignalled: "
-				"load = %f. emergencyThrottle = %f. "
-				"Time since tick = %f seconds\n",
-			this->getLoad(), this->emergencyThrottle(),
-			stampsToSeconds( timestamp() - this->lastGameTickTime() ) );
-	}
+        ERROR_MSG("CellApp::onSignalled: "
+                  "load = %f. emergencyThrottle = %f. "
+                  "Time since tick = %f seconds\n",
+                  this->getLoad(),
+                  this->emergencyThrottle(),
+                  stampsToSeconds(timestamp() - this->lastGameTickTime()));
+    }
 
-	this->EntityApp::onSignalled( sigNum );
+    this->EntityApp::onSignalled(sigNum);
 }
-
 
 /**
  *	This method adds the input Witness to the collection of objects that
@@ -3628,47 +3410,42 @@ void CellApp::onSignalled( int sigNum )
  *	Objects that are registered with a lower level are updated before those with
  *	a higher level.
  */
-bool CellApp::registerWitness( Witness * pObject, int level )
+bool CellApp::registerWitness(Witness* pObject, int level)
 {
-	return witnesses_.add( pObject, level );
+    return witnesses_.add(pObject, level);
 }
-
 
 /**
  *	This method removes the input Witness from the collection of objects that
  *	regularly have their update method called.
  */
-bool CellApp::deregisterWitness( Witness * pObject )
+bool CellApp::deregisterWitness(Witness* pObject)
 {
-	return witnesses_.remove( pObject );
+    return witnesses_.remove(pObject);
 }
-
 
 /**
  *	This method calls 'update' on all registered Witnesses
  */
-void CellApp::callWitnesses( bool checkReceivedTime )
+void CellApp::callWitnesses(bool checkReceivedTime)
 {
-	if (hasCalledWitnesses_)
-	{
-		return;
-	}
+    if (hasCalledWitnesses_) {
+        return;
+    }
 
-	if (checkReceivedTime &&
-			!pCellAppChannels_->haveAllChannelsReceivedTime( this->time() ))
-	{
-		return;
-	}
+    if (checkReceivedTime &&
+        !pCellAppChannels_->haveAllChannelsReceivedTime(this->time())) {
+        return;
+    }
 
-	AUTO_SCOPED_PROFILE( "callWitnesses" );
-	witnesses_.call();
-	hasCalledWitnesses_ = true;
+    AUTO_SCOPED_PROFILE("callWitnesses");
+    witnesses_.call();
+    hasCalledWitnesses_ = true;
 }
-
 
 /**
  *	This method returns the next space entry ID
- *	
+ *
  *	SpaceIDs are per CellApp instance due to issues caused by cells offloading
  *	then being loaded back onto the same CellApp.
  *
@@ -3677,11 +3454,10 @@ void CellApp::callWitnesses( bool checkReceivedTime )
  */
 SpaceEntryID CellApp::nextSpaceEntryID()
 {
-	SpaceEntryID entryID = (const SpaceEntryID &)( interface_.address() );
-	entryID.salt = ++nextSpaceEntryIDSalt_;
-	return entryID;
+    SpaceEntryID entryID = (const SpaceEntryID&)(interface_.address());
+    entryID.salt         = ++nextSpaceEntryIDSalt_;
+    return entryID;
 }
-
 
 BW_END_NAMESPACE
 

@@ -7,30 +7,28 @@
 #include <scene/scene_provider.hpp>
 #include <scene/scene_object.hpp>
 
-namespace BW
-{
+namespace BW {
 
-class StaticSceneProvider
-	: public SceneProvider
-	, public ITestSceneViewProvider
-{
-public:
+    class StaticSceneProvider
+      : public SceneProvider
+      , public ITestSceneViewProvider
+    {
+      public:
+        void load();
 
-	void load();
+        // SceneProvider implementations...
+        void  forEachObject(const ConstSceneObjectCallback& function) const;
+        void  forEachObject(const SceneObjectCallback& function);
+        void* getView(const SceneTypeSystem::RuntimeTypeID& sceneViewTypeID);
 
-	// SceneProvider implementations...
-	void forEachObject( const ConstSceneObjectCallback & function ) const;
-	void forEachObject( const SceneObjectCallback & function );
-	void * getView( const SceneTypeSystem::RuntimeTypeID& sceneViewTypeID );
+        // ITestSceneViewProvider implementations...
+        void helloWorld() { successfullyCalled = true; }
+        bool success() const { return successfullyCalled; }
+        bool successfullyCalled;
 
-	// ITestSceneViewProvider implementations...
-	void helloWorld( ) { successfullyCalled = true; }
-	bool success( ) const { return successfullyCalled; }
-	bool successfullyCalled;
-
-	// A representation of objects contained within the scene
-	BW::vector<PolyMesh> meshObjects;
-};
+        // A representation of objects contained within the scene
+        BW::vector<PolyMesh> meshObjects;
+    };
 
 } // namespace BW
 

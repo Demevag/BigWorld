@@ -11,72 +11,70 @@ BW_BEGIN_NAMESPACE
 /**
  *	This class is the editor version of a ChunkModelVLO
  */
-class EditorChunkModelVLO
-	: public ChunkModelVLO
-{	
-	static VLOFactory factory_;
-	static bool create(
-		Chunk * pChunk, DataSectionPtr pSection, const BW::string & uid );
-	
-public:
-	EditorChunkModelVLO( const BW::string & uid );
-	~EditorChunkModelVLO();
+class EditorChunkModelVLO : public ChunkModelVLO
+{
+    static VLOFactory factory_;
+    static bool       create(Chunk*            pChunk,
+                             DataSectionPtr    pSection,
+                             const BW::string& uid);
 
-	void dirty();
-	bool load( DataSectionPtr pSection, Chunk * pChunk );
+  public:
+    EditorChunkModelVLO(const BW::string& uid);
+    ~EditorChunkModelVLO();
 
-	virtual void cleanup();
-	virtual void saveFile( Chunk* chunk = NULL );
-	virtual void save();
-	virtual bool edSave( DataSectionPtr pSection );
+    void dirty();
+    bool load(DataSectionPtr pSection, Chunk* pChunk);
 
-	void edBounds( BoundingBox & bbRet, Chunk * pChunk ) const;
+    virtual void cleanup();
+    virtual void saveFile(Chunk* chunk = NULL);
+    virtual void save();
+    virtual bool edSave(DataSectionPtr pSection);
 
-	DECLARE_EDITOR_CHUNK_ITEM_CLASS_NAME( "Proxy" );
-	virtual bool edEdit( class GeneralEditor & editor, const ChunkItemPtr pItem);
-	virtual void edCommonChanged();
-	
-	virtual bool visibleInside() const;
+    void edBounds(BoundingBox& bbRet, Chunk* pChunk) const;
 
-	virtual bool visibleOutside() const;
+    DECLARE_EDITOR_CHUNK_ITEM_CLASS_NAME("Proxy");
+    virtual bool edEdit(class GeneralEditor& editor, const ChunkItemPtr pItem);
+    virtual void edCommonChanged();
 
-	virtual int numTriangles() const;
+    virtual bool visibleInside() const;
 
-	virtual int numPrimitives() const;
+    virtual bool visibleOutside() const;
 
-	virtual BW::string edAssetName() const { return "ProxyVLO"; }
+    virtual int numTriangles() const;
 
-	static const BW::vector< EditorChunkModelVLO * > & instances()
-	{
-		return instances_;
-	}
+    virtual int numPrimitives() const;
 
-	static SimpleMutex &instancesMutex() { return instancesMutex_; }
+    virtual BW::string edAssetName() const { return "ProxyVLO"; }
 
-	virtual const Matrix & localTransform();
-	Chunk * vloChunk() const;
+    static const BW::vector<EditorChunkModelVLO*>& instances()
+    {
+        return instances_;
+    }
 
-	void save( DataSectionPtr dataSectionPtr, const Matrix & worldTransform );
+    static SimpleMutex& instancesMutex() { return instancesMutex_; }
 
-private:
-	EditorChunkModelVLO( const EditorChunkModelVLO & );
-	EditorChunkModelVLO& operator=( const EditorChunkModelVLO & );
+    virtual const Matrix& localTransform();
+    Chunk*                vloChunk() const;
 
-	virtual const char * sectName() const { return "proxy"; }
-	virtual bool isDrawFlagVisible() const
-		{ return true; }
-	virtual const char * drawFlag() const { return "render/scenery/drawProxy"; }	
+    void save(DataSectionPtr dataSectionPtr, const Matrix& worldTransform);
 
-	EditorChunkModelPtr getProxiedModel();
+  private:
+    EditorChunkModelVLO(const EditorChunkModelVLO&);
+    EditorChunkModelVLO& operator=(const EditorChunkModelVLO&);
 
-	bool changed_;
+    virtual const char* sectName() const { return "proxy"; }
+    virtual bool        isDrawFlagVisible() const { return true; }
+    virtual const char* drawFlag() const { return "render/scenery/drawProxy"; }
 
-	static BW::vector< EditorChunkModelVLO* > instances_;
-	static SimpleMutex					  instancesMutex_;
+    EditorChunkModelPtr getProxiedModel();
+
+    bool changed_;
+
+    static BW::vector<EditorChunkModelVLO*> instances_;
+    static SimpleMutex                      instancesMutex_;
 };
 
-
-typedef SmartPointer< EditorChunkModelVLO > EditorChunkProxyPtr;
+typedef SmartPointer<EditorChunkModelVLO> EditorChunkProxyPtr;
 
 BW_END_NAMESPACE
 

@@ -4,7 +4,6 @@
 #include "particle_system_action.hpp"
 #include "math/boundbox.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -17,68 +16,68 @@ BW_BEGIN_NAMESPACE
  */
 class SinkPSA : public ParticleSystemAction
 {
-public:
-	///	@name Constructor(s) and Destructor.
-	//@{
-	SinkPSA( float maximumAge = -1.0f, float minimumSpeed = -1.0f );	
-	//@}
+  public:
+    ///	@name Constructor(s) and Destructor.
+    //@{
+    SinkPSA(float maximumAge = -1.0f, float minimumSpeed = -1.0f);
+    //@}
 
     ParticleSystemActionPtr clone() const;
 
-	///	@name Accessors to SinkPSA properties.
-	//@{
-	float maximumAge( void ) const;
-	void maximumAge( float value );
+    ///	@name Accessors to SinkPSA properties.
+    //@{
+    float maximumAge(void) const;
+    void  maximumAge(float value);
 
-	float minimumSpeed( void ) const;
-	void minimumSpeed( float timeInSeconds );
+    float minimumSpeed(void) const;
+    void  minimumSpeed(float timeInSeconds);
 
-	bool outsideOnly( void ) const;
-	void outsideOnly( bool outside );
-	//@}
+    bool outsideOnly(void) const;
+    void outsideOnly(bool outside);
+    //@}
 
-	///	@name Overrides to the Particle System Action Interface.
-	//@{
-	virtual void execute( ParticleSystem & particleSystem, float dTime );
-	virtual void lateExecute( ParticleSystem &particleSystem, float dTime );
-	virtual int typeID() const;
-	virtual const BW::string & nameID() const;
+    ///	@name Overrides to the Particle System Action Interface.
+    //@{
+    virtual void execute(ParticleSystem& particleSystem, float dTime);
+    virtual void lateExecute(ParticleSystem& particleSystem, float dTime);
+    virtual int  typeID() const;
+    virtual const BW::string& nameID() const;
 
-	virtual size_t sizeInBytes() const { return sizeof(SinkPSA); }
-	//@}
+    virtual size_t sizeInBytes() const { return sizeof(SinkPSA); }
+    //@}
 
-	static const BW::string nameID_;
+    static const BW::string nameID_;
 
-protected:
-	virtual void loadInternal( DataSectionPtr pSect );
-	virtual void saveInternal( DataSectionPtr pSect ) const;
+  protected:
+    virtual void loadInternal(DataSectionPtr pSect);
+    virtual void saveInternal(DataSectionPtr pSect) const;
 
-private:
+  private:
+    template <typename Serialiser>
+    void serialise(const Serialiser&) const;
 
-	template < typename Serialiser >
-	void serialise( const Serialiser & ) const;
+    bool isIndoors(const Vector3& pos, float radius) const;
 
-	bool isIndoors( const Vector3& pos, float radius ) const;
+    ///	@name Properties of the SinkPSA.
+    //@{
+    float maximumAge_;   ///< Maximum age of particles in seconds.
+    float minimumSpeed_; ///< Minimum speed in metres per seconds.
+    bool  outsideOnly_;  ///< kill particles that travel indoors.
+    void  cacheHullInfo(
+       const BoundingBox& wvbb);           ///< Optimisation for outsideOnly_
+    void                  clearHullInfo(); ///< Optimisation for outsideOnly_
+    void                  accumulateOverlappers(const BoundingBox& bb,
+                                                class Chunk*       outsideChunk);
+    BW::set<class Chunk*> shells_; ///< Optimisation for outsideOnly_
+    //@}
 
-	///	@name Properties of the SinkPSA.
-	//@{
-	float maximumAge_;			///< Maximum age of particles in seconds.
-	float minimumSpeed_;		///< Minimum speed in metres per seconds.
-	bool outsideOnly_;			///< kill particles that travel indoors.
-	void cacheHullInfo(const BoundingBox& wvbb);///< Optimisation for outsideOnly_
-	void clearHullInfo();		///< Optimisation for outsideOnly_
-	void accumulateOverlappers( const BoundingBox& bb, class Chunk* outsideChunk );
-	BW::set<class Chunk*> shells_;	///< Optimisation for outsideOnly_
-	//@}
-
-	///	@name Auxiliary Variables for the SinkPSA.
-	//@{
-	static int typeID_;			///< TypeID of the SinkPSA.
-	//@}
+    ///	@name Auxiliary Variables for the SinkPSA.
+    //@{
+    static int typeID_; ///< TypeID of the SinkPSA.
+                        //@}
 };
 
 typedef SmartPointer<SinkPSA> SinkPSAPtr;
-
 
 /*~ class Pixie.PySinkPSA
  *
@@ -90,38 +89,36 @@ typedef SmartPointer<SinkPSA> SinkPSAPtr;
  */
 class PySinkPSA : public PyParticleSystemAction
 {
-	Py_Header( PySinkPSA, PyParticleSystemAction )
-public:
-	PySinkPSA( SinkPSAPtr pAction, PyTypeObject *pType = &s_type_ );
+    Py_Header(PySinkPSA, PyParticleSystemAction) public
+      : PySinkPSA(SinkPSAPtr pAction, PyTypeObject* pType = &s_type_);
 
-	int typeID( void ) const;
+    int typeID(void) const;
 
-	///	@name Accessors to PySinkPSA properties.
-	//@{
-	float maximumAge( void ) const;
-	void maximumAge( float value );
+    ///	@name Accessors to PySinkPSA properties.
+    //@{
+    float maximumAge(void) const;
+    void  maximumAge(float value);
 
-	float minimumSpeed( void ) const;
-	void minimumSpeed( float value );
+    float minimumSpeed(void) const;
+    void  minimumSpeed(float value);
 
-	bool outsideOnly( void ) const;
-	void outsideOnly( bool value );
-	//@}
+    bool outsideOnly(void) const;
+    void outsideOnly(bool value);
+    //@}
 
-	///	@name Python Interface to the PySinkPSA.
-	//@{
-	PY_FACTORY_DECLARE()
+    ///	@name Python Interface to the PySinkPSA.
+    //@{
+    PY_FACTORY_DECLARE()
 
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( float, maximumAge, maximumAge )
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( float, minimumSpeed, minimumSpeed )
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( bool, outsideOnly, outsideOnly )
-	//@}
-private:
-	SinkPSAPtr pAction_;
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(float, maximumAge, maximumAge)
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(float, minimumSpeed, minimumSpeed)
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(bool, outsideOnly, outsideOnly)
+    //@}
+  private:
+    SinkPSAPtr pAction_;
 };
 
-PY_SCRIPT_CONVERTERS_DECLARE( PySinkPSA )
-
+PY_SCRIPT_CONVERTERS_DECLARE(PySinkPSA)
 
 #ifdef CODE_INLINE
 #include "sink_psa.ipp"

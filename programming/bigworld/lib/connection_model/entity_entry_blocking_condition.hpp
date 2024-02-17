@@ -7,22 +7,18 @@ BW_BEGIN_NAMESPACE
 
 class EntityEntryBlockingCondition
 {
-public:
-	EntityEntryBlockingCondition( EntityEntryBlockingConditionImplPtr pImpl ) :
-		pImpl_( pImpl ) {}
+  public:
+    EntityEntryBlockingCondition(EntityEntryBlockingConditionImplPtr pImpl)
+      : pImpl_(pImpl)
+    {
+    }
 
-	~EntityEntryBlockingCondition()
-	{
-		pImpl_ = NULL;
-	}
+    ~EntityEntryBlockingCondition() { pImpl_ = NULL; }
 
-	void release()
-	{
-		pImpl_ = NULL;
-	}
+    void release() { pImpl_ = NULL; }
 
-private:
-	EntityEntryBlockingConditionImplPtr pImpl_;
+  private:
+    EntityEntryBlockingConditionImplPtr pImpl_;
 };
 
 BW_END_NAMESPACE

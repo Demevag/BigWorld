@@ -11,22 +11,27 @@ BW_BEGIN_NAMESPACE
  */
 class FormatStringHandler
 {
-public:
-	virtual ~FormatStringHandler( void ) {};
+  public:
+    virtual ~FormatStringHandler(void){};
 
-	/* Callback for when a full string segment has been identified
-	 * in the format string. This is any part of the format string that
-	 * does not comprise a token.
-	 */
-	virtual void onString( size_t /* start */, size_t /* end */ ) {};
+    /* Callback for when a full string segment has been identified
+     * in the format string. This is any part of the format string that
+     * does not comprise a token.
+     */
+    virtual void onString(size_t /* start */, size_t /* end */){};
 
-	/* Callback for when a token has been fully parsed.
-	 * The implementor of this interface needs to keep track of the
-	 * variable argument list to know which argument the next token
-	 * is referring to
-	 */
-	virtual void onToken( char type, int cflags, int min, int max,
-		int flags, uint8 base, int vflags ) = 0;
+    /* Callback for when a token has been fully parsed.
+     * The implementor of this interface needs to keep track of the
+     * variable argument list to know which argument the next token
+     * is referring to
+     */
+    virtual void onToken(char  type,
+                         int   cflags,
+                         int   min,
+                         int   max,
+                         int   flags,
+                         uint8 base,
+                         int   vflags) = 0;
 };
 
 BW_END_NAMESPACE

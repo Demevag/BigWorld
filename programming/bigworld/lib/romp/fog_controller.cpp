@@ -8,8 +8,7 @@
 #include "pyscript/pyobject_plus.hpp"
 #include "pyscript/script.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Romp", 2 );
-
+DECLARE_DEBUG_COMPONENT2("Romp", 2);
 
 BW_BEGIN_NAMESPACE
 
@@ -21,206 +20,186 @@ BW_BEGIN_NAMESPACE
 // Section: FogController
 // ----------------------------------------------------------------------------
 
-
 FogController::FogController()
-:colour_( 0xffffffff ),
- enabled_( true ),
- global_emitter_id_( 0 ),
- farObjectTFactor_( 0xffffffff ),
- additiveFarObjectTFactor_( 0xffffffff ),
- nearMultiplier_( 0.f ),
- multiplierTotal_( 0.f ),
- v4Colour_( 0.f, 0.f, 0.f, 0.f )
+  : colour_(0xffffffff)
+  , enabled_(true)
+  , global_emitter_id_(0)
+  , farObjectTFactor_(0xffffffff)
+  , additiveFarObjectTFactor_(0xffffffff)
+  , nearMultiplier_(0.f)
+  , multiplierTotal_(0.f)
+  , v4Colour_(0.f, 0.f, 0.f, 0.f)
 {
-	BW_GUARD;
-	MF_WATCH( "Client Settings/std fog/enabled",
-		enabled_,
-		Watcher::WT_READ_WRITE,
-		"Enable visual display of fogging" );
-	MF_WATCH( "Client Settings/std fog/currentNear",
-		nearMultiplier_,
-		Watcher::WT_READ_ONLY,
-		"The current multiplier for near fog amount." );
-	MF_WATCH( "Client Settings/std fog/currentFar",
-		multiplier_,
-		Watcher::WT_READ_ONLY,
-		"The current far clip plane multiplier for fog." );
-	MF_WATCH( "Client Settings/std fog/currentColour",
-		v4Colour_,
-		Watcher::WT_READ_ONLY,
-		"The current fog colour." );
+    BW_GUARD;
+    MF_WATCH("Client Settings/std fog/enabled",
+             enabled_,
+             Watcher::WT_READ_WRITE,
+             "Enable visual display of fogging");
+    MF_WATCH("Client Settings/std fog/currentNear",
+             nearMultiplier_,
+             Watcher::WT_READ_ONLY,
+             "The current multiplier for near fog amount.");
+    MF_WATCH("Client Settings/std fog/currentFar",
+             multiplier_,
+             Watcher::WT_READ_ONLY,
+             "The current far clip plane multiplier for fog.");
+    MF_WATCH("Client Settings/std fog/currentColour",
+             v4Colour_,
+             Watcher::WT_READ_ONLY,
+             "The current fog colour.");
 }
 
-
-FogController & FogController::instance()
+FogController& FogController::instance()
 {
-	REGISTER_SINGLETON( FogController )
-	SINGLETON_MANAGER_WRAPPER( FogController )
-	static FogController fc;
-	return fc;
+    REGISTER_SINGLETON(FogController)
+    SINGLETON_MANAGER_WRAPPER(FogController)
+    static FogController fc;
+    return fc;
 }
-
 
 void FogController::tick()
 {
-	BW_GUARD;
-	Vector3 camPos = Moo::rc().invView().applyToOrigin();
+    BW_GUARD;
+    Vector3 camPos = Moo::rc().invView().applyToOrigin();
 
-	Vector3 fogEmitterColour;
-	Emitter * currentFogEmitter = NULL;
-	float maxMultiplier = 0.f;
-	float nearM = 0.f;
-	Vector4 weightedFogColour( 0.f, 0.f, 0.f, 0.f );
-	multiplierTotal_ = 0.f;
+    Vector3  fogEmitterColour;
+    Emitter* currentFogEmitter = NULL;
+    float    maxMultiplier     = 0.f;
+    float    nearM             = 0.f;
+    Vector4  weightedFogColour(0.f, 0.f, 0.f, 0.f);
+    multiplierTotal_ = 0.f;
 
-	//Accumulate the effect of all fog emitters
-	Emitters::iterator it = emitters_.begin();
-	Emitters::iterator end = emitters_.end();
-	while( it != end )
-	{
-		Emitter & e = *it++;
+    // Accumulate the effect of all fog emitters
+    Emitters::iterator it  = emitters_.begin();
+    Emitters::iterator end = emitters_.end();
+    while (it != end) {
+        Emitter& e = *it++;
 
-		float distanceSq = 0.f;
-		if ( e.localised_ )
-		{
-			Vector3 dist = e.position_ - camPos;
-			distanceSq = dist.lengthSquared();
-		}
+        float distanceSq = 0.f;
+        if (e.localised_) {
+            Vector3 dist = e.position_ - camPos;
+            distanceSq   = dist.lengthSquared();
+        }
 
-		//if within the range of this fog emitter
-		if ( distanceSq < e.outerRadiusSquared() )
-		{
-			//calculate the effective t value
-			float t = 1.f;
-			if ( distanceSq > e.innerRadiusSquared() )
-			{
-				float dist = sqrtf(distanceSq);
-				t = ( dist - e.innerRadius() ) / ( e.falloffRange() );
-				t = 1.f - t;
-			}
+        // if within the range of this fog emitter
+        if (distanceSq < e.outerRadiusSquared()) {
+            // calculate the effective t value
+            float t = 1.f;
+            if (distanceSq > e.innerRadiusSquared()) {
+                float dist = sqrtf(distanceSq);
+                t          = (dist - e.innerRadius()) / (e.falloffRange());
+                t          = 1.f - t;
+            }
 
-			float effectiveMultiplier = t * e.maxMultiplier_;
-			float effectiveNear = t * e.nearMultiplier_;
+            float effectiveMultiplier = t * e.maxMultiplier_;
+            float effectiveNear       = t * e.nearMultiplier_;
 
-			Vector4 col = Colour::getVector4( e.colour_ );
-			multiplierTotal_ += effectiveMultiplier;
+            Vector4 col = Colour::getVector4(e.colour_);
+            multiplierTotal_ += effectiveMultiplier;
 
-			// TODO: This doesn't use += because of what appears to be a compiler bug
-			weightedFogColour = weightedFogColour + ( col * effectiveMultiplier );
+            // TODO: This doesn't use += because of what appears to be a
+            // compiler bug
+            weightedFogColour = weightedFogColour + (col * effectiveMultiplier);
 
-			//update maxMultiplier
-			if ( effectiveMultiplier > maxMultiplier )
-			{
-				maxMultiplier = effectiveMultiplier;
-			}
+            // update maxMultiplier
+            if (effectiveMultiplier > maxMultiplier) {
+                maxMultiplier = effectiveMultiplier;
+            }
 
-			if ( nearM < effectiveNear )
-			{
-				nearM = effectiveNear;
-			}
-		}
-	}
+            if (nearM < effectiveNear) {
+                nearM = effectiveNear;
+            }
+        }
+    }
 
-	//Now, calculate the resultant fog
+    // Now, calculate the resultant fog
 
-	//return if multiplierTotal_ is too small
-	//and avoid the possible div 0
-	if ( multiplierTotal_ < 0.1f )
-		return;
+    // return if multiplierTotal_ is too small
+    // and avoid the possible div 0
+    if (multiplierTotal_ < 0.1f)
+        return;
 
-	weightedFogColour[0] /= multiplierTotal_;
-	weightedFogColour[1] /= multiplierTotal_;
-	weightedFogColour[2] /= multiplierTotal_;
-	weightedFogColour[3] /= multiplierTotal_;
-	this->colour( Colour::getUint32( weightedFogColour ) );
-	v4Colour_ = Colour::getVector4( this->colour() );
-	this->multiplier( maxMultiplier );
-	this->nearMultiplier( nearM );
+    weightedFogColour[0] /= multiplierTotal_;
+    weightedFogColour[1] /= multiplierTotal_;
+    weightedFogColour[2] /= multiplierTotal_;
+    weightedFogColour[3] /= multiplierTotal_;
+    this->colour(Colour::getUint32(weightedFogColour));
+    v4Colour_ = Colour::getVector4(this->colour());
+    this->multiplier(maxMultiplier);
+    this->nearMultiplier(nearM);
 
-	//calculate the texture factor for non-fogged distant objects
-	//farObjectTFactor_ = blend from WHITE to FOG COLOUR as multiplier
-	//goes from 1.f to 2.f
-	if ( this->multiplier_ <= 1.f )
-	{
-		farObjectTFactor_ = 0xffffffff;
-		additiveFarObjectTFactor_ = 0xffffffff;
-	}
-	else if ( this->multiplier_ > 2.f )
-	{
-		farObjectTFactor_ = this->colour();
-		additiveFarObjectTFactor_ = 0x10101010;
-	}
-	else
-	{
-		float t = 1.f - ( this->multiplier() - 1.f );
-		weightedFogColour[0] = ( 255.f * t ) + ( ( 1.f - t ) * weightedFogColour[0] );
-		weightedFogColour[1] = ( 255.f * t ) + ( ( 1.f - t ) * weightedFogColour[1] );
-		weightedFogColour[2] = ( 255.f * t ) + ( ( 1.f - t ) * weightedFogColour[2] );
-		weightedFogColour[3] = ( 255.f * t ) + ( ( 1.f - t ) * weightedFogColour[3] );
+    // calculate the texture factor for non-fogged distant objects
+    // farObjectTFactor_ = blend from WHITE to FOG COLOUR as multiplier
+    // goes from 1.f to 2.f
+    if (this->multiplier_ <= 1.f) {
+        farObjectTFactor_         = 0xffffffff;
+        additiveFarObjectTFactor_ = 0xffffffff;
+    } else if (this->multiplier_ > 2.f) {
+        farObjectTFactor_         = this->colour();
+        additiveFarObjectTFactor_ = 0x10101010;
+    } else {
+        float t              = 1.f - (this->multiplier() - 1.f);
+        weightedFogColour[0] = (255.f * t) + ((1.f - t) * weightedFogColour[0]);
+        weightedFogColour[1] = (255.f * t) + ((1.f - t) * weightedFogColour[1]);
+        weightedFogColour[2] = (255.f * t) + ((1.f - t) * weightedFogColour[2]);
+        weightedFogColour[3] = (255.f * t) + ((1.f - t) * weightedFogColour[3]);
 
-		farObjectTFactor_ = Colour::getUint32( weightedFogColour );
+        farObjectTFactor_ = Colour::getUint32(weightedFogColour);
 
-		t *= t;
-		t *= 255.f;
-		if ( t < 16.f )
-			t = 16.f;
-		additiveFarObjectTFactor_ = Colour::getUint32( Vector4( t, t, t, t ) );
-	}
+        t *= t;
+        t *= 255.f;
+        if (t < 16.f)
+            t = 16.f;
+        additiveFarObjectTFactor_ = Colour::getUint32(Vector4(t, t, t, t));
+    }
 
-	//Now apply the fog if we need to.
-	updateFogParams();
+    // Now apply the fog if we need to.
+    updateFogParams();
 }
-
 
 /**
  *	Commits the emitter info to the fog controller's list
  */
-void FogController::update( Emitter & emitter )
+void FogController::update(Emitter& emitter)
 {
-	BW_GUARD;
-	Emitters::iterator it = emitters_.begin();
-	Emitters::iterator end = emitters_.end();
+    BW_GUARD;
+    Emitters::iterator it  = emitters_.begin();
+    Emitters::iterator end = emitters_.end();
 
-	while( it != end )
-	{
-		Emitter & e = *it++;
+    while (it != end) {
+        Emitter& e = *it++;
 
-		if ( e.id_ == emitter.id_ )
-		{
-			e = emitter;
-			break;
-		}
-	}
+        if (e.id_ == emitter.id_) {
+            e = emitter;
+            break;
+        }
+    }
 }
-
 
 /**
  *	This method commits the fog settings.
  */
 void FogController::updateFogParams()
 {
-	BW_GUARD;
-	//set the fog onto the direct 3D device
-	float farFog = Moo::rc().camera().farPlane() / multiplier_;
-	float nearFog = farFog * nearMultiplier_;
+    BW_GUARD;
+    // set the fog onto the direct 3D device
+    float farFog  = Moo::rc().camera().farPlane() / multiplier_;
+    float nearFog = farFog * nearMultiplier_;
 
-	if (!enabled_)
-	{
-		nearFog = Moo::rc().camera().farPlane() * 100.f;
-		farFog = Moo::rc().camera().farPlane() * 1000.f;
-	}
+    if (!enabled_) {
+        nearFog = Moo::rc().camera().farPlane() * 100.f;
+        farFog  = Moo::rc().camera().farPlane() * 1000.f;
+    }
 
-
-	// make sure the render context has the correct settings
-	// this sets it on the device as well
-	Moo::FogParams params = Moo::FogHelper::pInstance()->fogParams();
-	params.m_color =  colour_; 
-	params.m_enabled = enabled_; 
-	params.m_start =  nearFog;
-	params.m_end =  farFog;
-	Moo::FogHelper::pInstance()->fogParams(params);
+    // make sure the render context has the correct settings
+    // this sets it on the device as well
+    Moo::FogParams params = Moo::FogHelper::pInstance()->fogParams();
+    params.m_color        = colour_;
+    params.m_enabled      = enabled_;
+    params.m_start        = nearFog;
+    params.m_end          = farFog;
+    Moo::FogHelper::pInstance()->fogParams(params);
 }
-
 
 // ----------------------------------------------------------------------------
 // Section: Python stuff
@@ -278,37 +257,47 @@ void FogController::updateFogParams()
  *			   radius ( in metres )
  *			   colour ( argb in packed 32 bit fmt )
  */
-static PyObject * py_addFogEmitter( PyObject * args )
+static PyObject* py_addFogEmitter(PyObject* args)
 {
-	BW_GUARD;
-	float density;
-	float inner;
-	float outer;
-	float x,y,z;
-	unsigned int colour;
-	int localised;
+    BW_GUARD;
+    float        density;
+    float        inner;
+    float        outer;
+    float        x, y, z;
+    unsigned int colour;
+    int          localised;
 
-	if (!PyArg_ParseTuple( args, "(fff)fffii", &x, &y, &z, &density, &inner, &outer, &colour, &localised ))
-	{
-		PyErr_SetString( PyExc_TypeError, "BigWorld.addFogEmitter: "
-			"Argument parsing error. "
-			"Expected (x, y, z), density, inner, outer, colour, localised" );
-		return NULL;
-	}
+    if (!PyArg_ParseTuple(args,
+                          "(fff)fffii",
+                          &x,
+                          &y,
+                          &z,
+                          &density,
+                          &inner,
+                          &outer,
+                          &colour,
+                          &localised)) {
+        PyErr_SetString(
+          PyExc_TypeError,
+          "BigWorld.addFogEmitter: "
+          "Argument parsing error. "
+          "Expected (x, y, z), density, inner, outer, colour, localised");
+        return NULL;
+    }
 
-	FogController::Emitter emitter;
-	emitter.colour_ = colour;
-	emitter.maxMultiplier_ = density;
-	emitter.position_ = Vector3( x, y, z );
-	emitter.innerRadius( inner );
-	emitter.outerRadius( outer );
-	emitter.localised_ = !!(localised);
+    FogController::Emitter emitter;
+    emitter.colour_        = colour;
+    emitter.maxMultiplier_ = density;
+    emitter.position_      = Vector3(x, y, z);
+    emitter.innerRadius(inner);
+    emitter.outerRadius(outer);
+    emitter.localised_ = !!(localised);
 
-	int fogEmitterID = FogController::instance().addEmitter( emitter );
+    int fogEmitterID = FogController::instance().addEmitter(emitter);
 
-	return PyInt_FromLong( (long)fogEmitterID );
+    return PyInt_FromLong((long)fogEmitterID);
 }
-PY_MODULE_FUNCTION( addFogEmitter, BigWorld )
+PY_MODULE_FUNCTION(addFogEmitter, BigWorld)
 
 /*~ function BigWorld.delFogEmitter
  *	@components{ client, tools }
@@ -324,23 +313,23 @@ PY_MODULE_FUNCTION( addFogEmitter, BigWorld )
  *
  *	args are : the fog emitter
  */
-static PyObject * py_delFogEmitter( PyObject * args )
+static PyObject* py_delFogEmitter(PyObject* args)
 {
-	BW_GUARD;
-	int fogEmitterID;
+    BW_GUARD;
+    int fogEmitterID;
 
-	if (!PyArg_ParseTuple( args, "i", &fogEmitterID ))
-	{
-		PyErr_SetString( PyExc_TypeError, "BigWorld.delFogEmitter: "
-			"Argument parsing error." );
-		return NULL;
-	}
+    if (!PyArg_ParseTuple(args, "i", &fogEmitterID)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "BigWorld.delFogEmitter: "
+                        "Argument parsing error.");
+        return NULL;
+    }
 
-	FogController::instance().delEmitter( fogEmitterID );
+    FogController::instance().delEmitter(fogEmitterID);
 
-	Py_RETURN_NONE;
+    Py_RETURN_NONE;
 }
-PY_MODULE_FUNCTION( delFogEmitter, BigWorld )
+PY_MODULE_FUNCTION(delFogEmitter, BigWorld)
 
 BW_END_NAMESPACE
 

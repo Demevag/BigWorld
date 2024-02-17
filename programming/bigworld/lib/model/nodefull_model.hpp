@@ -1,4 +1,4 @@
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 #pragma once
 #endif
 
@@ -9,85 +9,85 @@
 
 #include "model_animation.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class NodefullModelAnimation;
-
 
 /**
  *	Class for models whose bulk is a visual with nodes
  */
 class NodefullModel : public Model
 {
-	//friend class ModelAnimation;
-	friend class DefaultAnimation;
-	friend class NodefullModelAnimation;
-public:
-	NodefullModel( const BW::StringRef & resourceID, DataSectionPtr pFile );
-	~NodefullModel();
+    // friend class ModelAnimation;
+    friend class DefaultAnimation;
+    friend class NodefullModelAnimation;
 
-	virtual void load();
+  public:
+    NodefullModel(const BW::StringRef& resourceID, DataSectionPtr pFile);
+    ~NodefullModel();
 
-	virtual bool valid() const;
-	virtual bool nodeless() const { return false; }
+    virtual void load();
 
-	virtual void dress( const Matrix& world, 
-		TransformState* pTransformState = NULL );
-	virtual void dressFromState( const TransformState& transformState );
-		
-	virtual void draw( Moo::DrawContext& drawContext, bool checkBB );
+    virtual bool valid() const;
+    virtual bool nodeless() const { return false; }
 
-	virtual const BSPTree * decompose() const;
+    virtual void dress(const Matrix&   world,
+                       TransformState* pTransformState = NULL);
+    virtual void dressFromState(const TransformState& transformState);
 
-	virtual const BoundingBox & boundingBox() const;
-	virtual const BoundingBox & visibilityBox() const;
-	virtual bool hasNode( Moo::Node * pNode,
-		MooNodeChain * pParentChain ) const;
+    virtual void draw(Moo::DrawContext& drawContext, bool checkBB);
 
-	virtual bool addNode( Moo::Node * pNode );
-	virtual void addNodeToLods( const BW::string & nodeName );
+    virtual const BSPTree* decompose() const;
 
-	virtual NodeTreeIterator nodeTreeBegin() const;
-	virtual NodeTreeIterator nodeTreeEnd() const;
+    virtual const BoundingBox& boundingBox() const;
+    virtual const BoundingBox& visibilityBox() const;
+    virtual bool hasNode(Moo::Node* pNode, MooNodeChain* pParentChain) const;
 
-	virtual int gatherMaterials( const BW::string & materialIdentifier, BW::vector< Moo::Visual::PrimitiveGroup * > & primGroups, Moo::ConstComplexEffectMaterialPtr * ppOriginal = NULL )
-	{
-		return bulk_->gatherMaterials( materialIdentifier, primGroups, ppOriginal );
-	}
+    virtual bool addNode(Moo::Node* pNode);
+    virtual void addNodeToLods(const BW::string& nodeName);
 
-	Moo::VisualPtr getVisual() { return bulk_; }
+    virtual NodeTreeIterator nodeTreeBegin() const;
+    virtual NodeTreeIterator nodeTreeEnd() const;
 
-	virtual void onReloaderReloaded( Reloader* pReloader );
+    virtual int gatherMaterials(
+      const BW::string&                         materialIdentifier,
+      BW::vector<Moo::Visual::PrimitiveGroup*>& primGroups,
+      Moo::ConstComplexEffectMaterialPtr*       ppOriginal = NULL)
+    {
+        return bulk_->gatherMaterials(
+          materialIdentifier, primGroups, ppOriginal);
+    }
 
-	TransformState* newTransformStateCache() const;
+    Moo::VisualPtr getVisual() { return bulk_; }
 
-#if ENABLE_RELOAD_MODEL
-	virtual bool reload( bool doValidateCheck );
-#endif // ENABLE_RELOAD_MODEL
+    virtual void onReloaderReloaded(Reloader* pReloader);
 
-private:
+    TransformState* newTransformStateCache() const;
 
 #if ENABLE_RELOAD_MODEL
-	static bool validateFile( const BW::string& resourceID );
+    virtual bool reload(bool doValidateCheck);
 #endif // ENABLE_RELOAD_MODEL
 
-	Matrix						world_;	// set when model is dressed (traversed)
-	BoundingBox					visibilityBox_;
-	SmartPointer<Moo::Visual>	bulk_;
+  private:
+#if ENABLE_RELOAD_MODEL
+    static bool validateFile(const BW::string& resourceID);
+#endif // ENABLE_RELOAD_MODEL
 
-	NodeTree					nodeTree_;
+    Matrix                    world_; // set when model is dressed (traversed)
+    BoundingBox               visibilityBox_;
+    SmartPointer<Moo::Visual> bulk_;
 
-	Moo::StreamedDataCache	* pAnimCache_;
+    NodeTree nodeTree_;
 
-	virtual int initMatter( Matter & m );
-	virtual bool initTint( Tint & t, DataSectionPtr matSect );
-	void release();
-	void pullInfoFromVisual();
-	void rebuildNodeHierarchy();
+    Moo::StreamedDataCache* pAnimCache_;
+
+    virtual int  initMatter(Matter& m);
+    virtual bool initTint(Tint& t, DataSectionPtr matSect);
+    void         release();
+    void         pullInfoFromVisual();
+    void         rebuildNodeHierarchy();
 };
 
 BW_END_NAMESPACE
-
 
 #endif // NODEFULL_MODEL_HPP

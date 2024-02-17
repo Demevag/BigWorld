@@ -10,101 +10,85 @@
 #include "cstdmf/binary_stream.hpp"
 #include "math/boundbox.hpp"
 
-
-
 BW_BEGIN_NAMESPACE
 
 /**
  *	Constructor.
  */
-Cells::Cells():
-	container_()
+Cells::Cells()
+  : container_()
 {
 }
-
 
 /**
  *	This method streams on various boundaries to inform the CellAppMgr for the
  *	purposes of load balancing.
  *
  */
-void Cells::writeBounds( BinaryOStream & stream ) const
+void Cells::writeBounds(BinaryOStream& stream) const
 {
-	Container::const_iterator iter = container_.begin();
+    Container::const_iterator iter = container_.begin();
 
-	while (iter != container_.end())
-	{
-		iter->second->writeBounds( stream );
+    while (iter != container_.end()) {
+        iter->second->writeBounds(stream);
 
-		++iter;
-	}
-
+        ++iter;
+    }
 }
 
-void Cells::destroy( Cell * pCell )
+void Cells::destroy(Cell* pCell)
 {
-	Container::iterator iter = container_.find( pCell->spaceID() );
+    Container::iterator iter = container_.find(pCell->spaceID());
 
-	MF_ASSERT( iter != container_.end() );
+    MF_ASSERT(iter != container_.end());
 
-	if (iter != container_.end())
-	{
-		container_.erase( iter );
-		delete pCell;
-	}
-	else
-	{
-		ERROR_MSG( "Cells::deleteCell: Unable to kill cell %u\n",
-									pCell->spaceID() );
-	}
-
+    if (iter != container_.end()) {
+        container_.erase(iter);
+        delete pCell;
+    } else {
+        ERROR_MSG("Cells::deleteCell: Unable to kill cell %u\n",
+                  pCell->spaceID());
+    }
 }
-
 
 void Cells::destroyAll()
 {
-	Container::iterator iter = container_.begin();
+    Container::iterator iter = container_.begin();
 
-	while (iter != container_.end())
-	{
-		delete iter->second;
-		++iter;
-	}
-	container_.clear();
+    while (iter != container_.end()) {
+        delete iter->second;
+        ++iter;
+    }
+    container_.clear();
 }
-
 
 /**
  *	This method returns the number of real entities across all cells.
  */
 int Cells::numRealEntities() const
 {
-	int numReals = 0;
-	Container::const_iterator iter = container_.begin();
+    int                       numReals = 0;
+    Container::const_iterator iter     = container_.begin();
 
-	while (iter != container_.end())
-	{
-		numReals += iter->second->numRealEntities();
+    while (iter != container_.end()) {
+        numReals += iter->second->numRealEntities();
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	return numReals;
+    return numReals;
 }
 
-
-void Cells::handleCellAppDeath( const Mercury::Address & addr )
+void Cells::handleCellAppDeath(const Mercury::Address& addr)
 {
-	Container::iterator iter = container_.begin();
+    Container::iterator iter = container_.begin();
 
-	while (iter != container_.end())
-	{
-		iter->second->handleCellAppDeath( addr );
+    while (iter != container_.end()) {
+        iter->second->handleCellAppDeath(addr);
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 /**
  *	This method checks whether any cells should offload any entities or create
@@ -114,107 +98,95 @@ void Cells::handleCellAppDeath( const Mercury::Address & addr )
  */
 void Cells::checkOffloads()
 {
-	Container toDelete;
+    Container toDelete;
 
-	Container::iterator iCell = container_.begin();
+    Container::iterator iCell = container_.begin();
 
-	while (iCell != container_.end())
-	{
-		Cell * pCell = iCell->second;
+    while (iCell != container_.end()) {
+        Cell* pCell = iCell->second;
 
-		bool isReadyForDeletion = pCell->checkOffloadsAndGhosts();
+        bool isReadyForDeletion = pCell->checkOffloadsAndGhosts();
 
-		if (isReadyForDeletion)
-		{
-			toDelete[ iCell->first ] = pCell;
-		}
+        if (isReadyForDeletion) {
+            toDelete[iCell->first] = pCell;
+        }
 
-		++iCell;
-	}
+        ++iCell;
+    }
 
-	iCell = toDelete.begin();
+    iCell = toDelete.begin();
 
-	while (iCell != toDelete.end())
-	{
-		this->destroy( iCell->second );
+    while (iCell != toDelete.end()) {
+        this->destroy(iCell->second);
 
-		++iCell;
-	}
+        ++iCell;
+    }
 }
 
-
-void Cells::backup( int index, int period )
+void Cells::backup(int index, int period)
 {
-	Container::iterator iter = container_.begin();
+    Container::iterator iter = container_.begin();
 
-	while (iter != container_.end())
-	{
-		iter->second->backup( index, period );
+    while (iter != container_.end()) {
+        iter->second->backup(index, period);
 
-		++iter;
-	}
+        ++iter;
+    }
 }
 
-
-void Cells::add( Cell * pCell )
+void Cells::add(Cell* pCell)
 {
-	Container::const_iterator iter = container_.find( pCell->spaceID() );
+    Container::const_iterator iter = container_.find(pCell->spaceID());
 
-	MF_ASSERT( iter == container_.end() );
+    MF_ASSERT(iter == container_.end());
 
-	container_[ pCell->spaceID() ] = pCell;
+    container_[pCell->spaceID()] = pCell;
 }
-
 
 void Cells::debugDump()
 {
 
-	Container::iterator iter = container_.begin();
+    Container::iterator iter = container_.begin();
 
-	while (iter != container_.end())
-	{
-		iter->second->debugDump();
+    while (iter != container_.end()) {
+        iter->second->debugDump();
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 void Cells::tickRecordings()
 {
-	Container::iterator iCell = container_.begin();
+    Container::iterator iCell = container_.begin();
 
-	while (iCell != container_.end())
-	{
-		iCell->second->tickRecording();
-		++iCell;
-	}
+    while (iCell != container_.end()) {
+        iCell->second->tickRecording();
+        ++iCell;
+    }
 }
-
 
 /**
  * This method ticks profilers on all the cells
  */
-void Cells::tickProfilers( uint64 tickDtInStamps, float smoothingFactor )
+void Cells::tickProfilers(uint64 tickDtInStamps, float smoothingFactor)
 {
-	Container::iterator iCell = container_.begin();
+    Container::iterator iCell = container_.begin();
 
-	while (iCell != container_.end())
-	{
-		iCell->second->tickProfilers( tickDtInStamps, smoothingFactor );
+    while (iCell != container_.end()) {
+        iCell->second->tickProfilers(tickDtInStamps, smoothingFactor);
 
-		++iCell;
-	}
+        ++iCell;
+    }
 }
 
 #if ENABLE_WATCHERS
 
 WatcherPtr Cells::pWatcher()
 {
-	WatcherPtr pWatcher = new MapWatcher< Container >();
-	pWatcher->addChild( "*", new BaseDereferenceWatcher( Cell::pWatcher() ) );
+    WatcherPtr pWatcher = new MapWatcher<Container>();
+    pWatcher->addChild("*", new BaseDereferenceWatcher(Cell::pWatcher()));
 
-	return pWatcher;
+    return pWatcher;
 }
 
 #endif // ENABLE_WATCHERS
@@ -222,4 +194,3 @@ WatcherPtr Cells::pWatcher()
 BW_END_NAMESPACE
 
 // cells.cpp
-

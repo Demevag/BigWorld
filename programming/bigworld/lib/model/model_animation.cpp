@@ -5,29 +5,27 @@
 #include "math/matrix.hpp"
 #include "moo/animation.hpp"
 
-
-DECLARE_DEBUG_COMPONENT2( "Model", 0 )
-
+DECLARE_DEBUG_COMPONENT2("Model", 0)
 
 BW_BEGIN_NAMESPACE
 
 /**
  *	Constructor for Model's Animation
  */
-ModelAnimation::ModelAnimation() : duration_( 0.f ), looped_( false )
+ModelAnimation::ModelAnimation()
+  : duration_(0.f)
+  , looped_(false)
 {
-	BW_GUARD;
+    BW_GUARD;
 }
-
 
 /**
  *	Destructor for Model's Animation
  */
 ModelAnimation::~ModelAnimation()
 {
-	BW_GUARD;
+    BW_GUARD;
 }
-
 
 /**
  *	This function returns true if the Model::Animation is in a valid state.
@@ -40,51 +38,45 @@ ModelAnimation::~ModelAnimation()
  */
 bool ModelAnimation::valid() const
 {
-	return true;
+    return true;
 }
-
 
 /**
  *	@todo
  */
-void ModelAnimation::tick( float dtime, float otime, float ntime )
+void ModelAnimation::tick(float dtime, float otime, float ntime)
 {
-	BW_GUARD;
+    BW_GUARD;
 }
-
 
 /**
  *	@todo
  */
-void ModelAnimation::flagFactor( int flags, Matrix & mOut ) const
+void ModelAnimation::flagFactor(int flags, Matrix& mOut) const
 {
-	mOut.setIdentity();
+    mOut.setIdentity();
 }
-const Matrix & ModelAnimation::flagFactorBit( int bit ) const
+const Matrix& ModelAnimation::flagFactorBit(int bit) const
 {
-	return Matrix::identity;
+    return Matrix::identity;
 }
-
 
 /**
  *	@todo
  */
 uint32 ModelAnimation::sizeInBytes() const
 {
-	return sizeof(*this);
+    return sizeof(*this);
 }
-
 
 /**
  *	@todo
  */
 Moo::AnimationPtr ModelAnimation::getMooAnim()
 {
-	return NULL;
+    return NULL;
 }
 
 BW_END_NAMESPACE
 
-
 // model_animation.cpp
-

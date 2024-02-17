@@ -12,12 +12,10 @@
 
 #include <memory>
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
-	class EventDispatcher;
+namespace Mercury {
+    class EventDispatcher;
 }
 class LoggerMessageForwarder;
 class MySqlLockedConnection;
@@ -26,59 +24,54 @@ class WatcherNub;
 
 class DatabaseToolApp
 {
-public:
-	DatabaseToolApp();
+  public:
+    DatabaseToolApp();
 
-	virtual ~DatabaseToolApp();
+    virtual ~DatabaseToolApp();
 
-	virtual void onSignalled( int sigNum )
-	{}
+    virtual void onSignalled(int sigNum) {}
 
-protected:
-	Mercury::EventDispatcher & dispatcher()
-		{ return eventDispatcher_; }
+  protected:
+    Mercury::EventDispatcher& dispatcher() { return eventDispatcher_; }
 
-	MySql & connection()
-		{ return *(pLockedConn_->connection()); }
+    MySql& connection() { return *(pLockedConn_->connection()); }
 
-	const EntityDefs & entityDefs() const
-		{ return entityDefs_; }
+    const EntityDefs& entityDefs() const { return entityDefs_; }
 
-	bool init( const char * appName, const char * scriptName,
-			bool isVerbose, bool shouldLock,
-			const DBConfig::ConnectionInfo & connectionInfo = 
-				DBConfig::connectionInfo() );
+    bool init(const char*                     appName,
+              const char*                     scriptName,
+              bool                            isVerbose,
+              bool                            shouldLock,
+              const DBConfig::ConnectionInfo& connectionInfo =
+                DBConfig::connectionInfo());
 
-	bool connect( const DBConfig::ConnectionInfo & connectionInfo, 
-		bool shouldLock );
-	bool initLogger( const char * appName, const BW::string & loggerID, 
-			bool isVerbose );
-	bool initScript( const char * componentName );
-	bool initEntityDefs();
+    bool connect(const DBConfig::ConnectionInfo& connectionInfo,
+                 bool                            shouldLock);
+    bool initLogger(const char*       appName,
+                    const BW::string& loggerID,
+                    bool              isVerbose);
+    bool initScript(const char* componentName);
+    bool initEntityDefs();
 
-	void enableSignalHandler( int sigNum, bool enable = true );
+    void enableSignalHandler(int sigNum, bool enable = true);
 
-	WatcherNub & watcherNub()
-		{ return *pWatcherNub_; }
+    WatcherNub& watcherNub() { return *pWatcherNub_; }
 
-protected:
-	virtual MySqlLockedConnection * createMysqlConnection (
-		const DBConfig::ConnectionInfo & connectionInfo ) const;
-	
-private:
-	// Member data
-	Mercury::EventDispatcher eventDispatcher_;
+  protected:
+    virtual MySqlLockedConnection* createMysqlConnection(
+      const DBConfig::ConnectionInfo& connectionInfo) const;
 
-	std::auto_ptr< SignalHandler > pSignalHandler_;
+  private:
+    // Member data
+    Mercury::EventDispatcher eventDispatcher_;
 
-	std::auto_ptr< WatcherNub >
-							pWatcherNub_;
-	std::auto_ptr< LoggerMessageForwarder > 
-							pLoggerMessageForwarder_;
+    std::auto_ptr<SignalHandler> pSignalHandler_;
 
-	std::auto_ptr< MySqlLockedConnection >
-							pLockedConn_;
-	EntityDefs 				entityDefs_;
+    std::auto_ptr<WatcherNub>             pWatcherNub_;
+    std::auto_ptr<LoggerMessageForwarder> pLoggerMessageForwarder_;
+
+    std::auto_ptr<MySqlLockedConnection> pLockedConn_;
+    EntityDefs                           entityDefs_;
 };
 
 BW_END_NAMESPACE

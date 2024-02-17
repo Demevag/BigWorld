@@ -6,7 +6,6 @@
 #include "cstdmf/bw_vector.hpp"
 #include <utility>
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -15,31 +14,31 @@ BW_BEGIN_NAMESPACE
  */
 class EntityAutoLoader : public IEntityAutoLoader
 {
-public:
-	EntityAutoLoader();
+  public:
+    EntityAutoLoader();
 
-	virtual void reserve( int numEntities );
+    virtual void reserve(int numEntities);
 
-	virtual void start();
+    virtual void start();
 
-	virtual void abort();
+    virtual void abort();
 
-	virtual void addEntity( EntityTypeID entityTypeID, DatabaseID dbID );
+    virtual void addEntity(EntityTypeID entityTypeID, DatabaseID dbID);
 
-	virtual void onAutoLoadEntityComplete( bool isOK );
+    virtual void onAutoLoadEntityComplete(bool isOK);
 
-private:
-	void checkFinished();
-	void sendNext();
+  private:
+    void checkFinished();
+    void sendNext();
 
-	bool allSent() const	{ return numSent_ >= int(entities_.size()); }
+    bool allSent() const { return numSent_ >= int(entities_.size()); }
 
-	typedef BW::vector< std::pair< EntityTypeID, DatabaseID > > Entities;
-	Entities 	entities_;
-	int 		numOutstanding_;
-	int			maxOutstanding_;
-	int 		numSent_;
-	bool 		hasErrors_;
+    typedef BW::vector<std::pair<EntityTypeID, DatabaseID>> Entities;
+    Entities                                                entities_;
+    int                                                     numOutstanding_;
+    int                                                     maxOutstanding_;
+    int                                                     numSent_;
+    bool                                                    hasErrors_;
 };
 
 BW_END_NAMESPACE

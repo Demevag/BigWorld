@@ -5,17 +5,16 @@
 #include "bw_namespace.hpp"
 #include "bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class PlatformInfo
 {
-public:
-	CSTDMF_DLL static const BW::string & buildStr();
-	CSTDMF_DLL static const BW::string & str();
+  public:
+    CSTDMF_DLL static const BW::string& buildStr();
+    CSTDMF_DLL static const BW::string& str();
 
-private:
-	static bool parseRedHatRelease( BW::string & shortPlatformName );
+  private:
+    static bool parseRedHatRelease(BW::string& shortPlatformName);
 };
 
 BW_END_NAMESPACE

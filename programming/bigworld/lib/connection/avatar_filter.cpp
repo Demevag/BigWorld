@@ -11,89 +11,84 @@ int AvatarFilter_Token = 0;
 /**
  *	Constructor.
  */
-AvatarFilter::AvatarFilter( FilterEnvironment & filterEnvironment ) :
-	MovementFilter( filterEnvironment ),
-	helper_( filterEnvironment )
-{}
-
+AvatarFilter::AvatarFilter(FilterEnvironment& filterEnvironment)
+  : MovementFilter(filterEnvironment)
+  , helper_(filterEnvironment)
+{
+}
 
 /**
  *	Destructor.
  */
-AvatarFilter::~AvatarFilter()
-{
-
-}
-
+AvatarFilter::~AvatarFilter() {}
 
 /**
  *	Override from MovementFilter.
  */
-void AvatarFilter::reset( double time )
+void AvatarFilter::reset(double time)
 {
-	helper_.reset( time );
+    helper_.reset(time);
 }
-
 
 /**
  *	Override from MovementFilter.
  */
-void AvatarFilter::input( double time, SpaceID spaceID, EntityID vehicleID, 
-		const Position3D & pos, const Vector3 & posError,
-		const Direction3D & dir )
+void AvatarFilter::input(double             time,
+                         SpaceID            spaceID,
+                         EntityID           vehicleID,
+                         const Position3D&  pos,
+                         const Vector3&     posError,
+                         const Direction3D& dir)
 {
-	helper_.input( time, spaceID, vehicleID, pos, posError, dir );
+    helper_.input(time, spaceID, vehicleID, pos, posError, dir);
 }
-
 
 /**
  *	Override from MovementFilter.
  */
-void AvatarFilter::output( double time, MovementFilterTarget & target )
+void AvatarFilter::output(double time, MovementFilterTarget& target)
 {
-	SpaceID spaceID;
-	EntityID vehicleID;
-	Position3D position;
-	Vector3 velocity;
-	Direction3D direction;
+    SpaceID     spaceID;
+    EntityID    vehicleID;
+    Position3D  position;
+    Vector3     velocity;
+    Direction3D direction;
 
-	helper_.output( time, spaceID, vehicleID, position, velocity, 
-		direction );
+    helper_.output(time, spaceID, vehicleID, position, velocity, direction);
 
-	target.setSpaceVehiclePositionAndDirection( spaceID, vehicleID, position,
-		direction );
+    target.setSpaceVehiclePositionAndDirection(
+      spaceID, vehicleID, position, direction);
 }
-
 
 /**
  *	Override from MovementFilter.
  */
-bool AvatarFilter::getLastInput( double & time, SpaceID & spaceID, 
-		EntityID & vehicleID, Position3D & pos, Vector3 & posError, 
-		Direction3D & dir ) const
+bool AvatarFilter::getLastInput(double&      time,
+                                SpaceID&     spaceID,
+                                EntityID&    vehicleID,
+                                Position3D&  pos,
+                                Vector3&     posError,
+                                Direction3D& dir) const
 {
-	return helper_.getLastInput( time, spaceID, vehicleID, pos, posError, 
-		dir );
+    return helper_.getLastInput(time, spaceID, vehicleID, pos, posError, dir);
 }
-
 
 /**
  *	This method will grab the history from another AvatarFilter if one is
  *	so provided
  */
-bool AvatarFilter::tryCopyState( const MovementFilter & rOtherFilter )
+bool AvatarFilter::tryCopyState(const MovementFilter& rOtherFilter)
 {
-	const AvatarFilter * pOtherAvatarFilter =
-		dynamic_cast< const AvatarFilter * >( &rOtherFilter );
+    const AvatarFilter* pOtherAvatarFilter =
+      dynamic_cast<const AvatarFilter*>(&rOtherFilter);
 
-	if (pOtherAvatarFilter == NULL)
-	{
-		return false;
-	}
+    if (pOtherAvatarFilter == NULL) {
+        return false;
+    }
 
-	helper_ = pOtherAvatarFilter->helper_;
+    helper_ = pOtherAvatarFilter->helper_;
 
-	return true;
+    return true;
 }
 
 BW_END_NAMESPACE

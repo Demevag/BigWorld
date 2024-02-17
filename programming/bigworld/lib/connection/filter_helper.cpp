@@ -9,42 +9,41 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor.
  */
-FilterHelper::FilterHelper( FilterEnvironment & environment ):
-		pEnvironment_( &environment )
-{}
-
-
-bool FilterHelper::filterDropPoint( SpaceID spaceID,
-		const Position3D & fall, Position3D & land, Vector3 * pGroundNormal )
+FilterHelper::FilterHelper(FilterEnvironment& environment)
+  : pEnvironment_(&environment)
 {
-	return pEnvironment_->filterDropPoint( spaceID, fall, land,
-		pGroundNormal );
 }
 
-
-bool FilterHelper::resolveOnGroundPosition( Position3D & position,
-		bool & isOnGround )
+bool FilterHelper::filterDropPoint(SpaceID           spaceID,
+                                   const Position3D& fall,
+                                   Position3D&       land,
+                                   Vector3*          pGroundNormal)
 {
-	return pEnvironment_->resolveOnGroundPosition( position, isOnGround );
+    return pEnvironment_->filterDropPoint(spaceID, fall, land, pGroundNormal);
 }
 
-
-void FilterHelper::transformIntoCommon( SpaceID spaceID, EntityID vehicleID,
-		Position3D & position, Direction3D & direction )
+bool FilterHelper::resolveOnGroundPosition(Position3D& position,
+                                           bool&       isOnGround)
 {
-	pEnvironment_->transformIntoCommon( spaceID, vehicleID, position,
-		direction );
+    return pEnvironment_->resolveOnGroundPosition(position, isOnGround);
 }
 
-
-void FilterHelper::transformFromCommon( SpaceID spaceID, EntityID vehicleID,
-		Position3D & position, Direction3D & direction )
+void FilterHelper::transformIntoCommon(SpaceID      spaceID,
+                                       EntityID     vehicleID,
+                                       Position3D&  position,
+                                       Direction3D& direction)
 {
-	pEnvironment_->transformFromCommon( spaceID, vehicleID, position,
-		direction );
+    pEnvironment_->transformIntoCommon(spaceID, vehicleID, position, direction);
+}
+
+void FilterHelper::transformFromCommon(SpaceID      spaceID,
+                                       EntityID     vehicleID,
+                                       Position3D&  position,
+                                       Direction3D& direction)
+{
+    pEnvironment_->transformFromCommon(spaceID, vehicleID, position, direction);
 }
 
 BW_END_NAMESPACE
 
 // filter_helper.cpp
-

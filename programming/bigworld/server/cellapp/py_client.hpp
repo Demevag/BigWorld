@@ -9,25 +9,24 @@ BW_BEGIN_NAMESPACE
 
 class Entity;
 
-
 /*~ class NoModule.PyClient
  *  @components{ cell }
- *  A PyClient is the device through which a real cell Entity is able to call 
- *  methods on its client instances. A new PyClient object is created by 
+ *  A PyClient is the device through which a real cell Entity is able to call
+ *  methods on its client instances. A new PyClient object is created by
  *  BigWorld each time an entity's "client", "otherClients" or "allClients"
  *  attributes are accessed, and each time an entity's "clientEntity" function
  *  is called. Objects of this type cannot otherwise be created via script.
  *
  *  A PyClient can be used to send method calls to either the client which owns
- *  the entity, all clients except the one which owns the entity, or all 
+ *  the entity, all clients except the one which owns the entity, or all
  *  clients. It can also be used to call methods on a different entity which is
- *  owned by the same client. These options are set when the PyClient is 
- *  created, and cannot be altered afterwards via python. The PyClient objects 
- *  provided by the entity members client, otherClients, allClients and 
+ *  owned by the same client. These options are set when the PyClient is
+ *  created, and cannot be altered afterwards via python. The PyClient objects
+ *  provided by the entity members client, otherClients, allClients and
  *  clientEntity are each set up differently in these respects, as described in
  *  the Entity class documentation.
  *
- *  PyClient objects have no default attributes or methods, however BigWorld 
+ *  PyClient objects have no default attributes or methods, however BigWorld
  *  populates them with ClientCaller objects which represent the methods that
  *  can be called. These are built using information provided in the entity
  *  def files. A ClientCaller object can then be called as if it were the
@@ -41,14 +40,13 @@ class Entity;
  *  @{
  *      &lt;ClientMethods&gt;
  *          &lt;pointAt&gt;
- *              &lt;Arg&gt; OBJECT_ID &lt;/Arg&gt; &lt;!-- entity to point at --&gt;
- *          &lt;/pointAt&gt;
- *      &lt;/ClientMethods&gt;
+ *              &lt;Arg&gt; OBJECT_ID &lt;/Arg&gt; &lt;!-- entity to point at
+ * --&gt; &lt;/pointAt&gt; &lt;/ClientMethods&gt;
  *  @}
  *  then where "myEntity" is an instance of "myEntityClass", the following
  *  python code would be valid.
  *  @{
- *  # This example tells myEntity to point at the entity with ID #100, on a 
+ *  # This example tells myEntity to point at the entity with ID #100, on a
  *  # range of clients.
  *
  *  # the client which owns myEntity
@@ -70,29 +68,33 @@ class Entity;
  */
 class PyClient : public PyObjectPlus
 {
-	Py_Header( PyClient, PyObjectPlus )
+    Py_Header(PyClient, PyObjectPlus)
 
-public:
+      public
+      :
 
-	PyClient( Entity & clientEntity, Entity & destEntity, bool isOwn,
-			bool isForOthers, 
-			RecordingOption recordingOption = RECORDING_OPTION_METHOD_DEFAULT,
-			PyTypeObject * pType = &PyClient::s_type_ );
-	~PyClient();
+      PyClient(
+        Entity&         clientEntity,
+        Entity&         destEntity,
+        bool            isOwn,
+        bool            isForOthers,
+        RecordingOption recordingOption = RECORDING_OPTION_METHOD_DEFAULT,
+        PyTypeObject*   pType           = &PyClient::s_type_);
+    ~PyClient();
 
-	ScriptObject pyGetAttribute( const ScriptString & attrObj );
+    ScriptObject pyGetAttribute(const ScriptString& attrObj);
 
-	PY_KEYWORD_METHOD_DECLARE( pyCall )
+    PY_KEYWORD_METHOD_DECLARE(pyCall)
 
-	PyObject * pyRepr() const;
+    PyObject* pyRepr() const;
 
-private:
-	Entity & clientEntity_;
-	Entity & destEntity_;
-	bool isForOwn_;
-	bool isForOthers_;
+  private:
+    Entity& clientEntity_;
+    Entity& destEntity_;
+    bool    isForOwn_;
+    bool    isForOthers_;
 
-	RecordingOption recordingOption_;
+    RecordingOption recordingOption_;
 };
 
 BW_END_NAMESPACE

@@ -15,7 +15,7 @@
 
 #pragma warning(push)
 // suppress warning C4302: 'type cast' : truncation from 'LPCTSTR' to 'WORD'
-#pragma warning(disable: 4302)
+#pragma warning(disable : 4302)
 
 #include <atlbase.h>
 #include <atlapp.h>

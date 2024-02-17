@@ -12,12 +12,10 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace ResMgrTest
-{
-	bool eraseResource( const BW::string & resourceName );
+namespace ResMgrTest {
+    bool eraseResource(const BW::string& resourceName);
 }
 
 BW_END_NAMESPACE
 
-#endif //RESMGR_TEST_UTILS_HPP
-
+#endif // RESMGR_TEST_UTILS_HPP

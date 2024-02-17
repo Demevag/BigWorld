@@ -2,57 +2,49 @@
 
 #include "cstdmf/time_queue.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class Handler : public TimerHandler
 {
-protected:
-	virtual void handleTimeout( TimerHandle handle, void * pUser )
-	{
-	}
+  protected:
+    virtual void handleTimeout(TimerHandle handle, void* pUser) {}
 
-	virtual void onRelease( TimerHandle handle, void * pUser )
-	{
-		delete this;
-	}
+    virtual void onRelease(TimerHandle handle, void* pUser) { delete this; }
 };
 
-TEST( Purge )
+TEST(Purge)
 {
-	BW::vector< TimerHandle > handles;
+    BW::vector<TimerHandle> handles;
 
-	TimeQueue timeQueue;
+    TimeQueue timeQueue;
 
-	const uint NUM_TIMERS = 50;
+    const uint NUM_TIMERS = 50;
 
-	for (uint i = 0; i < NUM_TIMERS; ++i)
-	{
-		handles.push_back( timeQueue.add( i, 0, new Handler, NULL, "Handler" ) );
-	}
+    for (uint i = 0; i < NUM_TIMERS; ++i) {
+        handles.push_back(timeQueue.add(i, 0, new Handler, NULL, "Handler"));
+    }
 
-	CHECK( timeQueue.size() == NUM_TIMERS );
+    CHECK(timeQueue.size() == NUM_TIMERS);
 
-	// Cancel more than half
-	uint numToCancel = 2 * NUM_TIMERS / 3;
+    // Cancel more than half
+    uint numToCancel = 2 * NUM_TIMERS / 3;
 
-	for (uint i = 0; i < numToCancel; ++i)
-	{
-		handles[i].cancel();
-	}
+    for (uint i = 0; i < numToCancel; ++i) {
+        handles[i].cancel();
+    }
 
-	// If more than half of the timers are cancelled, they should be purged
-	// immediately.
-	CHECK( timeQueue.size() < NUM_TIMERS/2 );
+    // If more than half of the timers are cancelled, they should be purged
+    // immediately.
+    CHECK(timeQueue.size() < NUM_TIMERS / 2);
 }
 
-TEST( BadPurge )
+TEST(BadPurge)
 {
-	// Check the case where purge is called while a once-off timer is being
-	// cancelled.
-	TimeQueue timeQueue;
-	timeQueue.add( 1, 0, new Handler, NULL, "Handler" );
-	timeQueue.process( 2 );
+    // Check the case where purge is called while a once-off timer is being
+    // cancelled.
+    TimeQueue timeQueue;
+    timeQueue.add(1, 0, new Handler, NULL, "Handler");
+    timeQueue.process(2);
 }
 
 BW_END_NAMESPACE

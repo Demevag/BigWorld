@@ -1,9 +1,7 @@
 #ifndef GUI_APP_HPP
 #define GUI_APP_HPP
 
-
 #include "cstdmf/main_loop_task.hpp"
-
 
 BW_BEGIN_NAMESPACE
 
@@ -12,17 +10,17 @@ BW_BEGIN_NAMESPACE
  */
 class GUIApp : public MainLoopTask
 {
-public:
-	GUIApp();
-	~GUIApp();
+  public:
+    GUIApp();
+    ~GUIApp();
 
-	virtual bool init();
-	virtual void fini();
-	virtual void tick( float dGameTime, float dRenderTime );
-	virtual void draw();
+    virtual bool init();
+    virtual void fini();
+    virtual void tick(float dGameTime, float dRenderTime);
+    virtual void draw();
 
-public:
-	static GUIApp instance;
+  public:
+    static GUIApp instance;
 };
 
 BW_END_NAMESPACE

@@ -7,13 +7,11 @@
 #define BW_CONFIG_PREFIX "dbAppMgr/"
 #include "server/server_app_option_macros.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
 // Section: General settings
 // -----------------------------------------------------------------------------
-
 
 // -----------------------------------------------------------------------------
 // Section: Post initialisation
@@ -24,12 +22,11 @@ BW_BEGIN_NAMESPACE
  */
 bool DBAppMgrConfig::postInit()
 {
-	if (!ServerAppConfig::postInit())
-	{
-		return false;
-	}
+    if (!ServerAppConfig::postInit()) {
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 BW_END_NAMESPACE

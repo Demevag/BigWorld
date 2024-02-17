@@ -2,7 +2,6 @@
  *	FilterHolder: a class that manages a series of filters and searchtext
  */
 
-
 #ifndef FILTER_HOLDER_HPP
 #define FILTER_HOLDER_HPP
 
@@ -18,30 +17,30 @@ BW_BEGIN_NAMESPACE
  */
 class FilterHolder
 {
-public:
-	FilterHolder();
+  public:
+    FilterHolder();
 
-	bool hasActiveFilters();
-	bool isFiltering();
-	void addFilter( FilterSpecPtr filter );
-	FilterSpecPtr getFilter( int index );
+    bool          hasActiveFilters();
+    bool          isFiltering();
+    void          addFilter(FilterSpecPtr filter);
+    FilterSpecPtr getFilter(int index);
 
-	void setSearchText( const BW::wstring& searchText );
-	void enableSearchText( bool enable );
+    void setSearchText(const BW::wstring& searchText);
+    void enableSearchText(bool enable);
 
-	bool filter( const BW::wstring& shortText, const BW::wstring& text );
-	void enableAll( bool enable );
-	void enable( const BW::wstring& name, bool enable );
+    bool filter(const BW::wstring& shortText, const BW::wstring& text);
+    void enableAll(bool enable);
+    void enable(const BW::wstring& name, bool enable);
 
-	void activateAll( bool active );
-	FilterSpecPtr findfilter( const BW::wstring& name );
-private:
-	BW::wstring searchText_;
-	bool searchTextEnabled_;
-	BW::vector<FilterSpecPtr> filters_;
-	typedef BW::vector<FilterSpecPtr>::iterator FilterSpecItr;
+    void          activateAll(bool active);
+    FilterSpecPtr findfilter(const BW::wstring& name);
+
+  private:
+    BW::wstring                                 searchText_;
+    bool                                        searchTextEnabled_;
+    BW::vector<FilterSpecPtr>                   filters_;
+    typedef BW::vector<FilterSpecPtr>::iterator FilterSpecItr;
 };
-
 
 BW_END_NAMESPACE
 

@@ -4,7 +4,6 @@
 #include "cstdmf/bw_namespace.hpp"
 #include "cstdmf/shared_ptr.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BinaryIStream;
@@ -17,22 +16,22 @@ class SharedData;
  */
 class SharedDataManager
 {
-public:
-	static shared_ptr< SharedDataManager > create( Pickler * pPickler );
-	~SharedDataManager();
+  public:
+    static shared_ptr<SharedDataManager> create(Pickler* pPickler);
+    ~SharedDataManager();
 
-	void setSharedData( BinaryIStream & data );
-	void delSharedData( BinaryIStream & data );
+    void setSharedData(BinaryIStream& data);
+    void delSharedData(BinaryIStream& data);
 
-	void addToStream( BinaryOStream & stream );
+    void addToStream(BinaryOStream& stream);
 
-private:
-	SharedDataManager();
+  private:
+    SharedDataManager();
 
-	bool init( Pickler * pPickler );
+    bool init(Pickler* pPickler);
 
-	SharedData *	pBaseAppData_;
-	SharedData *	pGlobalData_;
+    SharedData* pBaseAppData_;
+    SharedData* pGlobalData_;
 };
 
 BW_END_NAMESPACE

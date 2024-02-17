@@ -9,13 +9,26 @@ BW_BEGIN_NAMESPACE
  */
 class ViewDrawUtils
 {
-public:
-	static void drawBoxConection( CDC & dc, const CRect & rectStart,
-					const CRect & rectEnd, CRect & retRect, COLORREF colour );
+  public:
+    static void drawBoxConection(CDC&         dc,
+                                 const CRect& rectStart,
+                                 const CRect& rectEnd,
+                                 CRect&       retRect,
+                                 COLORREF     colour);
 
-	static void drawBitmap( CDC & dc, CBitmap & bmp, int x, int y, int w, int h, bool forceTransparent = false );
+    static void drawBitmap(CDC&     dc,
+                           CBitmap& bmp,
+                           int      x,
+                           int      y,
+                           int      w,
+                           int      h,
+                           bool     forceTransparent = false);
 
-	static void drawRect( CDC & dc, const CRect & rect, CBrush & brush, CPen & pen, int roundSize );
+    static void drawRect(CDC&         dc,
+                         const CRect& rect,
+                         CBrush&      brush,
+                         CPen&        pen,
+                         int          roundSize);
 };
 
 BW_END_NAMESPACE

@@ -15,23 +15,25 @@ BW_BEGIN_NAMESPACE
  */
 class UalFavourites : public XmlItemList
 {
-public:
-	UalFavourites();
-	virtual ~UalFavourites();
+  public:
+    UalFavourites();
+    virtual ~UalFavourites();
 
-	void setChangedCallback( UalCallback0* callback ) { changedCallback_ = callback; };
+    void setChangedCallback(UalCallback0* callback)
+    {
+        changedCallback_ = callback;
+    };
 
-	// NOTE: You should take advantage of the fact that an AssetInfo object
-	// can get automatically converted to an XmlItem object.
-	DataSectionPtr add( const XmlItem& item );
-	DataSectionPtr addAt(
-		const XmlItem& item,
-		const XmlItem& atItem );
-	void remove( const XmlItem& item, bool callCallback = true );
-	void clear();
-private:
-	// favourites notifications
-	SmartPointer<UalCallback0> changedCallback_;
+    // NOTE: You should take advantage of the fact that an AssetInfo object
+    // can get automatically converted to an XmlItem object.
+    DataSectionPtr add(const XmlItem& item);
+    DataSectionPtr addAt(const XmlItem& item, const XmlItem& atItem);
+    void           remove(const XmlItem& item, bool callCallback = true);
+    void           clear();
+
+  private:
+    // favourites notifications
+    SmartPointer<UalCallback0> changedCallback_;
 };
 
 BW_END_NAMESPACE

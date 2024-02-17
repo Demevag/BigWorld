@@ -6,7 +6,6 @@
  * 	@ingroup script
  */
 
-
 #include "pch.hpp"
 
 #include "pyobject_plus.hpp"
@@ -15,9 +14,7 @@
 #include "stl_to_py.hpp"
 #include "script.hpp"
 
-
-DECLARE_DEBUG_COMPONENT2( "Script", 0 )
-
+DECLARE_DEBUG_COMPONENT2("Script", 0)
 
 BW_BEGIN_NAMESPACE
 
@@ -26,12 +23,12 @@ BW_BEGIN_NAMESPACE
 // -----------------------------------------------------------------------------
 
 // Base needs to be 0.
-PY_GENERAL_TYPEOBJECT_WITH_BASE( PyObjectPlus, 0 )
+PY_GENERAL_TYPEOBJECT_WITH_BASE(PyObjectPlus, 0)
 
-PY_BEGIN_METHODS( PyObjectPlus )
+PY_BEGIN_METHODS(PyObjectPlus)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( PyObjectPlus )
+PY_BEGIN_ATTRIBUTES(PyObjectPlus)
 PY_END_ATTRIBUTES()
 
 // -----------------------------------------------------------------------------
@@ -48,19 +45,16 @@ PY_END_ATTRIBUTES()
  *		false. If it was created with PyType_GenericAlloc or something similar,
  *		this should be true.
  */
-PyObjectPlus::PyObjectPlus( PyTypeObject * pType, bool isInitialised )
+PyObjectPlus::PyObjectPlus(PyTypeObject* pType, bool isInitialised)
 {
-	if (PyType_Ready( pType ) < 0)
-	{
-		ERROR_MSG( "PyObjectPlus: Type %s is not ready\n", pType->tp_name );
-	}
+    if (PyType_Ready(pType) < 0) {
+        ERROR_MSG("PyObjectPlus: Type %s is not ready\n", pType->tp_name);
+    }
 
-	if (!isInitialised)
-	{
-		PyObject_Init( this, pType );
-	}
+    if (!isInitialised) {
+        PyObject_Init(this, pType);
+    }
 }
-
 
 /**
  *	Destructor should only be called from Python when its reference count
@@ -68,12 +62,11 @@ PyObjectPlus::PyObjectPlus( PyTypeObject * pType, bool isInitialised )
  */
 PyObjectPlus::~PyObjectPlus()
 {
-	MF_ASSERT_DEV(this->ob_refcnt == 0);
+    MF_ASSERT_DEV(this->ob_refcnt == 0);
 #ifdef Py_TRACE_REFS
-	MF_ASSERT( _ob_next == NULL && _ob_prev == NULL );
+    MF_ASSERT(_ob_next == NULL && _ob_prev == NULL);
 #endif
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: PyObjectPlus - general
@@ -86,110 +79,98 @@ PyObjectPlus::~PyObjectPlus()
  *
  *	@return		The value associated with the input name.
  */
-ScriptObject PyObjectPlus::pyGetAttribute( const ScriptString & attrObj )
+ScriptObject PyObjectPlus::pyGetAttribute(const ScriptString& attrObj)
 {
-	return ScriptObject(
-		PyObject_GenericGetAttr( this, attrObj.get() ),
-		ScriptObject::FROM_NEW_REFERENCE );
+    return ScriptObject(PyObject_GenericGetAttr(this, attrObj.get()),
+                        ScriptObject::FROM_NEW_REFERENCE);
 }
-
 
 /**
  *	This method sets the attribute with the given name to the input value.
  */
-bool PyObjectPlus::pySetAttribute( const ScriptString & attrObj,
-	const ScriptObject & value )
+bool PyObjectPlus::pySetAttribute(const ScriptString& attrObj,
+                                  const ScriptObject& value)
 {
-	return (PyObject_GenericSetAttr( this, attrObj.get(), value.get() ) == 0);
+    return (PyObject_GenericSetAttr(this, attrObj.get(), value.get()) == 0);
 }
-
 
 /**
  *	This method deletes the attribute with the given name.
  */
-bool PyObjectPlus::pyDelAttribute( const ScriptString & attrObj )
+bool PyObjectPlus::pyDelAttribute(const ScriptString& attrObj)
 {
-	return this->pySetAttribute( attrObj, ScriptObject() );
+    return this->pySetAttribute(attrObj, ScriptObject());
 }
-
 
 /**
  *	This method returns the representation of this object as a string.
  */
-PyObject * PyObjectPlus::pyRepr()
+PyObject* PyObjectPlus::pyRepr()
 {
-	char	str[512];
-	bw_snprintf( str, sizeof(str),
+    char str[512];
+    bw_snprintf(str,
+                sizeof(str),
 #ifdef _WIN32
-			"%s at 0x%p",
+                "%s at 0x%p",
 #else
-			"%s at %p",
+                 "%s at %p",
 #endif
-			this->typeName(), this );
+                this->typeName(),
+                this);
 
-	return PyString_FromString( str );
+    return PyString_FromString(str);
 }
 
 /**
  *	This method is called just before the PyObject is deleted. It is useful
  *	for cleaning up resources before the class destructor is called.
  */
-void PyObjectPlus::pyDel() 
-{
-}
-
+void PyObjectPlus::pyDel() {}
 
 /**
  *	Base class implementation of _pyNew. Always fails.
  */
-PyObject * PyObjectPlus::_pyNew( PyTypeObject * pType, PyObject *, PyObject * )
+PyObject* PyObjectPlus::_pyNew(PyTypeObject* pType, PyObject*, PyObject*)
 {
-	PyErr_Format( PyExc_TypeError, "%s() "
-		"Cannot directly construct objects of this type",
-		pType->tp_name );
-	return NULL;
+    PyErr_Format(PyExc_TypeError,
+                 "%s() "
+                 "Cannot directly construct objects of this type",
+                 pType->tp_name);
+    return NULL;
 }
 
-
-const PyGetSetDef * PyObjectPlus::searchAttributes( const PyGetSetDef *attrs,
-		const char *name )
+const PyGetSetDef* PyObjectPlus::searchAttributes(const PyGetSetDef* attrs,
+                                                  const char*        name)
 {
-	for (; attrs->name != NULL; attrs++)
-	{
-		if (strcmp( attrs->name, name ) == 0)
-		{
-			return attrs;
-		}
-	}
-	return NULL;
+    for (; attrs->name != NULL; attrs++) {
+        if (strcmp(attrs->name, name) == 0) {
+            return attrs;
+        }
+    }
+    return NULL;
 }
 
-
-const PyMethodDef * PyObjectPlus::searchMethods( const PyMethodDef *methods,
-		const char *name )
+const PyMethodDef* PyObjectPlus::searchMethods(const PyMethodDef* methods,
+                                               const char*        name)
 {
-	for (; methods->ml_name != NULL; methods++)
-	{
-		if (strcmp( methods->ml_name, name ) == 0)
-		{
-			return methods;
-		}
-	}
-	return NULL;
+    for (; methods->ml_name != NULL; methods++) {
+        if (strcmp(methods->ml_name, name) == 0) {
+            return methods;
+        }
+    }
+    return NULL;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: PyObjectPlusWithWeakReference
 // -----------------------------------------------------------------------------
 
+PY_TYPEOBJECT_WITH_WEAKREF(PyObjectPlusWithWeakReference)
 
-PY_TYPEOBJECT_WITH_WEAKREF( PyObjectPlusWithWeakReference )
-
-PY_BEGIN_METHODS( PyObjectPlusWithWeakReference )
+PY_BEGIN_METHODS(PyObjectPlusWithWeakReference)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( PyObjectPlusWithWeakReference )
+PY_BEGIN_ATTRIBUTES(PyObjectPlusWithWeakReference)
 PY_END_ATTRIBUTES()
 
 BW_END_NAMESPACE

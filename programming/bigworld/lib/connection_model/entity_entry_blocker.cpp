@@ -8,15 +8,13 @@ BW_BEGIN_NAMESPACE
 // Section: EntityEntryBlocker
 // ----------------------------------------------------------------------------
 
-
 /**
  *	Constructor.
  */
-EntityEntryBlocker::EntityEntryBlocker() :
-	pImpl_( NULL )
+EntityEntryBlocker::EntityEntryBlocker()
+  : pImpl_(NULL)
 {
 }
-
 
 /**
  *	This method provides a blocking condition for the caller to
@@ -26,14 +24,12 @@ EntityEntryBlocker::EntityEntryBlocker() :
  */
 EntityEntryBlockingCondition EntityEntryBlocker::blockEntry() const
 {
-	if (pImpl_ == NULL)
-	{
-		pImpl_ = new EntityEntryBlockingConditionImpl();
-	}
+    if (pImpl_ == NULL) {
+        pImpl_ = new EntityEntryBlockingConditionImpl();
+    }
 
-	return EntityEntryBlockingCondition( pImpl_ );
+    return EntityEntryBlockingCondition(pImpl_);
 }
-
 
 /**
  *	This method returns the blocking condition impl if we are currently
@@ -47,13 +43,12 @@ EntityEntryBlockingCondition EntityEntryBlocker::blockEntry() const
  */
 EntityEntryBlockingConditionImplPtr EntityEntryBlocker::getImpl()
 {
-	// _We_ hold a reference for our lifetime.
-	if (pImpl_ != NULL && pImpl_->refCount() > 1)
-	{
-		return pImpl_;
-	}
+    // _We_ hold a reference for our lifetime.
+    if (pImpl_ != NULL && pImpl_->refCount() > 1) {
+        return pImpl_;
+    }
 
-	return NULL;
+    return NULL;
 }
 
 BW_END_NAMESPACE

@@ -4,7 +4,6 @@
 #include "network/basictypes.hpp"
 #include "cstdmf/bw_list.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class CellAppDeathListener;
@@ -14,21 +13,20 @@ class CellAppDeathListener;
  */
 class CellAppDeathListeners
 {
-public:
-	typedef BW::list< CellAppDeathListener* > Listeners;
-	typedef Listeners::iterator iterator;
+  public:
+    typedef BW::list<CellAppDeathListener*> Listeners;
+    typedef Listeners::iterator             iterator;
 
-	static CellAppDeathListeners & instance();
+    static CellAppDeathListeners& instance();
 
-	void handleCellAppDeath( const Mercury::Address & addr );
-	iterator addListener( CellAppDeathListener * pListener );
-	void delListener( iterator & iter );
+    void     handleCellAppDeath(const Mercury::Address& addr);
+    iterator addListener(CellAppDeathListener* pListener);
+    void     delListener(iterator& iter);
 
-private:
-	static CellAppDeathListeners * s_pInstance_;
-	Listeners listeners_;
+  private:
+    static CellAppDeathListeners* s_pInstance_;
+    Listeners                     listeners_;
 };
-
 
 /**
  *  This interface should be derived from by anything that needs to know when a
@@ -41,18 +39,18 @@ private:
  */
 class CellAppDeathListener
 {
-public:
-	CellAppDeathListener();
-	virtual ~CellAppDeathListener();
+  public:
+    CellAppDeathListener();
+    virtual ~CellAppDeathListener();
 
-	/**
-	 *  This method will be called on each listener when a CellApp dies.
-	 */
-	virtual void handleCellAppDeath( const Mercury::Address & addr ) = 0;
+    /**
+     *  This method will be called on each listener when a CellApp dies.
+     */
+    virtual void handleCellAppDeath(const Mercury::Address& addr) = 0;
 
-private:
-	/// Iterator that tracks this object's position in the global collection.
-	CellAppDeathListeners::iterator iter_;
+  private:
+    /// Iterator that tracks this object's position in the global collection.
+    CellAppDeathListeners::iterator iter_;
 };
 
 BW_END_NAMESPACE

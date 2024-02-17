@@ -4,13 +4,12 @@
 #include "cstdmf/smartpointer.hpp"
 #include "pyscript/pyobject_plus.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class Entity;
 class MethodDescription;
 
-typedef SmartPointer< Entity >                   EntityPtr;
+typedef SmartPointer<Entity> EntityPtr;
 
 /**
  *	This class implements a simple helper Python type. Objects of this type are
@@ -18,26 +17,25 @@ typedef SmartPointer< Entity >                   EntityPtr;
  */
 class RealCaller : public PyObjectPlus
 {
-	Py_Header( RealCaller, PyObjectPlus )
+    Py_Header(RealCaller, PyObjectPlus)
 
-public:
-	RealCaller( Entity * pEntity,
-			const MethodDescription * pMethodDescription,
-			PyTypeObject * pType = &RealCaller::s_type_ ) :
-		PyObjectPlus( pType ),
-		pEntity_( pEntity ),
-		pMethodDescription_( pMethodDescription )
-	{
-	}
+      public
+      : RealCaller(Entity*                  pEntity,
+                   const MethodDescription* pMethodDescription,
+                   PyTypeObject*            pType = &RealCaller::s_type_)
+      : PyObjectPlus(pType)
+      , pEntity_(pEntity)
+      , pMethodDescription_(pMethodDescription)
+    {
+    }
 
-	PY_METHOD_DECLARE( pyCall )
+    PY_METHOD_DECLARE(pyCall)
 
-private:
-	EntityPtr pEntity_;
-	const MethodDescription * pMethodDescription_;
+  private:
+    EntityPtr                pEntity_;
+    const MethodDescription* pMethodDescription_;
 };
 
 BW_END_NAMESPACE
 
 #endif // REAL_CALLER_HPP
-

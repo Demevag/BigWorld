@@ -13,10 +13,9 @@
 #include "entitydef/data_sink.hpp"
 #include "entitydef/data_source.hpp"
 
-#if defined( SCRIPT_PYTHON )
+#if defined(SCRIPT_PYTHON)
 #include "pyscript/script_math.hpp"
 #endif
-
 
 BW_BEGIN_NAMESPACE
 
@@ -27,36 +26,33 @@ BW_BEGIN_NAMESPACE
 // This is used to implement some helper functions used to implement the
 // VectorDataType template.
 
-#define VECTOR_DATA_TYPE_HELPERS( VECTOR )									\
-void fromSectionToVector( DataSectionPtr pSection, VECTOR & v )				\
-{																			\
-	v = pSection->as##VECTOR();												\
-}																			\
-																			\
-void fromVectorToSection( const VECTOR & v, DataSectionPtr pSection )		\
-{																			\
-	pSection->set##VECTOR( v );												\
-}																			\
+#define VECTOR_DATA_TYPE_HELPERS(VECTOR)                                       \
+    void fromSectionToVector(DataSectionPtr pSection, VECTOR& v)               \
+    {                                                                          \
+        v = pSection->as##VECTOR();                                            \
+    }                                                                          \
+                                                                               \
+    void fromVectorToSection(const VECTOR& v, DataSectionPtr pSection)         \
+    {                                                                          \
+        pSection->set##VECTOR(v);                                              \
+    }
 
-namespace Helpers
-{
+namespace Helpers {
 
-VECTOR_DATA_TYPE_HELPERS( Vector2 )
-VECTOR_DATA_TYPE_HELPERS( Vector3 )
-VECTOR_DATA_TYPE_HELPERS( Vector4 )
+    VECTOR_DATA_TYPE_HELPERS(Vector2)
+    VECTOR_DATA_TYPE_HELPERS(Vector3)
+    VECTOR_DATA_TYPE_HELPERS(Vector4)
 
 } // namespace Helpers
-
 
 /**
  *	Constructor.
  */
 template <class VECTOR>
-VectorDataType< VECTOR >::VectorDataType( MetaDataType * pMeta ) :
-	DataType( pMeta, /*isConst:*/false )
+VectorDataType<VECTOR>::VectorDataType(MetaDataType* pMeta)
+  : DataType(pMeta, /*isConst:*/ false)
 {
 }
-
 
 /**
  *	Overrides the DataType method.
@@ -64,39 +60,32 @@ VectorDataType< VECTOR >::VectorDataType( MetaDataType * pMeta ) :
  *	@see DataType::isSameType
  */
 template <class VECTOR>
-bool VectorDataType< VECTOR >::isSameType( ScriptObject pValue )
+bool VectorDataType<VECTOR>::isSameType(ScriptObject pValue)
 {
-#if defined( SCRIPT_PYTHON )
-	if (PyVector< VECTOR >::Check( pValue ))
-	{
-		return true;
-	}
-	else
+#if defined(SCRIPT_PYTHON)
+    if (PyVector<VECTOR>::Check(pValue)) {
+        return true;
+    } else
 #endif // SCRIPT_PYTHON
 
-	if (ScriptSequence::check( pValue ))
-	{
-		ScriptSequence seq( pValue );
+        if (ScriptSequence::check(pValue)) {
+            ScriptSequence seq(pValue);
 
-		if (seq.size() == NUM_ELEMENTS)
-		{
-			float f;
-			ScriptErrorClear clearError;
-			for (int i = 0; i < NUM_ELEMENTS; i++)
-			{
-				if (!seq.getItem( i, clearError ).convertTo( f, clearError ))
-				{
-					return false;
-				}
-			}
+            if (seq.size() == NUM_ELEMENTS) {
+                float            f;
+                ScriptErrorClear clearError;
+                for (int i = 0; i < NUM_ELEMENTS; i++) {
+                    if (!seq.getItem(i, clearError).convertTo(f, clearError)) {
+                        return false;
+                    }
+                }
 
-			return true;
-		}
-	}
+                return true;
+            }
+        }
 
-	return false;
+    return false;
 }
-
 
 /**
  *	This method sets the default value for this type.
@@ -104,18 +93,14 @@ bool VectorDataType< VECTOR >::isSameType( ScriptObject pValue )
  *	@see DataType::setDefaultValue
  */
 template <class VECTOR>
-void VectorDataType< VECTOR >::setDefaultValue( DataSectionPtr pSection )
+void VectorDataType<VECTOR>::setDefaultValue(DataSectionPtr pSection)
 {
-	if (pSection)
-	{
-		Helpers::fromSectionToVector( pSection, defaultValue_ );
-	}
-	else
-	{
-		defaultValue_.setZero();
-	}
+    if (pSection) {
+        Helpers::fromSectionToVector(pSection, defaultValue_);
+    } else {
+        defaultValue_.setZero();
+    }
 }
-
 
 /**
  *	Overrides the DataType method.
@@ -123,11 +108,10 @@ void VectorDataType< VECTOR >::setDefaultValue( DataSectionPtr pSection )
  *	@see DataType::pDefaultValue
  */
 template <class VECTOR>
-bool VectorDataType< VECTOR >::getDefaultValue( DataSink & output ) const
+bool VectorDataType<VECTOR>::getDefaultValue(DataSink& output) const
 {
-	return output.write( defaultValue_ );
+    return output.write(defaultValue_);
 }
-
 
 /*
  *	Overrides the DataType method.
@@ -135,9 +119,9 @@ bool VectorDataType< VECTOR >::getDefaultValue( DataSink & output ) const
  *	@see DataType::streamSize
  */
 template <class VECTOR>
-int VectorDataType< VECTOR >::streamSize() const
+int VectorDataType<VECTOR>::streamSize() const
 {
-	return sizeof( VECTOR );
+    return sizeof(VECTOR);
 }
 
 /**
@@ -146,19 +130,18 @@ int VectorDataType< VECTOR >::streamSize() const
  *	@see DataType::addToSection
  */
 template <class VECTOR>
-bool VectorDataType< VECTOR >::addToSection( DataSource & source,
-		DataSectionPtr pSection ) const
+bool VectorDataType<VECTOR>::addToSection(DataSource&    source,
+                                          DataSectionPtr pSection) const
 {
-	VECTOR value;
+    VECTOR value;
 
-	if (!source.read( value ))
-	{
-		return false;
-	}
+    if (!source.read(value)) {
+        return false;
+    }
 
-	Helpers::fromVectorToSection( value, pSection );
+    Helpers::fromVectorToSection(value, pSection);
 
-	return true;
+    return true;
 }
 
 /**
@@ -167,67 +150,68 @@ bool VectorDataType< VECTOR >::addToSection( DataSource & source,
  *	@see DataType::createFromSection
  */
 template <class VECTOR>
-bool VectorDataType< VECTOR >::createFromSection( DataSectionPtr pSection,
-		DataSink & sink ) const
+bool VectorDataType<VECTOR>::createFromSection(DataSectionPtr pSection,
+                                               DataSink&      sink) const
 {
-	VECTOR value;
-	Helpers::fromSectionToVector( pSection, value );
+    VECTOR value;
+    Helpers::fromSectionToVector(pSection, value);
 
-	return sink.write( value );
+    return sink.write(value);
 }
 
 template <class VECTOR>
-bool VectorDataType< VECTOR >::fromStreamToSection( BinaryIStream & stream,
-		DataSectionPtr pSection, bool isPersistentOnly ) const
+bool VectorDataType<VECTOR>::fromStreamToSection(BinaryIStream& stream,
+                                                 DataSectionPtr pSection,
+                                                 bool isPersistentOnly) const
 {
-	VECTOR value;
-	stream >> value;
-	if (stream.error()) return false;
+    VECTOR value;
+    stream >> value;
+    if (stream.error())
+        return false;
 
-	Helpers::fromVectorToSection( value, pSection );
-	return true;
+    Helpers::fromVectorToSection(value, pSection);
+    return true;
 }
 
 template <class VECTOR>
-void VectorDataType< VECTOR >::addToMD5( MD5 & md5 ) const
+void VectorDataType<VECTOR>::addToMD5(MD5& md5) const
 {
-	md5.append( "Vector", sizeof( "Vector" ) );
-	md5.append( &NUM_ELEMENTS, sizeof(int) );
+    md5.append("Vector", sizeof("Vector"));
+    md5.append(&NUM_ELEMENTS, sizeof(int));
 }
 
 template <class VECTOR>
-DataType::StreamElementPtr VectorDataType< VECTOR >::getStreamElement(
-	size_t index, size_t & size, bool & /* isNone */,
-	bool /* isPersistentOnly */ ) const
+DataType::StreamElementPtr VectorDataType<VECTOR>::getStreamElement(
+  size_t  index,
+  size_t& size,
+  bool& /* isNone */,
+  bool /* isPersistentOnly */) const
 {
-	size = 1;
-	if (index == 0)
-	{
-		return StreamElementPtr( new VectorStreamElementT( *this ) );
-	}
-	return StreamElementPtr();
-}
-
-
-template <class VECTOR>
-bool VectorDataType< VECTOR >::operator<( const DataType & other ) const
-{
-	if (this->DataType::operator<( other )) return true;
-	if (other.DataType::operator<( *this )) return false;
-
-	const VectorDataType& otherVec =
-		static_cast< const VectorDataType& >( other );
-	return (defaultValue_ < otherVec.defaultValue_);
+    size = 1;
+    if (index == 0) {
+        return StreamElementPtr(new VectorStreamElementT(*this));
+    }
+    return StreamElementPtr();
 }
 
 template <class VECTOR>
-const int VectorDataType< VECTOR >::NUM_ELEMENTS =
-	sizeof( VECTOR )/sizeof( float );
+bool VectorDataType<VECTOR>::operator<(const DataType& other) const
+{
+    if (this->DataType::operator<(other))
+        return true;
+    if (other.DataType::operator<(*this))
+        return false;
 
+    const VectorDataType& otherVec = static_cast<const VectorDataType&>(other);
+    return (defaultValue_ < otherVec.defaultValue_);
+}
 
-SIMPLE_DATA_TYPE( VectorDataType< Vector2 >, VECTOR2 )
-SIMPLE_DATA_TYPE( VectorDataType< Vector3 >, VECTOR3 )
-SIMPLE_DATA_TYPE( VectorDataType< Vector4 >, VECTOR4 )
+template <class VECTOR>
+const int VectorDataType<VECTOR>::NUM_ELEMENTS = sizeof(VECTOR) / sizeof(float);
+
+SIMPLE_DATA_TYPE(VectorDataType<Vector2>, VECTOR2)
+SIMPLE_DATA_TYPE(VectorDataType<Vector3>, VECTOR3)
+SIMPLE_DATA_TYPE(VectorDataType<Vector4>, VECTOR4)
 
 BW_END_NAMESPACE
 

@@ -14,60 +14,56 @@
 
 #include "duplo/py_attachment.hpp"
 
+namespace BW { namespace CompiledSpace {
 
-namespace BW {
-namespace CompiledSpace {
+    class CompiledSpace;
 
-class CompiledSpace;
+    class COMPILED_SPACE_API PyAttachmentEntityEmbodiment
+      : public IEntityEmbodiment
+      , public MatrixLiaison
+    {
+      public:
+        static void registerHandlers(Scene& scene);
 
-class COMPILED_SPACE_API PyAttachmentEntityEmbodiment :
-	public IEntityEmbodiment,
-	public MatrixLiaison
-{
-public:
-	static void registerHandlers( Scene& scene );
+      public:
+        PyAttachmentEntityEmbodiment(const PyAttachmentPtr& pAttachment);
+        virtual ~PyAttachmentEntityEmbodiment();
 
-public:
-	PyAttachmentEntityEmbodiment( const PyAttachmentPtr& pAttachment );
-	virtual ~PyAttachmentEntityEmbodiment();
+        virtual void doMove(float dTime);
+        virtual void doTick(float dTime);
+        virtual void doUpdateAnimations(float dTime);
 
-	virtual void doMove( float dTime );
-	virtual void doTick( float dTime );
-	virtual void doUpdateAnimations( float dTime );
+        virtual void          doWorldTransform(const Matrix& transform);
+        virtual const Matrix& doWorldTransform() const;
+        virtual const AABB&   doLocalBoundingBox() const;
 
-	virtual void doWorldTransform( const Matrix & transform );
-	virtual const Matrix & doWorldTransform() const;
-	virtual const AABB & doLocalBoundingBox() const;
+        virtual void doDraw(Moo::DrawContext& drawContext);
 
-	virtual void doDraw( Moo::DrawContext& drawContext );
+        virtual bool doIsOutside() const;
+        virtual bool doIsRegionLoaded(Vector3 testPos, float radius) const;
 
-	virtual bool doIsOutside() const;
-	virtual bool doIsRegionLoaded( Vector3 testPos, float radius ) const;
+        virtual void doEnterSpace(ClientSpacePtr pSpace, bool transient);
+        virtual void doLeaveSpace(bool transient);
 
-	virtual void doEnterSpace( ClientSpacePtr pSpace, bool transient );
-	virtual void doLeaveSpace( bool transient );
+        // MatrixLiasion
+        virtual const Matrix& getMatrix() const;
+        virtual bool          setMatrix(const Matrix& m);
 
-	// MatrixLiasion
-	virtual const Matrix & getMatrix() const;
-	virtual bool setMatrix( const Matrix & m );
+      private:
+        void syncTransform();
 
+      private:
+        class TickHandler;
+        class TextureStreamingHandler;
 
-private:
-	void syncTransform();
-
-private:
-	class TickHandler;
-	class TextureStreamingHandler;
-
-	mutable AABB localBB_;
-	Matrix worldTransform_;
-	mutable PyAttachmentPtr pAttachment_;
-	CompiledSpace* pEnteredSpace_;
-	bool needsSync_;
-	DynamicObjectHandle dynamicObjectHandle_;
-	SceneObject sceneObject_;
-};
-
+        mutable AABB            localBB_;
+        Matrix                  worldTransform_;
+        mutable PyAttachmentPtr pAttachment_;
+        CompiledSpace*          pEnteredSpace_;
+        bool                    needsSync_;
+        DynamicObjectHandle     dynamicObjectHandle_;
+        SceneObject             sceneObject_;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW

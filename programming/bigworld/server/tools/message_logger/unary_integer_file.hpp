@@ -5,30 +5,29 @@
 
 #include <stdlib.h>
 
-
 BW_BEGIN_NAMESPACE
 
 /**
  * A file containing a single number represented in ascii.  The version file
  * and the uid file in each user log directory use this.
  */
-class UnaryIntegerFile: public TextFileHandler
+class UnaryIntegerFile : public TextFileHandler
 {
-public:
-	UnaryIntegerFile();
+  public:
+    UnaryIntegerFile();
 
-	using TextFileHandler::init;
-	bool init( const char *path, const char *mode, int v );
-	virtual bool handleLine( const char *line );
-	virtual void flush();
-	bool set( int v );
+    using TextFileHandler::init;
+    bool         init(const char* path, const char* mode, int v);
+    virtual bool handleLine(const char* line);
+    virtual void flush();
+    bool         set(int v);
 
-	int getValue() const;
+    int getValue() const;
 
-	bool deleteFile();
+    bool deleteFile();
 
-protected:
-	int v_;
+  protected:
+    int v_;
 };
 
 BW_END_NAMESPACE

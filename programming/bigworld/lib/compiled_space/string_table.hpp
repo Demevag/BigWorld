@@ -6,36 +6,31 @@
 
 #include "string_table_types.hpp"
 
+namespace BW { namespace CompiledSpace {
 
+    class COMPILED_SPACE_API StringTable
+    {
+      public:
+        StringTable();
+        ~StringTable();
 
-namespace BW {
-namespace CompiledSpace {
+        bool read(BinaryFormat& reader);
+        bool readFromStream(BinaryFormat::Stream* pStream_);
+        void close();
 
+        bool   isValid() const;
+        size_t size() const;
 
-class COMPILED_SPACE_API StringTable
-{
-public:
-	StringTable();
-	~StringTable();
+        const char* entry(size_t idx) const;
+        size_t      entryLength(size_t idx) const;
 
-	bool read( BinaryFormat& reader );
-	bool readFromStream( BinaryFormat::Stream* pStream_ );
-	void close();
+      private:
+        BinaryFormat*         pReader_;
+        BinaryFormat::Stream* pStream_;
 
-	bool isValid() const;
-	size_t size() const;
-
-	const char* entry( size_t idx ) const;
-	size_t entryLength( size_t idx ) const;
-
-private:
-	BinaryFormat* pReader_;
-	BinaryFormat::Stream* pStream_;
-
-	ExternalArray<StringTableTypes::Entry> entries_;
-	char* pStringData_;
-};
-
+        ExternalArray<StringTableTypes::Entry> entries_;
+        char*                                  pStringData_;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW

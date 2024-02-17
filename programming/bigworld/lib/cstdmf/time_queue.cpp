@@ -4,68 +4,57 @@
 
 BW_BEGIN_NAMESPACE
 
+/**
+ * Constructor.
+ */
+TimerHandle::TimerHandle(TimeQueueNode* pNode)
+  : pNode_(pNode)
+{
+    if (pNode_ != NULL) {
+        pNode_->incRef();
+    }
+}
 
 /**
  * Constructor.
  */
-TimerHandle::TimerHandle( TimeQueueNode * pNode ) :
-	pNode_( pNode )
+TimerHandle::TimerHandle(const TimerHandle& other)
+  : pNode_(other.pNode())
 {
-	if (pNode_ != NULL)
-	{
-		pNode_->incRef();
-	}
+    if (pNode_ != NULL) {
+        pNode_->incRef();
+    }
 }
-
-
-/**
- * Constructor.
- */
-TimerHandle::TimerHandle( const TimerHandle & other ) :
-	pNode_( other.pNode() )
-{
-	if (pNode_ != NULL)
-	{
-		pNode_->incRef();
-	}
-}
-
 
 /**
  * Destructor.
  */
 TimerHandle::~TimerHandle()
 {
-	if (pNode_ != NULL)
-	{
-		pNode_->decRef();
-		pNode_ = NULL;
-	}
+    if (pNode_ != NULL) {
+        pNode_->decRef();
+        pNode_ = NULL;
+    }
 }
-
 
 /**
  * Assignment operator.
  */
-TimerHandle & TimerHandle::operator=( const TimerHandle & other )
+TimerHandle& TimerHandle::operator=(const TimerHandle& other)
 {
-	if (pNode_ != other.pNode())
-	{
-		if (pNode_ != NULL)
-		{
-			pNode_->decRef();
-		}
+    if (pNode_ != other.pNode()) {
+        if (pNode_ != NULL) {
+            pNode_->decRef();
+        }
 
-		pNode_ = other.pNode();
+        pNode_ = other.pNode();
 
-		if (pNode_ != NULL)
-		{
-			pNode_->incRef();
-		}
-	}
-	return *this;
+        if (pNode_ != NULL) {
+            pNode_->incRef();
+        }
+    }
+    return *this;
 }
-
 
 /**
  *	This method cancels the timer associated with this handle. It is safe to
@@ -73,14 +62,13 @@ TimerHandle & TimerHandle::operator=( const TimerHandle & other )
  */
 void TimerHandle::cancel()
 {
-	if (pNode_ != NULL)
-	{
-		TimeQueueNode* pNode = pNode_;
+    if (pNode_ != NULL) {
+        TimeQueueNode* pNode = pNode_;
 
-		pNode_ = NULL;
-		pNode->cancel();
-		pNode->decRef();
-	}
+        pNode_ = NULL;
+        pNode->cancel();
+        pNode->decRef();
+    }
 }
 
 BW_END_NAMESPACE

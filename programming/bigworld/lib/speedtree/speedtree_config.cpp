@@ -9,36 +9,32 @@
 
 DECLARE_DEBUG_COMPONENT2("SpeedTree", 0)
 
-
 BW_BEGIN_NAMESPACE
 
 namespace speedtree {
 
-namespace { // anonymous
-ErrorCallbackFunc f_errorCallback = NULL;
-} // namespace anonymous
+    namespace { // anonymous
+        ErrorCallbackFunc f_errorCallback = NULL;
+    } // namespace anonymous
 
-// -------------------------------------------------------------- Error Callback
+    // -------------------------------------------------------------- Error
+    // Callback
 
-void setErrorCallback(ErrorCallbackFunc callback)
-{
-	BW_GUARD;
-	f_errorCallback = callback;
-}
+    void setErrorCallback(ErrorCallbackFunc callback)
+    {
+        BW_GUARD;
+        f_errorCallback = callback;
+    }
 
-
-void speedtreeError(const char * treeFilename, const char * errorMsg)
-{
-	BW_GUARD;
-	if (f_errorCallback != NULL)
-	{
-		f_errorCallback(treeFilename, errorMsg);
-	}
-	else
-	{
-		ERROR_MSG("%s: %s\n", treeFilename, errorMsg);
-	}
-}
+    void speedtreeError(const char* treeFilename, const char* errorMsg)
+    {
+        BW_GUARD;
+        if (f_errorCallback != NULL) {
+            f_errorCallback(treeFilename, errorMsg);
+        } else {
+            ERROR_MSG("%s: %s\n", treeFilename, errorMsg);
+        }
+    }
 
 } // namespace speedtree
 

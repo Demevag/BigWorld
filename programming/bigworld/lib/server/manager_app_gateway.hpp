@@ -3,46 +3,46 @@
 
 #include "network/channel_owner.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
-	class InterfaceElement;
+namespace Mercury {
+    class InterfaceElement;
 }
 class Watcher;
 
 class ManagerAppGateway
 {
-public:
+  public:
+    ManagerAppGateway(Mercury::NetworkInterface&       networkInterface,
+                      const Mercury::InterfaceElement& retireAppIE);
+    virtual ~ManagerAppGateway();
 
-	ManagerAppGateway( Mercury::NetworkInterface & networkInterface,
-		const Mercury::InterfaceElement & retireAppIE );
-	virtual ~ManagerAppGateway();
+    bool init(const char* interfaceName,
+              int         numRetries,
+              float       maxMgrRegisterStagger);
 
+    const Mercury::Address& address() const { return channel_.addr(); }
 
-	bool init( const char * interfaceName, int numRetries, float maxMgrRegisterStagger );
+    void addWatchers(const char* name, Watcher& watcher);
 
-	const Mercury::Address & address() const { return channel_.addr(); }
+    void isRegular(bool localValue, bool remoteValue = false)
+    {
+        channel_.channel().isLocalRegular(localValue);
+        channel_.channel().isRemoteRegular(remoteValue);
+    }
 
-	void addWatchers( const char * name, Watcher & watcher );
+    bool isInitialised() const
+    {
+        return channel_.channel().addr() != Mercury::Address::NONE;
+    }
 
-	void isRegular( bool localValue, bool remoteValue = false )
-	{
-		channel_.channel().isLocalRegular( localValue );
-		channel_.channel().isRemoteRegular( remoteValue );
-	}
+    void retireApp();
 
-	bool isInitialised() const
-	{ return channel_.channel().addr() != Mercury::Address::NONE; }
+  protected:
+    Mercury::ChannelOwner channel_;
 
-	void retireApp();
-
-protected:
-	Mercury::ChannelOwner channel_;
-
-private:
-	const Mercury::InterfaceElement & retireAppIE_;
+  private:
+    const Mercury::InterfaceElement& retireAppIE_;
 };
 
 BW_END_NAMESPACE

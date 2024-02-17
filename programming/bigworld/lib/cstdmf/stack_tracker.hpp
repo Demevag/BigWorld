@@ -25,96 +25,97 @@ BW_BEGIN_NAMESPACE
 extern bool g_copyStackInfo;
 
 // Declare g_copyStackInfo when cstdmf is built as a DLL
-#define DECLARE_COPY_STACK_INFO( isPlugin ) \
-	bool g_copyStackInfo = (isPlugin);
+#define DECLARE_COPY_STACK_INFO(isPlugin) bool g_copyStackInfo = (isPlugin);
 
 class StackTracker
 {
-private:
-	enum
-	{
-		THREAD_STACK_DEPTH	= 1024,		// The maximum stack size for a thread
-		ANNOTATION_BUFFER_SIZE = 4096,	// The size of the stack annotation buffer
-		MAX_ANNOTATION_STACK_ENTRIES = 256
-	};
+  private:
+    enum
+    {
+        THREAD_STACK_DEPTH = 1024, // The maximum stack size for a thread
+        ANNOTATION_BUFFER_SIZE =
+          4096, // The size of the stack annotation buffer
+        MAX_ANNOTATION_STACK_ENTRIES = 256
+    };
 
-public:
+  public:
+    struct StackItem
+    {
+        const char* name;      // function name
+        const char* file;      // file name
+        uint        line : 31; // line number
+        bool        temp : 1;  // flags if the name and file and temp strings
+        const char*
+          annotation; // This is always a temp string and must be copied
+    };
 
-	struct StackItem
-	{
-		const char*		name;		// function name
-		const char*		file;		// file name
-		uint			line:31;	// line number
-		bool			temp:1;		// flags if the name and file and temp strings
-		const char*		annotation;	// This is always a temp string and must be copied
-	};
+    inline static void push(const char* name,
+                            const char* file = NULL,
+                            uint        line = 0)
+    {
+        push(name, file, line, g_copyStackInfo);
+    }
+    CSTDMF_DLL static void push(const char* name,
+                                const char* file,
+                                uint        line,
+                                bool        temp);
+    CSTDMF_DLL static void pop();
+    CSTDMF_DLL static uint stackSize();
 
-	inline static void push( const char * name, const char * file=NULL, uint line=0 )
-	{
-		push( name, file, line, g_copyStackInfo );
-	}
-	CSTDMF_DLL static void push( const char * name, const char * file, uint line, bool temp );
-	CSTDMF_DLL static void pop();
-	CSTDMF_DLL static uint stackSize();
+    // 0 == top of stack, stackSize-1 == bottom
+    CSTDMF_DLL static StackItem& getStackItem(uint idx);
 
-	// 0 == top of stack, stackSize-1 == bottom
-	CSTDMF_DLL static StackItem& getStackItem(uint idx);
+    CSTDMF_DLL static void buildReport(char* buffer, size_t len);
 
-	CSTDMF_DLL static void buildReport(char* buffer, size_t len);
-
-#if defined( _DEBUG )
-	static uint getMaxStackPos();
+#if defined(_DEBUG)
+    static uint getMaxStackPos();
 #endif
 
-	static void pushAnnotation( const char* annotation );
-	static void popAnnotation();
+    static void pushAnnotation(const char* annotation);
+    static void popAnnotation();
 
-private:
-	static THREADLOCAL(StackItem)	stack_[THREAD_STACK_DEPTH];
-	static THREADLOCAL(uint)		stackPos_;
-#if defined( _DEBUG )
-	static THREADLOCAL(uint)		maxStackPos_;
+  private:
+    static THREADLOCAL(StackItem) stack_[THREAD_STACK_DEPTH];
+    static THREADLOCAL(uint) stackPos_;
+#if defined(_DEBUG)
+    static THREADLOCAL(uint) maxStackPos_;
 #endif
-	static THREADLOCAL(char*)		nextAnnotationPtr_;
-	static THREADLOCAL(char)		annotationBuffer_[ANNOTATION_BUFFER_SIZE];
+    static THREADLOCAL(char*) nextAnnotationPtr_;
+    static THREADLOCAL(char) annotationBuffer_[ANNOTATION_BUFFER_SIZE];
 
-	struct AnnotationEntry
-	{
-		char*		annotation;
-		uint32		stackPos;
-	};
-	static THREADLOCAL(AnnotationEntry*)	nextAnnotationEntryPtr_;
-	static THREADLOCAL(AnnotationEntry)		annotationEntries_[MAX_ANNOTATION_STACK_ENTRIES];
-	static THREADLOCAL(uint32)				numAnnotationsToSkipPop_;
+    struct AnnotationEntry
+    {
+        char*  annotation;
+        uint32 stackPos;
+    };
+    static THREADLOCAL(AnnotationEntry*) nextAnnotationEntryPtr_;
+    static THREADLOCAL(AnnotationEntry)
+      annotationEntries_[MAX_ANNOTATION_STACK_ENTRIES];
+    static THREADLOCAL(uint32) numAnnotationsToSkipPop_;
 };
 
 class ScopedStackTrack
 {
-public:
-	inline ScopedStackTrack( const char * name, const char * file = NULL,
-		uint line = 0 )
-	{
-		StackTracker::push( name, file, line );
-	}
+  public:
+    inline ScopedStackTrack(const char* name,
+                            const char* file = NULL,
+                            uint        line = 0)
+    {
+        StackTracker::push(name, file, line);
+    }
 
-	inline ~ScopedStackTrack()
-	{
-		StackTracker::pop();
-	}
+    inline ~ScopedStackTrack() { StackTracker::pop(); }
 };
 
 class ScopedStackTrackAnnotation
 {
-public:
-	inline ScopedStackTrackAnnotation( const char * annotation )
-	{
-		StackTracker::pushAnnotation( annotation );
-	}
+  public:
+    inline ScopedStackTrackAnnotation(const char* annotation)
+    {
+        StackTracker::pushAnnotation(annotation);
+    }
 
-	inline ~ScopedStackTrackAnnotation()
-	{
-		StackTracker::popAnnotation();
-	}
+    inline ~ScopedStackTrackAnnotation() { StackTracker::popAnnotation(); }
 };
 
 #include "stack_tracker.ipp"
@@ -122,7 +123,7 @@ public:
 BW_END_NAMESPACE
 
 #else
-#define DECLARE_COPY_STACK_INFO( isPlugin)
+#define DECLARE_COPY_STACK_INFO(isPlugin)
 #endif // #if ENABLE_STACK_TRACKER
 
 #endif

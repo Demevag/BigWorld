@@ -7,8 +7,7 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace controls
-{
+namespace controls {
     //
     // This control allows selection of a colour using a HLS type
     // drawing.
@@ -25,33 +24,26 @@ namespace controls
     //
     class CONTROLS_DLL ColorPicker : public CWnd
     {
-    public:
+      public:
         ColorPicker();
 
         /*virtual*/ ~ColorPicker();
 
-        BOOL 
-        Create
-        (
-            DWORD           style, 
-            CRect           pos, 
-            CWnd            *parent, 
-            bool            alphaSel  = true
-        );
-        
+        BOOL Create(DWORD style, CRect pos, CWnd* parent, bool alphaSel = true);
+
         void setRGB(COLORREF ref);
 
         COLORREF getRGB();
 
         void setHLS(float hue, float lum, float sat);
 
-        void getHLS(float & hue, float & luminance, float & saturation);
+        void getHLS(float& hue, float& luminance, float& saturation);
 
-        void setRGBA(Vector4 const &color);
+        void setRGBA(Vector4 const& color);
 
         Vector4 getRGBA() const;
 
-    private:
+      private:
         afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
         afx_msg void OnMouseMove(UINT nFlags, CPoint point);
         afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
@@ -61,19 +53,19 @@ namespace controls
 
         DECLARE_MESSAGE_MAP()
 
-    private:
+      private:
         void generatePicker();
         void generateHueBar();
         void generateAlphaBar();
 
         void setPicker(bool redraw = true);
 
-        void drawCrossAt(CPoint &point, CDC &dc, CSize &sz);
+        void drawCrossAt(CPoint& point, CDC& dc, CSize& sz);
         void calculateSizes();
 
         void UpdateParent(UINT message);
 
-    private:
+      private:
         enum MouseMoveMode
         {
             MMM_NONE,
@@ -82,28 +74,28 @@ namespace controls
             MMM_ALPHA
         };
 
-        CDC             pickerDC_;
-        CDC             hueBarDC_;
-        CDC             alphaBarDC_;
-        bool            createPickerDC_;
-        bool            createHueBarDC_;
-        bool            createAlphaBarDC_;
-        bool            slGraphDirty_;      // saturation and luminance graph dirty flag
-        bool            hueBarDirty_;       // hue bar dirty flag
-        bool            slPickerDirty_;     // picker position dirty
-        bool            alphaBarDirty_;
-        MouseMoveMode   mouseMoveMode_;     // moving on picker or on hue
-        CPoint          slPickerPosition_;  // position of the picker
-        float           currentLuminance_;
-        float           currentSaturation_;
-        float           currentHue_;
-        COLORREF        currentColor_;
-        float           currentAlpha_;
-        CRect           slGraphRect_;
-        CRect           hueBarRect_;
-        CRect           alphaBarRect_;
-        CRect           totalRect_;
-        bool            alphaSelection_;
+        CDC  pickerDC_;
+        CDC  hueBarDC_;
+        CDC  alphaBarDC_;
+        bool createPickerDC_;
+        bool createHueBarDC_;
+        bool createAlphaBarDC_;
+        bool slGraphDirty_;  // saturation and luminance graph dirty flag
+        bool hueBarDirty_;   // hue bar dirty flag
+        bool slPickerDirty_; // picker position dirty
+        bool alphaBarDirty_;
+        MouseMoveMode mouseMoveMode_;    // moving on picker or on hue
+        CPoint        slPickerPosition_; // position of the picker
+        float         currentLuminance_;
+        float         currentSaturation_;
+        float         currentHue_;
+        COLORREF      currentColor_;
+        float         currentAlpha_;
+        CRect         slGraphRect_;
+        CRect         hueBarRect_;
+        CRect         alphaBarRect_;
+        CRect         totalRect_;
+        bool          alphaSelection_;
     };
 }
 

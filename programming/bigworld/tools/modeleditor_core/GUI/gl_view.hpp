@@ -9,20 +9,19 @@ class IModelEditorApp;
 
 class GLView
 {
-public:
-	GLView();
-	void setEditorApp( IModelEditorApp * editorApp );
-	virtual bool underMouse() const { return false; }
-	virtual void * getNativeId() { return 0; }
+  public:
+    GLView();
+    void          setEditorApp(IModelEditorApp* editorApp);
+    virtual bool  underMouse() const { return false; }
+    virtual void* getNativeId() { return 0; }
 
-protected:
-	bool paint( bool resize );
-	virtual void resizeWindow();
+  protected:
+    bool         paint(bool resize);
+    virtual void resizeWindow();
 
-	IModelEditorApp * editorApp_;
-
+    IModelEditorApp* editorApp_;
 };
 
 BW_END_NAMESPACE
 
-#endif //GL_VIEW_H
+#endif // GL_VIEW_H

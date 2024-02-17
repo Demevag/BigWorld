@@ -3,7 +3,6 @@
 
 #include "cellapp_interface.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class Entity;
@@ -13,36 +12,37 @@ class Entity;
  */
 class EntityMessageHandler : public Mercury::InputMessageHandler
 {
-public:
-	void handleMessage( const Mercury::Address & srcAddr,
-		Mercury::UnpackedMessageHeader & header,
-		BinaryIStream & data,
-	   	EntityID entityID );
+  public:
+    void handleMessage(const Mercury::Address&         srcAddr,
+                       Mercury::UnpackedMessageHeader& header,
+                       BinaryIStream&                  data,
+                       EntityID                        entityID);
 
-protected:
-	EntityMessageHandler( EntityReality reality,
-				bool shouldBufferIfTickPending = false );
+  protected:
+    EntityMessageHandler(EntityReality reality,
+                         bool          shouldBufferIfTickPending = false);
 
-	virtual void handleMessage( const Mercury::Address & srcAddr,
-		Mercury::UnpackedMessageHeader & header,
-		BinaryIStream & data );
+    virtual void handleMessage(const Mercury::Address&         srcAddr,
+                               Mercury::UnpackedMessageHeader& header,
+                               BinaryIStream&                  data);
 
-	/**
-	 *  This method actually causes the message to be fed through to the
-	 *  handler, after it has passed the various checks imposed in
-	 *  handleMessage().
-	 */
-	virtual void callHandler( const Mercury::Address & srcAddr,
-		Mercury::UnpackedMessageHeader & header,
-		BinaryIStream & data, Entity * pEntity ) = 0;
+    /**
+     *  This method actually causes the message to be fed through to the
+     *  handler, after it has passed the various checks imposed in
+     *  handleMessage().
+     */
+    virtual void callHandler(const Mercury::Address&         srcAddr,
+                             Mercury::UnpackedMessageHeader& header,
+                             BinaryIStream&                  data,
+                             Entity*                         pEntity) = 0;
 
-	virtual void sendFailure( const Mercury::Address & srcAddr,
-			Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data,
-			EntityID entityID );
+    virtual void sendFailure(const Mercury::Address&         srcAddr,
+                             Mercury::UnpackedMessageHeader& header,
+                             BinaryIStream&                  data,
+                             EntityID                        entityID);
 
-	EntityReality reality_;
-	bool shouldBufferIfTickPending_;
+    EntityReality reality_;
+    bool          shouldBufferIfTickPending_;
 };
 
 BW_END_NAMESPACE

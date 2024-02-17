@@ -6,20 +6,21 @@
 #define BW_COMMON_PREFIX "noise/"
 #include "server/server_app_option_macros.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
 // Section: NoiseConfig
 // -----------------------------------------------------------------------------
 
-BW_OPTION( float, standardRange, 10.f );
-BW_OPTION( float, verticalSpeed, 1000000.f );
-BW_OPTION( float, horizontalSpeed, 1000000.f );
+BW_OPTION(float, standardRange, 10.f);
+BW_OPTION(float, verticalSpeed, 1000000.f);
+BW_OPTION(float, horizontalSpeed, 1000000.f);
 
-BW_OPTION_FULL( float, horizontalSpeedSqr, 0.f,
-					"", "config/noise/horizontalSpeedSqr" );
-
+BW_OPTION_FULL(float,
+               horizontalSpeedSqr,
+               0.f,
+               "",
+               "config/noise/horizontalSpeedSqr");
 
 // -----------------------------------------------------------------------------
 // Section: Custom initialisation
@@ -31,9 +32,9 @@ BW_OPTION_FULL( float, horizontalSpeedSqr, 0.f,
  */
 bool NoiseConfig::postInit()
 {
-	horizontalSpeedSqr.set( horizontalSpeed() * horizontalSpeed() );
+    horizontalSpeedSqr.set(horizontalSpeed() * horizontalSpeed());
 
-	return true;
+    return true;
 }
 
 BW_END_NAMESPACE

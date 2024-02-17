@@ -10,7 +10,6 @@
 #include "cstdmf/binary_stream.hpp"
 #include "cstdmf/bit_reader.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
@@ -28,46 +27,44 @@ BW_BEGIN_NAMESPACE
  *
  *	@return True on success, false otherwise
  */
-bool PropertyChangeReader::readSimplePathAndApply( BinaryIStream & stream,
-		PropertyOwnerBase * pOwner,
-		ScriptObject * ppOldValue,
-		ScriptList * ppChangePath )
+bool PropertyChangeReader::readSimplePathAndApply(BinaryIStream&     stream,
+                                                  PropertyOwnerBase* pOwner,
+                                                  ScriptObject*      ppOldValue,
+                                                  ScriptList* ppChangePath)
 {
-	uint8 size;
-	stream >> size;
+    uint8 size;
+    stream >> size;
 
-	uint8 i = 0;
+    uint8 i = 0;
 
-	while ((i < size) && pOwner)
-	{
-		int32 index;
-		stream >> index;
+    while ((i < size) && pOwner) {
+        int32 index;
+        stream >> index;
 
-		this->updatePath( ppChangePath, pOwner->getPyIndex( index ) );
+        this->updatePath(ppChangePath, pOwner->getPyIndex(index));
 
-		pOwner = pOwner->getChildPropertyOwner( index );
+        pOwner = pOwner->getChildPropertyOwner(index);
 
-		++i;
-	}
+        ++i;
+    }
 
-	if (!pOwner)
-	{
-		ERROR_MSG( "PropertyChangeReader::readAndApply: "
-				"pOwner is NULL. %d/%d.\n",
-			i, size );
+    if (!pOwner) {
+        ERROR_MSG("PropertyChangeReader::readAndApply: "
+                  "pOwner is NULL. %d/%d.\n",
+                  i,
+                  size);
 
-		return false;
-	}
+        return false;
+    }
 
-	this->readExtraBits( stream );
+    this->readExtraBits(stream);
 
-	this->updatePath( ppChangePath );
+    this->updatePath(ppChangePath);
 
-	this->doApply( stream, pOwner, ppOldValue, ppChangePath );
+    this->doApply(stream, pOwner, ppOldValue, ppChangePath);
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method reads and applies a property change.
@@ -80,102 +77,86 @@ bool PropertyChangeReader::readSimplePathAndApply( BinaryIStream & stream,
  *
  *	@return The top-level index of the change.
  */
-int PropertyChangeReader::readCompressedPathAndApply( BinaryIStream & stream,
-		PropertyOwnerBase * pOwner,
-		ScriptObject * ppOldValue,
-		ScriptList * ppChangePath )
+int PropertyChangeReader::readCompressedPathAndApply(BinaryIStream&     stream,
+                                                     PropertyOwnerBase* pOwner,
+                                                     ScriptObject* ppOldValue,
+                                                     ScriptList*   ppChangePath)
 {
-	int topLevelIndex = -1;
+    int topLevelIndex = -1;
 
-	BitReader bits( stream );
+    BitReader bits(stream);
 
-	while ((bits.get( 1 ) != 0) && pOwner)
-	{
-		int numProperties = pOwner->getNumOwnedProperties();
-		int index = bits.get( BitReader::bitsRequired( numProperties ) );
+    while ((bits.get(1) != 0) && pOwner) {
+        int numProperties = pOwner->getNumOwnedProperties();
+        int index         = bits.get(BitReader::bitsRequired(numProperties));
 
-		if (topLevelIndex == -1)
-		{
-			topLevelIndex = index;
-		}
-		else
-		{
-			this->updatePath( ppChangePath, pOwner->getPyIndex( index ) );
-		}
+        if (topLevelIndex == -1) {
+            topLevelIndex = index;
+        } else {
+            this->updatePath(ppChangePath, pOwner->getPyIndex(index));
+        }
 
-		pOwner = pOwner->getChildPropertyOwner( index );
-	}
+        pOwner = pOwner->getChildPropertyOwner(index);
+    }
 
-	if (!pOwner)
-	{
-		ERROR_MSG( "PropertyChangeReader::readAndApply: Invalid path to owner. "
-					"topLevelIndex = %d\n",
-				topLevelIndex );
+    if (!pOwner) {
+        ERROR_MSG("PropertyChangeReader::readAndApply: Invalid path to owner. "
+                  "topLevelIndex = %d\n",
+                  topLevelIndex);
 
-		return -1 - std::max( topLevelIndex, 0 );
-	}
+        return -1 - std::max(topLevelIndex, 0);
+    }
 
-	int index = this->readExtraBits( bits, pOwner->getNumOwnedProperties() );
+    int index = this->readExtraBits(bits, pOwner->getNumOwnedProperties());
 
-	if (topLevelIndex == -1)
-	{
-		topLevelIndex = index;
-	}
-	else
-	{
-		this->updatePath( ppChangePath );
-	}
+    if (topLevelIndex == -1) {
+        topLevelIndex = index;
+    } else {
+        this->updatePath(ppChangePath);
+    }
 
-	this->doApply( stream, pOwner, ppOldValue, ppChangePath );
+    this->doApply(stream, pOwner, ppOldValue, ppChangePath);
 
-	return topLevelIndex;
-} 
-
+    return topLevelIndex;
+}
 
 /**
  *	This helper method calls the apply virtual method and performs error
  *	checking.
  */
-void PropertyChangeReader::doApply( BinaryIStream & stream,
-		PropertyOwnerBase * pOwner, ScriptObject * ppOldValue,
-		ScriptList * ppChangePath )
+void PropertyChangeReader::doApply(BinaryIStream&     stream,
+                                   PropertyOwnerBase* pOwner,
+                                   ScriptObject*      ppOldValue,
+                                   ScriptList*        ppChangePath)
 {
-	ScriptObject pOldValue = this->apply( stream, pOwner,
-			ppChangePath ? *ppChangePath : ScriptList() );
+    ScriptObject pOldValue =
+      this->apply(stream, pOwner, ppChangePath ? *ppChangePath : ScriptList());
 
-	if (!pOldValue)
-	{
-		ERROR_MSG( "PropertyChangeReader::readAndApply: Old value is NULL\n" );
-	}
-	else if (ppOldValue)
-	{
-		*ppOldValue = pOldValue;
-	}
+    if (!pOldValue) {
+        ERROR_MSG("PropertyChangeReader::readAndApply: Old value is NULL\n");
+    } else if (ppOldValue) {
+        *ppOldValue = pOldValue;
+    }
 }
-
 
 /**
  *	This method appends the input index to the change path.
  */
-void PropertyChangeReader::updatePath( ScriptList * ppChangePath,
-		ScriptObject pIndex ) const
+void PropertyChangeReader::updatePath(ScriptList*  ppChangePath,
+                                      ScriptObject pIndex) const
 {
-	if (!ppChangePath)
-	{
-		return;
-	}
+    if (!ppChangePath) {
+        return;
+    }
 
-	if (!(*ppChangePath))
-	{
-		*ppChangePath = ScriptList::create();
-	}
+    if (!(*ppChangePath)) {
+        *ppChangePath = ScriptList::create();
+    }
 
-	if (pIndex)
-	{
-		(*ppChangePath).append( pIndex );
-	}
+    if (pIndex) {
+        (*ppChangePath).append(pIndex);
+    }
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: SinglePropertyChangeReader
@@ -189,43 +170,39 @@ void PropertyChangeReader::updatePath( ScriptList * ppChangePath,
  *
  *	@return The old value.
  */
-ScriptObject SinglePropertyChangeReader::apply( BinaryIStream & stream,
-		PropertyOwnerBase * pOwner, ScriptList pChangePath )
+ScriptObject SinglePropertyChangeReader::apply(BinaryIStream&     stream,
+                                               PropertyOwnerBase* pOwner,
+                                               ScriptList         pChangePath)
 {
-	if (pChangePath)
-	{
-		pChangePath.append( pOwner->getPyIndex( leafIndex_ ) );
-	}
+    if (pChangePath) {
+        pChangePath.append(pOwner->getPyIndex(leafIndex_));
+    }
 
-	return pOwner->setOwnedProperty( leafIndex_, stream );
+    return pOwner->setOwnedProperty(leafIndex_, stream);
 }
-
 
 /**
  *	This method reads the extra data specific to this PropertyChange type. This
  *	version is used for server-internal changes.
  */
-int SinglePropertyChangeReader::readExtraBits( BinaryIStream & stream )
+int SinglePropertyChangeReader::readExtraBits(BinaryIStream& stream)
 {
-	stream >> leafIndex_;
+    stream >> leafIndex_;
 
-	return leafIndex_;
+    return leafIndex_;
 }
-
 
 /**
  *	This method reads the extra data specific to this PropertyChange type. This
  *	version is used for client-server changes.
  */
-int SinglePropertyChangeReader::readExtraBits( BitReader & reader,
-		int leafSize )
+int SinglePropertyChangeReader::readExtraBits(BitReader& reader, int leafSize)
 {
-	const int numBitsRequired = BitReader::bitsRequired( leafSize );
-	leafIndex_ = reader.get( numBitsRequired );
+    const int numBitsRequired = BitReader::bitsRequired(leafSize);
+    leafIndex_                = reader.get(numBitsRequired);
 
-	return leafIndex_;
+    return leafIndex_;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: SlicePropertyChangeReader
@@ -239,54 +216,51 @@ int SinglePropertyChangeReader::readExtraBits( BitReader & reader,
  *
  *	@return The old value.
  */
-ScriptObject SlicePropertyChangeReader::apply( BinaryIStream & stream,
-		PropertyOwnerBase * pOwner, ScriptList pChangePath )
+ScriptObject SlicePropertyChangeReader::apply(BinaryIStream&     stream,
+                                              PropertyOwnerBase* pOwner,
+                                              ScriptList         pChangePath)
 {
-	int oldSize = pOwner->getNumOwnedProperties();
+    int oldSize = pOwner->getNumOwnedProperties();
 
-	ScriptObject pOldValues =
-		pOwner->setOwnedSlice( startIndex_, endIndex_, stream );
+    ScriptObject pOldValues =
+      pOwner->setOwnedSlice(startIndex_, endIndex_, stream);
 
-	int newSize = pOwner->getNumOwnedProperties();
+    int newSize = pOwner->getNumOwnedProperties();
 
-	if (pChangePath && pOldValues)
-	{
-		ScriptTuple index = ScriptTuple::create( 2 );
-		index.setItem( 0, ScriptObject::createFrom( startIndex_ ) );
-		index.setItem( 1, ScriptObject::createFrom(
-											endIndex_ + newSize - oldSize ) );
+    if (pChangePath && pOldValues) {
+        ScriptTuple index = ScriptTuple::create(2);
+        index.setItem(0, ScriptObject::createFrom(startIndex_));
+        index.setItem(1,
+                      ScriptObject::createFrom(endIndex_ + newSize - oldSize));
 
-		pChangePath.append( index );
-	}
+        pChangePath.append(index);
+    }
 
-	return pOldValues;
+    return pOldValues;
 }
-
 
 /**
  *	This method reads the extra data specific to this PropertyChange type. This
  *	version is used for server-internal changes.
  */
-int SlicePropertyChangeReader::readExtraBits( BinaryIStream & stream )
+int SlicePropertyChangeReader::readExtraBits(BinaryIStream& stream)
 {
-	stream >> startIndex_ >> endIndex_;
+    stream >> startIndex_ >> endIndex_;
 
-	return -1;
+    return -1;
 }
-
 
 /**
  *	This method reads the extra data specific to this PropertyChange type. This
  *	version is used for client-server changes.
  */
-int SlicePropertyChangeReader::readExtraBits( BitReader & reader,
-		int leafSize )
+int SlicePropertyChangeReader::readExtraBits(BitReader& reader, int leafSize)
 {
-	const int numBitsRequired = BitReader::bitsRequired( leafSize + 1 );
-	startIndex_ = reader.get( numBitsRequired );
-	endIndex_ = reader.get( numBitsRequired );
+    const int numBitsRequired = BitReader::bitsRequired(leafSize + 1);
+    startIndex_               = reader.get(numBitsRequired);
+    endIndex_                 = reader.get(numBitsRequired);
 
-	return -1;
+    return -1;
 }
 
 BW_END_NAMESPACE

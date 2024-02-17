@@ -7,7 +7,6 @@
 #include "cstdmf/bw_map.hpp"
 #include "cstdmf/watcher.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -17,127 +16,113 @@ BW_BEGIN_NAMESPACE
 
 class BackedUpEntities
 {
-public:
-	BW::string & getDataFor( EntityID entityID )
-	{
-		return data_[ entityID ];
-	}
+  public:
+    BW::string& getDataFor(EntityID entityID) { return data_[entityID]; }
 
-	bool contains( EntityID entityID ) const
-	{
-		return data_.count( entityID ) != 0;
-	}
+    bool contains(EntityID entityID) const
+    {
+        return data_.count(entityID) != 0;
+    }
 
-	bool erase( EntityID entityID )
-	{
-		return data_.erase( entityID );
-	}
+    bool erase(EntityID entityID) { return data_.erase(entityID); }
 
-	void clear()
-	{
-		data_.clear();
-	}
+    void clear() { data_.clear(); }
 
-	void restore();
+    void restore();
 
-	bool empty() const	{ return data_.empty(); }
+    bool empty() const { return data_.empty(); }
 
-	size_t size() const	{ return data_.size(); }
+    size_t size() const { return data_.size(); }
 
-	void restoreRemotely( const Mercury::Address & deadAddr, 
-		  const BackupHashChain & backedUpHashChain );
+    void restoreRemotely(const Mercury::Address& deadAddr,
+                         const BackupHashChain&  backedUpHashChain);
 
-protected:
-	typedef	BW::map< EntityID, BW::string > Container;
-	Container data_;
+  protected:
+    typedef BW::map<EntityID, BW::string> Container;
+    Container                             data_;
 };
-
 
 class BackedUpEntitiesWithHash : public BackedUpEntities
 {
-public:
-	void init( uint32 index, const MiniBackupHash & hash,
-			   const BackedUpEntitiesWithHash & current );
+  public:
+    void init(uint32                          index,
+              const MiniBackupHash&           hash,
+              const BackedUpEntitiesWithHash& current);
 
-	void swap( BackedUpEntitiesWithHash & other )
-	{
-		uint32 tempInt = index_;
-		index_ = other.index_;
-		other.index_ = tempInt;
+    void swap(BackedUpEntitiesWithHash& other)
+    {
+        uint32 tempInt = index_;
+        index_         = other.index_;
+        other.index_   = tempInt;
 
-		MiniBackupHash tempHash = hash_;
-		hash_ = other.hash_;
-		other.hash_ = tempHash;
+        MiniBackupHash tempHash = hash_;
+        hash_                   = other.hash_;
+        other.hash_             = tempHash;
 
-		data_.swap( other.data_ );
-	}
+        data_.swap(other.data_);
+    }
 
-	int numInvalidEntities() const;
+    int numInvalidEntities() const;
 
-	static WatcherPtr pWatcher();
+    static WatcherPtr pWatcher();
 
-private:
-	uint32 index_;
-	MiniBackupHash hash_;
+  private:
+    uint32         index_;
+    MiniBackupHash hash_;
 };
-
 
 class BackedUpBaseApp
 {
-public:
-	BackedUpBaseApp() : 
-		usingNew_( false ),
-		canSwitchToNewBackup_( false ),
-		hasHadCurrentBackup_( false )
-	{}
+  public:
+    BackedUpBaseApp()
+      : usingNew_(false)
+      , canSwitchToNewBackup_(false)
+      , hasHadCurrentBackup_(false)
+    {
+    }
 
-	void startNewBackup( uint32 index, const MiniBackupHash & hash );
+    void startNewBackup(uint32 index, const MiniBackupHash& hash);
 
-	BW::string & getDataFor( EntityID entityID )
-	{
-		if (usingNew_)
-			return newBackup_.getDataFor( entityID );
-		else
-			return currentBackup_.getDataFor( entityID );
-	}
+    BW::string& getDataFor(EntityID entityID)
+    {
+        if (usingNew_)
+            return newBackup_.getDataFor(entityID);
+        else
+            return currentBackup_.getDataFor(entityID);
+    }
 
-	bool hasHadCurrentBackup() const
-	{
-		return hasHadCurrentBackup_;
-	}
+    bool hasHadCurrentBackup() const { return hasHadCurrentBackup_; }
 
-	bool erase( EntityID entityID )
-	{
-		if (usingNew_)
-			return newBackup_.erase( entityID );
-		else
-			return currentBackup_.erase( entityID );
-	}
+    bool erase(EntityID entityID)
+    {
+        if (usingNew_)
+            return newBackup_.erase(entityID);
+        else
+            return currentBackup_.erase(entityID);
+    }
 
-	void switchToNewBackup();
-	void discardNewBackup();
+    void switchToNewBackup();
+    void discardNewBackup();
 
-	bool canSwitchToNewBackup() const 
-		{ return canSwitchToNewBackup_; }
+    bool canSwitchToNewBackup() const { return canSwitchToNewBackup_; }
 
-	void canSwitchToNewBackup( bool value ) 
-		{ canSwitchToNewBackup_ = value; }
+    void canSwitchToNewBackup(bool value) { canSwitchToNewBackup_ = value; }
 
-	void restore();
+    void restore();
 
-	static WatcherPtr pWatcher();
+    static WatcherPtr pWatcher();
 
-	size_t numInCurrentBackup() const { return currentBackup_.size(); }
-	size_t numInNewBackup() const { return newBackup_.size(); }
+    size_t numInCurrentBackup() const { return currentBackup_.size(); }
+    size_t numInNewBackup() const { return newBackup_.size(); }
 
-private:
-	BackedUpEntitiesWithHash currentBackup_; // Up-to-date backup.
-	BackedUpEntitiesWithHash newBackup_;	// Backup we're trying to switch to.
-	bool usingNew_;
-	bool canSwitchToNewBackup_;
-	bool hasHadCurrentBackup_;				// whether at least one entity 
-											// has been backed up to current 
-											// since our creation
+  private:
+    BackedUpEntitiesWithHash currentBackup_; // Up-to-date backup.
+    BackedUpEntitiesWithHash newBackup_; // Backup we're trying to switch to.
+    bool                     usingNew_;
+    bool                     canSwitchToNewBackup_;
+    bool hasHadCurrentBackup_; // whether at least one entity
+                               // has been backed up to current
+                               // since our creation
 };
 
 BW_END_NAMESPACE

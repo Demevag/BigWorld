@@ -8,9 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-
 @interface EntityInfoViewController : UIViewController {
-
 }
 
 @property (nonatomic, retain) NSString* icon;
@@ -19,7 +17,9 @@
 
 @property (nonatomic, retain) UILabel* infoView;
 
-- (id)initWithIconNameAndInfo:(NSString*)iconS name:(NSString*)nameS info:(NSString*)infoS;
+- (id)initWithIconNameAndInfo:(NSString*)iconS
+                         name:(NSString*)nameS
+                         info:(NSString*)infoS;
 
 - (void)updateInfo:(NSString*)infoS;
 

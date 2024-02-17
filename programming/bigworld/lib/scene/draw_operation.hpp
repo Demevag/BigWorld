@@ -6,34 +6,31 @@
 #include "scene_type_system.hpp"
 #include "scene_object.hpp"
 
-namespace BW
-{
+namespace BW {
 
-class SceneDrawContext;
+    class SceneDrawContext;
 
-class IDrawOperationTypeHandler
-{
-public:
-	virtual ~IDrawOperationTypeHandler(){}
+    class IDrawOperationTypeHandler
+    {
+      public:
+        virtual ~IDrawOperationTypeHandler() {}
 
-	virtual void doDraw( const SceneDrawContext & drawContext,
-		const SceneObject * pObjects, size_t count ) = 0;
-};
+        virtual void doDraw(const SceneDrawContext& drawContext,
+                            const SceneObject*      pObjects,
+                            size_t                  count) = 0;
+    };
 
+    class DrawOperation : public SceneObjectOperation<IDrawOperationTypeHandler>
+    {
+      public:
+        void drawAll(const SceneDrawContext& drawContext,
+                     const IntersectionSet&  visibleObjects);
 
-class DrawOperation
-	: public SceneObjectOperation<IDrawOperationTypeHandler>
-{
-public:
-
-	void drawAll( const SceneDrawContext & drawContext,
-		const IntersectionSet & visibleObjects );
-
-	void drawType( const SceneDrawContext & drawContext,
-		SceneTypeSystem::RuntimeTypeID objectType,
-		const SceneObject * pObjects, size_t count );
-
-};
+        void drawType(const SceneDrawContext&        drawContext,
+                      SceneTypeSystem::RuntimeTypeID objectType,
+                      const SceneObject*             pObjects,
+                      size_t                         count);
+    };
 
 } // namespace BW
 

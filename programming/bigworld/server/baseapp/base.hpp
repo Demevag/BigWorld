@@ -27,13 +27,11 @@
 
 #include <memory>
 
-
 BW_BEGIN_NAMESPACE
 
 class Base;
-typedef SmartPointer<PyObject> PyObjectPtr;
+typedef SmartPointer<PyObject>            PyObjectPtr;
 typedef SmartPointer<ServerEntityMailBox> ServerEntityMailBoxPtr;
-
 
 /*~ class BigWorld.Base
  *	@components{ base }
@@ -47,360 +45,360 @@ typedef SmartPointer<ServerEntityMailBox> ServerEntityMailBoxPtr;
  *	functionality of this class allows you to create and destroy the entity on
  *	existing cells, register a timer callback function to be called on the base
  *	entity, access contact information for this object,	and also access a
- *	CellEntityMailBox through which the base entity can	communicate with its cell
- *	entity (the associated cell entity can move to different cells as a result
- *	of movement of the cell entity, or load balancing).
+ *	CellEntityMailBox through which the base entity can	communicate with its
+ *cell entity (the associated cell entity can move to different cells as a
+ *result of movement of the cell entity, or load balancing).
  */
 
 /**
  *	Instances of this class are used to represent a generic base.
  */
-class Base: public PyObjectPlus
+class Base : public PyObjectPlus
 {
-	Py_Header( BW_NAMESPACE Base, PyObjectPlus )
+    Py_Header(BW_NAMESPACE Base, PyObjectPlus)
 
-public:
-	Base( EntityID id, DatabaseID dbID, EntityTypePtr pType );
-	~Base();
-	bool init( PyObject * pDict, PyObject * pCellArgs,
-		const BW::string * pBillingData );
+      public : Base(EntityID id, DatabaseID dbID, EntityTypePtr pType);
+    ~Base();
+    bool init(PyObject*         pDict,
+              PyObject*         pCellArgs,
+              const BW::string* pBillingData);
 
-	bool init( const BW::string & templateID );
+    bool init(const BW::string& templateID);
 
-	bool initDelegate( const BW::string & templateID );
+    bool initDelegate(const BW::string& templateID);
 
-	PyObject * dictFromStream( BinaryIStream & data ) const;
+    PyObject* dictFromStream(BinaryIStream& data) const;
 
-	EntityID id() const								{ return id_; }
-	EntityMailBoxRef baseEntityMailBoxRef() const;
+    EntityID         id() const { return id_; }
+    EntityMailBoxRef baseEntityMailBoxRef() const;
 
-	Mercury::UDPChannel & channel() { return *pChannel_; }
+    Mercury::UDPChannel& channel() { return *pChannel_; }
 
-	const Mercury::Address & cellAddr() const	{ return pChannel_->addr(); }
+    const Mercury::Address& cellAddr() const { return pChannel_->addr(); }
 
-	void databaseID( DatabaseID );
-	DatabaseID databaseID()	const					{ return databaseID_; }
+    void       databaseID(DatabaseID);
+    DatabaseID databaseID() const { return databaseID_; }
 
-	// Has a valid DatabaseID or about to get one.
-	bool hasWrittenToDB() const			 { return (databaseID_ != 0); }
+    // Has a valid DatabaseID or about to get one.
+    bool hasWrittenToDB() const { return (databaseID_ != 0); }
 
-	// Has received a valid DatabaseID from DBApp.
-	bool hasFullyWrittenToDB() const
-	{
-		return this->hasWrittenToDB() &&
-			(databaseID_ != PENDING_DATABASE_ID);
-	}
+    // Has received a valid DatabaseID from DBApp.
+    bool hasFullyWrittenToDB() const
+    {
+        return this->hasWrittenToDB() && (databaseID_ != PENDING_DATABASE_ID);
+    }
 
-	CellEntityMailBox * pCellEntityMailBox() const	{ return pCellEntityMailBox_; }
-	SpaceID spaceID() const							{ return spaceID_; }
+    CellEntityMailBox* pCellEntityMailBox() const
+    {
+        return pCellEntityMailBox_;
+    }
+    SpaceID spaceID() const { return spaceID_; }
 
-	void destroy( bool deleteFromDB, bool writeToDB, bool logOffFromDB = true );
-	void discard( bool isOffload = false );
-	bool writeToDB( WriteDBFlags flags, WriteToDBReplyHandler * pHandler = NULL,
-			PyObjectPtr pCellData = NULL, DatabaseID explicitDatabaseID = 0 );
-	bool writeToDB( WriteDBFlags flags, WriteToDBReplyStructPtr pReplyStruct,
-			PyObjectPtr pCellData, DatabaseID explicitDatabaseID );
-	bool requestCellDBData( WriteDBFlags flags, WriteToDBReplyStructPtr pReplyStruct );
-	PyObjectPtr getDBCellData( BinaryIStream & data );
+    void destroy(bool deleteFromDB, bool writeToDB, bool logOffFromDB = true);
+    void discard(bool isOffload = false);
+    bool writeToDB(WriteDBFlags           flags,
+                   WriteToDBReplyHandler* pHandler           = NULL,
+                   PyObjectPtr            pCellData          = NULL,
+                   DatabaseID             explicitDatabaseID = 0);
+    bool writeToDB(WriteDBFlags            flags,
+                   WriteToDBReplyStructPtr pReplyStruct,
+                   PyObjectPtr             pCellData,
+                   DatabaseID              explicitDatabaseID);
+    bool requestCellDBData(WriteDBFlags            flags,
+                           WriteToDBReplyStructPtr pReplyStruct);
+    PyObjectPtr getDBCellData(BinaryIStream& data);
 
+    void autoArchive();
+    bool archive();
+    void backupTo(const Mercury::Address&       addr,
+                  Mercury::Bundle&              bundle,
+                  bool                          isOffloading,
+                  Mercury::ReplyMessageHandler* pHandler);
 
-	void autoArchive();
-	bool archive();
-	void backupTo( const Mercury::Address & addr,
-			Mercury::Bundle & bundle,
-			bool isOffloading, Mercury::ReplyMessageHandler * pHandler );
-	
-	void writeBackupData( BinaryOStream & stream, bool isOffload );
-	void offload( const Mercury::Address & dstAddr );
-	void readBackupData( BinaryIStream & stream );
+    void writeBackupData(BinaryOStream& stream, bool isOffload);
+    void offload(const Mercury::Address& dstAddr);
+    void readBackupData(BinaryIStream& stream);
 
-	bool hasCellEntity() const;
-	bool shouldSendToCell() const;
+    bool hasCellEntity() const;
+    bool shouldSendToCell() const;
 
-	bool isCreateCellPending() const	{ return isCreateCellPending_; }
-	bool isGetCellPending() const		{ return isGetCellPending_; }
-	bool isDestroyCellPending() const 	{ return isDestroyCellPending_; }
+    bool isCreateCellPending() const { return isCreateCellPending_; }
+    bool isGetCellPending() const { return isGetCellPending_; }
+    bool isDestroyCellPending() const { return isDestroyCellPending_; }
 
-	bool hasBeenBackedUp() const		{ return hasBeenBackedUp_; }
+    bool hasBeenBackedUp() const { return hasBeenBackedUp_; }
 
-	void reloadScript();
-	bool migrate();
-	void migratedAll();
+    void reloadScript();
+    bool migrate();
+    void migratedAll();
 
-	// virtual methods
-	bool isProxy() const							{ return isProxy_; }
+    // virtual methods
+    bool isProxy() const { return isProxy_; }
 
-	bool isDestroyed() const						{ return isDestroyed_; }
+    bool isDestroyed() const { return isDestroyed_; }
 
-	bool isServiceFragment() const
-	{
-		return pType_->description().isService();
-	}
+    bool isServiceFragment() const { return pType_->description().isService(); }
 
-	// tell the base that its cell entity is in a new cell
-	void setCurrentCell( SpaceID spaceID,
-		const Mercury::Address & cellAppAddr,
-		const Mercury::Address * pSrcAddr = NULL,
-		bool shouldReset = false );
+    // tell the base that its cell entity is in a new cell
+    void setCurrentCell(SpaceID                 spaceID,
+                        const Mercury::Address& cellAppAddr,
+                        const Mercury::Address* pSrcAddr    = NULL,
+                        bool                    shouldReset = false);
 
-	void currentCell( const Mercury::Address & srcAddr,
-				const Mercury::UnpackedMessageHeader & header,
-				const BaseAppIntInterface::currentCellArgs & args );
+    void currentCell(const Mercury::Address&                     srcAddr,
+                     const Mercury::UnpackedMessageHeader&       header,
+                     const BaseAppIntInterface::currentCellArgs& args);
 
-	void teleportOther( const Mercury::Address & srcAddr,
-				const Mercury::UnpackedMessageHeader & header,
-				const BaseAppIntInterface::teleportOtherArgs & args );
+    void teleportOther(const Mercury::Address&                       srcAddr,
+                       const Mercury::UnpackedMessageHeader&         header,
+                       const BaseAppIntInterface::teleportOtherArgs& args);
 
-	void emergencySetCurrentCell( const Mercury::Address & srcAddr,
-		const Mercury::UnpackedMessageHeader & header,
-		BinaryIStream & data );
+    void emergencySetCurrentCell(const Mercury::Address&               srcAddr,
+                                 const Mercury::UnpackedMessageHeader& header,
+                                 BinaryIStream&                        data);
 
-	void backupCellEntity( BinaryIStream & data );
+    void backupCellEntity(BinaryIStream& data);
 
-	void writeToDB( BinaryIStream & data );
+    void writeToDB(BinaryIStream& data);
 
-	void cellEntityLost( const Mercury::Address & srcAddr,
-		   const Mercury::UnpackedMessageHeader & header,
-		   BinaryIStream & data );
+    void cellEntityLost(const Mercury::Address&               srcAddr,
+                        const Mercury::UnpackedMessageHeader& header,
+                        BinaryIStream&                        data);
 
-	void callBaseMethod( const Mercury::Address & srcAddr,
-		   const Mercury::UnpackedMessageHeader & header,
-		   BinaryIStream & data );
+    void callBaseMethod(const Mercury::Address&               srcAddr,
+                        const Mercury::UnpackedMessageHeader& header,
+                        BinaryIStream&                        data);
 
-	void callCellMethod( const Mercury::Address & srcAddr,
-		   const Mercury::UnpackedMessageHeader & header,
-		   BinaryIStream & data );
+    void callCellMethod(const Mercury::Address&               srcAddr,
+                        const Mercury::UnpackedMessageHeader& header,
+                        BinaryIStream&                        data);
 
-	void getCellAddr( const Mercury::Address & srcAddr,
-		   const Mercury::UnpackedMessageHeader & header,
-		   BinaryIStream & data );
+    void getCellAddr(const Mercury::Address&               srcAddr,
+                     const Mercury::UnpackedMessageHeader& header,
+                     BinaryIStream&                        data);
 
+    void startKeepAlive(const Mercury::Address&                        srcAdr,
+                        const Mercury::UnpackedMessageHeader&          header,
+                        const BaseAppIntInterface::startKeepAliveArgs& args);
 
-	void startKeepAlive( const Mercury::Address & srcAdr,
-			const Mercury::UnpackedMessageHeader & header,
-			const BaseAppIntInterface::startKeepAliveArgs & args );
+    // Profiling
+    const EntityProfiler& profiler() const { return profiler_; }
+    EntityProfiler&       profiler() { return profiler_; }
 
-	// Profiling
-	const EntityProfiler & profiler() const { return profiler_; }
-	EntityProfiler & profiler() { return profiler_; }
+    // Script related methods
+    ScriptObject pyGetAttribute(const ScriptString& attrObj);
+    bool pySetAttribute(const ScriptString& attrObj, const ScriptObject& value);
 
-	// Script related methods
-	ScriptObject pyGetAttribute( const ScriptString & attrObj );
-	bool pySetAttribute( const ScriptString & attrObj,
-		const ScriptObject & value );
+    bool teleport(const EntityMailBoxRef& nearbyBaseMB);
+    PY_AUTO_METHOD_DECLARE(RETOK, teleport, ARG(EntityMailBoxRef, END));
 
-	bool teleport( const EntityMailBoxRef & nearbyBaseMB );
-	PY_AUTO_METHOD_DECLARE( RETOK, teleport,
-			ARG( EntityMailBoxRef, END ) );
+    bool createCellEntity(const ServerEntityMailBoxPtr& pNearbyMB);
+    PY_AUTO_METHOD_DECLARE(RETOK,
+                           createCellEntity,
+                           OPTARG(ServerEntityMailBoxPtr, NULL, END))
 
-	bool createCellEntity( const ServerEntityMailBoxPtr & pNearbyMB );
-	PY_AUTO_METHOD_DECLARE( RETOK, createCellEntity,
-		OPTARG( ServerEntityMailBoxPtr, NULL, END ) )
+    bool createInDefaultSpace();
+    PY_AUTO_METHOD_DECLARE(RETOK, createInDefaultSpace, END)
 
-	bool createInDefaultSpace();
-	PY_AUTO_METHOD_DECLARE( RETOK, createInDefaultSpace, END )
+    PY_KEYWORD_METHOD_DECLARE(py_createInNewSpace)
 
-	PY_KEYWORD_METHOD_DECLARE( py_createInNewSpace )
+    bool createInSpace(SpaceID spaceID, const char* pyErrorPrefix);
 
-	bool createInSpace( SpaceID spaceID, const char * pyErrorPrefix );
+    void cellCreationResult(bool success);
 
-	void cellCreationResult( bool success );
+    bool sendCreateCellEntity(Mercury::ReplyMessageHandler* pHandler,
+                              EntityID                      nearbyID,
+                              const Mercury::Address&       cellAddr,
+                              const char*                   errorPrefix);
 
-	bool sendCreateCellEntity(
-			Mercury::ReplyMessageHandler * pHandler,
-			EntityID nearbyID,
-			const Mercury::Address & cellAddr,
-			const char * errorPrefix );
+    bool restoreTo(SpaceID spaceID, const Mercury::Address& cellAppAddr);
 
-	bool restoreTo( SpaceID spaceID, const Mercury::Address & cellAppAddr );
+    Mercury::Bundle& cellBundle() { return pChannel_->bundle(); }
+    void             sendToCell();
 
-	Mercury::Bundle & cellBundle()	{ return pChannel_->bundle(); }
-	void sendToCell();
+    PY_KEYWORD_METHOD_DECLARE(py_destroy)
+    PY_METHOD_DECLARE(py_destroyCellEntity)
+    PY_KEYWORD_METHOD_DECLARE(py_writeToDB)
+    PY_METHOD_DECLARE(py_addTimer)
+    PY_METHOD_DECLARE(py_delTimer)
 
-	PY_KEYWORD_METHOD_DECLARE( py_destroy )
-	PY_METHOD_DECLARE( py_destroyCellEntity )
-	PY_KEYWORD_METHOD_DECLARE( py_writeToDB )
-	PY_METHOD_DECLARE( py_addTimer )
-	PY_METHOD_DECLARE( py_delTimer )
+    PY_METHOD_DECLARE(py_registerGlobally)
+    PY_METHOD_DECLARE(py_deregisterGlobally)
 
-	PY_METHOD_DECLARE( py_registerGlobally )
-	PY_METHOD_DECLARE( py_deregisterGlobally )
+    PY_PICKLING_METHOD_DECLARE(MailBox)
 
-	PY_PICKLING_METHOD_DECLARE( MailBox )
-	
-	PY_AUTO_METHOD_DECLARE( RETOWN, getComponent, ARG( BW::string, END ) );
-	PyObject * getComponent( const BW::string & name );
+    PY_AUTO_METHOD_DECLARE(RETOWN, getComponent, ARG(BW::string, END));
+    PyObject* getComponent(const BW::string& name);
 
-	float artificialMinLoad() const
-		{ return profiler_.artificialMinLoad(); }
-	void artificialMinLoad( float v )
-		{ profiler_.artificialMinLoad( v ); }
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( float, artificialMinLoad, artificialMinLoad );
+    float artificialMinLoad() const { return profiler_.artificialMinLoad(); }
+    void  artificialMinLoad(float v) { profiler_.artificialMinLoad(v); }
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(float,
+                                     artificialMinLoad,
+                                     artificialMinLoad);
 
+    PY_RO_ATTRIBUTE_DECLARE((int)id_, id)
+    PY_RO_ATTRIBUTE_DECLARE(isDestroyed_, isDestroyed)
 
-	PY_RO_ATTRIBUTE_DECLARE( (int)id_, id )
-	PY_RO_ATTRIBUTE_DECLARE( isDestroyed_, isDestroyed )
+    PY_RO_ATTRIBUTE_DECLARE((int)pType_->description().index(), baseType)
+    PY_RO_ATTRIBUTE_DECLARE(pType_->name(), className);
 
-	PY_RO_ATTRIBUTE_DECLARE( (int)pType_->description().index(), baseType )
-	PY_RO_ATTRIBUTE_DECLARE( pType_->name(), className );
+    PyObject* pyGet_cell();
+    PY_RO_ATTRIBUTE_SET(cell)
 
-	PyObject * pyGet_cell();
-	PY_RO_ATTRIBUTE_SET( cell )
+    PY_RO_ATTRIBUTE_DECLARE(this->hasCellEntity() || this->isGetCellPending(),
+                            hasCell)
 
-	PY_RO_ATTRIBUTE_DECLARE( this->hasCellEntity() || this->isGetCellPending(),
-			hasCell )
+    PyObject* pyGet_cellData();
+    int       pySet_cellData(PyObject* value);
 
-	PyObject * pyGet_cellData();
-	int pySet_cellData( PyObject * value );
+    PyObject* pyGet_databaseID();
+    PY_RO_ATTRIBUTE_SET(databaseID)
 
-	PyObject * pyGet_databaseID();
-	PY_RO_ATTRIBUTE_SET( databaseID )
+    AutoBackupAndArchive::Policy shouldAutoBackup() const
+    {
+        return shouldAutoBackup_;
+    }
 
-	AutoBackupAndArchive::Policy shouldAutoBackup() const 
-		{ return shouldAutoBackup_; }
+    void shouldAutoBackup(AutoBackupAndArchive::Policy value)
+    {
+        if (BaseAppConfig::shouldLogBackups()) {
+            DEBUG_MSG(
+              "Base::shouldAutoBackup: "
+              "Base %d backup policy has changed, from %s to %s.\n",
+              this->id(),
+              AutoBackupAndArchive::policyAsString(this->shouldAutoBackup()),
+              AutoBackupAndArchive::policyAsString(value));
+        }
 
-	void shouldAutoBackup( AutoBackupAndArchive::Policy value )
-	{
-		if (BaseAppConfig::shouldLogBackups())
-		{
-			DEBUG_MSG( "Base::shouldAutoBackup: "
-						"Base %d backup policy has changed, from %s to %s.\n",
-					this->id(),
-					AutoBackupAndArchive::policyAsString(
-							this->shouldAutoBackup() ),
-					AutoBackupAndArchive::policyAsString( value ));
-		}
+        shouldAutoBackup_ = value;
+    }
 
-		shouldAutoBackup_ = value;
-	}
+    PY_RW_ATTRIBUTE_DECLARE(shouldAutoBackup_, shouldAutoBackup)
+    PY_RW_ATTRIBUTE_DECLARE(shouldAutoArchive_, shouldAutoArchive)
 
-	PY_RW_ATTRIBUTE_DECLARE( shouldAutoBackup_, shouldAutoBackup )
-	PY_RW_ATTRIBUTE_DECLARE( shouldAutoArchive_, shouldAutoArchive )
-
-	EntityTypePtr pType() const								{ return pType_; }
+    EntityTypePtr pType() const { return pType_; }
 
 #if ENABLE_WATCHERS
 
-	static WatcherPtr pWatcher();
-	unsigned long getBackupSize () const;
-	uint32 backupSize() const {return backupSize_;}
-	uint32 archiveSize() const {return archiveSize_;}
-protected:
-	uint32 backupSize_;
-	uint32 archiveSize_;
+    static WatcherPtr pWatcher();
+    unsigned long     getBackupSize() const;
+    uint32            backupSize() const { return backupSize_; }
+    uint32            archiveSize() const { return archiveSize_; }
+
+  protected:
+    uint32 backupSize_;
+    uint32 archiveSize_;
 #endif
 
-protected:
-	void onDestroy( bool isOffload );
-	void createCellData( BinaryIStream & data );
+  protected:
+    void onDestroy(bool isOffload);
+    void createCellData(BinaryIStream& data);
 
-	void keepAliveTimeout();
+    void keepAliveTimeout();
 
-	bool callOnPreArchiveCallback();
-	
-	bool addAttributesToStream( BinaryOStream & stream, int dataDomains );
+    bool callOnPreArchiveCallback();
 
-	void sendExposedForReplayClientPropertiesToCell();
+    bool addAttributesToStream(BinaryOStream& stream, int dataDomains);
 
-private:
-	bool addToStream( WriteDBFlags flags, BinaryOStream & stream,
-			PyObjectPtr pCellData );
+    void sendExposedForReplayClientPropertiesToCell();
 
-	void writeBackupDataInternal( BinaryOStream & stream, bool isOffload );
-	void readBackupDataInternal( BinaryIStream & stream );
+  private:
+    bool addToStream(WriteDBFlags   flags,
+                     BinaryOStream& stream,
+                     PyObjectPtr    pCellData);
 
-	void backUpTimers( BinaryOStream & stream );
-	void backUpAttributes( BinaryOStream & stream );
-	void backUpNonDefAttributes( BinaryOStream & stream );
-	void backUpCellData( BinaryOStream & stream );
+    void writeBackupDataInternal(BinaryOStream& stream, bool isOffload);
+    void readBackupDataInternal(BinaryIStream& stream);
 
-	void restoreTimers( BinaryIStream & stream );
-	void restoreAttributes( BinaryIStream & stream );
-	void restoreNonDefAttributes( BinaryIStream & stream );
-	void restoreCellData( BinaryIStream & stream );
+    void backUpTimers(BinaryOStream& stream);
+    void backUpAttributes(BinaryOStream& stream);
+    void backUpNonDefAttributes(BinaryOStream& stream);
+    void backUpCellData(BinaryOStream& stream);
 
-	std::auto_ptr< Mercury::ReplyMessageHandler >
-		prepareForCellCreate( const char * errorPrefix );
-	bool addCellCreationData( Mercury::Bundle & bundle,
-		const char * errorPrefix );
-	bool checkAssociatedCellEntity( bool havingEntityGood,
-		const char * errorPrefix = NULL );
+    void restoreTimers(BinaryIStream& stream);
+    void restoreAttributes(BinaryIStream& stream);
+    void restoreNonDefAttributes(BinaryIStream& stream);
+    void restoreCellData(BinaryIStream& stream);
 
-	bool createCellEntityFromSpaceID( const char * errorPrefix );
+    std::auto_ptr<Mercury::ReplyMessageHandler> prepareForCellCreate(
+      const char* errorPrefix);
+    bool addCellCreationData(Mercury::Bundle& bundle, const char* errorPrefix);
+    bool checkAssociatedCellEntity(bool        havingEntityGood,
+                                   const char* errorPrefix = NULL);
 
-	bool sendCreateCellEntityViaBase(
-			Mercury::ReplyMessageHandler * pHandler,
-			EntityID nearbyID,
-			const Mercury::Address & baseAddr,
-			const char * errorPrefix );
+    bool createCellEntityFromSpaceID(const char* errorPrefix);
 
-	bool sendCreateCellEntityToMailBox(
-			Mercury::ReplyMessageHandler * pHandler,
-			const ServerEntityMailBox & mailBox,
-			const char * errorPrefix );
+    bool sendCreateCellEntityViaBase(Mercury::ReplyMessageHandler* pHandler,
+                                     EntityID                      nearbyID,
+                                     const Mercury::Address&       baseAddr,
+                                     const char*                   errorPrefix);
 
-	bool assignAttribute( const ScriptString & propertyName, 
-		const ScriptObject & value,
-		DataDescription * pDescription );
+    bool sendCreateCellEntityToMailBox(Mercury::ReplyMessageHandler* pHandler,
+                                       const ServerEntityMailBox&    mailBox,
+                                       const char* errorPrefix);
 
-	bool cacheExposedForReplayClientProperties();
+    bool assignAttribute(const ScriptString& propertyName,
+                         const ScriptObject& value,
+                         DataDescription*    pDescription);
 
-protected:
-	Mercury::UDPChannel * pChannel_;
+    bool cacheExposedForReplayClientProperties();
 
-	EntityID			id_;
-	DatabaseID			databaseID_;
-	EntityTypePtr		pType_;
-	PyObjectPtr			pCellData_;
+  protected:
+    Mercury::UDPChannel* pChannel_;
 
-	CellEntityMailBox *	pCellEntityMailBox_;
-	SpaceID				spaceID_;
+    EntityID      id_;
+    DatabaseID    databaseID_;
+    EntityTypePtr pType_;
+    PyObjectPtr   pCellData_;
 
-	bool				isProxy_;
-	bool				isDestroyed_;
+    CellEntityMailBox* pCellEntityMailBox_;
+    SpaceID            spaceID_;
 
-	bool				inDestroy_;
+    bool isProxy_;
+    bool isDestroyed_;
 
-	/// True if a 'create' request has been sent to the CellApp but no reply has
-	/// yet been received.
-	bool				isCreateCellPending_;
+    bool inDestroy_;
 
-	/// True if a 'create' request has been sent but setCurrentCell has yet to
-	/// be called.
-	bool				isGetCellPending_;
+    /// True if a 'create' request has been sent to the CellApp but no reply has
+    /// yet been received.
+    bool isCreateCellPending_;
 
-	/// True if a 'destroy' request has been sent but cellEntityLost has yet to
-	/// be called.
-	bool				isDestroyCellPending_;
+    /// True if a 'create' request has been sent but setCurrentCell has yet to
+    /// be called.
+    bool isGetCellPending_;
 
-	bool				hasBeenBackedUp_;
+    /// True if a 'destroy' request has been sent but cellEntityLost has yet to
+    /// be called.
+    bool isDestroyCellPending_;
 
-	BW::string		cellBackupData_;
+    bool hasBeenBackedUp_;
 
-	friend class EntityType;
+    BW::string cellBackupData_;
 
-	friend class KeepAliveTimerHandler;
+    friend class EntityType;
 
-	TimerHandle				keepAliveTimerHandle_;
-	uint64					nextKeepAliveStop_;
+    friend class KeepAliveTimerHandler;
 
-	PyTimer pyTimer_;
+    TimerHandle keepAliveTimerHandle_;
+    uint64      nextKeepAliveStop_;
 
-	AutoBackupAndArchive::Policy shouldAutoBackup_;
-	AutoBackupAndArchive::Policy shouldAutoArchive_;
+    PyTimer pyTimer_;
 
-	IEntityDelegatePtr	pEntityDelegate_;
-	BW::string			templateID_;
-private:
+    AutoBackupAndArchive::Policy shouldAutoBackup_;
+    AutoBackupAndArchive::Policy shouldAutoArchive_;
 
-	ScriptDict	exposedForReplayClientProperties_;
+    IEntityDelegatePtr pEntityDelegate_;
+    BW::string         templateID_;
 
-	// Profiling
-	EntityProfiler profiler_;
+  private:
+    ScriptDict exposedForReplayClientProperties_;
+
+    // Profiling
+    EntityProfiler profiler_;
 };
 
-typedef SmartPointer< Base > BasePtr;
-typedef Base	            BaseOrEntity;
+typedef SmartPointer<Base> BasePtr;
+typedef Base               BaseOrEntity;
 
 BW_END_NAMESPACE
 

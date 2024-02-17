@@ -7,7 +7,7 @@ BW_BEGIN_NAMESPACE
 //==============================================================================
 bool IEditorApp::isMinimized()
 {
-	return AfxGetMainWnd()->IsIconic() == TRUE;
+    return AfxGetMainWnd()->IsIconic() == TRUE;
 }
 
 BW_END_NAMESPACE

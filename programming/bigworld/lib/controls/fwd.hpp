@@ -5,10 +5,9 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace controls
-{
-    class   ColorStatic;
-    class   CSearchFilterEdit;
+namespace controls {
+    class ColorStatic;
+    class CSearchFilterEdit;
 }
 
 BW_END_NAMESPACE

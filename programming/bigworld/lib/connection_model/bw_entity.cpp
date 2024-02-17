@@ -14,74 +14,72 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor.
  */
-BWEntity::BWEntity( BWConnection * pBWConnection ):
-		SafeReferenceCount(),
-		entityExtensions_(),
-		entityID_( NULL_ENTITY_ID ),
-		entityTypeID_( INVALID_ENTITY_TYPE_ID ),
-		spaceID_( NULL_SPACE_ID ),
-		vehicleID_( NULL_ENTITY_ID ),
-		pVehicle_( NULL ),
-		pBWConnection_( pBWConnection ),
-		isPlayer_( false ),
-		pFilter_( NULL ),
-		localPosition_( 0.f, 0.f, 0.f ),
-		localDirection_(),
-		isInAoI_( false ),
-		isInWorld_( false ),
-		isDestroyed_( false ),
-		isControlled_( false ),
-		isReceivingVolatileUpdates_( false ),
-		physicsCorrectionAckTime_( 0. ),
-		latestLocalMoveTime_( 0. ),
-		latestLocalMoveIs2D_( false )
+BWEntity::BWEntity(BWConnection* pBWConnection)
+  : SafeReferenceCount()
+  , entityExtensions_()
+  , entityID_(NULL_ENTITY_ID)
+  , entityTypeID_(INVALID_ENTITY_TYPE_ID)
+  , spaceID_(NULL_SPACE_ID)
+  , vehicleID_(NULL_ENTITY_ID)
+  , pVehicle_(NULL)
+  , pBWConnection_(pBWConnection)
+  , isPlayer_(false)
+  , pFilter_(NULL)
+  , localPosition_(0.f, 0.f, 0.f)
+  , localDirection_()
+  , isInAoI_(false)
+  , isInWorld_(false)
+  , isDestroyed_(false)
+  , isControlled_(false)
+  , isReceivingVolatileUpdates_(false)
+  , physicsCorrectionAckTime_(0.)
+  , latestLocalMoveTime_(0.)
+  , latestLocalMoveIs2D_(false)
 {
 }
-
 
 /**
  *	Destructor.
  */
 BWEntity::~BWEntity()
 {
-	MF_ASSERT( isDestroyed_ );
-	MF_ASSERT( pFilter_ == NULL );
+    MF_ASSERT(isDestroyed_);
+    MF_ASSERT(pFilter_ == NULL);
 }
-
 
 /**
  *	This method creates the entity extensions associated with this entity.
  */
-void BWEntity::createExtensions( EntityExtensionFactoryManager & factories )
+void BWEntity::createExtensions(EntityExtensionFactoryManager& factories)
 {
-	entityExtensions_.init( *this, factories );
+    entityExtensions_.init(*this, factories);
 }
-
 
 /**
  *	This method is called to initialise this entity.
  *
  *	@param entityID 		The ID of the entity.
- *	@param entityTypeID 	The entity Type ID of this entity.	
+ *	@param entityTypeID 	The entity Type ID of this entity.
  *	@param spaceID			The ID of the space this entity's cell entity
  *							resides in, or NULL_SPACE_ID if this is a base
  *							entity.
  *	@param data 			The property data stream.
  */
-bool BWEntity::init( EntityID entityID, EntityTypeID entityTypeID,
-		SpaceID spaceID, BinaryIStream & data )
+bool BWEntity::init(EntityID       entityID,
+                    EntityTypeID   entityTypeID,
+                    SpaceID        spaceID,
+                    BinaryIStream& data)
 {
-	entityID_ = entityID;
-	entityTypeID_ = entityTypeID;
-	spaceID_ = spaceID;
+    entityID_     = entityID;
+    entityTypeID_ = entityTypeID;
+    spaceID_      = spaceID;
 
-	bool isOkay = (spaceID == NULL_SPACE_ID) ?
-		this->initBasePlayerFromStream( data ) :
-		this->initCellEntityFromStream( data );
+    bool isOkay = (spaceID == NULL_SPACE_ID)
+                    ? this->initBasePlayerFromStream(data)
+                    : this->initCellEntityFromStream(data);
 
-	return isOkay;
+    return isOkay;
 }
-
 
 /**
  *	This method is called to restore this entity after a Cell failure
@@ -89,11 +87,10 @@ bool BWEntity::init( EntityID entityID, EntityTypeID entityTypeID,
  *	@param data 			A stream containing the current properties from the
  *							Base, then the Cell, as visible to the client.
  */
-bool BWEntity::onRestoreProperties( BinaryIStream & data )
+bool BWEntity::onRestoreProperties(BinaryIStream& data)
 {
-	return this->restorePlayerFromStream( data );
+    return this->restorePlayerFromStream(data);
 }
-
 
 /**
  *	This method initialises this entity's properties from a batch property
@@ -105,12 +102,11 @@ bool BWEntity::onRestoreProperties( BinaryIStream & data )
  *
  *	@see BWEntity::onProperties
  */
-bool BWEntity::initCellEntityFromStream( BinaryIStream & stream )
+bool BWEntity::initCellEntityFromStream(BinaryIStream& stream)
 {
-	this->onProperties( stream, /* isInitialising */ true );
-	return !stream.error();
+    this->onProperties(stream, /* isInitialising */ true);
+    return !stream.error();
 }
-
 
 /**
  *	This method is called when the server sends a batch of property changes.
@@ -124,24 +120,21 @@ bool BWEntity::initCellEntityFromStream( BinaryIStream & stream )
  *							already been initialised. Typically used to decide
  *							whether or not to call a set_ callback.
  */
-void BWEntity::onProperties( BinaryIStream & data, bool isInitialising )
+void BWEntity::onProperties(BinaryIStream& data, bool isInitialising)
 {
-	if (!data.remainingLength())
-	{
-		return;
-	}
+    if (!data.remainingLength()) {
+        return;
+    }
 
-	uint8 size;
-	data >> size;
+    uint8 size;
+    data >> size;
 
-	for (uint8 i = 0; i < size; i++)
-	{
-		uint8 index;
-		data >> index;
-		this->onProperty( index, data, isInitialising );
-	}
+    for (uint8 i = 0; i < size; i++) {
+        uint8 index;
+        data >> index;
+        this->onProperty(index, data, isInitialising);
+    }
 }
-
 
 /**
  *	This method indicates if this entity is a local entity, rather than being
@@ -149,9 +142,8 @@ void BWEntity::onProperties( BinaryIStream & data, bool isInitialising )
  */
 bool BWEntity::isLocalEntity() const
 {
-	return BWEntities::isLocalEntity( entityID_ );
+    return BWEntities::isLocalEntity(entityID_);
 }
-
 
 /**
  *	This method tests whether we're currently physics-corrected, which means
@@ -159,103 +151,99 @@ bool BWEntity::isLocalEntity() const
  */
 bool BWEntity::isPhysicsCorrected() const
 {
-	if (isZero( physicsCorrectionAckTime_ ))
-	{
-		return false;
-	}
+    if (isZero(physicsCorrectionAckTime_)) {
+        return false;
+    }
 
-	// We are physics-corrected until after we have sent a packet containing
-	// the physics-correction acknowledgement.
-	// physicsCorrectionAckTime_ is the timestamp of the packet we sent before
-	// the physics correction arrived.
-	if (isEqual( physicsCorrectionAckTime_,
-		pBWConnection_->lastSentMessageTime() ))
-	{
-		return true;
-	}
+    // We are physics-corrected until after we have sent a packet containing
+    // the physics-correction acknowledgement.
+    // physicsCorrectionAckTime_ is the timestamp of the packet we sent before
+    // the physics correction arrived.
+    if (isEqual(physicsCorrectionAckTime_,
+                pBWConnection_->lastSentMessageTime())) {
+        return true;
+    }
 
-	IF_NOT_MF_ASSERT_DEV( physicsCorrectionAckTime_ <
-		pBWConnection_->lastSentMessageTime())
-	{
-		ERROR_MSG( "BWEntity::isPhysicsCorrected: Physics corrected after "
-				"packet sent at %g, but most recent packet sent at %g\n",
-			physicsCorrectionAckTime_, pBWConnection_->lastSentMessageTime() );
-		// We've somehow gone backwards in time... Stay physics-corrected until
-		// we catch up with reality again.
-		return true;
-	}
+    IF_NOT_MF_ASSERT_DEV(physicsCorrectionAckTime_ <
+                         pBWConnection_->lastSentMessageTime())
+    {
+        ERROR_MSG("BWEntity::isPhysicsCorrected: Physics corrected after "
+                  "packet sent at %g, but most recent packet sent at %g\n",
+                  physicsCorrectionAckTime_,
+                  pBWConnection_->lastSentMessageTime());
+        // We've somehow gone backwards in time... Stay physics-corrected until
+        // we catch up with reality again.
+        return true;
+    }
 
-	// This is mutable, to avoid the lastSentMessageTime() lookup every time
-	// something calls this.
-	physicsCorrectionAckTime_ = 0.;
+    // This is mutable, to avoid the lastSentMessageTime() lookup every time
+    // something calls this.
+    physicsCorrectionAckTime_ = 0.;
 
-	return false;
+    return false;
 }
-
 
 /**
  *	This method sets the physics correction state for this entity.
  *
  *	@param The time of the last server message send.
  */
-void BWEntity::setPhysicsCorrected( double time )
+void BWEntity::setPhysicsCorrected(double time)
 {
-	physicsCorrectionAckTime_ = time;
+    physicsCorrectionAckTime_ = time;
 }
 
-
-/** 
+/**
  *	This method sets the filter for this entity.
  *
  *	After this, this entity owns the filter, and will delete it when it is
  *	done with it.
- * 
+ *
  *	This method cannot be called on an Entity that has not yet entered, or
  *	has already left, AoI.
- * 
+ *
  *	@param pFilter 	The filter to set, or NULL to clear the filter.
  */
-void BWEntity::pFilter( MovementFilter * pNewFilter )
+void BWEntity::pFilter(MovementFilter* pNewFilter)
 {
-	// Early-out if we're not changing the filter
-	if (pNewFilter == pFilter_)
-	{
-		return;
-	}
+    // Early-out if we're not changing the filter
+    if (pNewFilter == pFilter_) {
+        return;
+    }
 
-	// Early-out if we're removing the filter.
-	if (pNewFilter == NULL)
-	{
-		// TODO: Should we output the top of the filter at this point?
-		bw_safe_delete( pFilter_ );
-		return;
-	}
+    // Early-out if we're removing the filter.
+    if (pNewFilter == NULL) {
+        // TODO: Should we output the top of the filter at this point?
+        bw_safe_delete(pFilter_);
+        return;
+    }
 
-	// We cannot set a filter if the entity is not in AoI
-	IF_NOT_MF_ASSERT_DEV( isInAoI_ )
-	{
-		ERROR_MSG( "BWEntity::pFilter: Ignoring attempt to set a filter on "
-			"entity %d which is not in our AoI\n", this->entityID() );
-		return;
-	}
+    // We cannot set a filter if the entity is not in AoI
+    IF_NOT_MF_ASSERT_DEV(isInAoI_)
+    {
+        ERROR_MSG("BWEntity::pFilter: Ignoring attempt to set a filter on "
+                  "entity %d which is not in our AoI\n",
+                  this->entityID());
+        return;
+    }
 
-	if (pFilter_ != NULL)
-	{
-		pNewFilter->copyState( *pFilter_ );
-		bw_safe_delete( pFilter_ );
-	}
-	else
-	{
-		double time = this->pBWConnection()->clientTime();
+    if (pFilter_ != NULL) {
+        pNewFilter->copyState(*pFilter_);
+        bw_safe_delete(pFilter_);
+    } else {
+        double time = this->pBWConnection()->clientTime();
 
-		pNewFilter->reset( time );
-		pNewFilter->input( time, spaceID_, vehicleID_, localPosition_,
-			Vector3::zero(), localDirection_ );
-	}
+        pNewFilter->reset(time);
+        pNewFilter->input(time,
+                          spaceID_,
+                          vehicleID_,
+                          localPosition_,
+                          Vector3::zero(),
+                          localDirection_);
+    }
 
-	pFilter_ = pNewFilter;
+    pFilter_ = pNewFilter;
 }
-
 
 /**
  *	This method applies any attached filter at the given time to the
@@ -267,16 +255,14 @@ void BWEntity::pFilter( MovementFilter * pNewFilter )
  *
  *	@return true unless the entity's state has become invalid
  */
-bool BWEntity::applyFilter( double gameTime )
+bool BWEntity::applyFilter(double gameTime)
 {
-	if (pFilter_ != NULL)
-	{
-		pFilter_->output( gameTime, *this );
-	}
+    if (pFilter_ != NULL) {
+        pFilter_->output(gameTime, *this);
+    }
 
-	return (vehicleID_ == NULL_ENTITY_ID || pVehicle_ != NULL);
+    return (vehicleID_ == NULL_ENTITY_ID || pVehicle_ != NULL);
 }
-
 
 /**
  *	This method is used to update the cell properties of a player whose base
@@ -284,134 +270,122 @@ bool BWEntity::applyFilter( double gameTime )
  *
  *	@param data 	The data stream containing the cell property data.
  */
-bool BWEntity::updateCellPlayerProperties( BinaryIStream & data )
+bool BWEntity::updateCellPlayerProperties(BinaryIStream& data)
 {
-	// Workaround for bug 32285
-	isControlled_ = true;
-	latestLocalMoveTime_ = 0.;
+    // Workaround for bug 32285
+    isControlled_        = true;
+    latestLocalMoveTime_ = 0.;
 
-	return this->initCellPlayerFromStream( data );
+    return this->initCellPlayerFromStream(data);
 }
-
 
 /**
  *	This method calculates the position of the entity in world coordinates.
  */
 const Position3D BWEntity::position() const
 {
-	if (pVehicle_ == NULL)
-	{
-		return localPosition_;
-	}
-	else
-	{
-		Matrix m;
-		const Direction3D vehicleDirection = pVehicle_->direction();
+    if (pVehicle_ == NULL) {
+        return localPosition_;
+    } else {
+        Matrix            m;
+        const Direction3D vehicleDirection = pVehicle_->direction();
 
-		m.setRotate( vehicleDirection.yaw, vehicleDirection.pitch, vehicleDirection.roll );
+        m.setRotate(
+          vehicleDirection.yaw, vehicleDirection.pitch, vehicleDirection.roll);
 
-		return m.applyVector( localPosition_ ) + pVehicle_->position();
-	}
+        return m.applyVector(localPosition_) + pVehicle_->position();
+    }
 }
-
 
 /**
  *	This method calculates the direction of the entity in world coordinates.
  */
 const Direction3D BWEntity::direction() const
 {
-	if (pVehicle_ == NULL)
-	{
-		return localDirection_;
-	}
-	else
-	{
-		Direction3D out = localDirection_;
-		const Direction3D vehicleDirection = pVehicle_->direction();
+    if (pVehicle_ == NULL) {
+        return localDirection_;
+    } else {
+        Direction3D       out              = localDirection_;
+        const Direction3D vehicleDirection = pVehicle_->direction();
 
-		out.yaw += vehicleDirection.yaw;
+        out.yaw += vehicleDirection.yaw;
 
-		// TODO: These are commented out in BWClient's
-		// transformVehicleToCommon() method. Not sure why yet.
+        // TODO: These are commented out in BWClient's
+        // transformVehicleToCommon() method. Not sure why yet.
 
-		// out.pitch += vehicleDirection.pitch;
-		// out.roll += vehicleDirection.roll;
+        // out.pitch += vehicleDirection.pitch;
+        // out.roll += vehicleDirection.roll;
 
-		return out;
-	}
+        return out;
+    }
 }
-
 
 /**
  *	This method is an override from MovementFilterTarget
  */
-void BWEntity::setSpaceVehiclePositionAndDirection( const SpaceID & spaceID,
-		const EntityID & vehicleID, const Position3D & position, 
-		const Direction3D & direction )
+void BWEntity::setSpaceVehiclePositionAndDirection(const SpaceID&     spaceID,
+                                                   const EntityID&    vehicleID,
+                                                   const Position3D&  position,
+                                                   const Direction3D& direction)
 {
-	// Only the player Entity can actually see a space change while in-world.
-	MF_ASSERT( spaceID == spaceID_ || this->isPlayer() );
+    // Only the player Entity can actually see a space change while in-world.
+    MF_ASSERT(spaceID == spaceID_ || this->isPlayer());
 
-	// We don't count the player getting a cell-entity as a space change for
-	// callback purposes.
-	bool isSpaceChange = spaceID_ != spaceID && spaceID_ != NULL_SPACE_ID;
+    // We don't count the player getting a cell-entity as a space change for
+    // callback purposes.
+    bool isSpaceChange = spaceID_ != spaceID && spaceID_ != NULL_SPACE_ID;
 
-	// An entity cannot leave a space via this method.
-	MF_ASSERT( spaceID != NULL_SPACE_ID );
+    // An entity cannot leave a space via this method.
+    MF_ASSERT(spaceID != NULL_SPACE_ID);
 
-	spaceID_ = spaceID;
+    spaceID_ = spaceID;
 
-	if (vehicleID != vehicleID_)
-	{
-		this->onChangeVehicleID( vehicleID );
-		MF_ASSERT( vehicleID == vehicleID_ );
-	}
+    if (vehicleID != vehicleID_) {
+        this->onChangeVehicleID(vehicleID);
+        MF_ASSERT(vehicleID == vehicleID_);
+    }
 
-	localPosition_ = position;
-	localDirection_ = direction;
+    localPosition_  = position;
+    localDirection_ = direction;
 
-	if (isSpaceChange)
-	{
-		// This implies either a MovementFilter bug, or the server state is bad.
-		MF_ASSERT( this->pVehicle() == NULL ||
-			this->spaceID() == this->pVehicle()->spaceID() );
+    if (isSpaceChange) {
+        // This implies either a MovementFilter bug, or the server state is bad.
+        MF_ASSERT(this->pVehicle() == NULL ||
+                  this->spaceID() == this->pVehicle()->spaceID());
 
-		this->triggerOnChangeSpace();
-	}
+        this->triggerOnChangeSpace();
+    }
 
-	if (this->isInWorld())
-	{
-		this->onPositionUpdated();
-	}
+    if (this->isInWorld()) {
+        this->onPositionUpdated();
+    }
 }
-
 
 /**
  *	This method transforms the given position and direction from world
- *	coordinates to the coordinate system relative to this entity. 
+ *	coordinates to the coordinate system relative to this entity.
  *
  *	@param position 	The position to convert in world coordinates.
  *	@param direction 	The direction to convert in world coordinates.
  */
-void BWEntity::transformCommonToVehicle( Position3D & position, 
-	Direction3D & direction ) const
+void BWEntity::transformCommonToVehicle(Position3D&  position,
+                                        Direction3D& direction) const
 {
-	Matrix m;
-	const Direction3D vehicleDirection = this->direction();
+    Matrix            m;
+    const Direction3D vehicleDirection = this->direction();
 
-	m.setRotateInverse( vehicleDirection.yaw, vehicleDirection.pitch, 
-		vehicleDirection.roll );
+    m.setRotateInverse(
+      vehicleDirection.yaw, vehicleDirection.pitch, vehicleDirection.roll);
 
-	position = m.applyVector( position - this->position() );
+    position = m.applyVector(position - this->position());
 
-	direction.yaw -= vehicleDirection.yaw;
+    direction.yaw -= vehicleDirection.yaw;
 
-	// TODO: These were commented out in BWClient's
-	// transformCommonToVehicle() method.
-	// direction.pitch -= vehicleDirection.pitch;
-	// direction.roll -= vehicleDirection.roll;
+    // TODO: These were commented out in BWClient's
+    // transformCommonToVehicle() method.
+    // direction.pitch -= vehicleDirection.pitch;
+    // direction.roll -= vehicleDirection.roll;
 }
-
 
 /**
  *	This method transforms the given position and direction from the coordinate
@@ -420,25 +394,24 @@ void BWEntity::transformCommonToVehicle( Position3D & position,
  *	@param position 	The position in entity-space coordinates to convert.
  *	@param direction 	The direction in entity-space coordinates to convert.
  */
-void BWEntity::transformVehicleToCommon( Position3D & position, 
-	Direction3D & direction ) const
+void BWEntity::transformVehicleToCommon(Position3D&  position,
+                                        Direction3D& direction) const
 {
-	Matrix m;
-	const Direction3D vehicleDirection = this->direction();
+    Matrix            m;
+    const Direction3D vehicleDirection = this->direction();
 
-	m.setRotate( vehicleDirection.yaw, vehicleDirection.pitch,
-		vehicleDirection.roll );
+    m.setRotate(
+      vehicleDirection.yaw, vehicleDirection.pitch, vehicleDirection.roll);
 
-	position = m.applyVector( position ) + this->position();
+    position = m.applyVector(position) + this->position();
 
-	direction.yaw += vehicleDirection.yaw;
+    direction.yaw += vehicleDirection.yaw;
 
-	// TODO: These were commented out in BWClient's
-	// transformVehicleToCommon() method.
-	// direction.pitch += vehicleDirection.pitch;
-	// direction.roll += vehicleDirection.roll;
+    // TODO: These were commented out in BWClient's
+    // transformVehicleToCommon() method.
+    // direction.pitch += vehicleDirection.pitch;
+    // direction.roll += vehicleDirection.roll;
 }
-
 
 /**
  *	This method tells the entity about a position/direction update to either
@@ -458,35 +431,45 @@ void BWEntity::transformVehicleToCommon( Position3D & position,
  *	@see BWEntity::onMoveLocally
  *	@see BWEntity::onMoveInternal
  */
-void BWEntity::onMoveFromServer( double time, const Position3D & position,
-	EntityID vehicleID,	SpaceID spaceID, const Direction3D & direction,
-	const Vector3 & positionError, bool isTeleport )
+void BWEntity::onMoveFromServer(double             time,
+                                const Position3D&  position,
+                                EntityID           vehicleID,
+                                SpaceID            spaceID,
+                                const Direction3D& direction,
+                                const Vector3&     positionError,
+                                bool               isTeleport)
 {
-	Position3D defaultPosition = position;
-	Direction3D defaultDirection = direction;
-	Vector3 defaultPositionError = positionError;
+    Position3D  defaultPosition      = position;
+    Direction3D defaultDirection     = direction;
+    Vector3     defaultPositionError = positionError;
 
-	if (isReceivingVolatileUpdates_ != !isTeleport)
-	{
-		isReceivingVolatileUpdates_ = !isTeleport;
+    if (isReceivingVolatileUpdates_ != !isTeleport) {
+        isReceivingVolatileUpdates_ = !isTeleport;
 
-		// Locally-controlled entities trigger this callback in
-		// BWEntity::triggerOnChangeControl, when they are granted control,
-		// and locally controlled entities can only receive non-volatile
-		// updates.
-		MF_ASSERT( !this->isControlled() );
-		this->triggerOnChangeReceivingVolatileUpdates();
-	}
+        // Locally-controlled entities trigger this callback in
+        // BWEntity::triggerOnChangeControl, when they are granted control,
+        // and locally controlled entities can only receive non-volatile
+        // updates.
+        MF_ASSERT(!this->isControlled());
+        this->triggerOnChangeReceivingVolatileUpdates();
+    }
 
-	this->populateMoveDefaults( defaultPosition, vehicleID, spaceID,
-		defaultDirection, defaultPositionError );
+    this->populateMoveDefaults(defaultPosition,
+                               vehicleID,
+                               spaceID,
+                               defaultDirection,
+                               defaultPositionError);
 
-	this->onMoveInternal( time, defaultPosition, vehicleID, spaceID,
-		defaultDirection, defaultPositionError, /* isReset */ isTeleport );
+    this->onMoveInternal(time,
+                         defaultPosition,
+                         vehicleID,
+                         spaceID,
+                         defaultDirection,
+                         defaultPositionError,
+                         /* isReset */ isTeleport);
 
-	latestLocalMoveTime_ = 0.;
+    latestLocalMoveTime_ = 0.;
 }
-
 
 /**
  *	This method retrieves the latest values give to onMoveFromServer or
@@ -500,26 +483,25 @@ void BWEntity::onMoveFromServer( double time, const Position3D & position,
  *	@param direction The direction of the most recent update
  *	@param positionError The position error of the most recent update
  */
-void BWEntity::getLatestMove( Position3D & position, EntityID & vehicleID,
-	SpaceID & spaceID, Direction3D & direction, Vector3 & positionError ) const
+void BWEntity::getLatestMove(Position3D&  position,
+                             EntityID&    vehicleID,
+                             SpaceID&     spaceID,
+                             Direction3D& direction,
+                             Vector3&     positionError) const
 {
-	if (pFilter_ != NULL)
-	{
-		double dummyTime;
+    if (pFilter_ != NULL) {
+        double dummyTime;
 
-		pFilter_->getLastInput( dummyTime, spaceID, vehicleID,
-			position, positionError, direction );
-	}
-	else
-	{
-		position = localPosition_;
-		vehicleID = vehicleID_;
-		spaceID = spaceID_;
-		positionError = Vector3::zero();
-		direction = localDirection_;
-	}
+        pFilter_->getLastInput(
+          dummyTime, spaceID, vehicleID, position, positionError, direction);
+    } else {
+        position      = localPosition_;
+        vehicleID     = vehicleID_;
+        spaceID       = spaceID_;
+        positionError = Vector3::zero();
+        direction     = localDirection_;
+    }
 }
-
 
 /**
  *	This method creates a locally-provided position update for
@@ -533,300 +515,286 @@ void BWEntity::getLatestMove( Position3D & position, EntityID & vehicleID,
  *						interesting to other clients or not.
  *	@param direction The facing direction of this update
  */
-void BWEntity::onMoveLocally( double time, const Position3D & position,
-	EntityID vehicleID, bool is2DPosition, const Direction3D & direction )
+void BWEntity::onMoveLocally(double             time,
+                             const Position3D&  position,
+                             EntityID           vehicleID,
+                             bool               is2DPosition,
+                             const Direction3D& direction)
 {
-	if (!this->isControlled())
-	{
-		ERROR_MSG( "BWEntity::onMoveLocally: Attempting to provide local "
-			"movement for server-controlled Entity %d\n", this->entityID() );
-		return;
-	}
+    if (!this->isControlled()) {
+        ERROR_MSG("BWEntity::onMoveLocally: Attempting to provide local "
+                  "movement for server-controlled Entity %d\n",
+                  this->entityID());
+        return;
+    }
 
-	if (this->isPhysicsCorrected())
-	{
-		ERROR_MSG( "BWEntity::onMoveLocally: Attempting to provide local "
-				"movement for an entity under physics correction Entity %d\n",
-			this->entityID() );
-		return;
-	}
+    if (this->isPhysicsCorrected()) {
+        ERROR_MSG("BWEntity::onMoveLocally: Attempting to provide local "
+                  "movement for an entity under physics correction Entity %d\n",
+                  this->entityID());
+        return;
+    }
 
-	// TODO: Should this be a reset?
-	this->onMoveInternal( time, position, vehicleID, spaceID_, direction,
-		Vector3::zero(), /* isReset */ true );
+    // TODO: Should this be a reset?
+    this->onMoveInternal(time,
+                         position,
+                         vehicleID,
+                         spaceID_,
+                         direction,
+                         Vector3::zero(),
+                         /* isReset */ true);
 
-	latestLocalMoveTime_ = time;
-	latestLocalMoveIs2D_ = is2DPosition;
+    latestLocalMoveTime_ = time;
+    latestLocalMoveIs2D_ = is2DPosition;
 }
-
 
 /**
  *	This method sends the latests locally-created move to the server.
  */
 void BWEntity::sendLatestLocalMove() const
 {
-	MF_ASSERT( !this->isLocalEntity() );
+    MF_ASSERT(!this->isLocalEntity());
 
-	if (!this->isControlled())
-	{
-		ERROR_MSG( "BWEntity::sendLatestLocalMove: Attempting to send local "
-			"movement for server-controlled Entity %d\n", this->entityID() );
-		return;
-	}
+    if (!this->isControlled()) {
+        ERROR_MSG("BWEntity::sendLatestLocalMove: Attempting to send local "
+                  "movement for server-controlled Entity %d\n",
+                  this->entityID());
+        return;
+    }
 
-	if (isZero( latestLocalMoveTime_ ))
-	{
-		// We haven't generated a local move since we gained local control
-		// or received a physics correction from the server.
-		return;
-	}
+    if (isZero(latestLocalMoveTime_)) {
+        // We haven't generated a local move since we gained local control
+        // or received a physics correction from the server.
+        return;
+    }
 
-	// It should not be possible to have a non-zero latestLocalMoveTime_,
-	// but be under a physics correction.
-	MF_ASSERT( !this->isPhysicsCorrected() );
+    // It should not be possible to have a non-zero latestLocalMoveTime_,
+    // but be under a physics correction.
+    MF_ASSERT(!this->isPhysicsCorrected());
 
-	Position3D localPosition;
-	EntityID vehicleID;
-	SpaceID spaceID;
-	Vector3 dummyPositionError;
-	Direction3D localDirection;
+    Position3D  localPosition;
+    EntityID    vehicleID;
+    SpaceID     spaceID;
+    Vector3     dummyPositionError;
+    Direction3D localDirection;
 
-	this->getLatestMove( localPosition, vehicleID, spaceID, localDirection,
-		dummyPositionError );
+    this->getLatestMove(
+      localPosition, vehicleID, spaceID, localDirection, dummyPositionError);
 
-	// We cannot send space-changes.
-	MF_ASSERT( spaceID == spaceID_ );
+    // We cannot send space-changes.
+    MF_ASSERT(spaceID == spaceID_);
 
-	pBWConnection_->addLocalMove( entityID_, spaceID, vehicleID, localPosition,
-		localDirection, latestLocalMoveIs2D_, this->position() );
+    pBWConnection_->addLocalMove(entityID_,
+                                 spaceID,
+                                 vehicleID,
+                                 localPosition,
+                                 localDirection,
+                                 latestLocalMoveIs2D_,
+                                 this->position());
 }
-
-
 
 /**
  *
  */
 void BWEntity::triggerOnBecomePlayer()
 {
-	MF_ASSERT( !isPlayer_ );
-	isPlayer_ = true;
+    MF_ASSERT(!isPlayer_);
+    isPlayer_ = true;
 
-	this->onBecomePlayer();
+    this->onBecomePlayer();
 
-	EntityExtensions::iterator iter = entityExtensions_.begin();
+    EntityExtensions::iterator iter = entityExtensions_.begin();
 
-	while (iter != entityExtensions_.end())
-	{
-		(*iter)->triggerOnBecomePlayer();
+    while (iter != entityExtensions_.end()) {
+        (*iter)->triggerOnBecomePlayer();
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 /**
  *
  */
-void BWEntity::triggerOnEnterAoI( const EntityEntryBlocker & rBlocker )
+void BWEntity::triggerOnEnterAoI(const EntityEntryBlocker& rBlocker)
 {
-	MF_ASSERT( pFilter_ == NULL );
+    MF_ASSERT(pFilter_ == NULL);
 
-	MF_ASSERT( pVehicle_ == NULL );
+    MF_ASSERT(pVehicle_ == NULL);
 
-	if (vehicleID_ != NULL_ENTITY_ID)
-	{
-		const BWEntities & entities = pBWConnection_->entities();
-		pVehicle_ = entities.find( vehicleID_ );
-		MF_ASSERT( pVehicle_ != NULL );
+    if (vehicleID_ != NULL_ENTITY_ID) {
+        const BWEntities& entities = pBWConnection_->entities();
+        pVehicle_                  = entities.find(vehicleID_);
+        MF_ASSERT(pVehicle_ != NULL);
 
-		// Server entities may not ride local vehicles
-		MF_ASSERT( this->isLocalEntity() || !pVehicle_->isLocalEntity() );
-	}
+        // Server entities may not ride local vehicles
+        MF_ASSERT(this->isLocalEntity() || !pVehicle_->isLocalEntity());
+    }
 
-	isInAoI_ = true;
+    isInAoI_ = true;
 
-	this->onEnterAoI( rBlocker );
-	EntityExtensions::iterator iter = entityExtensions_.begin();
+    this->onEnterAoI(rBlocker);
+    EntityExtensions::iterator iter = entityExtensions_.begin();
 
-	while (iter != entityExtensions_.end())
-	{
-		(*iter)->triggerOnEnterAoI( rBlocker );
+    while (iter != entityExtensions_.end()) {
+        (*iter)->triggerOnEnterAoI(rBlocker);
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 /**
  *
  */
 void BWEntity::triggerOnEnterWorld()
 {
-	if (pVehicle_ != NULL)
-	{
-		pVehicle_->onPassengerBoard( this );
-	}
+    if (pVehicle_ != NULL) {
+        pVehicle_->onPassengerBoard(this);
+    }
 
-	isInWorld_ = true;
+    isInWorld_ = true;
 
-	this->onEnterWorld();
+    this->onEnterWorld();
 
-	EntityExtensions::iterator iter = entityExtensions_.begin();
+    EntityExtensions::iterator iter = entityExtensions_.begin();
 
-	while (iter != entityExtensions_.end())
-	{
-		(*iter)->triggerOnEnterWorld();
+    while (iter != entityExtensions_.end()) {
+        (*iter)->triggerOnEnterWorld();
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 /**
  *
  */
 void BWEntity::triggerOnChangeSpace()
 {
-	MF_ASSERT( this->isPlayer() );
+    MF_ASSERT(this->isPlayer());
 
-	this->onChangeSpace();
+    this->onChangeSpace();
 
-	EntityExtensions::iterator iter = entityExtensions_.begin();
+    EntityExtensions::iterator iter = entityExtensions_.begin();
 
-	while (iter != entityExtensions_.end())
-	{
-		(*iter)->triggerOnChangeSpace();
+    while (iter != entityExtensions_.end()) {
+        (*iter)->triggerOnChangeSpace();
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 /**
  *
  */
 void BWEntity::triggerOnLeaveWorld()
 {
-	MF_ASSERT( passengers_.empty() );
+    MF_ASSERT(passengers_.empty());
 
-	this->onLeaveWorld();
+    this->onLeaveWorld();
 
-	EntityExtensions::iterator iter = entityExtensions_.begin();
+    EntityExtensions::iterator iter = entityExtensions_.begin();
 
-	while (iter != entityExtensions_.end())
-	{
-		(*iter)->triggerOnLeaveWorld();
+    while (iter != entityExtensions_.end()) {
+        (*iter)->triggerOnLeaveWorld();
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	isInWorld_ = false;
+    isInWorld_ = false;
 
-	if (pVehicle_ != NULL)
-	{
-		pVehicle_->onPassengerAlight( this );
-	}
+    if (pVehicle_ != NULL) {
+        pVehicle_->onPassengerAlight(this);
+    }
 }
-
 
 /**
  *
  */
 void BWEntity::triggerOnLeaveAoI()
 {
-	this->onLeaveAoI();
+    this->onLeaveAoI();
 
-	EntityExtensions::iterator iter = entityExtensions_.begin();
+    EntityExtensions::iterator iter = entityExtensions_.begin();
 
-	while (iter != entityExtensions_.end())
-	{
-		(*iter)->triggerOnLeaveAoI();
+    while (iter != entityExtensions_.end()) {
+        (*iter)->triggerOnLeaveAoI();
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	isInAoI_ = false;
+    isInAoI_ = false;
 
-	this->pFilter( NULL );
+    this->pFilter(NULL);
 
-	pVehicle_ = NULL;
+    pVehicle_ = NULL;
 }
-
 
 /**
  *
  */
 void BWEntity::triggerOnBecomeNonPlayer()
 {
-	MF_ASSERT( isPlayer_ );
-	isPlayer_ = false;
-	this->onBecomeNonPlayer();
+    MF_ASSERT(isPlayer_);
+    isPlayer_ = false;
+    this->onBecomeNonPlayer();
 
-	EntityExtensions::iterator iter = entityExtensions_.begin();
+    EntityExtensions::iterator iter = entityExtensions_.begin();
 
-	while (iter != entityExtensions_.end())
-	{
-		(*iter)->triggerOnBecomeNonPlayer();
+    while (iter != entityExtensions_.end()) {
+        (*iter)->triggerOnBecomeNonPlayer();
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 /**
  *
  */
 void BWEntity::destroyNonPlayer()
 {
-	MF_ASSERT( !isDestroyed_ );
+    MF_ASSERT(!isDestroyed_);
 
-	// Players are immune from destruction while still the Player
-	// This makes callers for this method much simpler
-	if (isPlayer_)
-		return;
+    // Players are immune from destruction while still the Player
+    // This makes callers for this method much simpler
+    if (isPlayer_)
+        return;
 
-	isDestroyed_ = true;
-	this->onDestroyed();
+    isDestroyed_ = true;
+    this->onDestroyed();
 
-	// This will trigger EntityExtension::onEntityDestroyed(), which is all
-	// the warning they get.
-	entityExtensions_.clear();
+    // This will trigger EntityExtension::onEntityDestroyed(), which is all
+    // the warning they get.
+    entityExtensions_.clear();
 }
-
 
 /**
  *
  */
-void BWEntity::triggerOnChangeControl( bool isControlling,
-	bool isInitialising )
+void BWEntity::triggerOnChangeControl(bool isControlling, bool isInitialising)
 {
-	MF_ASSERT( isControlled_ != isControlling );
+    MF_ASSERT(isControlled_ != isControlling);
 
-	bool didVolatileChange = (isReceivingVolatileUpdates_ != false);
+    bool didVolatileChange = (isReceivingVolatileUpdates_ != false);
 
-	isControlled_ = isControlling;
-	isReceivingVolatileUpdates_ = false;
-	latestLocalMoveTime_ = 0.;
+    isControlled_               = isControlling;
+    isReceivingVolatileUpdates_ = false;
+    latestLocalMoveTime_        = 0.;
 
-	this->onChangeControl( isControlling, isInitialising );
+    this->onChangeControl(isControlling, isInitialising);
 
-	EntityExtensions::iterator iter = entityExtensions_.begin();
+    EntityExtensions::iterator iter = entityExtensions_.begin();
 
-	while (iter != entityExtensions_.end())
-	{
-		(*iter)->triggerOnChangeControl( isControlling, isInitialising );
+    while (iter != entityExtensions_.end()) {
+        (*iter)->triggerOnChangeControl(isControlling, isInitialising);
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	if (didVolatileChange)
-	{
-		MF_ASSERT( !isInitialising );
-		MF_ASSERT( isControlled_ );
-		this->triggerOnChangeReceivingVolatileUpdates();
-	}
+    if (didVolatileChange) {
+        MF_ASSERT(!isInitialising);
+        MF_ASSERT(isControlled_);
+        this->triggerOnChangeReceivingVolatileUpdates();
+    }
 }
-
 
 /**
  *	This method is called when this entity receives a volatile update when
@@ -842,36 +810,32 @@ void BWEntity::triggerOnChangeControl( bool isControlling,
  */
 void BWEntity::triggerOnChangeReceivingVolatileUpdates()
 {
-	this->onChangeReceivingVolatileUpdates();
+    this->onChangeReceivingVolatileUpdates();
 
-	EntityExtensions::iterator iter = entityExtensions_.begin();
+    EntityExtensions::iterator iter = entityExtensions_.begin();
 
-	while (iter != entityExtensions_.end())
-	{
-		(*iter)->triggerOnChangeReceivingVolatileUpdates();
+    while (iter != entityExtensions_.end()) {
+        (*iter)->triggerOnChangeReceivingVolatileUpdates();
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 /**
  *
  */
-void BWEntity::onPassengerBoard( BWEntity * pEntity )
+void BWEntity::onPassengerBoard(BWEntity* pEntity)
 {
-	passengers_.push_back( pEntity );
+    passengers_.push_back(pEntity);
 }
-
 
 /**
  *
  */
-void BWEntity::onPassengerAlight( BWEntity * pEntity )
+void BWEntity::onPassengerAlight(BWEntity* pEntity)
 {
-	passengers_.remove( pEntity );
+    passengers_.remove(pEntity);
 }
-
 
 /**
  *	This method tells the entity about a position/direction update to either
@@ -889,143 +853,130 @@ void BWEntity::onPassengerAlight( BWEntity * pEntity )
  *	@see BWEntity::onMoveFromServer
  *	@see BWEntity::onMoveLocally
  */
-void BWEntity::onMoveInternal( double time, const Position3D & position,
-	EntityID vehicleID,	SpaceID spaceID, const Direction3D & direction,
-	const Vector3 & positionError, bool isReset )
+void BWEntity::onMoveInternal(double             time,
+                              const Position3D&  position,
+                              EntityID           vehicleID,
+                              SpaceID            spaceID,
+                              const Direction3D& direction,
+                              const Vector3&     positionError,
+                              bool               isReset)
 {
-	if (this->pFilter_ != NULL)
-	{
-		if (isReset)
-		{
-			pFilter_->reset( time );
-		}
+    if (this->pFilter_ != NULL) {
+        if (isReset) {
+            pFilter_->reset(time);
+        }
 
-		pFilter_->input( time, spaceID, vehicleID, position, positionError,
-			direction );
+        pFilter_->input(
+          time, spaceID, vehicleID, position, positionError, direction);
 
-		if (isReset)
-		{
-			this->applyFilter( time );
-		}
-	}
-	else
-	{
-		this->setSpaceVehiclePositionAndDirection( spaceID, vehicleID,
-			position, direction );
-	}
+        if (isReset) {
+            this->applyFilter(time);
+        }
+    } else {
+        this->setSpaceVehiclePositionAndDirection(
+          spaceID, vehicleID, position, direction);
+    }
 }
-
 
 /**
  *	This is an internal method to fill in the defaults needed by
  *	onMoveFromServer
  */
-void BWEntity::populateMoveDefaults( Position3D & position,
-	EntityID & vehicleID, SpaceID & spaceID, Direction3D & direction,
-	Vector3 & positionError )
+void BWEntity::populateMoveDefaults(Position3D&  position,
+                                    EntityID&    vehicleID,
+                                    SpaceID&     spaceID,
+                                    Direction3D& direction,
+                                    Vector3&     positionError)
 {
-	// TODO: Is this method correct? Do we want getLatestMove or do we always
-	// want to default to where the model is historically-now?
+    // TODO: Is this method correct? Do we want getLatestMove or do we always
+    // want to default to where the model is historically-now?
 
-	Position3D oldPosition;
-	EntityID oldVehicleID;
-	SpaceID oldSpaceID;
-	Vector3 oldPositionError;
-	Direction3D oldDirection;
+    Position3D  oldPosition;
+    EntityID    oldVehicleID;
+    SpaceID     oldSpaceID;
+    Vector3     oldPositionError;
+    Direction3D oldDirection;
 
-	this->getLatestMove( oldPosition, oldVehicleID, oldSpaceID, oldDirection,
-		oldPositionError );
+    this->getLatestMove(
+      oldPosition, oldVehicleID, oldSpaceID, oldDirection, oldPositionError);
 
-	// See AVATAR_UPDATE_GET_POS_NoPos
-	// Note that we _don't_ catch AVATAR_UPDATE_GET_POS_OnGround
-	// as that needs to be passed through to the filter for handling
-	if (position == Position3D( ServerConnection::NO_POSITION,
-		ServerConnection::NO_POSITION, ServerConnection::NO_POSITION ))
-	{
-		position = oldPosition;
-		positionError = oldPositionError;
-	}
+    // See AVATAR_UPDATE_GET_POS_NoPos
+    // Note that we _don't_ catch AVATAR_UPDATE_GET_POS_OnGround
+    // as that needs to be passed through to the filter for handling
+    if (position == Position3D(ServerConnection::NO_POSITION,
+                               ServerConnection::NO_POSITION,
+                               ServerConnection::NO_POSITION)) {
+        position      = oldPosition;
+        positionError = oldPositionError;
+    }
 
-	if (vehicleID == EntityID(-1))
-	{
-		vehicleID = oldVehicleID;
-	}
+    if (vehicleID == EntityID(-1)) {
+        vehicleID = oldVehicleID;
+    }
 
-	if (spaceID == NULL_SPACE_ID)
-	{
-		spaceID = oldSpaceID;
-	}
+    if (spaceID == NULL_SPACE_ID) {
+        spaceID = oldSpaceID;
+    }
 
-	// Doing direction components individually...
-	// See AVATAR_UPDATE_GET_DIR_Yaw, AVATAR_UPDATE_GET_DIR_YawPitch
-	// and AVATAR_UPDATE_GET_DIR_YawPitchRoll
-	if (isEqual( direction.yaw, ServerConnection::NO_DIRECTION ))
-	{
-		direction.yaw = oldDirection.yaw;
-	}
+    // Doing direction components individually...
+    // See AVATAR_UPDATE_GET_DIR_Yaw, AVATAR_UPDATE_GET_DIR_YawPitch
+    // and AVATAR_UPDATE_GET_DIR_YawPitchRoll
+    if (isEqual(direction.yaw, ServerConnection::NO_DIRECTION)) {
+        direction.yaw = oldDirection.yaw;
+    }
 
-	if (isEqual( direction.pitch, ServerConnection::NO_DIRECTION ))
-	{
-		direction.pitch = oldDirection.pitch;
-	}
+    if (isEqual(direction.pitch, ServerConnection::NO_DIRECTION)) {
+        direction.pitch = oldDirection.pitch;
+    }
 
-	if (isEqual( direction.roll, ServerConnection::NO_DIRECTION ))
-	{
-		direction.roll = oldDirection.roll;
-	}
+    if (isEqual(direction.roll, ServerConnection::NO_DIRECTION)) {
+        direction.roll = oldDirection.roll;
+    }
 }
-
 
 /**
  *
  */
-void BWEntity::onChangeVehicleID( EntityID newVehicleID )
+void BWEntity::onChangeVehicleID(EntityID newVehicleID)
 {
-	MF_ASSERT( newVehicleID != vehicleID_ );
+    MF_ASSERT(newVehicleID != vehicleID_);
 
-	vehicleID_ = newVehicleID;
+    vehicleID_ = newVehicleID;
 
-	if (!this->isInAoI())
-	{
-		MF_ASSERT( pVehicle_ == NULL );
-		return;
-	}
+    if (!this->isInAoI()) {
+        MF_ASSERT(pVehicle_ == NULL);
+        return;
+    }
 
-	if (pVehicle_ != NULL)
-	{
-		if (this->isInWorld())
-		{
-			pVehicle_->onPassengerAlight( this );
-		}
-		pVehicle_ = NULL;
-	}
+    if (pVehicle_ != NULL) {
+        if (this->isInWorld()) {
+            pVehicle_->onPassengerAlight(this);
+        }
+        pVehicle_ = NULL;
+    }
 
-	if (vehicleID_ != NULL_ENTITY_ID)
-	{
-		const BWEntities & entities = pBWConnection_->entities();
-		pVehicle_ = entities.find( vehicleID_ );
-		// If pVehicle_ is NULL here, we've become inconsistent.
-		if (pVehicle_ == NULL)
-		{
-			// We can't do anything about it though, as we could be being called
-			// either from MovementFilter::output or BWEntity::onMoveExplicit,
-			// and the former is likely to be iterating our container
-			// TODO: Find a way to raise this as an event and deal with it when
-			// safe to do so.
-			return;
-		}
+    if (vehicleID_ != NULL_ENTITY_ID) {
+        const BWEntities& entities = pBWConnection_->entities();
+        pVehicle_                  = entities.find(vehicleID_);
+        // If pVehicle_ is NULL here, we've become inconsistent.
+        if (pVehicle_ == NULL) {
+            // We can't do anything about it though, as we could be being called
+            // either from MovementFilter::output or BWEntity::onMoveExplicit,
+            // and the former is likely to be iterating our container
+            // TODO: Find a way to raise this as an event and deal with it when
+            // safe to do so.
+            return;
+        }
 
-		// Server entities may not ride local vehicles
-		MF_ASSERT( this->isLocalEntity() || !pVehicle_->isLocalEntity() );
+        // Server entities may not ride local vehicles
+        MF_ASSERT(this->isLocalEntity() || !pVehicle_->isLocalEntity());
 
-		// Only Entities in-world can be passengers.
-		if (this->isInWorld())
-		{
-			pVehicle_->onPassengerBoard( this );
-		}
-	}
+        // Only Entities in-world can be passengers.
+        if (this->isInWorld()) {
+            pVehicle_->onPassengerBoard(this);
+        }
+    }
 }
-
 
 /**
  *	This method returns true if this entity is considered a witness by our
@@ -1033,11 +984,9 @@ void BWEntity::onChangeVehicleID( EntityID newVehicleID )
  */
 bool BWEntity::isWitness() const
 {
-	return pBWConnection_->isWitness( this->entityID() );
+    return pBWConnection_->isWitness(this->entityID());
 }
-
 
 BW_END_NAMESPACE
 
 // bw_entity.cpp
-

@@ -8,10 +8,9 @@
 BW_BEGIN_NAMESPACE
 
 class PyQueryResult;
-typedef SmartPointer< PyQueryResult > PyQueryResultPtr;
+typedef SmartPointer<PyQueryResult> PyQueryResultPtr;
 
 BW_END_NAMESPACE
-
 
 #include "py_bwlog.hpp"
 #include "query_result.hpp"
@@ -20,7 +19,6 @@ BW_END_NAMESPACE
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -28,63 +26,65 @@ BW_BEGIN_NAMESPACE
  */
 class PyQueryResult : public PyObject
 {
-public:
-	PyQueryResult();
-	PyQueryResult( const LogEntry &entry, PyBWLogPtr pBWLog,
-		UserLogReaderPtr pUserLog, const LoggingComponent *component,
-		const BW::string & message, const BW::string & metadata );
+  public:
+    PyQueryResult();
+    PyQueryResult(const LogEntry&         entry,
+                  PyBWLogPtr              pBWLog,
+                  UserLogReaderPtr        pUserLog,
+                  const LoggingComponent* component,
+                  const BW::string&       message,
+                  const BW::string&       metadata);
 
-	PyObject * pyGet_time();
-	PyObject * pyGet_host();
-	PyObject * pyGet_pid();
-	PyObject * pyGet_appid();
-	PyObject * pyGet_username();
-	PyObject * pyGet_component();
-	PyObject * pyGet_severity();
-	PyObject * pyGet_message();
-	PyObject * pyGet_stringOffset();
+    PyObject* pyGet_time();
+    PyObject* pyGet_host();
+    PyObject* pyGet_pid();
+    PyObject* pyGet_appid();
+    PyObject* pyGet_username();
+    PyObject* pyGet_component();
+    PyObject* pyGet_severity();
+    PyObject* pyGet_message();
+    PyObject* pyGet_stringOffset();
 
-	PyObject * py_format( PyObject * pArgs );
-	PyObject * py_metadata();
+    PyObject* py_format(PyObject* pArgs);
+    PyObject* py_metadata();
 
-	void incRef() const { Py_INCREF( (PyObject *)this ); }
-	void decRef() const { Py_DECREF( (PyObject *)this ); }
+    void incRef() const { Py_INCREF((PyObject*)this); }
+    void decRef() const { Py_DECREF((PyObject*)this); }
 
-	int refCount() const { return ((PyObject *)this)->ob_refcnt; }
+    int refCount() const { return ((PyObject*)this)->ob_refcnt; }
 
-	static PyObject * _tp_repr( PyObject * pObj );
-	static PyObject * _tp_getattro( PyObject * pObj, PyObject * name );
+    static PyObject* _tp_repr(PyObject* pObj);
+    static PyObject* _tp_getattro(PyObject* pObj, PyObject* name);
 
-	static void _tp_dealloc( PyObject * pObj )
-	{
-		delete static_cast< PyQueryResult * >( pObj );
-	}
+    static void _tp_dealloc(PyObject* pObj)
+    {
+        delete static_cast<PyQueryResult*>(pObj);
+    }
 
-	static PyTypeObject s_type_;
+    static PyTypeObject s_type_;
 
-private:
+  private:
+    // Let the reference counting take care of deletion
+    ~PyQueryResult();
 
-	// Let the reference counting take care of deletion
-	~PyQueryResult();
+    // Python API
+    PyObject* pyGetAttribute(const char* attr);
+    int       pySetAttribute(const char* attr, PyObject* value);
 
-	// Python API
-	PyObject * pyGetAttribute( const char *attr );
-	int pySetAttribute( const char * attr, PyObject * value );
+    // Properties
 
-	// Properties
+    QueryResult* pQueryResult_;
 
-	QueryResult *pQueryResult_;
-
-	// Accessors for the Python attributes
-	BW::string getMessage() const;
-	MessageLogger::FormatStringOffsetId getStringOffset() const;
-	double getTime() const;
-	const char * getHost() const;
-	int getPID() const;
-	MessageLogger::AppInstanceID getAppInstanceID() const;
-	const char * getUsername() const;
-	const char * getComponent() const;
-	int getSeverity() const;
+    // Accessors for the Python attributes
+    BW::string                          getMessage() const;
+    MessageLogger::FormatStringOffsetId getStringOffset() const;
+    double                              getTime() const;
+    const char*                         getHost() const;
+    int                                 getPID() const;
+    MessageLogger::AppInstanceID        getAppInstanceID() const;
+    const char*                         getUsername() const;
+    const char*                         getComponent() const;
+    int                                 getSeverity() const;
 };
 
 BW_END_NAMESPACE

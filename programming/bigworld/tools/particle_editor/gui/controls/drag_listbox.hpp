@@ -9,24 +9,21 @@ BW_BEGIN_NAMESPACE
  */
 class DragListBox : public CListBox
 {
-public:
-    typedef void (*ToolTipCB)
-    (
-        unsigned int    item, 
-        BW::string		&tooltip,
-        void            *data
-    );
+  public:
+    typedef void (*ToolTipCB)(unsigned int item,
+                              BW::string&  tooltip,
+                              void*        data);
 
     DragListBox();
 
-    void setTooltipCallback(ToolTipCB cb, void *data = NULL);
+    void setTooltipCallback(ToolTipCB cb, void* data = NULL);
 
-protected:
+  protected:
     /*virtual*/ void PreSubclassWindow();
 
-    /*virtual*/ INT_PTR OnToolHitTest(CPoint point, TOOLINFO *ti) const;
+    /*virtual*/ INT_PTR OnToolHitTest(CPoint point, TOOLINFO* ti) const;
 
-    BOOL OnToolTipText(UINT id, NMHDR *pNMHDR, LRESULT *result);
+    BOOL OnToolTipText(UINT id, NMHDR* pNMHDR, LRESULT* result);
 
     afx_msg void OnLButtonDown(UINT flags, CPoint point);
 
@@ -34,10 +31,10 @@ protected:
 
     DECLARE_MESSAGE_MAP()
 
-private:
-    UINT                        dragIndex_;
-    ToolTipCB                   tooltipCB_;
-    void                        *data_;
+  private:
+    UINT      dragIndex_;
+    ToolTipCB tooltipCB_;
+    void*     data_;
 };
 
 BW_END_NAMESPACE

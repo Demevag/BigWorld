@@ -5,9 +5,8 @@
 
 #include "cstdmf/cstdmf_lib.hpp"
 
-#if defined( USE_OPENSSL )
-namespace BWOpenSSL
-{
+#if defined(USE_OPENSSL)
+namespace BWOpenSSL {
 #include "openssl/bio.h"
 #include "openssl/bn.h"
 #include "openssl/crypto.h"

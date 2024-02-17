@@ -16,69 +16,71 @@ class MainMessageLoop;
 class DetailsDialog;
 struct ConversionTask;
 
-class LargeTaskListBox : public ATL::CWindowImpl<LargeTaskListBox, WTL::CListBox>, public TaskListBoxBase
+class LargeTaskListBox
+  : public ATL::CWindowImpl<LargeTaskListBox, WTL::CListBox>
+  , public TaskListBoxBase
 {
-public:
-	enum SortMode
-	{
-		SORT_NONE,
-		SORT_FILENAME,
-		SORT_FILETYPE,
-		SORT_RESULT,
-	};
+  public:
+    enum SortMode
+    {
+        SORT_NONE,
+        SORT_FILENAME,
+        SORT_FILETYPE,
+        SORT_RESULT,
+    };
 
-public:
-	LargeTaskListBox(TaskStore & store, MainMessageLoop & messageLoop);
+  public:
+    LargeTaskListBox(TaskStore& store, MainMessageLoop& messageLoop);
 
-	void updateItemHeight();
+    void updateItemHeight();
 
-	virtual void addTask(TaskInfoPtr task);
-	virtual void removeTask(TaskInfoPtr task);
+    virtual void addTask(TaskInfoPtr task);
+    virtual void removeTask(TaskInfoPtr task);
 
-	void showNormalTasks(bool show);
-	void showWarningTasks(bool show);
-	void showErrorTasks(bool show);
+    void showNormalTasks(bool show);
+    void showWarningTasks(bool show);
+    void showErrorTasks(bool show);
 
-	void setSortMode(SortMode mode);
+    void setSortMode(SortMode mode);
 
-	void pauseRedraw();
-	void resumeRedraw();
+    void pauseRedraw();
+    void resumeRedraw();
 
-	BEGIN_MSG_MAP_EX(TaskListBox)
-		MSG_WM_LBUTTONDBLCLK(onDoubleClick)
-		MSG_WM_CONTEXTMENU(onContextMenu)
-		MSG_OCM_MEASUREITEM(onMeasureItem)
-		MSG_OCM_DRAWITEM(onDrawItem)
-		MSG_WM_ERASEBKGND(onEraseBackground)
-		MSG_WM_PAINT(onPaint)
-	END_MSG_MAP()
+    BEGIN_MSG_MAP_EX(TaskListBox)
+    MSG_WM_LBUTTONDBLCLK(onDoubleClick)
+    MSG_WM_CONTEXTMENU(onContextMenu)
+    MSG_OCM_MEASUREITEM(onMeasureItem)
+    MSG_OCM_DRAWITEM(onDrawItem)
+    MSG_WM_ERASEBKGND(onEraseBackground)
+    MSG_WM_PAINT(onPaint)
+    END_MSG_MAP()
 
-private:
-	typedef BW::vector< TaskInfoPtr > TaskList;
+  private:
+    typedef BW::vector<TaskInfoPtr> TaskList;
 
-	void updateCurrentCount(bool resetView = false);
-	bool isTaskVisible(TaskInfoPtr taskInfo) const;
-	void filterIntoTaskList(TaskList& list);
-	void sortTaskList(TaskList& list);
+    void updateCurrentCount(bool resetView = false);
+    bool isTaskVisible(TaskInfoPtr taskInfo) const;
+    void filterIntoTaskList(TaskList& list);
+    void sortTaskList(TaskList& list);
 
-	void regenerateCurrentList();
+    void regenerateCurrentList();
 
-	void copyTaskDetails(TaskInfoPtr taskInfo);
+    void copyTaskDetails(TaskInfoPtr taskInfo);
 
-	void onDoubleClick(UINT flags, ::CPoint clientPoint);
-	void onContextMenu(CWindow handle, ::CPoint screenPoint);
-	void onMeasureItem(int id, LPMEASUREITEMSTRUCT measureStruct);
-	void onDrawItem(int id, LPDRAWITEMSTRUCT drawStruct);
-	LRESULT onEraseBackground(WTL::CDCHandle dc);
-	void onPaint(WTL::CDCHandle dc);
+    void    onDoubleClick(UINT flags, ::CPoint clientPoint);
+    void    onContextMenu(CWindow handle, ::CPoint screenPoint);
+    void    onMeasureItem(int id, LPMEASUREITEMSTRUCT measureStruct);
+    void    onDrawItem(int id, LPDRAWITEMSTRUCT drawStruct);
+    LRESULT onEraseBackground(WTL::CDCHandle dc);
+    void    onPaint(WTL::CDCHandle dc);
 
-	TaskList allTasks_;
-	TaskList currentTasks_;
+    TaskList allTasks_;
+    TaskList currentTasks_;
 
-	WTL::CMenu contextMenu_;
+    WTL::CMenu contextMenu_;
 
-	SortMode sortMode_;
-	bool showFilter_[3];
+    SortMode sortMode_;
+    bool     showFilter_[3];
 };
 
 BW_END_NAMESPACE

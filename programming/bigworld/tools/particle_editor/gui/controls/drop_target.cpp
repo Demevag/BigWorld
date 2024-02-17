@@ -4,28 +4,24 @@
 BW_BEGIN_NAMESPACE
 
 DropTarget::DropTarget()
-:
-m_dropTarget(NULL)
+  : m_dropTarget(NULL)
 {
 }
 
-void DropTarget::Register(IDropTargetObj *target, CWnd *window)
+void DropTarget::Register(IDropTargetObj* target, CWnd* window)
 {
     m_dropTarget = target;
     COleDropTarget::Register(window);
 }
 
-/*virtual*/ 
+/*virtual*/
 DROPEFFECT
-DropTarget::OnDragEnter
-(
-    CWnd                *window,
-    COleDataObject      *dataObject,
-    DWORD               keyState,
-    CPoint              point
-)
+DropTarget::OnDragEnter(CWnd*           window,
+                        COleDataObject* dataObject,
+                        DWORD           keyState,
+                        CPoint          point)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     if (m_dropTarget != NULL)
         return m_dropTarget->OnDragEnter(window, dataObject, keyState, point);
@@ -33,25 +29,22 @@ DropTarget::OnDragEnter
         return DROPEFFECT_NONE;
 }
 
-/*virtual*/ void DropTarget::OnDragLeave(CWnd *window)
+/*virtual*/ void DropTarget::OnDragLeave(CWnd* window)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     if (m_dropTarget != NULL)
         m_dropTarget->OnDragLeave(window);
 }
 
-/*virtual*/ 
+/*virtual*/
 DROPEFFECT
-DropTarget::OnDragOver
-(
-    CWnd                *window,
-    COleDataObject      *dataObject,
-    DWORD               keyState,
-    CPoint              point
-)
+DropTarget::OnDragOver(CWnd*           window,
+                       COleDataObject* dataObject,
+                       DWORD           keyState,
+                       CPoint          point)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     if (m_dropTarget != NULL)
         return m_dropTarget->OnDragOver(window, dataObject, keyState, point);
@@ -59,16 +52,11 @@ DropTarget::OnDragOver
         return DROPEFFECT_NONE;
 }
 
-/*virtual*/ 
-DROPEFFECT 
-DropTarget::OnDragScroll
-(
-    CWnd                *window, 
-    DWORD               keyState, 
-    CPoint              point
-)
+/*virtual*/
+DROPEFFECT
+DropTarget::OnDragScroll(CWnd* window, DWORD keyState, CPoint point)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     if (m_dropTarget != NULL)
         return m_dropTarget->OnDragScroll(window, keyState, point);
@@ -77,16 +65,12 @@ DropTarget::OnDragScroll
 }
 
 /*virtual*/
-BOOL
-DropTarget::OnDrop
-(
-    CWnd                *window,
-    COleDataObject      *dataObject,
-    DROPEFFECT          dropEffect,
-    CPoint              point
-)
+BOOL DropTarget::OnDrop(CWnd*           window,
+                        COleDataObject* dataObject,
+                        DROPEFFECT      dropEffect,
+                        CPoint          point)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     if (m_dropTarget != NULL)
         return m_dropTarget->OnDrop(window, dataObject, dropEffect, point);
@@ -94,9 +78,9 @@ DropTarget::OnDrop
         return FALSE;
 }
 
-/*static*/ BW::wstring DropTarget::GetText(COleDataObject *dataObject)
+/*static*/ BW::wstring DropTarget::GetText(COleDataObject* dataObject)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     if (dataObject == NULL)
         return BW::wstring();
@@ -105,11 +89,9 @@ DropTarget::OnDrop
     if (hglobal == NULL)
         return BW::wstring();
 
-    wchar_t *text = (wchar_t *)::GlobalLock(hglobal);
+    wchar_t*    text   = (wchar_t*)::GlobalLock(hglobal);
     BW::wstring result = text;
     ::GlobalUnlock(hglobal);
     return result;
-
 }
 BW_END_NAMESPACE
-

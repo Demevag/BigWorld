@@ -8,19 +8,19 @@ BW_BEGIN_NAMESPACE
  */
 class ListNode
 {
-private:
-	ListNode*		next_;
-	ListNode*		prev_;
+  private:
+    ListNode* next_;
+    ListNode* prev_;
 
-public:
-	void			setAsRoot();
+  public:
+    void setAsRoot();
 
-	void			addThisAfter( ListNode* prev );
-	void			addThisBefore( ListNode* next );
-	void			remove();
+    void addThisAfter(ListNode* prev);
+    void addThisBefore(ListNode* next);
+    void remove();
 
-	ListNode*		getNext() const;
-	ListNode*		getPrev() const;
+    ListNode* getNext() const;
+    ListNode* getPrev() const;
 };
 
 /**
@@ -28,30 +28,30 @@ public:
  */
 inline void ListNode::setAsRoot()
 {
-	next_ = this;
-	prev_ = this;
+    next_ = this;
+    prev_ = this;
 }
 
 /**
  *
  */
-inline void ListNode::addThisAfter( ListNode* prev )
+inline void ListNode::addThisAfter(ListNode* prev)
 {
-	next_ = prev->next_;
-	next_->prev_ = this;
-	prev_ = prev;
-	prev->next_ = this;
+    next_        = prev->next_;
+    next_->prev_ = this;
+    prev_        = prev;
+    prev->next_  = this;
 }
 
 /**
  *
  */
-inline void ListNode::addThisBefore( ListNode* next )
+inline void ListNode::addThisBefore(ListNode* next)
 {
-	prev_ = next->prev_;
-	prev_->next_ = this;
-	next_ = next;
-	next->prev_ = this;
+    prev_        = next->prev_;
+    prev_->next_ = this;
+    next_        = next;
+    next->prev_  = this;
 }
 
 /**
@@ -59,8 +59,8 @@ inline void ListNode::addThisBefore( ListNode* next )
  */
 inline void ListNode::remove()
 {
-	prev_->next_ = next_;
-	next_->prev_ = prev_;
+    prev_->next_ = next_;
+    next_->prev_ = prev_;
 }
 
 /**
@@ -68,7 +68,7 @@ inline void ListNode::remove()
  */
 inline ListNode* ListNode::getNext() const
 {
-	return next_;
+    return next_;
 }
 
 /**
@@ -76,13 +76,13 @@ inline ListNode* ListNode::getNext() const
  */
 inline ListNode* ListNode::getPrev() const
 {
-	return prev_;
+    return prev_;
 }
 
 /**
  *
  */
-#define CAST_NODE( NODE, CLASS, FIELD ) bw_container_of( NODE, CLASS, FIELD )
+#define CAST_NODE(NODE, CLASS, FIELD) bw_container_of(NODE, CLASS, FIELD)
 
 BW_END_NAMESPACE
 

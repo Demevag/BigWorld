@@ -19,37 +19,37 @@ BW_BEGIN_NAMESPACE
  */
 class AvatarFilterCallback
 {
-public:
-	AvatarFilterCallback( double targetTime );
-	virtual ~AvatarFilterCallback();
+  public:
+    AvatarFilterCallback(double targetTime);
+    virtual ~AvatarFilterCallback();
 
-	double targetTime() const { return targetTime_; }
+    double targetTime() const { return targetTime_; }
 
-	void insertIntoList( ListNode * pListHead );
+    void insertIntoList(ListNode* pListHead);
 
-	bool triggerCallback( double outputTime );
+    bool triggerCallback(double outputTime);
 
-	void removeFromList();
+    void removeFromList();
 
-	static AvatarFilterCallback * getFromListNode( ListNode * pListNode )
-	{
-		return CAST_NODE( pListNode, AvatarFilterCallback, callbackListNode_ );
-	}
+    static AvatarFilterCallback* getFromListNode(ListNode* pListNode)
+    {
+        return CAST_NODE(pListNode, AvatarFilterCallback, callbackListNode_);
+    }
 
-private:
-	/**
-	 *	This method is called to indicate the target time has passed, and
-	 *	passes in by how much the target time has passed. It should return true
-	 *	to cause the AvatarFilter to output as if the current filter time was
-	 *	the targetTime, i.e., rolling the clock back on the AvatarFilter for
-	 *	this tick only.
-	 */
-	// For subclasses to override
-	virtual bool onCallback( double missedBy ) = 0;
+  private:
+    /**
+     *	This method is called to indicate the target time has passed, and
+     *	passes in by how much the target time has passed. It should return true
+     *	to cause the AvatarFilter to output as if the current filter time was
+     *	the targetTime, i.e., rolling the clock back on the AvatarFilter for
+     *	this tick only.
+     */
+    // For subclasses to override
+    virtual bool onCallback(double missedBy) = 0;
 
-	double targetTime_;
+    double targetTime_;
 
-	ListNode callbackListNode_;
+    ListNode callbackListNode_;
 };
 
 BW_END_NAMESPACE

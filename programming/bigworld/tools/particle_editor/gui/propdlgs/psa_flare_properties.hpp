@@ -14,45 +14,46 @@ class FlarePSA;
 
 class PsaFlareProperties : public PsaProperties
 {
-	DECLARE_DYNCREATE(PsaFlareProperties)
+    DECLARE_DYNCREATE(PsaFlareProperties)
 
-public:
-	PsaFlareProperties(); 
-	virtual ~PsaFlareProperties();
+  public:
+    PsaFlareProperties();
+    virtual ~PsaFlareProperties();
 
-	enum { IDD = IDD_PSA_FLARE_PROPERTIES };
+    enum
+    {
+        IDD = IDD_PSA_FLARE_PROPERTIES
+    };
 #ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+    virtual void AssertValid() const;
+    virtual void Dump(CDumpContext& dc) const;
 #endif
 
-	virtual void OnInitialUpdate();
+    virtual void OnInitialUpdate();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	afx_msg LRESULT OnUpdatePsRenderProperties(WPARAM mParam, LPARAM lParam);
+  protected:
+    virtual void    DoDataExchange(CDataExchange* pDX); // DDX/DDV support
+    afx_msg LRESULT OnUpdatePsRenderProperties(WPARAM mParam, LPARAM lParam);
 
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 
-public:
-	FlarePSA *	action();
-	void		SetParameters(SetOperation task);
+  public:
+    FlarePSA* action();
+    void      SetParameters(SetOperation task);
 
-	afx_msg void OnBnClickedPsaFlareButton();
-	afx_msg void OnCbnSelchangeFlarename();
-	afx_msg void OnBnClickedPsaFlareFlarenameDirectory();
+    afx_msg void OnBnClickedPsaFlareButton();
+    afx_msg void OnCbnSelchangeFlarename();
+    afx_msg void OnBnClickedPsaFlareFlarenameDirectory();
 
-	void finishPopulatingFlareNames();
+    void finishPopulatingFlareNames();
 
-    controls::ImageButton   flareNameDirectoryBtn_;
-    CEdit                   flareNameDirectoryEdit_;
-	CComboBox	            flareNameSelection_;
-	controls::EditNumeric	flareStep_;
-	CButton		            colourize_;
-	CButton		            useParticleSize_;
-	controls::EditNumeric	delay_;
+    controls::ImageButton flareNameDirectoryBtn_;
+    CEdit                 flareNameDirectoryEdit_;
+    CComboBox             flareNameSelection_;
+    controls::EditNumeric flareStep_;
+    CButton               colourize_;
+    CButton               useParticleSize_;
+    controls::EditNumeric delay_;
 };
 
-
 BW_END_NAMESPACE
-

@@ -12,16 +12,17 @@ BW_BEGIN_NAMESPACE
  */
 class RangeListAppealTrigger : public RangeTrigger
 {
-public:
-	RangeListAppealTrigger( EntityRangeListNode * pEntityNode, float range );
+  public:
+    RangeListAppealTrigger(EntityRangeListNode* pEntityNode, float range);
 
-	virtual void triggerEnter( Entity & entity ) {}
-	virtual void triggerLeave( Entity & entity ) {}
-	virtual Entity * pEntity() const { return
-		EntityRangeListNode::getEntity( this->pCentralNode() ); }
+    virtual void    triggerEnter(Entity& entity) {}
+    virtual void    triggerLeave(Entity& entity) {}
+    virtual Entity* pEntity() const
+    {
+        return EntityRangeListNode::getEntity(this->pCentralNode());
+    }
 
-
-	virtual BW::string debugString() const;
+    virtual BW::string debugString() const;
 };
 
 BW_END_NAMESPACE

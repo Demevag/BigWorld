@@ -3,7 +3,6 @@
 
 #include "chunk/chunk_obstacle.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,43 +10,43 @@ BW_BEGIN_NAMESPACE
  */
 class ClosestTriangle : public CollisionCallback
 {
-public:
-	explicit ClosestTriangle( bool shouldUseTriangleFlags = true ) :
-		CollisionCallback(),
-		shouldUseTriangleFlags_( shouldUseTriangleFlags ),
-		hasTriangle_( false )
-	{
-	}
+  public:
+    explicit ClosestTriangle(bool shouldUseTriangleFlags = true)
+      : CollisionCallback()
+      , shouldUseTriangleFlags_(shouldUseTriangleFlags)
+      , hasTriangle_(false)
+    {
+    }
 
-	bool hasTriangle() const { return hasTriangle_; }
+    bool hasTriangle() const { return hasTriangle_; }
 
-	const WorldTriangle & triangle() const { return tri_; }
+    const WorldTriangle& triangle() const { return tri_; }
 
-protected:
-	void triangle( const CollisionObstacle & obstacle,
-		const WorldTriangle & triangle )
-	{
-		hasTriangle_ = true;
+  protected:
+    void triangle(const CollisionObstacle& obstacle,
+                  const WorldTriangle&     triangle)
+    {
+        hasTriangle_ = true;
 
-		// Transform into world space
-		tri_ = WorldTriangle(
-			obstacle.transform().applyPoint( triangle.v0() ),
-			obstacle.transform().applyPoint( triangle.v1() ),
-			obstacle.transform().applyPoint( triangle.v2() ),
-			(shouldUseTriangleFlags_) ? triangle.flags() : 0 );
-	}
+        // Transform into world space
+        tri_ = WorldTriangle(obstacle.transform().applyPoint(triangle.v0()),
+                             obstacle.transform().applyPoint(triangle.v1()),
+                             obstacle.transform().applyPoint(triangle.v2()),
+                             (shouldUseTriangleFlags_) ? triangle.flags() : 0);
+    }
 
-private:
-	virtual int operator()( const CollisionObstacle & obstacle,
-		const WorldTriangle & triangle, float /*dist*/ )
-	{
-		this->triangle( obstacle, triangle );
-		return COLLIDE_BEFORE;
-	}
+  private:
+    virtual int operator()(const CollisionObstacle& obstacle,
+                           const WorldTriangle&     triangle,
+                           float /*dist*/)
+    {
+        this->triangle(obstacle, triangle);
+        return COLLIDE_BEFORE;
+    }
 
-	WorldTriangle tri_;
-	bool shouldUseTriangleFlags_;
-	bool hasTriangle_;
+    WorldTriangle tri_;
+    bool          shouldUseTriangleFlags_;
+    bool          hasTriangle_;
 };
 
 BW_END_NAMESPACE

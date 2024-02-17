@@ -10,24 +10,20 @@ BW_BEGIN_NAMESPACE
  */
 class SlowTaskHandler
 {
-public:
-	virtual ~SlowTaskHandler(){}
+  public:
+    virtual ~SlowTaskHandler() {}
 
-	virtual void startSlowTask() = 0;
-	virtual void stopSlowTask() = 0;
+    virtual void startSlowTask() = 0;
+    virtual void stopSlowTask()  = 0;
 
-	static SlowTaskHandler*& handler()
-	{
-		static SlowTaskHandler* s_handler = NULL;
-		return s_handler;
-	}
+    static SlowTaskHandler*& handler()
+    {
+        static SlowTaskHandler* s_handler = NULL;
+        return s_handler;
+    }
 
-	static void handler( SlowTaskHandler* sth )
-	{
-		handler() = sth;
-	}
+    static void handler(SlowTaskHandler* sth) { handler() = sth; }
 };
-
 
 /**
  *	This classes can be used as a scoped guard and provides
@@ -35,24 +31,22 @@ public:
  */
 class SlowTask
 {
-public:
-	SlowTask()
-	{
-		if (SlowTaskHandler::handler())
-		{
-			SlowTaskHandler::handler()->startSlowTask();
-		}
-	}
+  public:
+    SlowTask()
+    {
+        if (SlowTaskHandler::handler()) {
+            SlowTaskHandler::handler()->startSlowTask();
+        }
+    }
 
-	~SlowTask()
-	{
-		if (SlowTaskHandler::handler())
-		{
-			SlowTaskHandler::handler()->stopSlowTask();
-		}
-	}
+    ~SlowTask()
+    {
+        if (SlowTaskHandler::handler()) {
+            SlowTaskHandler::handler()->stopSlowTask();
+        }
+    }
 };
 
 BW_END_NAMESPACE
 
-#endif//SLOW_TASK_HPP
+#endif // SLOW_TASK_HPP

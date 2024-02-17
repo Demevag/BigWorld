@@ -20,116 +20,120 @@ class ParticleSystem;
 
 class MeModule : public FrameworkModule
 {
-public:
-	MeModule();
-	~MeModule();
+  public:
+    MeModule();
+    ~MeModule();
 
-	virtual bool init( DataSectionPtr pSection );
+    virtual bool init(DataSectionPtr pSection);
 
-	virtual void onStart();
-	virtual int  onStop();
+    virtual void onStart();
+    virtual int  onStop();
 
-	virtual bool updateState( float dTime );
-	bool renderThumbnail( const BW::string& fileName );
+    virtual bool updateState(float dTime);
+    bool         renderThumbnail(const BW::string& fileName);
 
-	virtual void updateAnimations();
-	virtual void render( float dTime );
+    virtual void updateAnimations();
+    virtual void render(float dTime);
 
-	virtual bool handleKeyEvent( const KeyEvent & event );
-	virtual bool handleMouseEvent( const MouseEvent & event );
+    virtual bool handleKeyEvent(const KeyEvent& event);
+    virtual bool handleMouseEvent(const MouseEvent& event);
 
-	static MeModule& instance() { SINGLETON_MANAGER_WRAPPER( MeModule ) MF_ASSERT(s_instance_); return *s_instance_; }
+    static MeModule& instance()
+    {
+        SINGLETON_MANAGER_WRAPPER(MeModule) MF_ASSERT(s_instance_);
+        return *s_instance_;
+    }
 
-	float averageFPS() const { return averageFps_; }
+    float averageFPS() const { return averageFps_; }
 
-	bool materialPreviewMode() const { return materialPreviewMode_; }
-	void materialPreviewMode( bool on ) { materialPreviewMode_ = on; }
+    bool materialPreviewMode() const { return materialPreviewMode_; }
+    void materialPreviewMode(bool on) { materialPreviewMode_ = on; }
 
-	typedef MeModule This;
+    typedef MeModule This;
 
-	PY_MODULE_STATIC_METHOD_DECLARE( py_render )
-	PY_MODULE_STATIC_METHOD_DECLARE( py_onEditorReady )
+    PY_MODULE_STATIC_METHOD_DECLARE(py_render)
+    PY_MODULE_STATIC_METHOD_DECLARE(py_onEditorReady)
 
-	void setApp( App * app ) { app_ = app; }
-	void setMainFrame( IMainFrame * mainFrame ) { mainFrame_ = mainFrame; }
+    void setApp(App* app) { app_ = app; }
+    void setMainFrame(IMainFrame* mainFrame) { mainFrame_ = mainFrame; }
 
-private:
-	MeModule( const MeModule& );
-	MeModule& operator=( const MeModule& );
-	
-	void beginRender();
-	void endRender();
+  private:
+    MeModule(const MeModule&);
+    MeModule& operator=(const MeModule&);
 
-	void renderChunks( Moo::DrawContext& drawContext );
-	void renderTerrain( float dTime = 0.f, bool shadowing = false );
-	void renderOpaque( Moo::DrawContext& drawContext, float dTime);
-	void renderFixedFunction( Moo::DrawContext& drawContext, float dTime );
-    void updateModel( Moo::DrawContext& drawContext, float dTime );
+    void beginRender();
+    void endRender();
 
-	void setLights( bool checkForSparkles, bool useCustomLighting );
+    void renderChunks(Moo::DrawContext& drawContext);
+    void renderTerrain(float dTime = 0.f, bool shadowing = false);
+    void renderOpaque(Moo::DrawContext& drawContext, float dTime);
+    void renderFixedFunction(Moo::DrawContext& drawContext, float dTime);
+    void updateModel(Moo::DrawContext& drawContext, float dTime);
 
-	bool initPyScript();
-	bool finiPyScript();
+    void setLights(bool checkForSparkles, bool useCustomLighting);
 
-	static void chunksLoadedCallback( const char * );
+    bool initPyScript();
+    bool finiPyScript();
 
-	Moo::BaseTexturePtr mapTexture_;
+    static void chunksLoadedCallback(const char*);
 
-	/** The last created MeModule */
-	static MeModule* s_instance_;
+    Moo::BaseTexturePtr mapTexture_;
 
-	/** Camera position, X & Y specify position, Z specifies zoom */
-	Vector3 viewPosition_;
+    /** The last created MeModule */
+    static MeModule* s_instance_;
 
-	/**
-	 * Where the cursor was when we started looking around,
-	 * so we can restore it to here when done
-	 */
-	POINT lastCursorPosition_;
+    /** Camera position, X & Y specify position, Z specifies zoom */
+    Vector3 viewPosition_;
 
-	/**
-	 * Add to a GridCoord to transform it from a local (origin at 0,0) to a
-	 * world (origin in middle of map) grid coord
-	 */
-	GridCoord localToWorld_;
+    /**
+     * Where the cursor was when we started looking around,
+     * so we can restore it to here when done
+     */
+    POINT lastCursorPosition_;
 
-	/** The start of the current selection */
-	Vector2 selectionStart_;
+    /**
+     * Add to a GridCoord to transform it from a local (origin at 0,0) to a
+     * world (origin in middle of map) grid coord
+     */
+    GridCoord localToWorld_;
 
-	/** The currently selecting, with the mouse, rect */
-	GridRect currentSelection_;
+    /** The start of the current selection */
+    Vector2 selectionStart_;
 
-	/** Extent of the grid, in number of chunks. It starts at 0,0 */
-	unsigned int gridWidth_;
-	unsigned int gridHeight_;
+    /** The currently selecting, with the mouse, rect */
+    GridRect currentSelection_;
 
-	Vector2 currentGridPos();
-	Vector3 gridPosToWorldPos( Vector2 gridPos );
+    /** Extent of the grid, in number of chunks. It starts at 0,0 */
+    unsigned int gridWidth_;
+    unsigned int gridHeight_;
 
-	float averageFps_;
+    Vector2 currentGridPos();
+    Vector3 gridPosToWorldPos(Vector2 gridPos);
 
-	PyObject * scriptDict_;
+    float averageFps_;
 
-	ScriptObject editorReadyCallback_;
+    PyObject* scriptDict_;
 
-	SmartPointer<ClosedCaptions> cc_;
+    ScriptObject editorReadyCallback_;
 
-	class WireframeMaterialOverride* wireframeRenderer_;
+    SmartPointer<ClosedCaptions> cc_;
 
-	bool materialPreviewMode_;
+    class WireframeMaterialOverride* wireframeRenderer_;
 
-	bool renderingThumbnail_;
-	SmartPointer< Moo::RenderTarget > rt_;
+    bool materialPreviewMode_;
 
-	int		lastHDREnabled_;
-	int		lastSSAOEnabled_;
+    bool                            renderingThumbnail_;
+    SmartPointer<Moo::RenderTarget> rt_;
 
-	bool lastShadowsOn_;
-	uint32 lastShadowsQuality_;
-	MutantShadowRender shadowRenderItem_;
-	float lastDTime_;
-	App *			app_;
-	IMainFrame *	mainFrame_;
+    int lastHDREnabled_;
+    int lastSSAOEnabled_;
+
+    bool               lastShadowsOn_;
+    uint32             lastShadowsQuality_;
+    MutantShadowRender shadowRenderItem_;
+    float              lastDTime_;
+    App*               app_;
+    IMainFrame*        mainFrame_;
 };
 
 BW_END_NAMESPACE

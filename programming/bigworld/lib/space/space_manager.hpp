@@ -15,58 +15,57 @@ class ScriptObject;
 
 class SPACE_API SpaceManager
 {
-public:
-	static const SpaceID LOCAL_SPACE_START = (1 << 30);
+  public:
+    static const SpaceID LOCAL_SPACE_START = (1 << 30);
 
-	SpaceManager();
-	~SpaceManager();
+    SpaceManager();
+    ~SpaceManager();
 
-	static SpaceManager & instance();
+    static SpaceManager& instance();
 
-	void init();
-	void fini();
-	bool isReady();
+    void init();
+    void fini();
+    bool isReady();
 
-	void factory( IClientSpaceFactory * pFactory );
-	IClientSpaceFactory * factory();
+    void                 factory(IClientSpaceFactory* pFactory);
+    IClientSpaceFactory* factory();
 
-	void tick( float dTime );
-	void updateAnimations( float dTime );
+    void tick(float dTime);
+    void updateAnimations(float dTime);
 
-	void addSpace( ClientSpace * pSpace );
-	void delSpace( ClientSpace * pSpace );
-	ClientSpace * space( SpaceID spaceID );
-	ClientSpace * createSpace( SpaceID spaceID );
-	ClientSpace * findOrCreateSpace( SpaceID spaceID );
+    void         addSpace(ClientSpace* pSpace);
+    void         delSpace(ClientSpace* pSpace);
+    ClientSpace* space(SpaceID spaceID);
+    ClientSpace* createSpace(SpaceID spaceID);
+    ClientSpace* findOrCreateSpace(SpaceID spaceID);
 
-	void clearSpaces();
-	void clearLocalSpaces();
+    void clearSpaces();
+    void clearLocalSpaces();
 
-	bool isLocalSpace( SpaceID spaceID );
+    bool isLocalSpace(SpaceID spaceID);
 
-	IEntityEmbodimentPtr createEntityEmbodiment( const ScriptObject& object );
-	IOmniLightEmbodiment * createOmniLightEmbodiment(
-		const PyOmniLight & pyOmniLight );
-	ISpotLightEmbodiment * createSpotLightEmbodiment(
-		const PySpotLight & pySpotLight );
+    IEntityEmbodimentPtr  createEntityEmbodiment(const ScriptObject& object);
+    IOmniLightEmbodiment* createOmniLightEmbodiment(
+      const PyOmniLight& pyOmniLight);
+    ISpotLightEmbodiment* createSpotLightEmbodiment(
+      const PySpotLight& pySpotLight);
 
-	typedef Event< SpaceManager, ClientSpace * > SpaceCreatedEvent;
-	typedef Event< SpaceManager, ClientSpace * > SpaceDestroyedEvent;
-	SpaceCreatedEvent::EventDelegateList& spaceCreated();
-	SpaceDestroyedEvent::EventDelegateList& spaceDestroyed();
+    typedef Event<SpaceManager, ClientSpace*> SpaceCreatedEvent;
+    typedef Event<SpaceManager, ClientSpace*> SpaceDestroyedEvent;
+    SpaceCreatedEvent::EventDelegateList&     spaceCreated();
+    SpaceDestroyedEvent::EventDelegateList&   spaceDestroyed();
 
-private:
+  private:
+    std::auto_ptr<IClientSpaceFactory> pFactory_;
 
-	std::auto_ptr<IClientSpaceFactory> pFactory_;
+    typedef BW::map<SpaceID, ClientSpace*> SpaceMap;
+    SpaceMap                               spaces_;
+    SpaceMap                               localSpaces_;
 
-	typedef BW::map< SpaceID, ClientSpace * > SpaceMap;
-	SpaceMap spaces_;
-	SpaceMap localSpaces_;
+    SpaceCreatedEvent   onSpaceCreated;
+    SpaceDestroyedEvent onSpaceDestroyed;
 
-	SpaceCreatedEvent onSpaceCreated;
-	SpaceDestroyedEvent onSpaceDestroyed;
-
-	void clearSpaceMap( SpaceMap & map );
+    void clearSpaceMap(SpaceMap& map);
 };
 
 BW_END_NAMESPACE

@@ -1,7 +1,6 @@
 #ifndef TERRAIN_FUNCTOR_HPP
 #define TERRAIN_FUNCTOR_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "worldeditor/terrain/mouse_drag_handler.hpp"
@@ -16,58 +15,56 @@ BW_BEGIN_NAMESPACE
  */
 class TerrainFunctor : public ToolFunctor
 {
-public:
-	explicit TerrainFunctor( PyTypeObject * pType = &s_type_ );
+  public:
+    explicit TerrainFunctor(PyTypeObject* pType = &s_type_);
 
-	virtual void stopApplying( Tool & tool, bool saveChanges );
-	virtual bool handleKeyEvent( const KeyEvent & keyEvent, Tool & tool );
-	virtual bool handleMouseEvent( const MouseEvent & keyEvent, Tool & tool );
-	virtual bool handleContextMenu( Tool & tool );
-	virtual bool changeCollisionScene(){ return true;}
+    virtual void stopApplying(Tool& tool, bool saveChanges);
+    virtual bool handleKeyEvent(const KeyEvent& keyEvent, Tool& tool);
+    virtual bool handleMouseEvent(const MouseEvent& keyEvent, Tool& tool);
+    virtual bool handleContextMenu(Tool& tool);
+    virtual bool changeCollisionScene() { return true; }
 
-protected:
-	virtual void beginApply();
-	virtual void doApply( Tool & tool, bool allVerts = false );
-	virtual void stopApplyCommitChanges( Tool& tool, bool addUndoBarrier );
-	virtual void stopApplyDiscardChanges( Tool& tool );
+  protected:
+    virtual void beginApply();
+    virtual void doApply(Tool& tool, bool allVerts = false);
+    virtual void stopApplyCommitChanges(Tool& tool, bool addUndoBarrier);
+    virtual void stopApplyDiscardChanges(Tool& tool);
 
-	virtual void getBlockFormat( 
-		const EditorChunkTerrain &		chunkTerrain,
-		TerrainUtils::TerrainFormat	&	format ) const = 0;
+    virtual void getBlockFormat(const EditorChunkTerrain&    chunkTerrain,
+                                TerrainUtils::TerrainFormat& format) const = 0;
 
-	virtual void onFirstApply( EditorChunkTerrain & chunkTerrain ) = 0;
+    virtual void onFirstApply(EditorChunkTerrain& chunkTerrain) = 0;
 
-	virtual void onBeginApply( EditorChunkTerrain & chunkTerrain );
+    virtual void onBeginApply(EditorChunkTerrain& chunkTerrain);
 
-	virtual void applyToSubBlock(
-		EditorChunkTerrain &				chunkTerrain,
-		const Vector3 &						toolEffset, 
-		const Vector3 &						chunkOffset,
-		const TerrainUtils::TerrainFormat &	format,
-		int32								minx, 
-		int32								minz, 
-		int32								maxx, 
-		int32								maxz ) = 0;
+    virtual void applyToSubBlock(EditorChunkTerrain& chunkTerrain,
+                                 const Vector3&      toolEffset,
+                                 const Vector3&      chunkOffset,
+                                 const TerrainUtils::TerrainFormat& format,
+                                 int32                              minx,
+                                 int32                              minz,
+                                 int32                              maxx,
+                                 int32                              maxz) = 0;
 
-	virtual void onEndApply( EditorChunkTerrain & chunkTerrain );
+    virtual void onEndApply(EditorChunkTerrain& chunkTerrain);
 
-	virtual void onApplied( Tool & t ) = 0;
+    virtual void onApplied(Tool& t) = 0;
 
-	virtual void onLastApply( EditorChunkTerrain & chunkTerrain ) = 0;	
+    virtual void onLastApply(EditorChunkTerrain& chunkTerrain) = 0;
 
-	virtual bool showWaitCursorOnLastApply() const;
+    virtual bool showWaitCursorOnLastApply() const;
 
-	bool newTouchedChunk( EditorChunkTerrain * pChunkTerrain );
+    bool newTouchedChunk(EditorChunkTerrain* pChunkTerrain);
 
-	MouseDragHandler & dragHandler();
+    MouseDragHandler& dragHandler();
 
-private:
-	void endApplying();	
+  private:
+    void endApplying();
 
-	typedef BW::set< EditorChunkTerrain* > ECTSet;
+    typedef BW::set<EditorChunkTerrain*> ECTSet;
 
-	ECTSet				touchedChunks_;
-	MouseDragHandler	dragHandler_;
+    ECTSet           touchedChunks_;
+    MouseDragHandler dragHandler_;
 };
 
 BW_END_NAMESPACE

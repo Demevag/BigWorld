@@ -6,7 +6,7 @@
 #include "script_instance.ipp"
 #endif
 
-DECLARE_DEBUG_COMPONENT2( "Script", 0 )
+DECLARE_DEBUG_COMPONENT2("Script", 0)
 
 // -----------------------------------------------------------------------------
 // Section: ScriptInstance
@@ -15,16 +15,17 @@ DECLARE_DEBUG_COMPONENT2( "Script", 0 )
 /**
  *	Constructor.
  */
-ScriptInstance::ScriptInstance( PyTypeObject * pType ) : PyObjectPlus( pType )
+ScriptInstance::ScriptInstance(PyTypeObject* pType)
+  : PyObjectPlus(pType)
 {
 }
-
 
 /**
  *	This method initialises this object from a data section.
  */
-bool ScriptInstance::init( DataSectionPtr pSection,
-	const char * moduleName, const char * defaultTypeName )
+bool ScriptInstance::init(DataSectionPtr pSection,
+                          const char*    moduleName,
+                          const char*    defaultTypeName)
 {
 #error "This is not in working order: has not been updated for python 2.3"
 #if 0
@@ -65,7 +66,7 @@ bool ScriptInstance::init( DataSectionPtr pSection,
 
 	return this->in_class != NULL;
 #endif
-	return true;
+    return true;
 }
 
 // script_instance.cpp

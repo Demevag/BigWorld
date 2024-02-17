@@ -6,45 +6,49 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class MySql;
 
 class MySqlSynchronise : public DatabaseToolApp
 {
-public:
-	MySqlSynchronise() : DatabaseToolApp() {}
-	~MySqlSynchronise() {}
+  public:
+    MySqlSynchronise()
+      : DatabaseToolApp()
+    {
+    }
+    ~MySqlSynchronise() {}
 
-	bool init( bool isVerbose, bool shouldLock, bool isDryRun,
-		DBConfig::ConnectionInfo & connectionInfo );
+    bool init(bool                      isVerbose,
+              bool                      shouldLock,
+              bool                      isDryRun,
+              DBConfig::ConnectionInfo& connectionInfo);
 
-	bool run();
+    bool run();
 
-	MySql & connection()
-		{ return this->DatabaseToolApp::connection(); }
+    MySql& connection() { return this->DatabaseToolApp::connection(); }
 
-	// Overrides from DatabaseToolApp
-	MySqlLockedConnection * createMysqlConnection (
-		const DBConfig::ConnectionInfo & connectionInfo ) const;
+    // Overrides from DatabaseToolApp
+    MySqlLockedConnection* createMysqlConnection(
+      const DBConfig::ConnectionInfo& connectionInfo) const;
 
-	const EntityDefs & entityDefs()
-		{ return this->DatabaseToolApp::entityDefs(); }
+    const EntityDefs& entityDefs()
+    {
+        return this->DatabaseToolApp::entityDefs();
+    }
 
-	bool synchroniseEntityDefinitions( bool allowNew,
-		const BW::string & characterSet = "",
-		const BW::string & collation = "" );
+    bool synchroniseEntityDefinitions(bool              allowNew,
+                                      const BW::string& characterSet = "",
+                                      const BW::string& collation    = "");
 
-private:
-	bool doSynchronise();
-	void createSpecialBigWorldTables();
-	bool updatePasswordHash( bool wasHashed );
-	bool alterDBCharSet( const BW::string & characterSet, 
-		const BW::string & collation );
+  private:
+    bool doSynchronise();
+    void createSpecialBigWorldTables();
+    bool updatePasswordHash(bool wasHashed);
+    bool alterDBCharSet(const BW::string& characterSet,
+                        const BW::string& collation);
 
-	bool isDryRun_;
-
+    bool isDryRun_;
 };
 
 BW_END_NAMESPACE

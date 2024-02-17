@@ -14,70 +14,69 @@ BW_BEGIN_NAMESPACE
  */
 class ClosestChunkItem : public ClosestTriangle
 {
-public:
-	ClosestChunkItem() :
-		ClosestTriangle(),
-		pChunkItem_( NULL )
-	{
-	}
+  public:
+    ClosestChunkItem()
+      : ClosestTriangle()
+      , pChunkItem_(NULL)
+    {
+    }
 
-	ChunkItem * pChunkItem() const	{ return pChunkItem_; }
+    ChunkItem* pChunkItem() const { return pChunkItem_; }
 
-	virtual int doVisit( const CollisionObstacle & obstacle,
-		const WorldTriangle & triangle, float /*dist*/ )
-	{
-		if (!(triangle.flags() & this->triangleFlags()))
-		{
-			return COLLIDE_ALL;
-		}
+    virtual int doVisit(const CollisionObstacle& obstacle,
+                        const WorldTriangle&     triangle,
+                        float /*dist*/)
+    {
+        if (!(triangle.flags() & this->triangleFlags())) {
+            return COLLIDE_ALL;
+        }
 
-		this->triangle( obstacle, triangle );
+        this->triangle(obstacle, triangle);
 
-		pChunkItem_ = obstacle.sceneObject().isType< ChunkItem >() ?
-			obstacle.sceneObject().getAs< ChunkItem >() : NULL;
-		MF_ASSERT( pChunkItem_ );
+        pChunkItem_ = obstacle.sceneObject().isType<ChunkItem>()
+                        ? obstacle.sceneObject().getAs<ChunkItem>()
+                        : NULL;
+        MF_ASSERT(pChunkItem_);
 
-		return COLLIDE_BEFORE;
-	}
+        return COLLIDE_BEFORE;
+    }
 
-protected:
-	ChunkItem * pChunkItem_;
+  protected:
+    ChunkItem* pChunkItem_;
 
-private:
-	virtual WorldTriangle::Flags triangleFlags() const = 0;
+  private:
+    virtual WorldTriangle::Flags triangleFlags() const = 0;
 };
-
 
 /**
  *	This class finds the closest water triangle.
  */
 class ClosestWater : public ClosestChunkItem
 {
-public:
-	VeryLargeObject * pWater() const
-	{
-		ChunkVLO * pVLO = pChunkItem_ ? (ChunkVLO*) pChunkItem_ : NULL;
-		return pVLO ? pVLO->object().get() : NULL;
-	}
+  public:
+    VeryLargeObject* pWater() const
+    {
+        ChunkVLO* pVLO = pChunkItem_ ? (ChunkVLO*)pChunkItem_ : NULL;
+        return pVLO ? pVLO->object().get() : NULL;
+    }
 
-private:
-	virtual WorldTriangle::Flags triangleFlags() const
-	{
-		return TRIANGLE_WATER;
-	}
+  private:
+    virtual WorldTriangle::Flags triangleFlags() const
+    {
+        return TRIANGLE_WATER;
+    }
 };
-
 
 /**
  *	This class finds the closest terrain triangle.
  */
 class ClosestTerrain : public ClosestChunkItem
 {
-private:
-	virtual WorldTriangle::Flags triangleFlags() const
-	{
-		return TRIANGLE_TERRAIN;
-	}
+  private:
+    virtual WorldTriangle::Flags triangleFlags() const
+    {
+        return TRIANGLE_TERRAIN;
+    }
 };
 
 BW_END_NAMESPACE

@@ -10,53 +10,46 @@ BW_BEGIN_NAMESPACE
  */
 class ZipIStream : public MemoryIStream
 {
-public:
-	ZipIStream( BinaryIStream & stream );
-	ZipIStream();
+  public:
+    ZipIStream(BinaryIStream& stream);
+    ZipIStream();
 
-	~ZipIStream();
+    ~ZipIStream();
 
-	static int peekOriginalLength( BinaryIStream & stream );
+    static int peekOriginalLength(BinaryIStream& stream);
 
-	bool init( BinaryIStream & stream, unsigned char * pBuffer = NULL,
-		size_t bufferSize = 0 );
+    bool init(BinaryIStream& stream,
+              unsigned char* pBuffer    = NULL,
+              size_t         bufferSize = 0);
 
-
-private:
-	unsigned char * pBuffer_;
-	bool shouldDelete_;
+  private:
+    unsigned char* pBuffer_;
+    bool           shouldDelete_;
 };
-
 
 /**
  *	This class is used compressed data to write to a stream.
  */
 class ZipOStream : public BinaryOStream
 {
-public:
-	ZipOStream( BinaryOStream & dstStream,
-			int compressLevel = 1 /* Z_BEST_SPEED */ );
-	ZipOStream();
+  public:
+    ZipOStream(BinaryOStream& dstStream,
+               int            compressLevel = 1 /* Z_BEST_SPEED */);
+    ZipOStream();
 
-	void init( BinaryOStream & dstStream,
-			int compressLevel = 1 /* Z_BEST_SPEED */ );
+    void init(BinaryOStream& dstStream,
+              int            compressLevel = 1 /* Z_BEST_SPEED */);
 
-	virtual ~ZipOStream();
+    virtual ~ZipOStream();
 
-	virtual void * reserve( int nBytes )
-	{
-		return outStream_.reserve( nBytes );
-	}
+    virtual void* reserve(int nBytes) { return outStream_.reserve(nBytes); }
 
-	virtual int size() const
-	{ 
-		return outStream_.size();
-	} 
+    virtual int size() const { return outStream_.size(); }
 
-private:
-	MemoryOStream outStream_;
-	BinaryOStream * pDstStream_;
-	int compressLevel_;
+  private:
+    MemoryOStream  outStream_;
+    BinaryOStream* pDstStream_;
+    int            compressLevel_;
 };
 
 BW_END_NAMESPACE

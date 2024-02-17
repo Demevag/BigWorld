@@ -7,13 +7,10 @@ BW_BEGIN_NAMESPACE
 
 class Endpoint;
 
-namespace NetworkStats
-{
-	bool getQueueSizes( const Endpoint & ep, int & tx, int & rx );
+namespace NetworkStats {
+    bool getQueueSizes(const Endpoint& ep, int& tx, int& rx);
 };
 
 BW_END_NAMESPACE
 
-
-#endif //NETWORK_STATS_HPP
-
+#endif // NETWORK_STATS_HPP

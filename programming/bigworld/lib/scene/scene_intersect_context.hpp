@@ -3,37 +3,35 @@
 
 #include "cstdmf/stdmf.hpp"
 
-namespace BW
-{
+namespace BW {
 
-class Scene;
+    class Scene;
 
-class SceneIntersectContext
-{
-public:
-	SceneIntersectContext( const Scene & scene );
+    class SceneIntersectContext
+    {
+      public:
+        SceneIntersectContext(const Scene& scene);
 
-	const Scene & scene() const { return scene_; }
-	
-	bool onlyShadowCasters() const;
-	void onlyShadowCasters( bool include );
-	bool includeDynamicObjects() const;
-	void includeDynamicObjects( bool include );
-	bool includeStaticObjects() const;
-	void includeStaticObjects( bool include );
+        const Scene& scene() const { return scene_; }
 
-private:
+        bool onlyShadowCasters() const;
+        void onlyShadowCasters(bool include);
+        bool includeDynamicObjects() const;
+        void includeDynamicObjects(bool include);
+        bool includeStaticObjects() const;
+        void includeStaticObjects(bool include);
 
-	enum Flags
-	{
-		INCLUDE_DYNAMIC_OBJECTS = 1 << 0,
-		INCLUDE_STATIC_OBJECTS = 1 << 1,
-		ONLY_SHADOW_CASTERS = 1 << 2
-	};
+      private:
+        enum Flags
+        {
+            INCLUDE_DYNAMIC_OBJECTS = 1 << 0,
+            INCLUDE_STATIC_OBJECTS  = 1 << 1,
+            ONLY_SHADOW_CASTERS     = 1 << 2
+        };
 
-	uint32 flags_;
-	const Scene & scene_;
-};
+        uint32       flags_;
+        const Scene& scene_;
+    };
 
 } // namespace BW
 

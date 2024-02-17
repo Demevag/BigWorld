@@ -4,18 +4,17 @@
 
 #include "resmgr/datasection.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
  *	Constructor.
  */
-UDORefMapping::UDORefMapping( const Namer& namer, const BW::string& propName,
-		DataSectionPtr pDefaultValue ) :
-	UniqueIDMapping( namer, propName, getGuidSection( pDefaultValue ) )
+UDORefMapping::UDORefMapping(const Namer&      namer,
+                             const BW::string& propName,
+                             DataSectionPtr    pDefaultValue)
+  : UniqueIDMapping(namer, propName, getGuidSection(pDefaultValue))
 {
 }
-
 
 /**
  *	This static method retrieves the GUID of the UDO from the provided
@@ -25,9 +24,9 @@ UDORefMapping::UDORefMapping( const Namer& namer, const BW::string& propName,
  *
  *	@returns The DataSectionPtr of the GUID if it exists, otherwise NULL.
  */
-DataSectionPtr UDORefMapping::getGuidSection( DataSectionPtr pParentSection )
+DataSectionPtr UDORefMapping::getGuidSection(DataSectionPtr pParentSection)
 {
-	return (pParentSection) ? pParentSection->openSection( "guid" ) : NULL;
+    return (pParentSection) ? pParentSection->openSection("guid") : NULL;
 }
 
 BW_END_NAMESPACE

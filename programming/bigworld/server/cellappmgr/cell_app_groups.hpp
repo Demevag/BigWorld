@@ -4,7 +4,6 @@
 #include "cell_app_group.hpp"
 #include "cstdmf/bw_list.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class CellApps;
@@ -14,17 +13,17 @@ class CellApps;
  */
 class CellAppGroups
 {
-public:
-	CellAppGroups( const CellApps & cellApps );
+  public:
+    CellAppGroups(const CellApps& cellApps);
 
-	void checkForOverloaded( float addCellThreshold );
-	void checkForUnderloaded( float retireCellThreshold );
+    void checkForOverloaded(float addCellThreshold);
+    void checkForUnderloaded(float retireCellThreshold);
 
-	BW::string asString() const;
+    BW::string asString() const;
 
-private:
-	typedef BW::list< CellAppGroup > List;
-	List list_;
+  private:
+    typedef BW::list<CellAppGroup> List;
+    List                           list_;
 };
 
 BW_END_NAMESPACE

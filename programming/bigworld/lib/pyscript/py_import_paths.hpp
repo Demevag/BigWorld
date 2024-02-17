@@ -15,29 +15,27 @@ BW_BEGIN_NAMESPACE
  */
 class PyImportPaths
 {
-public:
-	static const char DEFAULT_DELIMITER = ';';
+  public:
+    static const char DEFAULT_DELIMITER = ';';
 
-	PyImportPaths( char delimiter = DEFAULT_DELIMITER );
+    PyImportPaths(char delimiter = DEFAULT_DELIMITER);
 
-	const BW::string pathsAsString() const;
-	PyObject * pathAsObject() const;
+    const BW::string pathsAsString() const;
+    PyObject*        pathAsObject() const;
 
-	bool empty() const 
-	{ return paths_.empty(); }
+    bool empty() const { return paths_.empty(); }
 
-	void append( const PyImportPaths & other );
+    void append(const PyImportPaths& other);
 
-	void addResPath( const BW::string & path );
-	void addNonResPath( const BW::string & path );
+    void addResPath(const BW::string& path);
+    void addNonResPath(const BW::string& path);
 
-	void setDelimiter( char delimiter )
-	{ delimiter_ = delimiter; }
+    void setDelimiter(char delimiter) { delimiter_ = delimiter; }
 
-private:
-	typedef BW::vector< BW::string > OrderedPaths;
-	OrderedPaths paths_;
-	char delimiter_;
+  private:
+    typedef BW::vector<BW::string> OrderedPaths;
+    OrderedPaths                   paths_;
+    char                           delimiter_;
 };
 
 BW_END_NAMESPACE

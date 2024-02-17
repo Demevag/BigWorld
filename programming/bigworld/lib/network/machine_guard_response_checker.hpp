@@ -15,14 +15,14 @@ class MGMPacket;
  */
 class MachineGuardResponseChecker
 {
-public:
-	void receivedPacket( uint32 srcAddr, const MGMPacket & packet );
+  public:
+    void receivedPacket(uint32 srcAddr, const MGMPacket& packet);
 
-	bool isDone() const;
+    bool isDone() const;
 
-private:
-	BW::set< uint32 > waitingFor_;
-	BW::set< uint32 > receivedFrom_;
+  private:
+    BW::set<uint32> waitingFor_;
+    BW::set<uint32> receivedFrom_;
 };
 
 BW_END_NAMESPACE

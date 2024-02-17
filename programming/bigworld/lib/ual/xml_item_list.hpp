@@ -12,35 +12,34 @@ BW_BEGIN_NAMESPACE
  */
 class XmlItem
 {
-public:
-	enum Position
-	{
-		TOP,
-		BOTTOM
-	};
+  public:
+    enum Position
+    {
+        TOP,
+        BOTTOM
+    };
 
-	XmlItem() :
-		position_( TOP )
-	{}
+    XmlItem()
+      : position_(TOP)
+    {
+    }
 
-	XmlItem(
-		const AssetInfo& assetInfo,
-		const Position position = TOP ) :
-		assetInfo_( assetInfo ),
-		position_( position )
-	{}
+    XmlItem(const AssetInfo& assetInfo, const Position position = TOP)
+      : assetInfo_(assetInfo)
+      , position_(position)
+    {
+    }
 
-	bool empty() const { return assetInfo_.empty(); }
+    bool empty() const { return assetInfo_.empty(); }
 
-	const AssetInfo& assetInfo() const { return assetInfo_; }
-	Position position() const { return position_; }
+    const AssetInfo& assetInfo() const { return assetInfo_; }
+    Position         position() const { return position_; }
 
-private:
-	AssetInfo assetInfo_;
-	Position position_;
+  private:
+    AssetInfo assetInfo_;
+    Position  position_;
 };
 typedef BW::vector<XmlItem> XmlItemVec;
-
 
 /**
  *	This class serves as the base class for others to implement editing of an
@@ -49,33 +48,33 @@ typedef BW::vector<XmlItem> XmlItemVec;
  */
 class XmlItemList
 {
-public:
-	XmlItemList();
-	virtual ~XmlItemList();
+  public:
+    XmlItemList();
+    virtual ~XmlItemList();
 
-	virtual DataSectionPtr add( const XmlItem& item );
-	virtual DataSectionPtr addAt( const XmlItem& item , const XmlItem& atItem );
-	virtual void remove( const XmlItem& item );
+    virtual DataSectionPtr add(const XmlItem& item);
+    virtual DataSectionPtr addAt(const XmlItem& item, const XmlItem& atItem);
+    virtual void           remove(const XmlItem& item);
 
-	virtual void clear();
+    virtual void clear();
 
-	virtual void setDataSection( const DataSectionPtr section );
-	virtual void setPath( const BW::wstring& path );
-	virtual BW::wstring getPath() { return path_; };
+    virtual void        setDataSection(const DataSectionPtr section);
+    virtual void        setPath(const BW::wstring& path);
+    virtual BW::wstring getPath() { return path_; };
 
-	virtual void getItems( XmlItemVec& items );
-	virtual DataSectionPtr getItem( const XmlItem& item );
+    virtual void           getItems(XmlItemVec& items);
+    virtual DataSectionPtr getItem(const XmlItem& item);
 
-protected:
-	BW::wstring path_;
-	int sectionLock_;
-	DataSectionPtr section_;
-	DataSectionPtr rootSection_;
+  protected:
+    BW::wstring    path_;
+    int            sectionLock_;
+    DataSectionPtr section_;
+    DataSectionPtr rootSection_;
 
-	DataSectionPtr lockSection();
-	void unlockSection();
+    DataSectionPtr lockSection();
+    void           unlockSection();
 
-	virtual void dumpItem( DataSectionPtr section,  const XmlItem& item );
+    virtual void dumpItem(DataSectionPtr section, const XmlItem& item);
 };
 
 BW_END_NAMESPACE

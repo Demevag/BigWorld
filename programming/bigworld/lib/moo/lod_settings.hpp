@@ -6,50 +6,48 @@
 #include "cstdmf/bw_string.hpp"
 #include "cstdmf/bw_vector.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // Forward declarations
 typedef SmartPointer<class DataSection> DataSectionPtr;
 
-
 class LodSettings
 {
-public:
-	void init(DataSectionPtr resXML);
-	
-	float applyLodBias(float distance);
-	void applyLodBias(float & lodNear, float & lodFar);
+  public:
+    void init(DataSectionPtr resXML);
 
-	float calculateLod( const Matrix & matWorld );
-	float calculateLod( const Vector3& position, float yScale  );
+    float applyLodBias(float distance);
+    void  applyLodBias(float& lodNear, float& lodFar);
 
-
-#ifdef EDITOR_ENABLED
-	bool ignoreLods() const { return ignoreLods_; }
-	void ignoreLods( bool ignore ) { ignoreLods_ = ignore; }
-#endif
-
-	static LodSettings & instance();
-
-private:
-	void setLodOption(int optionIdx);
-
-	BW::vector<float> lodOptions_;
-	Moo::GraphicsSetting::GraphicsSettingPtr lodSettings_;
+    float calculateLod(const Matrix& matWorld);
+    float calculateLod(const Vector3& position, float yScale);
 
 #ifdef EDITOR_ENABLED
-	bool ignoreLods_;
+    bool ignoreLods() const { return ignoreLods_; }
+    void ignoreLods(bool ignore) { ignoreLods_ = ignore; }
 #endif
 
-private:
-	LodSettings() :
-		lodOptions_(),
-		lodSettings_(NULL)
+    static LodSettings& instance();
+
+  private:
+    void setLodOption(int optionIdx);
+
+    BW::vector<float>                        lodOptions_;
+    Moo::GraphicsSetting::GraphicsSettingPtr lodSettings_;
+
 #ifdef EDITOR_ENABLED
-		,ignoreLods_( false )
+    bool ignoreLods_;
 #endif
-	{}
+
+  private:
+    LodSettings()
+      : lodOptions_()
+      , lodSettings_(NULL)
+#ifdef EDITOR_ENABLED
+      , ignoreLods_(false)
+#endif
+    {
+    }
 };
 
 BW_END_NAMESPACE

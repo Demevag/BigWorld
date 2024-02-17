@@ -5,25 +5,23 @@
 #define BW_CONFIG_PREFIX ""
 #include "server_app_option_macros.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
 // Section: ExternalAppConfig
 // -----------------------------------------------------------------------------
 
-BW_OPTION_RO( float, externalLatencyMin, 0.f );
-BW_OPTION_RO( float, externalLatencyMax, 0.f );
-BW_OPTION_RO( float, externalLossRatio, 0.f );
+BW_OPTION_RO(float, externalLatencyMin, 0.f);
+BW_OPTION_RO(float, externalLatencyMax, 0.f);
+BW_OPTION_RO(float, externalLossRatio, 0.f);
 
-BW_OPTION_RO( BW::string, externalInterface, "" );
+BW_OPTION_RO(BW::string, externalInterface, "");
 
-BW_OPTION_RO( uint, tcpServerBacklog, 511 );
-
+BW_OPTION_RO(uint, tcpServerBacklog, 511);
 
 bool ExternalAppConfig::postInit()
 {
-	return true;
+    return true;
 }
 
 BW_END_NAMESPACE

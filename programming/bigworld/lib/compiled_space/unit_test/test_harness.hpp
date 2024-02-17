@@ -5,13 +5,15 @@
 
 #include "unit_test_lib/base_resmgr_unit_test_harness.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class CompiledSpaceUnitTestHarness : public BaseResMgrUnitTestHarness
 {
-public:
-	CompiledSpaceUnitTestHarness() : BaseResMgrUnitTestHarness( "compiled_space" ) {}
+  public:
+    CompiledSpaceUnitTestHarness()
+      : BaseResMgrUnitTestHarness("compiled_space")
+    {
+    }
 };
 
 BW_END_NAMESPACE

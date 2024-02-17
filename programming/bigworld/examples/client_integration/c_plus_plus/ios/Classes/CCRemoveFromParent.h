@@ -9,8 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "cocos2d.h"
 
-@interface CCRemoveFromParent : CCActionInstant
-{
+@interface CCRemoveFromParent : CCActionInstant {
 }
 
 + (id)action;

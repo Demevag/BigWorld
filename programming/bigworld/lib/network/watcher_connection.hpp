@@ -16,14 +16,12 @@ class Endpoint;
 class WatcherNub;
 class BufferedTcpEndpoint;
 
-namespace Mercury
-{
-class EventDispatcher;
+namespace Mercury {
+    class EventDispatcher;
 }
 
 class WatcherConnection;
 typedef SmartPointer<WatcherConnection> WatcherConnectionPtr;
-
 
 // -----------------------------------------------------------------------------
 // Section: WatcherConnection
@@ -32,48 +30,47 @@ typedef SmartPointer<WatcherConnection> WatcherConnectionPtr;
 /**
  *
  */
-class WatcherConnection : public Mercury::InputNotificationHandler,
-	public ReferenceCount
+class WatcherConnection
+  : public Mercury::InputNotificationHandler
+  , public ReferenceCount
 {
-public:
-	WatcherConnection( WatcherNub & nub,
-			Mercury::EventDispatcher & dispatcher,
-			Endpoint * pEndpoint );
+  public:
+    WatcherConnection(WatcherNub&               nub,
+                      Mercury::EventDispatcher& dispatcher,
+                      Endpoint*                 pEndpoint);
 
-	~WatcherConnection();
+    ~WatcherConnection();
 
-	static WatcherConnection * handleAccept(
-		Endpoint & listenEndpoint,
-		Mercury::EventDispatcher & dispatcher,
-		WatcherNub & watcherNub );
+    static WatcherConnection* handleAccept(Endpoint& listenEndpoint,
+                                           Mercury::EventDispatcher& dispatcher,
+                                           WatcherNub& watcherNub);
 
-	Mercury::Address getRemoteAddress() const;
+    Mercury::Address getRemoteAddress() const;
 
-	int send( void * data, int32 size ) const;
+    int send(void* data, int32 size) const;
 
-	int handleInputNotification( int fd );
+    int handleInputNotification(int fd);
 
-private:
-	void handleDisconnect();
+  private:
+    void handleDisconnect();
 
-	bool recvSize();
-	bool recvMsg();
+    bool recvSize();
+    bool recvMsg();
 
-	WatcherNub & nub_;
-	Mercury::EventDispatcher & dispatcher_;
-	std::auto_ptr<Endpoint> pEndpoint_;
-	std::auto_ptr<BufferedTcpEndpoint> pBufferedTcpEndpoint_;
+    WatcherNub&                        nub_;
+    Mercury::EventDispatcher&          dispatcher_;
+    std::auto_ptr<Endpoint>            pEndpoint_;
+    std::auto_ptr<BufferedTcpEndpoint> pBufferedTcpEndpoint_;
 
-	uint32 receivedSize_;
-	uint32 messageSize_;
+    uint32 receivedSize_;
+    uint32 messageSize_;
 
-	char * pBuffer_;
+    char* pBuffer_;
 
-	// In order to keep the WatcherConnection active during a connection
-	// it holds a reference to itself.
-	WatcherConnectionPtr registeredFileDescriptorProxyRefHolder_;
+    // In order to keep the WatcherConnection active during a connection
+    // it holds a reference to itself.
+    WatcherConnectionPtr registeredFileDescriptorProxyRefHolder_;
 };
-
 
 BW_END_NAMESPACE
 

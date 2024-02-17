@@ -15,14 +15,12 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace
-{
-	NodeResourceHolder * s_phaseNodeViewRes = NULL; // used for brevity.
+namespace {
+    NodeResourceHolder* s_phaseNodeViewRes = NULL; // used for brevity.
 
-	const int PREVIEW_INTERLEAVE_CONSTANT = 4;
-	int s_nextInterleave = 0;
+    const int PREVIEW_INTERLEAVE_CONSTANT = 4;
+    int       s_nextInterleave            = 0;
 } // anonymous namespace
-
 
 /**
  *	Constructor.
@@ -32,44 +30,43 @@ namespace
  *	@param preview	Post processing preview object, used for showing a preview
  *					image of this Phase's result inside the node view.
  */
-PhaseNodeView::PhaseNodeView( Graph::GraphView & graphView, const PhaseNodePtr node, PPPreviewPtr preview ) :
-	node_( node ),
-	rect_( 0, 0, 0, 0 ),
-	renderTargetDragRect_( 0, 0, 0, 0 ),
-	isRenderTargetDragging_( false ),
-	pPreviewImg_( NULL ),
-	previewInterleave_( (s_nextInterleave++ % PREVIEW_INTERLEAVE_CONSTANT) ),
-	lastOutputW_( 0 ),
-	lastOutputH_( 0 ),
-	preview_( preview )
+PhaseNodeView::PhaseNodeView(Graph::GraphView&  graphView,
+                             const PhaseNodePtr node,
+                             PPPreviewPtr       preview)
+  : node_(node)
+  , rect_(0, 0, 0, 0)
+  , renderTargetDragRect_(0, 0, 0, 0)
+  , isRenderTargetDragging_(false)
+  , pPreviewImg_(NULL)
+  , previewInterleave_((s_nextInterleave++ % PREVIEW_INTERLEAVE_CONSTANT))
+  , lastOutputW_(0)
+  , lastOutputH_(0)
+  , preview_(preview)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (!graphView.registerNodeView( node.get(), this ))
-	{
-		ERROR_MSG( "PhaseNodeView: The node is not in the graph.\n" );
-	}
+    if (!graphView.registerNodeView(node.get(), this)) {
+        ERROR_MSG("PhaseNodeView: The node is not in the graph.\n");
+    }
 
-	UINT bmpIDs[] = { IDB_PP_NODE_DELETE };
-	NodeResourceHolder::addUser( bmpIDs, ARRAY_SIZE( bmpIDs ) );
-	s_phaseNodeViewRes = NodeResourceHolder::instance();
+    UINT bmpIDs[] = { IDB_PP_NODE_DELETE };
+    NodeResourceHolder::addUser(bmpIDs, ARRAY_SIZE(bmpIDs));
+    s_phaseNodeViewRes = NodeResourceHolder::instance();
 
-	rect_.right = ViewSkin::phaseNodeSize().cx;
-	rect_.bottom = ViewSkin::phaseNodeSize().cy;
+    rect_.right  = ViewSkin::phaseNodeSize().cx;
+    rect_.bottom = ViewSkin::phaseNodeSize().cy;
 }
-
 
 /**
  *	Destructor.
  */
 PhaseNodeView::~PhaseNodeView()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	raw_free( pPreviewImg_ );
-	NodeResourceHolder::removeUser();
+    raw_free(pPreviewImg_);
+    NodeResourceHolder::removeUser();
 }
-
 
 /**
  *	This method returns the Z order, or depth, of the node.
@@ -78,11 +75,10 @@ PhaseNodeView::~PhaseNodeView()
  */
 int PhaseNodeView::zOrder() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return node_->dragging() ? -1 : 0;
+    return node_->dragging() ? -1 : 0;
 }
-
 
 /**
  *	This method returns the alpha transparency value of the node.
@@ -91,24 +87,22 @@ int PhaseNodeView::zOrder() const
  */
 int PhaseNodeView::alpha() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return node_->dragging() ? ViewSkin::dragAlpha() : 255;
+    return node_->dragging() ? ViewSkin::dragAlpha() : 255;
 }
-
 
 /**
  *	This method sets the current position for this node.
  *
  *	@param pos	Position of the node in the canvas.
  */
-void PhaseNodeView::position( const CPoint & pos )
+void PhaseNodeView::position(const CPoint& pos)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	rect_.OffsetRect( pos.x - rect_.left, pos.y - rect_.top );
+    rect_.OffsetRect(pos.x - rect_.left, pos.y - rect_.top);
 }
-
 
 /**
  *	This method draws this node into the canvas.
@@ -117,184 +111,203 @@ void PhaseNodeView::position( const CPoint & pos )
  *	@param frame	Frame number, ignored.
  *	@param state	State of the node, hovering, selected, etc (see STATE).
  */
-void PhaseNodeView::draw( CDC & dc, uint32 frame, STATE state )
+void PhaseNodeView::draw(CDC& dc, uint32 frame, STATE state)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// Draw node body
-	COLORREF grad1 = node_->active() ? ViewSkin::phaseActiveGradient1() : ViewSkin::phaseInactiveGradient1();
-	COLORREF grad2 = node_->active() ? ViewSkin::phaseActiveGradient2() : ViewSkin::phaseInactiveGradient2();
-	CBrush * nodeBrush = s_phaseNodeViewRes->gradientBrush(
-								grad1, grad2, rect_.Height(), true /* vertical */ );
+    // Draw node body
+    COLORREF grad1     = node_->active() ? ViewSkin::phaseActiveGradient1()
+                                         : ViewSkin::phaseInactiveGradient1();
+    COLORREF grad2     = node_->active() ? ViewSkin::phaseActiveGradient2()
+                                         : ViewSkin::phaseInactiveGradient2();
+    CBrush*  nodeBrush = s_phaseNodeViewRes->gradientBrush(
+      grad1, grad2, rect_.Height(), true /* vertical */);
 
-	if (nodeBrush)
-	{
-		CRect nodeRect = rect_;
-		nodeRect.DeflateRect( 1, 1 );
-		
-		CPoint dcOrg = dc.GetViewportOrg();
-		dc.SetBrushOrg( CPoint( rect_.TopLeft() + dcOrg ) );
+    if (nodeBrush) {
+        CRect nodeRect = rect_;
+        nodeRect.DeflateRect(1, 1);
 
-		int penWidth = (state & SELECTED) ? ViewSkin::nodeSelectedEdgeSize() : ViewSkin::nodeNormalEdgeSize();
-		int penColour = (state & SELECTED) ? ViewSkin::nodeSelectedEdge() : ViewSkin::nodeNormalEdge();
-		CPen nodePen( PS_SOLID, penWidth, penColour );
+        CPoint dcOrg = dc.GetViewportOrg();
+        dc.SetBrushOrg(CPoint(rect_.TopLeft() + dcOrg));
 
-		ViewDrawUtils::drawRect( dc, nodeRect, *nodeBrush, nodePen, ViewSkin::nodeEdgeCurve() );
-	}
+        int  penWidth  = (state & SELECTED) ? ViewSkin::nodeSelectedEdgeSize()
+                                            : ViewSkin::nodeNormalEdgeSize();
+        int  penColour = (state & SELECTED) ? ViewSkin::nodeSelectedEdge()
+                                            : ViewSkin::nodeNormalEdge();
+        CPen nodePen(PS_SOLID, penWidth, penColour);
 
-	dc.SetBkMode( TRANSPARENT );
+        ViewDrawUtils::drawRect(
+          dc, nodeRect, *nodeBrush, nodePen, ViewSkin::nodeEdgeCurve());
+    }
 
-	// Draw preview
-	bool drawPreview = BasePostProcessingNode::previewMode();
+    dc.SetBkMode(TRANSPARENT);
 
-	if (drawPreview && preview_->isVisible(this))
-	{
-		BW_GUARD_PROFILER( PhaseNodeView_drawPreview );
+    // Draw preview
+    bool drawPreview = BasePostProcessingNode::previewMode();
 
-		bool previewDrawn = false;
-		
-		int rtx = 6;
-		int rty = 2;
-		int rtw = ViewSkin::phaseNodeSize().cx - rtx * 2;
-		int rth = ViewSkin::phaseNodeSize().cy - rty * 2;
+    if (drawPreview && preview_->isVisible(this)) {
+        BW_GUARD_PROFILER(PhaseNodeView_drawPreview);
 
-		if (node_->active())
-		{
-			bool needsCalc = ((frame % PREVIEW_INTERLEAVE_CONSTANT) == previewInterleave_);
-			if (!pPreviewImg_)
-			{
-				// Doug Lea's malloc has a known issue with pixel buffers and
-				// SetDIBits and similar GDI functions, so must use raw_malloc.
-				pPreviewImg_ = (char*)raw_malloc(rtw * rth * 4);
-				needsCalc = true;
-			}
-			
-			if (needsCalc)
-			{
-				CRect srcRect;
-				if (preview_->phaseRectForResults(node_->pyPhase().get(), srcRect))
-				{
-					calcPreviewImg( preview_->pPreview(), srcRect, rtw, rth, pPreviewImg_ );
-				}
-			}
-	
-			BITMAPINFO bmpInfo;
-			ZeroMemory( &bmpInfo, sizeof( bmpInfo ) );
-			bmpInfo.bmiHeader.biSize = sizeof( bmpInfo.bmiHeader );
-			bmpInfo.bmiHeader.biWidth = rtw;
-			bmpInfo.bmiHeader.biHeight = rth;
-			bmpInfo.bmiHeader.biPlanes = 1;
-			bmpInfo.bmiHeader.biBitCount = 32;
-			bmpInfo.bmiHeader.biCompression = BI_RGB;
+        bool previewDrawn = false;
 
-			SetDIBitsToDevice( dc.GetSafeHdc(),
-				rect_.left + rtx, rect_.top + rty, rtw, rth,
-				0, 0, 0, rth, pPreviewImg_,
-				&bmpInfo, DIB_RGB_COLORS );
+        int rtx = 6;
+        int rty = 2;
+        int rtw = ViewSkin::phaseNodeSize().cx - rtx * 2;
+        int rth = ViewSkin::phaseNodeSize().cy - rty * 2;
 
-			previewDrawn = true;
-		}
+        if (node_->active()) {
+            bool needsCalc =
+              ((frame % PREVIEW_INTERLEAVE_CONSTANT) == previewInterleave_);
+            if (!pPreviewImg_) {
+                // Doug Lea's malloc has a known issue with pixel buffers and
+                // SetDIBits and similar GDI functions, so must use raw_malloc.
+                pPreviewImg_ = (char*)raw_malloc(rtw * rth * 4);
+                needsCalc    = true;
+            }
 
-		if (!previewDrawn)
-		{
-			dc.FillSolidRect( rtx + rect_.left, rty + rect_.top, rtw, rth, RGB( 0, 0, 0 ) );
+            if (needsCalc) {
+                CRect srcRect;
+                if (preview_->phaseRectForResults(node_->pyPhase().get(),
+                                                  srcRect)) {
+                    calcPreviewImg(
+                      preview_->pPreview(), srcRect, rtw, rth, pPreviewImg_);
+                }
+            }
 
-			if (!(state & HOVER))
-			{
-				COLORREF oldTxtCol = dc.SetTextColor( RGB( 40, 40, 40 ) );
-				CFont * oldFont = dc.SelectObject( &(s_phaseNodeViewRes->bigFont()) );
+            BITMAPINFO bmpInfo;
+            ZeroMemory(&bmpInfo, sizeof(bmpInfo));
+            bmpInfo.bmiHeader.biSize        = sizeof(bmpInfo.bmiHeader);
+            bmpInfo.bmiHeader.biWidth       = rtw;
+            bmpInfo.bmiHeader.biHeight      = rth;
+            bmpInfo.bmiHeader.biPlanes      = 1;
+            bmpInfo.bmiHeader.biBitCount    = 32;
+            bmpInfo.bmiHeader.biCompression = BI_RGB;
 
-				dc.DrawText( Localise( L"WORLDEDITOR/GUI/PAGE_POST_PROCESSING/PHASE_PREVIEW_NOT_AVAILABLE" ),
-							&rect_, DT_SINGLELINE | DT_CENTER | DT_VCENTER );
+            SetDIBitsToDevice(dc.GetSafeHdc(),
+                              rect_.left + rtx,
+                              rect_.top + rty,
+                              rtw,
+                              rth,
+                              0,
+                              0,
+                              0,
+                              rth,
+                              pPreviewImg_,
+                              &bmpInfo,
+                              DIB_RGB_COLORS);
 
-				dc.SelectObject( oldFont );
-				dc.SetTextColor( oldTxtCol );
-			}
-		}
-	}
+            previewDrawn = true;
+        }
 
-	if (!drawPreview || (state & HOVER))
-	{
-		// Draw text
-		CRect textRect = rect_;
-		textRect.DeflateRect( ViewSkin::nodeRectTextMargin() );
+        if (!previewDrawn) {
+            dc.FillSolidRect(
+              rtx + rect_.left, rty + rect_.top, rtw, rth, RGB(0, 0, 0));
 
-		int fullBottom = textRect.bottom;
-		textRect.bottom -= s_phaseNodeViewRes->smallFontHeight();
-		if (textRect.Height() > s_phaseNodeViewRes->fontHeight() * 3)
-		{
-			// Have heaps of room, so save an extra line for the bottom text.
-			textRect.bottom -= s_phaseNodeViewRes->smallFontHeight();
-		}
+            if (!(state & HOVER)) {
+                COLORREF oldTxtCol = dc.SetTextColor(RGB(40, 40, 40));
+                CFont*   oldFont =
+                  dc.SelectObject(&(s_phaseNodeViewRes->bigFont()));
 
-		CFont * oldFont = dc.SelectObject( &(s_phaseNodeViewRes->font()) );
+                dc.DrawText(Localise(L"WORLDEDITOR/GUI/PAGE_POST_PROCESSING/"
+                                     L"PHASE_PREVIEW_NOT_AVAILABLE"),
+                            &rect_,
+                            DT_SINGLELINE | DT_CENTER | DT_VCENTER);
 
-		COLORREF oldTxtCol = dc.GetTextColor();
+                dc.SelectObject(oldFont);
+                dc.SetTextColor(oldTxtCol);
+            }
+        }
+    }
 
-		BW::wstring nodeName;
-		bw_utf8tow( node_->getName(), nodeName );
+    if (!drawPreview || (state & HOVER)) {
+        // Draw text
+        CRect textRect = rect_;
+        textRect.DeflateRect(ViewSkin::nodeRectTextMargin());
 
-		if (drawPreview)
-		{
-			dc.SetTextColor( RGB( 0, 0, 0 ) );
-			textRect.OffsetRect( 1, 1 );
-			dc.DrawText( nodeName.c_str(), &textRect, DT_WORDBREAK | DT_END_ELLIPSIS );
-			textRect.OffsetRect( -1, -1 );
-		}
+        int fullBottom = textRect.bottom;
+        textRect.bottom -= s_phaseNodeViewRes->smallFontHeight();
+        if (textRect.Height() > s_phaseNodeViewRes->fontHeight() * 3) {
+            // Have heaps of room, so save an extra line for the bottom text.
+            textRect.bottom -= s_phaseNodeViewRes->smallFontHeight();
+        }
 
-		dc.SetTextColor( node_->active() ? ViewSkin::phaseFontActive() : ViewSkin::phaseFontInactive() );
+        CFont* oldFont = dc.SelectObject(&(s_phaseNodeViewRes->font()));
 
-		dc.DrawText( nodeName.c_str(), &textRect, DT_WORDBREAK | DT_END_ELLIPSIS );
+        COLORREF oldTxtCol = dc.GetTextColor();
 
-		// Draw output render target drag button
-		renderTargetDragRect_ = CRect( textRect.right - 5, textRect.bottom + 1, textRect.right + 6, textRect.bottom + 12 );
-		if (state & HOVER)
-		{
-			CPen ellipsePen( PS_SOLID, 1, ViewSkin::nodeNormalEdge() );
-			CBrush ellipseBrush( ViewSkin::phaseFontInactive() );
+        BW::wstring nodeName;
+        bw_utf8tow(node_->getName(), nodeName);
 
-			CPen * oldPen = dc.SelectObject( &ellipsePen );
-			CBrush * oldBrush = dc.SelectObject( &ellipseBrush );
-			dc.Ellipse( renderTargetDragRect_ );
-			dc.SelectObject( &oldBrush );
-			dc.SelectObject( &oldPen );
+        if (drawPreview) {
+            dc.SetTextColor(RGB(0, 0, 0));
+            textRect.OffsetRect(1, 1);
+            dc.DrawText(
+              nodeName.c_str(), &textRect, DT_WORDBREAK | DT_END_ELLIPSIS);
+            textRect.OffsetRect(-1, -1);
+        }
 
-			textRect.right -= 6;
-		}
+        dc.SetTextColor(node_->active() ? ViewSkin::phaseFontActive()
+                                        : ViewSkin::phaseFontInactive());
 
-		// Draw output render target text
-		dc.SelectObject( &(s_phaseNodeViewRes->smallFont()) );
+        dc.DrawText(
+          nodeName.c_str(), &textRect, DT_WORDBREAK | DT_END_ELLIPSIS);
 
-		textRect.top = textRect.bottom;
-		textRect.bottom = fullBottom;
+        // Draw output render target drag button
+        renderTargetDragRect_ = CRect(textRect.right - 5,
+                                      textRect.bottom + 1,
+                                      textRect.right + 6,
+                                      textRect.bottom + 12);
+        if (state & HOVER) {
+            CPen   ellipsePen(PS_SOLID, 1, ViewSkin::nodeNormalEdge());
+            CBrush ellipseBrush(ViewSkin::phaseFontInactive());
 
-		updateOutputString();
+            CPen*   oldPen   = dc.SelectObject(&ellipsePen);
+            CBrush* oldBrush = dc.SelectObject(&ellipseBrush);
+            dc.Ellipse(renderTargetDragRect_);
+            dc.SelectObject(&oldBrush);
+            dc.SelectObject(&oldPen);
 
-		if (drawPreview)
-		{
-			dc.SetTextColor( RGB( 0, 0, 0 ) );
-			textRect.OffsetRect( 1, 1 );
-			dc.DrawText( outputStr_.c_str(), &textRect, DT_WORDBREAK | DT_RIGHT | DT_BOTTOM | DT_WORD_ELLIPSIS );
-			textRect.OffsetRect( -1, -1 );
-		}
-		dc.SetTextColor( ViewSkin::phaseFontInactive() );
+            textRect.right -= 6;
+        }
 
-		dc.DrawText( outputStr_.c_str(), &textRect, DT_WORDBREAK | DT_RIGHT | DT_BOTTOM | DT_WORD_ELLIPSIS );
+        // Draw output render target text
+        dc.SelectObject(&(s_phaseNodeViewRes->smallFont()));
 
-		dc.SelectObject( oldFont );
-		dc.SetTextColor( oldTxtCol );
-	}
+        textRect.top    = textRect.bottom;
+        textRect.bottom = fullBottom;
 
-	// Draw the delete button
-	if (state & HOVER)
-	{
-		ViewDrawUtils::drawBitmap( dc, s_phaseNodeViewRes->bitmap( IDB_PP_NODE_DELETE ),
-					rect_.right - s_phaseNodeViewRes->bitmapWidth( IDB_PP_NODE_DELETE ), rect_.top,
-					s_phaseNodeViewRes->bitmapWidth( IDB_PP_NODE_DELETE ), s_phaseNodeViewRes->bitmapHeight( IDB_PP_NODE_DELETE ),
-					true /* force draw transparent */ );
-	}
+        updateOutputString();
+
+        if (drawPreview) {
+            dc.SetTextColor(RGB(0, 0, 0));
+            textRect.OffsetRect(1, 1);
+            dc.DrawText(outputStr_.c_str(),
+                        &textRect,
+                        DT_WORDBREAK | DT_RIGHT | DT_BOTTOM | DT_WORD_ELLIPSIS);
+            textRect.OffsetRect(-1, -1);
+        }
+        dc.SetTextColor(ViewSkin::phaseFontInactive());
+
+        dc.DrawText(outputStr_.c_str(),
+                    &textRect,
+                    DT_WORDBREAK | DT_RIGHT | DT_BOTTOM | DT_WORD_ELLIPSIS);
+
+        dc.SelectObject(oldFont);
+        dc.SetTextColor(oldTxtCol);
+    }
+
+    // Draw the delete button
+    if (state & HOVER) {
+        ViewDrawUtils::drawBitmap(
+          dc,
+          s_phaseNodeViewRes->bitmap(IDB_PP_NODE_DELETE),
+          rect_.right - s_phaseNodeViewRes->bitmapWidth(IDB_PP_NODE_DELETE),
+          rect_.top,
+          s_phaseNodeViewRes->bitmapWidth(IDB_PP_NODE_DELETE),
+          s_phaseNodeViewRes->bitmapHeight(IDB_PP_NODE_DELETE),
+          true /* force draw transparent */);
+    }
 }
-
 
 /**
  *	This method just draws the render target name.
@@ -302,25 +315,24 @@ void PhaseNodeView::draw( CDC & dc, uint32 frame, STATE state )
  *	@param dc		Device context where the draw operations should go.
  *	@param pos		Position at which to draw the text.
  */
-void PhaseNodeView::drawRenderTargetName( CDC & dc, const CPoint & pos )
+void PhaseNodeView::drawRenderTargetName(CDC& dc, const CPoint& pos)
 {
-	int oldBgMode = dc.SetBkMode( OPAQUE );
-	COLORREF oldBgCol = dc.SetBkColor( ViewSkin::bkColour() );
-	COLORREF oldTxtCol = dc.SetTextColor( ViewSkin::phaseFontActive() );
-	CFont * oldFont = dc.SelectObject( &(s_phaseNodeViewRes->smallFont()) );
+    int      oldBgMode = dc.SetBkMode(OPAQUE);
+    COLORREF oldBgCol  = dc.SetBkColor(ViewSkin::bkColour());
+    COLORREF oldTxtCol = dc.SetTextColor(ViewSkin::phaseFontActive());
+    CFont*   oldFont   = dc.SelectObject(&(s_phaseNodeViewRes->smallFont()));
 
-	int w = 200;
-	int h = s_phaseNodeViewRes->smallFontHeight();
-	CPoint centrePos( pos.x - w - renderTargetDragRect_.Width(), pos.y - h / 2 );
-	CRect textRect( centrePos, CSize( w, h ) );
-	dc.DrawText( bw_utf8tow( node_->output() ).c_str(), textRect, DT_RIGHT );
+    int    w = 200;
+    int    h = s_phaseNodeViewRes->smallFontHeight();
+    CPoint centrePos(pos.x - w - renderTargetDragRect_.Width(), pos.y - h / 2);
+    CRect  textRect(centrePos, CSize(w, h));
+    dc.DrawText(bw_utf8tow(node_->output()).c_str(), textRect, DT_RIGHT);
 
-	dc.SelectObject( oldFont );
-	dc.SetTextColor( oldTxtCol );
-	dc.SetBkColor( oldBgCol );
-	dc.SetBkMode( oldBgMode );
+    dc.SelectObject(oldFont);
+    dc.SetTextColor(oldTxtCol);
+    dc.SetBkColor(oldBgCol);
+    dc.SetBkMode(oldBgMode);
 }
-
 
 /**
  *	This method handles when the user presses the left mouse button in order to
@@ -328,41 +340,38 @@ void PhaseNodeView::drawRenderTargetName( CDC & dc, const CPoint & pos )
  *
  *	@param pt	Mouse position.
  */
-void PhaseNodeView::leftBtnDown( const CPoint & pt )
+void PhaseNodeView::leftBtnDown(const CPoint& pt)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	isRenderTargetDragging_ = (renderTargetDragRect_.PtInRect( pt ) == TRUE);
+    isRenderTargetDragging_ = (renderTargetDragRect_.PtInRect(pt) == TRUE);
 }
-
 
 /**
  *	This method handles when the user clicks the left mouse button and if so it
- *	notifies the node's callback, and if the user clicked on the delete box, 
+ *	notifies the node's callback, and if the user clicked on the delete box,
  *	the node's callback will also get notified that the node is being deleted.
  *
  *	@param pt	Mouse position.
  */
-void PhaseNodeView::leftClick( const CPoint & pt )
+void PhaseNodeView::leftClick(const CPoint& pt)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	isRenderTargetDragging_ = false;
+    isRenderTargetDragging_ = false;
 
-	if (node_->callback())
-	{
-		node_->callback()->nodeClicked( node_.get() );
+    if (node_->callback()) {
+        node_->callback()->nodeClicked(node_.get());
 
-		if (pt.x > rect_.right - s_phaseNodeViewRes->bitmapWidth( IDB_PP_NODE_DELETE ) &&
-			pt.x < rect_.right &&
-			pt.y > rect_.top &&
-			pt.y < rect_.top + s_phaseNodeViewRes->bitmapHeight( IDB_PP_NODE_DELETE ))
-		{
-			node_->callback()->nodeDeleted( node_.get() );
-		}
-	}
+        if (pt.x > rect_.right -
+                     s_phaseNodeViewRes->bitmapWidth(IDB_PP_NODE_DELETE) &&
+            pt.x < rect_.right && pt.y > rect_.top &&
+            pt.y < rect_.top +
+                     s_phaseNodeViewRes->bitmapHeight(IDB_PP_NODE_DELETE)) {
+            node_->callback()->nodeDeleted(node_.get());
+        }
+    }
 }
-
 
 /**
  *	This method handles when the user starts dragging the node arround, simply
@@ -371,20 +380,17 @@ void PhaseNodeView::leftClick( const CPoint & pt )
  *
  *	@param pt	Mouse position.
  */
-void PhaseNodeView::doDrag( const CPoint & pt )
+void PhaseNodeView::doDrag(const CPoint& pt)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (!isRenderTargetDragging_)
-	{
-		node_->dragging( true );
-	}
-	if (node_->callback())
-	{
-		node_->callback()->doDrag( pt, node_.get() );
-	}
+    if (!isRenderTargetDragging_) {
+        node_->dragging(true);
+    }
+    if (node_->callback()) {
+        node_->callback()->doDrag(pt, node_.get());
+    }
 }
-
 
 /**
  *	This method handles when the user ends dragging the node arround, simply
@@ -393,19 +399,17 @@ void PhaseNodeView::doDrag( const CPoint & pt )
  *
  *	@param pt	Mouse position.
  */
-void PhaseNodeView::endDrag( const CPoint & pt, bool canceled /*= false*/ )
+void PhaseNodeView::endDrag(const CPoint& pt, bool canceled /*= false*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	isRenderTargetDragging_ = false;
+    isRenderTargetDragging_ = false;
 
-	node_->dragging( false );
-	if (node_->callback())
-	{
-		node_->callback()->endDrag( pt, node_.get(), canceled );
-	}
+    node_->dragging(false);
+    if (node_->callback()) {
+        node_->callback()->endDrag(pt, node_.get(), canceled);
+    }
 }
-
 
 /**
  *	This method creates a preview image of this Phase's output.
@@ -418,120 +422,111 @@ void PhaseNodeView::endDrag( const CPoint & pt, bool canceled /*= false*/ )
  *	@param retPixels	Return param, pixels if the Phase's preview image.
  *	@return	True if successful, false otherwise.
  */
-bool PhaseNodeView::calcPreviewImg( ComObjectWrap<DX::Texture> pPreview, const CRect& srcRect, int width, int height, char * retPixels ) const
+bool PhaseNodeView::calcPreviewImg(ComObjectWrap<DX::Texture> pPreview,
+                                   const CRect&               srcRect,
+                                   int                        width,
+                                   int                        height,
+                                   char*                      retPixels) const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	bool ok = false;
+    bool ok = false;
 
-	if (pPreview)
-	{
-		D3DSURFACE_DESC desc;
-		if (!SUCCEEDED( pPreview->GetLevelDesc( 0, &desc ) ))
-		{
-			return false;
-		}
+    if (pPreview) {
+        D3DSURFACE_DESC desc;
+        if (!SUCCEEDED(pPreview->GetLevelDesc(0, &desc))) {
+            return false;
+        }
 
-		D3DLOCKED_RECT lockedRect;
-		RECT rc(srcRect);
+        D3DLOCKED_RECT lockedRect;
+        RECT           rc(srcRect);
 
-		Moo::TextureLockWrapper textureLock ( pPreview );
-		if (!SUCCEEDED( textureLock.lockRect( 0, &lockedRect, &rc,
-						D3DLOCK_NOSYSLOCK | D3DLOCK_READONLY ) ))
-		{
-			return false;
-		}
+        Moo::TextureLockWrapper textureLock(pPreview);
+        if (!SUCCEEDED(textureLock.lockRect(
+              0, &lockedRect, &rc, D3DLOCK_NOSYSLOCK | D3DLOCK_READONLY))) {
+            return false;
+        }
 
-		// No more early returns from here
-		int rtw = srcRect.Width();
-		int rth = srcRect.Height();
-		int rtf = desc.Format;
-		int bpp = (rtf == D3DFMT_R8G8B8) ? 3 : 4;
+        // No more early returns from here
+        int rtw = srcRect.Width();
+        int rth = srcRect.Height();
+        int rtf = desc.Format;
+        int bpp = (rtf == D3DFMT_R8G8B8) ? 3 : 4;
 
-		if (width == rtw && height == rth && bpp == 4)
-		{
-			uint32* srcbits;
-			uint32* dstbits = (uint32*)retPixels;
-			uint32 stride = (lockedRect.Pitch/4);
+        if (width == rtw && height == rth && bpp == 4) {
+            uint32* srcbits;
+            uint32* dstbits = (uint32*)retPixels;
+            uint32  stride  = (lockedRect.Pitch / 4);
 
-			for (int iy = 0; iy < height; ++iy)
-			{
-				srcbits = (uint32*)lockedRect.pBits + (height-iy-1) * stride;
-				for (int ix = 0; ix < width; ++ix)
-				{
-					*dstbits++ = *srcbits++;
-				}
-			}
-			ok = true;
-		}
-		else
-		{
-			const char * rtbits = (char*)lockedRect.pBits;
-			int rtrow = lockedRect.Pitch;
-			int bpp = (rtf == D3DFMT_R8G8B8) ? 3 : 4;
-			char * pixel = retPixels;
-			for (int iy = 0; iy < height; ++iy)
-			{
-				const char * rtrowbits = rtbits + 
-							/* strecthed Y */ (rtrow * ((height - iy - 1) * rth / height));
-				for (int ix = 0; ix < width; ++ix)
-				{
-					const char * rtpix = rtrowbits +
-							/* strecthed X */ (bpp * (ix * rtw / width));
+            for (int iy = 0; iy < height; ++iy) {
+                srcbits =
+                  (uint32*)lockedRect.pBits + (height - iy - 1) * stride;
+                for (int ix = 0; ix < width; ++ix) {
+                    *dstbits++ = *srcbits++;
+                }
+            }
+            ok = true;
+        } else {
+            const char* rtbits = (char*)lockedRect.pBits;
+            int         rtrow  = lockedRect.Pitch;
+            int         bpp    = (rtf == D3DFMT_R8G8B8) ? 3 : 4;
+            char*       pixel  = retPixels;
+            for (int iy = 0; iy < height; ++iy) {
+                const char* rtrowbits =
+                  rtbits +
+                  /* strecthed Y */ (rtrow *
+                                     ((height - iy - 1) * rth / height));
+                for (int ix = 0; ix < width; ++ix) {
+                    const char* rtpix =
+                      rtrowbits +
+                      /* strecthed X */ (bpp * (ix * rtw / width));
 
-					pixel[0] = rtpix[0];
-					pixel[1] = rtpix[1];
-					pixel[2] = rtpix[2];
-					pixel[3] = 0;
-					pixel += 4;
-				}
-			}
-			ok = true;
-		}
+                    pixel[0] = rtpix[0];
+                    pixel[1] = rtpix[1];
+                    pixel[2] = rtpix[2];
+                    pixel[3] = 0;
+                    pixel += 4;
+                }
+            }
+            ok = true;
+        }
 
-		textureLock.unlockRect( 0 );
-	}
-	return ok;
+        textureLock.unlockRect(0);
+    }
+    return ok;
 }
-
 
 /**
  *	This method updates the output render target name from the node.
  */
 void PhaseNodeView::updateOutputString()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	BW::string output = node_->output();
-	int w = 0;
-	int h = 0;
-	Moo::BaseTexturePtr pTex;
-	if (output == PhaseNode::BACK_BUFFER_STR)
-	{
-		w = Moo::rc().backBufferDesc().Width;
-		h = Moo::rc().backBufferDesc().Height;
-	}
-	else
-	{
-		pTex = Moo::TextureManager::instance()->get( node_->output() );
-		if (pTex)
-		{
-			w = pTex->width();
-			h = pTex->height();
-		}
-	}
-	if (lastOutput_ != output || lastOutputW_ != w || lastOutputH_ != h)
-	{
-		lastOutput_ = output;
-		lastOutputW_ = w;
-		lastOutputH_ = h;
-		char buf[20];
-		bw_snprintf( buf, sizeof( buf ), "\n%dx%d", w, h );
-		output.append( buf );
-		bw_utf8tow( output, outputStr_ );
-	}
+    BW::string          output = node_->output();
+    int                 w      = 0;
+    int                 h      = 0;
+    Moo::BaseTexturePtr pTex;
+    if (output == PhaseNode::BACK_BUFFER_STR) {
+        w = Moo::rc().backBufferDesc().Width;
+        h = Moo::rc().backBufferDesc().Height;
+    } else {
+        pTex = Moo::TextureManager::instance()->get(node_->output());
+        if (pTex) {
+            w = pTex->width();
+            h = pTex->height();
+        }
+    }
+    if (lastOutput_ != output || lastOutputW_ != w || lastOutputH_ != h) {
+        lastOutput_  = output;
+        lastOutputW_ = w;
+        lastOutputH_ = h;
+        char buf[20];
+        bw_snprintf(buf, sizeof(buf), "\n%dx%d", w, h);
+        output.append(buf);
+        bw_utf8tow(output, outputStr_);
+    }
 }
-
 
 /**
  *	This method returns the corresponding post-processing Phase Phyton object.
@@ -540,10 +535,9 @@ void PhaseNodeView::updateOutputString()
  */
 PostProcessing::Phase* PhaseNodeView::phase() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return node_->pyPhase().get();
+    return node_->pyPhase().get();
 }
 
 BW_END_NAMESPACE
-

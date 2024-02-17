@@ -13,21 +13,20 @@ class ProcessStatsMessage;
 /**
  *	Finds the Interface with the lowest ID.
  */
-class FindLowestInterfaceHandler:
-	public Mercury::MachineDaemon::IFindInterfaceHandler
+class FindLowestInterfaceHandler
+  : public Mercury::MachineDaemon::IFindInterfaceHandler
 {
-public:
-	FindLowestInterfaceHandler();
+  public:
+    FindLowestInterfaceHandler();
 
-	bool onProcessMatched( Mercury::Address & addr,
-			const ProcessStatsMessage & psm ); /* override */
+    bool onProcessMatched(Mercury::Address&          addr,
+                          const ProcessStatsMessage& psm); /* override */
 
-	Mercury::Address result() const; /* override */
+    Mercury::Address result() const; /* override */
 
-private:
-	typedef BW::map< DBAppID, Mercury::Address > Map;
-	Map map_;
-
+  private:
+    typedef BW::map<DBAppID, Mercury::Address> Map;
+    Map                                        map_;
 };
 
 BW_END_NAMESPACE

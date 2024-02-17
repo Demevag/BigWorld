@@ -1,7 +1,6 @@
 #include "pch.hpp"
 #include "gui_app.hpp"
 
-
 #include "ashes/simple_gui.hpp"
 #include "ashes/simple_gui_component.hpp"
 #include "chunk/chunk_manager.hpp"
@@ -12,7 +11,7 @@
 #include "zip/zlib.h"
 #include "scaleform/config.hpp"
 #if SCALEFORM_SUPPORT
-    #include "scaleform/manager.hpp"
+#include "scaleform/manager.hpp"
 #endif
 
 #include "app.hpp"
@@ -27,21 +26,17 @@
 // Define this to one to draw our watermark (BigWorld Technology logo)
 #define DRAW_WATERMARK 0
 
-
 BW_BEGIN_NAMESPACE
 
 GUIApp GUIApp::instance;
 
 int GUIApp_token = 1;
 
-
-
 GUIApp::GUIApp()
 {
     BW_GUARD;
-    MainLoopTasks::root().add( this, "GUI/App", NULL );
+    MainLoopTasks::root().add(this, "GUI/App", NULL);
 }
-
 
 GUIApp::~GUIApp()
 {
@@ -49,24 +44,22 @@ GUIApp::~GUIApp()
     /*MainLoopTasks::root().del( this, "GUI/App" );*/
 }
 
-
 bool GUIApp::init()
 {
     BW_GUARD;
-    if (App::instance().isQuiting())
-    {
+    if (App::instance().isQuiting()) {
         return false;
     }
     // access simple gui
-    SimpleGUI::instance().hInstance( DeviceApp::s_hInstance_ );
-    SimpleGUI::instance().hwnd( DeviceApp::s_hWnd_ );
+    SimpleGUI::instance().hInstance(DeviceApp::s_hInstance_);
+    SimpleGUI::instance().hwnd(DeviceApp::s_hWnd_);
 
     DataSectionPtr configSection = AppConfig::instance().pRoot();
 #if DRAW_WATERMARK
-    //To generate this watermark just use the watermark_creator project
-    //with a ppm in similar format to the example.ppm
-    int widthNormalWaterMark = 208;
-    int heightNormalWaterMark = 50;
+    // To generate this watermark just use the watermark_creator project
+    // with a ppm in similar format to the example.ppm
+    int        widthNormalWaterMark     = 208;
+    int        heightNormalWaterMark    = 50;
     const char b64DataNormalWaterMark[] = "\
 eJztmQt1JS0MgEcCEpCABCQgAQlIQAISkBAJSBgJSKiEP7xCYObe3u12H//Zm3PaziNAPhJCmB7HW/5Z\
 EX/agLf8QXnsfe1Q7O+z5FeLP1HSn7bi++TN83fLm+fvljfPF0W5EGMMVv7aYSaPss4Z9UxXGuusXp9p\
@@ -94,9 +87,9 @@ exz058ty97lKryoCmr+AwlD1L5PqwiOrOUVTjq+/4DlPvaskCOR7W9FmAXu19M3ziyKudf++eoinCV45
 o3p/5udxjvnBvkq85oLNP7ICXdZPHDyoX41W02+9rdH15ewGnTid/m085V/7sX4cfPA/nJGARJV+jQXm\
 8lbs1yilCOVNxda037Dq7Wco3vI/l7f3/2X5Ee//B6/ouAo=";
 
-    //Indie Water Mark
-    int widthIndieWaterMark = 208;
-    int heightIndieWaterMark = 64;
+    // Indie Water Mark
+    int        widthIndieWaterMark     = 208;
+    int        heightIndieWaterMark    = 64;
     const char b64DataIndieWaterMark[] = "\
 eJztmXlczPn/wD8z0zXTOdI1SowziSh2l7Yc2XW1K4QVJawht9pKLY0uTfehSNG6WjpckUhu0oEltSqh\
 VUhJp9Ix79/n/ZnPZz6fmSkbP/vd7+P38/pj5n283u/36/l+v97nB0H+b0rRsyfPyr3+bSs+nwAo0f+2\
@@ -172,9 +165,9 @@ HujMTImUD/MgHvh8c5DqBwuJwf8wD6Sn8nhYW9vxyeGR5LGzhtIdjweWQ67XPGtrB8l1txc8qFvwbbjm
 PJl10eEjeLBlW2r/8SC/NcvOn24q5klNLWL7IcezVzyIuYeooJ3UvsXk98zD5RJrO5vLxVPESRwuFOp7\
 AYdLLLlMLi6ydXLwHKIaWT0yT6JOihW4njk6yhRVvBy722a/yH+t/A8gU0A2";
 
-    //Academic Water Mark
-    int widthAcademicWaterMark = 208;
-    int heightAcademicWaterMark = 64;
+    // Academic Water Mark
+    int        widthAcademicWaterMark     = 208;
+    int        heightAcademicWaterMark    = 64;
     const char b64DataAcademicWaterMark[] = "\
 eJztmglczVn7wH/33rbbfkXLVeJak4guM0MjS2ZszSjCiBLGJUuoUTJ0Fem2FyJFgzS02CKRfadkSI3K\
 1ihE0iKl5Z7/Ob/9tuD1N++8n/f1fOYz9yzPec7zPef5nS0Y9t8peY8fPn6w+p/24vMJQLLpn/bi80kD\
@@ -253,84 +246,79 @@ lItocRO05IG/dmIpYZjF4wjbiWkj7q0/3dY8cLicRc5UDteUtMNDLi9icpVBKz35XZBrGbVWEPuPhE/1
 xN5/RHBK3bGWPGgzk8mkCv+Go439h/w3Ee/j4Tu30hS1wyMQ4T7AMCeXVZE1eQigIl9EfE1CkUjEhIqI\
 EFpPCJtTDQS0nsDcVqz41sAn2glpI/Qjq5BOMu1ppzAh3EMECpoipvKL/OfL/wER6o0K";
 
-
-    int waterMarkMode = configSection->readInt("superShot/wmode", 1);
+    int        waterMarkMode = configSection->readInt("superShot/wmode", 1);
     BW::string txstr;
-    if (waterMarkMode == 2)
-    {
-        txstr = decodeWaterMark (b64DataIndieWaterMark, widthIndieWaterMark, heightIndieWaterMark);
+    if (waterMarkMode == 2) {
+        txstr = decodeWaterMark(
+          b64DataIndieWaterMark, widthIndieWaterMark, heightIndieWaterMark);
+    } else if (waterMarkMode == 3) {
+        txstr = decodeWaterMark(b64DataAcademicWaterMark,
+                                widthAcademicWaterMark,
+                                heightAcademicWaterMark);
     }
-    else if (waterMarkMode == 3)
-    {
-        txstr = decodeWaterMark (b64DataAcademicWaterMark, widthAcademicWaterMark, heightAcademicWaterMark);
-    }
-    //default is normal watermark
-    else 
-    {
-        txstr = decodeWaterMark (b64DataNormalWaterMark, widthNormalWaterMark, heightNormalWaterMark);
+    // default is normal watermark
+    else {
+        txstr = decodeWaterMark(
+          b64DataNormalWaterMark, widthNormalWaterMark, heightNormalWaterMark);
     }
 
-    SimpleGUIComponent * watermark = new SimpleGUIComponent( "" );
-    PyTextureProvider * watermarkProv = new PyTextureProvider( NULL,
-        Moo::TextureManager::instance()->getUnique( txstr ) );
+    SimpleGUIComponent* watermark     = new SimpleGUIComponent("");
+    PyTextureProvider*  watermarkProv = new PyTextureProvider(
+      NULL, Moo::TextureManager::instance()->getUnique(txstr));
 
-    watermark->pySet_texture( watermarkProv );
-    watermark->widthMode( SimpleGUIComponent::SIZE_MODE_CLIP );
-    watermark->heightMode( SimpleGUIComponent::SIZE_MODE_CLIP );
+    watermark->pySet_texture(watermarkProv);
+    watermark->widthMode(SimpleGUIComponent::SIZE_MODE_CLIP);
+    watermark->heightMode(SimpleGUIComponent::SIZE_MODE_CLIP);
     float ww = 0.3f;
-    watermark->width( ww );
-    watermark->height( ww / 3.f );
-    watermark->filterType( SimpleGUIComponent::FT_LINEAR );
-    Py_DECREF( watermarkProv );
-    watermark->colour( 0x20ffffff );
+    watermark->width(ww);
+    watermark->height(ww / 3.f);
+    watermark->filterType(SimpleGUIComponent::FT_LINEAR);
+    Py_DECREF(watermarkProv);
+    watermark->colour(0x20ffffff);
 
-    watermark->anchor( SimpleGUIComponent::ANCHOR_H_RIGHT,
-        SimpleGUIComponent::ANCHOR_V_BOTTOM );
-    watermark->position( Vector3( 0.99f, -0.99f, 0.1f ) );
-    //mark that the watermark can't be deleted
-    watermark->allowDelete( false );
-    SimpleGUI::instance().addSimpleComponent( *watermark );
+    watermark->anchor(SimpleGUIComponent::ANCHOR_H_RIGHT,
+                      SimpleGUIComponent::ANCHOR_V_BOTTOM);
+    watermark->position(Vector3(0.99f, -0.99f, 0.1f));
+    // mark that the watermark can't be deleted
+    watermark->allowDelete(false);
+    SimpleGUI::instance().addSimpleComponent(*watermark);
     Py_DECREF(watermark);
 #endif
 
     return DeviceApp::s_pStartupProgTask_->step(APP_PROGRESS_STEP);
 }
 
-
 void GUIApp::fini()
 {
     BW_GUARD;
 
-    //put here to avoid problems when client is shut down at weird spots
-    // in the startup loop.
+    // put here to avoid problems when client is shut down at weird spots
+    //  in the startup loop.
 #if ENABLE_WATCHERS
     Watcher::fini();
 #endif
     DeviceApp::instance.deleteGUI();
 }
 
-
-void GUIApp::tick( float /* dGameTime */, float dRenderTime )
+void GUIApp::tick(float /* dGameTime */, float dRenderTime)
 {
-    BW_GUARD_PROFILER( AppTick_GUI );
+    BW_GUARD_PROFILER(AppTick_GUI);
     static DogWatch dwGUI("GUI");
     dwGUI.start();
 
     // update the GUI components
-    SimpleGUI::instance().update( dRenderTime );
+    SimpleGUI::instance().update(dRenderTime);
 
     dwGUI.stop();
 
 #if SCALEFORM_SUPPORT
-    ScaleformBW::Manager::instance().tick( dRenderTime );
+    ScaleformBW::Manager::instance().tick(dRenderTime);
 #endif
-
 }
-
 
 void GUIApp::draw()
 {
-    BW_GUARD_PROFILER( AppDraw_GUI );
+    BW_GUARD_PROFILER(AppDraw_GUI);
     static DogWatch dwGUI("GUI");
     dwGUI.start();
 
@@ -338,8 +326,7 @@ void GUIApp::draw()
     rp().beginGUIDraw();
     SimpleGUI::instance().draw();
     ClientSpacePtr pSpace = DeprecatedSpaceHelpers::cameraSpace();
-    if (pSpace != NULL && pSpace->enviro().flora() != NULL)
-    {
+    if (pSpace != NULL && pSpace->enviro().flora() != NULL) {
         pSpace->enviro().flora()->drawDebug();
     }
 
@@ -353,6 +340,5 @@ void GUIApp::draw()
 }
 
 BW_END_NAMESPACE
-
 
 // gui_app.cpp

@@ -13,80 +13,76 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor
  */
-DelBotsCallableWatcher::DelBotsCallableWatcher() :
-	SimpleCallableWatcher( LOCAL_ONLY, "Delete bots from this process" )
+DelBotsCallableWatcher::DelBotsCallableWatcher()
+  : SimpleCallableWatcher(LOCAL_ONLY, "Delete bots from this process")
 {
-	this->addArg( WATCHER_TYPE_INT, "Number of bots to delete" );
+    this->addArg(WATCHER_TYPE_INT, "Number of bots to delete");
 }
-
 
 /**
  *	This method checks in case we got a set message with an int instead
  *	of a call message with a tuple, for backwards compatibility with
  *	WebConsole and PyCommon in pre-BW2.6 releases.
  */
-bool DelBotsCallableWatcher::setFromStream( void * base, const char * path,
-	WatcherPathRequestV2 & pathRequest )
+bool DelBotsCallableWatcher::setFromStream(void*                 base,
+                                           const char*           path,
+                                           WatcherPathRequestV2& pathRequest)
 {
-	BinaryIStream * pInput = pathRequest.getValueStream();
+    BinaryIStream* pInput = pathRequest.getValueStream();
 
-	if (!Watcher::isEmptyPath( path ) || !pInput || pInput->error())
-	{
-		return this->SimpleCallableWatcher::setFromStream( base, path,
-			pathRequest );
-	}
+    if (!Watcher::isEmptyPath(path) || !pInput || pInput->error()) {
+        return this->SimpleCallableWatcher::setFromStream(
+          base, path, pathRequest);
+    }
 
-	char type = pInput->peek();
+    char type = pInput->peek();
 
-	if ((WatcherDataType)type == WATCHER_TYPE_TUPLE)
-	{
-		return this->SimpleCallableWatcher::setFromStream( base, path,
-			pathRequest );
-	}
+    if ((WatcherDataType)type == WATCHER_TYPE_TUPLE) {
+        return this->SimpleCallableWatcher::setFromStream(
+          base, path, pathRequest);
+    }
 
-	// It's not a tuple, so it must be an older caller.
-	// The below code is derived from MemberWatcher::setFromStream
-	int botsToDelete;
-	if (!watcherStreamToValue( *pInput, botsToDelete ))
-	{
-		return false;
-	}
+    // It's not a tuple, so it must be an older caller.
+    // The below code is derived from MemberWatcher::setFromStream
+    int botsToDelete;
+    if (!watcherStreamToValue(*pInput, botsToDelete)) {
+        return false;
+    }
 
-	MainApp::instance().delBots( botsToDelete );
+    MainApp::instance().delBots(botsToDelete);
 
-	// push the result into the reply stream
-	Watcher::Mode mode = Watcher::WT_READ_WRITE;
-	watcherValueToStream( pathRequest.getResultStream(), botsToDelete, mode );
-	pathRequest.setResult( "", mode, this, base );
+    // push the result into the reply stream
+    Watcher::Mode mode = Watcher::WT_READ_WRITE;
+    watcherValueToStream(pathRequest.getResultStream(), botsToDelete, mode);
+    pathRequest.setResult("", mode, this, base);
 
-	return true;
+    return true;
 }
 
-
-bool DelBotsCallableWatcher::onCall( BW::string & output, BW::string & value,
-	int parameterCount, BinaryIStream & parameters )
+bool DelBotsCallableWatcher::onCall(BW::string&    output,
+                                    BW::string&    value,
+                                    int            parameterCount,
+                                    BinaryIStream& parameters)
 {
-	if (parameterCount != 1)
-	{
-		ERROR_MSG( "DelBotsCallableWatcher:onCall: "
-				"Got %d parameters, expecting 1\n", parameterCount );
-		return false;
-	}
+    if (parameterCount != 1) {
+        ERROR_MSG("DelBotsCallableWatcher:onCall: "
+                  "Got %d parameters, expecting 1\n",
+                  parameterCount);
+        return false;
+    }
 
-	int botsToDelete;
+    int botsToDelete;
 
-	if (!watcherStreamToValue( parameters, botsToDelete ))
-	{
-		ERROR_MSG( "DelBotsCallableWatcher:onCall: "
-				"Failed to read parameter\n" );
-		return false;
-	}
+    if (!watcherStreamToValue(parameters, botsToDelete)) {
+        ERROR_MSG("DelBotsCallableWatcher:onCall: "
+                  "Failed to read parameter\n");
+        return false;
+    }
 
-	MainApp::instance().delBots( botsToDelete );
+    MainApp::instance().delBots(botsToDelete);
 
-	return true;
+    return true;
 }
-
 
 BW_END_NAMESPACE
 

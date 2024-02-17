@@ -4,11 +4,8 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Graph
-{
-
+namespace Graph {
 
 } // namespace Graph
 
 BW_END_NAMESPACE
-

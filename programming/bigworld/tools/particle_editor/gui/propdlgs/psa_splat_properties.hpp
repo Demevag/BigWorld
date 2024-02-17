@@ -11,17 +11,20 @@ class SplatPSA;
 
 class PsaSplatProperties : public PsaProperties
 {
-public:
+  public:
     DECLARE_DYNCREATE(PsaSplatProperties)
 
-    enum { IDD = IDD_PSA_SPLAT_PROPERTIES };
+    enum
+    {
+        IDD = IDD_PSA_SPLAT_PROPERTIES
+    };
 
     //
     // Constructor.
     //
     PsaSplatProperties();
 
-	SplatPSA *	action();
+    SplatPSA* action();
 
     //
     // Set the parameters.
@@ -30,14 +33,12 @@ public:
     //
     /*virtual*/ void SetParameters(SetOperation /*task*/);
 
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
+    DECLARE_MESSAGE_MAP()
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	DECLARE_MESSAGE_MAP()
-
-
-private:
-	controls::EditNumeric	delay_;
+  private:
+    controls::EditNumeric delay_;
 };
 
 BW_END_NAMESPACE

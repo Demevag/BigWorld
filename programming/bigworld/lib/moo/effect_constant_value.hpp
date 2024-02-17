@@ -7,21 +7,21 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Moo
-{
+namespace Moo {
 
-typedef SmartPointer<class EffectConstantValue> EffectConstantValuePtr;
+    typedef SmartPointer<class EffectConstantValue> EffectConstantValuePtr;
 
-/**
- *	This class implements the constant value base class.
- *	
- */
-class EffectConstantValue : public ReferenceCount
-{
-public:
-	virtual ~EffectConstantValue() {}
-	virtual bool operator()(ID3DXEffect* pEffect, D3DXHANDLE constantHandle) = 0;
-};
+    /**
+     *	This class implements the constant value base class.
+     *
+     */
+    class EffectConstantValue : public ReferenceCount
+    {
+      public:
+        virtual ~EffectConstantValue() {}
+        virtual bool operator()(ID3DXEffect* pEffect,
+                                D3DXHANDLE   constantHandle) = 0;
+    };
 
 } // namespace Moo
 

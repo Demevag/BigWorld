@@ -13,7 +13,6 @@
 
 #include <fmod_event.hpp>
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -24,60 +23,59 @@ BW_BEGIN_NAMESPACE
  */
 class PyEventReverb : public PyObjectPlus
 {
-	Py_Header( PyEventReverb, PyObjectPlus )
+    Py_Header(PyEventReverb, PyObjectPlus)
 
-public:
-    PyEventReverb( SoundManager::EventReverb * pEventReverb, 
-                   PyTypeObject * pType = &PyEventReverb::s_type_ );   
+      public
+      : PyEventReverb(SoundManager::EventReverb* pEventReverb,
+                      PyTypeObject* pType = &PyEventReverb::s_type_);
 
-	void fini();
+    void fini();
 
     //  Attributes
     bool active() const;
-    void active( bool active );
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( bool, active, active ); 
+    void active(bool active);
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(bool, active, active);
 
     float minDistance() const;
-    void minDistance( float newMinDistance);
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( float, minDistance, minDistance ); 
+    void  minDistance(float newMinDistance);
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(float, minDistance, minDistance);
 
     float maxDistance() const;
-    void maxDistance( float newMaxDistance);
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( float, maxDistance, maxDistance ); 
+    void  maxDistance(float newMaxDistance);
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(float, maxDistance, maxDistance);
 
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( Vector3, position, position )
-	const Vector3 & position() const;
-	void position( const Vector3 & v );
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(Vector3, position, position)
+    const Vector3& position() const;
+    void           position(const Vector3& v);
 
-    PyObject * pyGet_source();
-    int pySet_source( PyObject * value );
+    PyObject* pyGet_source();
+    int       pySet_source(PyObject* value);
 
     void update3DAttributes();
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-protected:
-    SoundManager::EventReverb *eventReverb_;
-	mutable bool active_;
-    mutable float minDistance_;
-    mutable float maxDistance_;
+  protected:
+    SoundManager::EventReverb* eventReverb_;
+    mutable bool               active_;
+    mutable float              minDistance_;
+    mutable float              maxDistance_;
 
-	Vector3 position_;
+    Vector3           position_;
     MatrixProviderPtr source_;
 
-private:
+  private:
     PyEventReverb();
-	~PyEventReverb();
+    ~PyEventReverb();
 
-	PyEventReverb(const PyEventReverb&);
-	PyEventReverb& operator=(const PyEventReverb&);
+    PyEventReverb(const PyEventReverb&);
+    PyEventReverb& operator=(const PyEventReverb&);
 };
 
-typedef SmartPointer< PyEventReverb > PyEventReverbPtr;
+typedef SmartPointer<PyEventReverb> PyEventReverbPtr;
 
 BW_END_NAMESPACE
 
 #endif // FMOD_SUPPORT
-
 
 #endif // PY_EVENT_CATEGORY_HPP

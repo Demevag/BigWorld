@@ -1,4 +1,4 @@
-#if not defined( SCRIPT_OBJECTIVE_C )
+#if not defined(SCRIPT_OBJECTIVE_C)
 #error Only supported with Objective C Script Objects. \
 	See chunk/user_data_object_link_data_type.hpp for real implementation
 #endif // SCRIPT_OBJECTIVE_C
@@ -8,48 +8,48 @@
 
 #include "entitydef/data_description.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class MetaDataType;
 
 /**
- *	This class is a simple stand-in implementation of UserDataObjectDataType that is
- *	found in bigworld/src/lib/chunk/user_data_object_link_data_type.hpp.
+ *	This class is a simple stand-in implementation of UserDataObjectDataType
+ *that is found in bigworld/src/lib/chunk/user_data_object_link_data_type.hpp.
  */
 class UDORefDataType : public DataType
 {
-public:
-	UDORefDataType( MetaDataType * pMeta );
+  public:
+    UDORefDataType(MetaDataType* pMeta);
 
-	virtual bool isSameType( ScriptObject pValue ) { return true; }
+    virtual bool isSameType(ScriptObject pValue) { return true; }
 
-	virtual void setDefaultValue( DataSectionPtr pSection ) {}
+    virtual void setDefaultValue(DataSectionPtr pSection) {}
 
-	virtual bool getDefaultValue( DataSink & output ) const { return false; }
+    virtual bool getDefaultValue(DataSink& output) const { return false; }
 
-	virtual int streamSize() const;
+    virtual int streamSize() const;
 
-	virtual bool addToSection( DataSource & source,
-			DataSectionPtr pSection ) const
-	{
-		return false;
-	}
+    virtual bool addToSection(DataSource& source, DataSectionPtr pSection) const
+    {
+        return false;
+    }
 
-	virtual bool createFromSection( DataSectionPtr pSection,
-			DataSink & sink ) const
-	{
-		return false;
-	}
+    virtual bool createFromSection(DataSectionPtr pSection,
+                                   DataSink&      sink) const
+    {
+        return false;
+    }
 
-	virtual void addToMD5( MD5 & md5 ) const;
+    virtual void addToMD5(MD5& md5) const;
 
-	virtual StreamElementPtr getStreamElement( size_t index,
-		size_t & size, bool & isNone, bool isPersistentOnly ) const;
+    virtual StreamElementPtr getStreamElement(size_t  index,
+                                              size_t& size,
+                                              bool&   isNone,
+                                              bool    isPersistentOnly) const;
 
-	virtual bool operator<( const DataType & other ) const;
+    virtual bool operator<(const DataType& other) const;
 
-private:
+  private:
 };
 
 BW_END_NAMESPACE

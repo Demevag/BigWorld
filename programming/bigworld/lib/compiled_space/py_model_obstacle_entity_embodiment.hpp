@@ -14,63 +14,59 @@
 
 #include "duplo/py_model_obstacle.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-	class PyModelObstacle;
+class PyModelObstacle;
 
 BW_END_NAMESPACE
 
-namespace BW {
-namespace CompiledSpace {
+namespace BW { namespace CompiledSpace {
 
-class CompiledSpace;
+    class CompiledSpace;
 
-class COMPILED_SPACE_API PyModelObstacleEntityEmbodiment :
-	public IEntityEmbodiment
-{
-public:
-	static void registerHandlers( Scene& scene );
+    class COMPILED_SPACE_API PyModelObstacleEntityEmbodiment
+      : public IEntityEmbodiment
+    {
+      public:
+        static void registerHandlers(Scene& scene);
 
-public:
-	PyModelObstacleEntityEmbodiment( const PyModelObstaclePtr& pObstacle );
-	virtual ~PyModelObstacleEntityEmbodiment();
+      public:
+        PyModelObstacleEntityEmbodiment(const PyModelObstaclePtr& pObstacle);
+        virtual ~PyModelObstacleEntityEmbodiment();
 
-	virtual void doMove( float dTime );
-	virtual void doTick( float dTime );
-	virtual void doUpdateAnimations( float dTime );
+        virtual void doMove(float dTime);
+        virtual void doTick(float dTime);
+        virtual void doUpdateAnimations(float dTime);
 
-	virtual void doWorldTransform( const Matrix & transform );
-	virtual const Matrix & doWorldTransform() const;
-	virtual const AABB & doLocalBoundingBox() const;
+        virtual void          doWorldTransform(const Matrix& transform);
+        virtual const Matrix& doWorldTransform() const;
+        virtual const AABB&   doLocalBoundingBox() const;
 
-	virtual void doDraw( Moo::DrawContext & drawContext );
+        virtual void doDraw(Moo::DrawContext& drawContext);
 
-	virtual bool doIsOutside() const;
-	virtual bool doIsRegionLoaded( Vector3 testPos, float radius ) const;
+        virtual bool doIsOutside() const;
+        virtual bool doIsRegionLoaded(Vector3 testPos, float radius) const;
 
-	virtual void doEnterSpace( ClientSpacePtr pSpace, bool transient );
-	virtual void doLeaveSpace( bool transient );
+        virtual void doEnterSpace(ClientSpacePtr pSpace, bool transient);
+        virtual void doLeaveSpace(bool transient);
 
+      private:
+        void syncTransforms();
 
-private:
-	void syncTransforms();
+      private:
+        class TickHandler;
+        class DrawHandler;
+        class CollisionHandler;
+        class TextureStreamingHandler;
 
-private:
-	class TickHandler;
-	class DrawHandler;
-	class CollisionHandler;
-	class TextureStreamingHandler;
-
-	mutable AABB localBB_;
-	Matrix worldTransform_;
-	Matrix inverseWorldTransform_;
-	mutable PyModelObstaclePtr pObstacle_;
-	CompiledSpace* pEnteredSpace_;
-	DynamicObjectHandle dynamicObjectHandle_;
-	SceneObject sceneObject_;
-};
-
+        mutable AABB               localBB_;
+        Matrix                     worldTransform_;
+        Matrix                     inverseWorldTransform_;
+        mutable PyModelObstaclePtr pObstacle_;
+        CompiledSpace*             pEnteredSpace_;
+        DynamicObjectHandle        dynamicObjectHandle_;
+        SceneObject                sceneObject_;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW

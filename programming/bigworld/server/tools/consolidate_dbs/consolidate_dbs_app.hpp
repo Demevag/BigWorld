@@ -13,7 +13,6 @@
 
 #include "cstdmf/singleton.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class ConsolidationProgressReporter;
@@ -22,64 +21,67 @@ class PrimaryDatabaseUpdateQueue;
 /**
  * 	Consolidates data from remote secondary databases.
  */
-class ConsolidateDBsApp : public DatabaseToolApp,
-		public Singleton< ConsolidateDBsApp >,
-		public DBAppStatusReporter
+class ConsolidateDBsApp
+  : public DatabaseToolApp
+  , public Singleton<ConsolidateDBsApp>
+  , public DBAppStatusReporter
 {
-public:
-	ConsolidateDBsApp( bool shouldStopOnError );
-	virtual ~ConsolidateDBsApp();
+  public:
+    ConsolidateDBsApp(bool shouldStopOnError);
+    virtual ~ConsolidateDBsApp();
 
-	bool initLogger();
+    bool initLogger();
 
-	bool init( bool isVerbose, bool shouldReportToDBApp, bool shouldLock,
-		const DBConfig::ConnectionInfo & primaryDBConnectionInfo );
+    bool init(bool                            isVerbose,
+              bool                            shouldReportToDBApp,
+              bool                            shouldLock,
+              const DBConfig::ConnectionInfo& primaryDBConnectionInfo);
 
-	bool checkPrimaryDBEntityDefsMatch();
+    bool checkPrimaryDBEntityDefsMatch();
 
-	bool transferAndConsolidate();
-	bool consolidateSecondaryDBs( const FileNames & filePaths );
-	bool clearSecondaryDBEntries( uint * pNumEntriesCleared = NULL );
+    bool transferAndConsolidate();
+    bool consolidateSecondaryDBs(const FileNames& filePaths);
+    bool clearSecondaryDBEntries(uint* pNumEntriesCleared = NULL);
 
-	bool printDatabases();
+    bool printDatabases();
 
-	void abort();
+    void abort();
 
-private:
-	// From DBAppStatusReporter
-	virtual void onStatus( const BW::string & status );
+  private:
+    // From DBAppStatusReporter
+    virtual void onStatus(const BW::string& status);
 
-	// From DatabaseToolApp
-	virtual void onSignalled( int sigNum );
+    // From DatabaseToolApp
+    virtual void onSignalled(int sigNum);
 
-	bool checkPrimaryDBEntityDefsMatchInternal();
+    bool checkPrimaryDBEntityDefsMatchInternal();
 
-	bool getSecondaryDBInfos( SecondaryDBInfos & secondaryDBInfos );
-	bool transferSecondaryDBs( const SecondaryDBInfos & secondaryDBInfos,
-		FileReceiverMgr & fileReceiverMgr );
+    bool getSecondaryDBInfos(SecondaryDBInfos& secondaryDBInfos);
+    bool transferSecondaryDBs(const SecondaryDBInfos& secondaryDBInfos,
+                              FileReceiverMgr&        fileReceiverMgr);
 
-	bool consolidateSecondaryDB( const BW::string & filePath,
-		PrimaryDatabaseUpdateQueue & primaryDBQueue,
-		ConsolidationProgressReporter & progressReporter );
+    bool consolidateSecondaryDB(
+      const BW::string&              filePath,
+      PrimaryDatabaseUpdateQueue&    primaryDBQueue,
+      ConsolidationProgressReporter& progressReporter);
 
-	bool checkEntityDefsDigestMatch( const BW::string & quotedDigest );
+    bool checkEntityDefsDigestMatch(const BW::string& quotedDigest);
 
+    // Member data
 
-	// Member data
+    uint32 internalIP_;
 
-	uint32						internalIP_;
+    std::auto_ptr<DBApp> pDBApp_;
 
-	std::auto_ptr< DBApp >		pDBApp_;
+    DBConfig::ConnectionInfo connectionInfo_;
 
-	DBConfig::ConnectionInfo 	connectionInfo_;
+    BW::string consolidationDir_;
 
-	BW::string					consolidationDir_;
+    DBConsolidatorErrors consolidationErrors_;
+    bool                 shouldStopOnError_;
 
-	DBConsolidatorErrors		consolidationErrors_;
-	bool						shouldStopOnError_;
-
-	// Flag for aborting our wait loop.
-	bool						shouldAbort_;
+    // Flag for aborting our wait loop.
+    bool shouldAbort_;
 };
 
 BW_END_NAMESPACE

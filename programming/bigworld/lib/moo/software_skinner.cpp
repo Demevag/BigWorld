@@ -7,8 +7,7 @@ BW_BEGIN_NAMESPACE
 // Section: SoftwareSkinner
 // -----------------------------------------------------------------------------
 
-namespace Moo
-{
+namespace Moo {
 }
 
 BW_END_NAMESPACE

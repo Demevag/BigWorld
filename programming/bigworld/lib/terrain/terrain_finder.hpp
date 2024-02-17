@@ -6,34 +6,32 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Terrain
-{
+namespace Terrain {
     class BaseTerrainBlock;
 }
 
-namespace Terrain
-{
+namespace Terrain {
     /**
      *  This class is used to find terrain at the given position.
      */
     class TerrainFinder
     {
-    public:
+      public:
         /**
          *  This is the return result of findOutsideBlock.
          */
         struct Details
         {
-            BaseTerrainBlock        *pBlock_;
-            Matrix                  const *pMatrix_;
-            Matrix                  const *pInvMatrix_;
+            BaseTerrainBlock* pBlock_;
+            Matrix const*     pMatrix_;
+            Matrix const*     pInvMatrix_;
 
             Details();
         };
 
-	    virtual ~TerrainFinder();
+        virtual ~TerrainFinder();
 
-	    virtual Details findOutsideBlock(Vector3 const &pos) = 0;
+        virtual Details findOutsideBlock(Vector3 const& pos) = 0;
     };
 }
 

@@ -16,17 +16,18 @@ class CollisionObstacle;
  */
 class ObstacleLockCollisionCallback : public CollisionCallback
 {
-public:
-	virtual int operator()( const CollisionObstacle & obstacle,
-		const WorldTriangle & triangle, float dist );
+  public:
+    virtual int operator()(const CollisionObstacle& obstacle,
+                           const WorldTriangle&     triangle,
+                           float                    dist);
 
-	virtual void clear();
+    virtual void clear();
 
-	float dist_;
-	Vector3 normal_;
-	ChunkItemPtr pItem_;
-	Vector3 triangleNormal_;
-	static ObstacleLockCollisionCallback s_default;
+    float                                dist_;
+    Vector3                              normal_;
+    ChunkItemPtr                         pItem_;
+    Vector3                              triangleNormal_;
+    static ObstacleLockCollisionCallback s_default;
 };
 
 BW_END_NAMESPACE

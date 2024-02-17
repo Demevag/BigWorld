@@ -8,44 +8,45 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
+namespace Mercury {
 
-class NetworkInterface;
+    class NetworkInterface;
 
-/**
- * 	The InterfaceMinder class manages a set of interface elements. It provides
- * 	an iterator for iterating over this set.
- *
- * 	@ingroup mercury
- */
-class InterfaceMinder
-{
-public:
-	InterfaceMinder( const char * name );
+    /**
+     * 	The InterfaceMinder class manages a set of interface elements. It
+     * provides an iterator for iterating over this set.
+     *
+     * 	@ingroup mercury
+     */
+    class InterfaceMinder
+    {
+      public:
+        InterfaceMinder(const char* name);
 
-	InterfaceElement & add( const char * name, int8 lengthStyle,
-			int lengthParam, InputMessageHandler * pHandler = NULL );
+        InterfaceElement& add(const char*          name,
+                              int8                 lengthStyle,
+                              int                  lengthParam,
+                              InputMessageHandler* pHandler = NULL);
 
-	MessageID addRange( const InterfaceElement & ie,
-			int rangePortion );
+        MessageID addRange(const InterfaceElement& ie, int rangePortion);
 
-	InputMessageHandler * handler( int index );
-	void handler( int index, InputMessageHandler * pHandler );
-	const InterfaceElement & interfaceElement( uint8 id ) const;
+        InputMessageHandler* handler(int index);
+        void                 handler(int index, InputMessageHandler* pHandler);
+        const InterfaceElement& interfaceElement(uint8 id) const;
 
-	void registerWithInterface( NetworkInterface & networkInterface );
-	Reason registerWithMachined( const Address & addr, int id ) const;
-	Reason registerWithMachinedAs( const char * name,
-			const Address & addr, int id ) const;
+        void   registerWithInterface(NetworkInterface& networkInterface);
+        Reason registerWithMachined(const Address& addr, int id) const;
+        Reason registerWithMachinedAs(const char*    name,
+                                      const Address& addr,
+                                      int            id) const;
 
-private:
-	InterfaceElements		elements_;
+      private:
+        InterfaceElements elements_;
 
-	const char *			name_;
-};
+        const char* name_;
+    };
 
-}	// end of namespace Mercury
+} // end of namespace Mercury
 
 #ifdef CODE_INLINE
 #include "interface_minder.ipp"

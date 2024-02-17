@@ -33,55 +33,57 @@
 
 BW_BEGIN_NAMESPACE
 
-DECLARE_WATCHER_DATA( "SpaceConverter" )
-DECLARE_COPY_STACK_INFO( true )
+DECLARE_WATCHER_DATA("SpaceConverter")
+DECLARE_COPY_STACK_INFO(true)
 DEFINE_CREATE_EDITOR_PROPERTY_STUB
 
-ConverterInfo spaceConverterInfo;
+ConverterInfo     spaceConverterInfo;
 ResourceCallbacks resourceCallbacks;
 
 static std::auto_ptr<Renderer> s_pRenderer;
 
 PLUGIN_INIT_FUNC
 {
-    Compiler * compiler = dynamic_cast< Compiler * >( &pluginLoader );
-    if (compiler == NULL)
-    {
+    Compiler* compiler = dynamic_cast<Compiler*>(&pluginLoader);
+    if (compiler == NULL) {
         return false;
     }
 
     // Initialise the file systems
-    const auto & paths = compiler->getResourcePaths();
-    bool bInitRes = BWResource::init( paths );
+    const auto& paths    = compiler->getResourcePaths();
+    bool        bInitRes = BWResource::init(paths);
 
-    if ( !AutoConfig::configureAllFrom( "resources.xml" ) )
-    {
-        ERROR_MSG("Couldn't load auto-config strings from resource.xml\n" );
+    if (!AutoConfig::configureAllFrom("resources.xml")) {
+        ERROR_MSG("Couldn't load auto-config strings from resource.xml\n");
     }
 
-    Moo::init( true, true );
+    Moo::init(true, true);
 
-    WNDCLASS wc = { 0, DefWindowProc, 0, 0, NULL, NULL, NULL, NULL, NULL, L"SpaceConverter" };
-    if ( !RegisterClass( &wc ) )
-    {
-        printf( "Could not register window class\n" );
+    WNDCLASS wc = { 0,    DefWindowProc, 0,    0,    NULL,
+                    NULL, NULL,          NULL, NULL, L"SpaceConverter" };
+    if (!RegisterClass(&wc)) {
+        printf("Could not register window class\n");
         return false;
     }
 
-    HWND hWnd = CreateWindow(
-        L"SpaceConverter", L"SpaceConverter",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT,
-        100, 100,
-        NULL, NULL, NULL, 0 );
+    HWND hWnd = CreateWindow(L"SpaceConverter",
+                             L"SpaceConverter",
+                             WS_OVERLAPPEDWINDOW,
+                             CW_USEDEFAULT,
+                             CW_USEDEFAULT,
+                             100,
+                             100,
+                             NULL,
+                             NULL,
+                             NULL,
+                             0);
 
-    s_pRenderer.reset( new Renderer );
+    s_pRenderer.reset(new Renderer);
 
-    s_pRenderer->init( true, true );
+    s_pRenderer->init(true, true);
 
-    if (!Moo::rc().createDevice( hWnd ))
-    {
-        ERROR_MSG( "Could not create render device\n" );
+    if (!Moo::rc().createDevice(hWnd)) {
+        ERROR_MSG("Could not create render device\n");
     }
 
 #if SPEEDTREE_SUPPORT
@@ -95,8 +97,8 @@ PLUGIN_INIT_FUNC
 
     new AmortiseChunkItemDelete();
 
-    WNDCLASS wc = { 0, DefWindowProc, 0, 0, NULL, NULL, NULL, NULL, NULL, L"SpaceConverter" };
-    if ( !RegisterClass( &wc ) )
+    WNDCLASS wc = { 0, DefWindowProc, 0, 0, NULL, NULL, NULL, NULL, NULL,
+    L"SpaceConverter" }; if ( !RegisterClass( &wc ) )
     {
         printf( "Could not register window class\n" );
         return false;
@@ -113,7 +115,7 @@ PLUGIN_INIT_FUNC
     {
         ERROR_MSG( "Could not create render device\n" );
     }
-    
+
     if (!MaterialKinds::init())
     {
         return false;
@@ -124,7 +126,7 @@ PLUGIN_INIT_FUNC
 
     if (Moo::rc().mixedVertexProcessing())
         Moo::rc().device()->SetSoftwareVertexProcessing( TRUE );
-    
+
     // Needed to properly initialise elements such as Water
     Waters::instance().init();
 
@@ -147,12 +149,14 @@ PLUGIN_INIT_FUNC
 
     ShowCursor( TRUE );
     */
-    
-    INIT_CONVERTER_INFO( spaceConverterInfo, DefaultSpaceConverter, 
-        ConverterInfo::DEFAULT_FLAGS & ~(ConverterInfo::THREAD_SAFE) );
 
-    compiler->registerConverter( spaceConverterInfo );
-    compiler->registerResourceCallbacks( resourceCallbacks );
+    INIT_CONVERTER_INFO(spaceConverterInfo,
+                        DefaultSpaceConverter,
+                        ConverterInfo::DEFAULT_FLAGS &
+                          ~(ConverterInfo::THREAD_SAFE));
+
+    compiler->registerConverter(spaceConverterInfo);
+    compiler->registerResourceCallbacks(resourceCallbacks);
 
     return true;
 }

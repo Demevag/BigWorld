@@ -7,7 +7,6 @@
 #include "moo/primitive.hpp"
 #include "moo/managed_effect.hpp"
 
-
 using namespace BW;
 using namespace Moo;
 
@@ -874,4 +873,3 @@ TEST_F( OpaqueRenderQueueComplexFixture2, RenderQueue_multiPass2 )
 	CHECK_EQUAL(1, ib0.setPrimitivesCalled_);
 }
 #endif // 0
-

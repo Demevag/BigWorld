@@ -1,4 +1,4 @@
-#include "script/first_include.hpp"		// See http://docs.python.org/api/includes.html
+#include "script/first_include.hpp" // See http://docs.python.org/api/includes.html
 
 #include "cell_app_channel.hpp"
 #include "cellapp.hpp"
@@ -6,8 +6,7 @@
 
 #include "network/event_dispatcher.hpp"
 
-DECLARE_DEBUG_COMPONENT( 0 )
-
+DECLARE_DEBUG_COMPONENT(0)
 
 BW_BEGIN_NAMESPACE
 
@@ -18,16 +17,16 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor.
  */
-CellAppChannel::CellAppChannel( const Mercury::Address & addr ) :
-	Mercury::ChannelOwner( CellApp::instance().interface(), addr ),
-	mark_( 0 ),
-	lastReceivedTime_( 0 )
+CellAppChannel::CellAppChannel(const Mercury::Address& addr)
+  : Mercury::ChannelOwner(CellApp::instance().interface(), addr)
+  , mark_(0)
+  , lastReceivedTime_(0)
 {
-	TRACE_MSG( "CellAppChannel::CellAppChannel: Created to %s\n",
-		this->channel().c_str() );
+    TRACE_MSG("CellAppChannel::CellAppChannel: Created to %s\n",
+              this->channel().c_str());
 
-	this->channel().isLocalRegular( true );
-	this->channel().isRemoteRegular( false );
+    this->channel().isLocalRegular(true);
+    this->channel().isRemoteRegular(false);
 }
 
 BW_END_NAMESPACE

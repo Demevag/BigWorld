@@ -3,38 +3,31 @@
 
 #include "pyscript/script.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace AutoBackupAndArchive
-{
+namespace AutoBackupAndArchive {
 
-/**
- *	Enum used for setting auto backup or auto archive settings.
- */
-enum Policy
-{
-	NO = 0,
-	YES = 1,
-	NEXT_ONLY = 2,
-};
+    /**
+     *	Enum used for setting auto backup or auto archive settings.
+     */
+    enum Policy
+    {
+        NO        = 0,
+        YES       = 1,
+        NEXT_ONLY = 2,
+    };
 
+    void addNextOnlyConstant(PyObject* pModule);
 
-
-void addNextOnlyConstant( PyObject * pModule );
-
-
-const char * policyAsString( Policy policy );
-
+    const char* policyAsString(Policy policy);
 
 } // end namespace AutoBackupAndArchive
 
-namespace Script
-{
+namespace Script {
 
-int setData( PyObject * pObj,
-		AutoBackupAndArchive::Policy & value, 
-		const char * varName = "" );
+    int setData(PyObject*                     pObj,
+                AutoBackupAndArchive::Policy& value,
+                const char*                   varName = "");
 
 } // end namespace Script
 

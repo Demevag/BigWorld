@@ -3,7 +3,6 @@
 
 #include "network/common_message_handlers.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,15 +10,15 @@ BW_BEGIN_NAMESPACE
  *	to be delivered.
  */
 template <>
-class MessageHandlerFinder< DBApp >
+class MessageHandlerFinder<DBApp>
 {
-public:
-	static DBApp * find( const Mercury::Address & srcAddr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data )
-	{
-		return ServerApp::getApp< DBAppMgr >( header ).findApp( srcAddr );
-	}
+  public:
+    static DBApp* find(const Mercury::Address&               srcAddr,
+                       const Mercury::UnpackedMessageHeader& header,
+                       BinaryIStream&                        data)
+    {
+        return ServerApp::getApp<DBAppMgr>(header).findApp(srcAddr);
+    }
 };
 
 BW_END_NAMESPACE

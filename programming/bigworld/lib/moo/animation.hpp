@@ -7,113 +7,114 @@
 #include "cstdmf/stringmap.hpp"
 #include "animation_channel.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Moo
-{
+namespace Moo {
 
-typedef BW::vector<float> NodeAlphas;
+    typedef BW::vector<float> NodeAlphas;
 
-typedef BW::vector< struct BlendedAnimation> BlendedAnimations;
+    typedef BW::vector<struct BlendedAnimation> BlendedAnimations;
 
-class Animation;
-class StreamedAnimation;
+    class Animation;
+    class StreamedAnimation;
 
-typedef SmartPointer<Animation> AnimationPtr;
-typedef ConstSmartPointer<Animation> ConstAnimationPtr;
-typedef SmartPointer<StreamedAnimation> StreamedAnimationPtr;
+    typedef SmartPointer<Animation>         AnimationPtr;
+    typedef ConstSmartPointer<Animation>    ConstAnimationPtr;
+    typedef SmartPointer<StreamedAnimation> StreamedAnimationPtr;
 
+    /**
+     *	The animation class is a collection of channelbinders, these
+     *channelbinders bind together a node and an animation channel so that we
+     *can animate a node hierarchy.
+     */
+    class Animation : public ReferenceCount
+    {
+      public:
+        Animation(Animation* anim, NodePtr root);
+        Animation(Animation* anim);
+        Animation();
 
-/**
- *	The animation class is a collection of channelbinders, these channelbinders
- *	bind together a node and an animation channel so that we can animate a node
- *	hierarchy.
- */
-class Animation : public ReferenceCount
-{
-public:
+        void animate(float time) const;
 
-	Animation( Animation * anim, NodePtr root );
-	Animation( Animation * anim );
-	Animation();
+        static void animate(const BlendedAnimations& list);
+        static void animate(BlendedAnimations::const_iterator first,
+                            BlendedAnimations::const_iterator final);
 
-	void					animate( float time ) const;
+        //	void					blend( AnimationPtr anim, float time1, float
+        //time2, float t ) const;
 
-	static void				animate( const BlendedAnimations & list );
-	static void				animate( BlendedAnimations::const_iterator first,
-								BlendedAnimations::const_iterator final );
+        void animate(int               blendCookie,
+                     float             frame,
+                     float             blendRatio,
+                     const NodeAlphas* pAlphas = NULL);
 
-//	void					blend( AnimationPtr anim, float time1, float time2, float t ) const;
+        void tick(float dtime,
+                  float oframe,
+                  float nframe,
+                  float bframe,
+                  float eframe);
 
-	void					animate( int blendCookie, float frame,
-								float blendRatio,
-								const NodeAlphas * pAlphas = NULL);
+        uint32                   nChannelBinders() const;
+        const ChannelBinder&     channelBinder(uint32 i) const;
+        /*const*/ ChannelBinder& channelBinder(uint32 i) /*const*/;
+        void                     addChannelBinder(const ChannelBinder& binder);
 
-	void					tick( float dtime, float oframe, float nframe,
-								float bframe, float eframe );
+        AnimationChannelPtr findChannel(NodePtr node) const;
+        AnimationChannelPtr findChannel(const BW::string& identifier);
 
-	uint32					nChannelBinders( ) const;
-	const ChannelBinder&	channelBinder( uint32 i ) const;
-	/*const*/ ChannelBinder&	channelBinder( uint32 i ) /*const*/;
-	void					addChannelBinder( const ChannelBinder& binder );
+        ChannelBinder* itinerantRoot() const;
 
-	AnimationChannelPtr		findChannel( NodePtr node ) const;
-	AnimationChannelPtr		findChannel( const BW::string& identifier );
+        float totalTime() const;
+        void  totalTime(float time);
 
+        const BW::string identifier() const;
+        void             identifier(const BW::string& identifier);
 
-	ChannelBinder *			itinerantRoot( ) const;
+        const BW::string internalIdentifier() const;
+        void             internalIdentifier(const BW::string& ii);
 
-	float					totalTime( ) const;
-	void					totalTime( float time );
+        bool load(const BW::string& resourceID);
+        bool save(const BW::string& resourceID, uint64 useModifiedTime = 0);
 
-	const BW::string		identifier( ) const;
-	void					identifier( const BW::string& identifier );
+        void translationOverrideAnim(
+          AnimationPtr                  pBase,
+          AnimationPtr                  pTranslationReference,
+          const BW::vector<BW::string>& noOverrideChannels);
 
-	const BW::string		internalIdentifier( ) const;
-	void					internalIdentifier( const BW::string& ii );
+      private:
+        ~Animation();
 
-	bool					load( const BW::string & resourceID );
-	bool					save( const BW::string & resourceID,
-								uint64 useModifiedTime = 0 );
+        float               totalTime_;
+        ChannelBinderVector channelBinders_;
+        BW::string          identifier_;
+        BW::string          internalIdentifier_;
 
-	void					translationOverrideAnim( AnimationPtr pBase, AnimationPtr pTranslationReference,
-								const BW::vector< BW::string >& noOverrideChannels );
+        mutable ChannelBinder* pItinerantRoot_;
 
-private:
-	~Animation();
+        StreamedAnimationPtr pStreamer_;
 
-	float								totalTime_;
-	ChannelBinderVector					channelBinders_;
-	BW::string							identifier_;
-	BW::string							internalIdentifier_;
+        AnimationPtr pMother_;
 
-	mutable ChannelBinder				* pItinerantRoot_;
+        AnimationChannelVector tickers_;
 
-	StreamedAnimationPtr				pStreamer_;
+        Animation(const Animation&);
+        Animation& operator=(const Animation&);
 
-	AnimationPtr						pMother_;
+        friend std::ostream& operator<<(std::ostream&, const Animation&);
+        friend class AnimationManager;
+    };
 
-	AnimationChannelVector				tickers_;
-
-	Animation(const Animation&);
-	Animation& operator=(const Animation&);
-
-	friend std::ostream& operator<<(std::ostream&, const Animation&);
-	friend class AnimationManager;
-};
-
-/**
- *	Animation blending information. Holds the details required for combining
- *	multiple animations.
- */
-struct BlendedAnimation
-{
-	Animation						*animation_;
-	const NodeAlphas				*alphas_;
-	float							frame_;
-	float							blendRatio_;
-};
+    /**
+     *	Animation blending information. Holds the details required for combining
+     *	multiple animations.
+     */
+    struct BlendedAnimation
+    {
+        Animation*        animation_;
+        const NodeAlphas* alphas_;
+        float             frame_;
+        float             blendRatio_;
+    };
 
 } // namespace Moo
 
@@ -122,6 +123,5 @@ struct BlendedAnimation
 #endif
 
 BW_END_NAMESPACE
-
 
 #endif // ANIMATION_HPP

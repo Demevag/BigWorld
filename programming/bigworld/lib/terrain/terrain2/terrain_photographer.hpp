@@ -5,36 +5,33 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Moo
-{
-	class RenderTarget;
-	typedef SmartPointer<RenderTarget> RenderTargetPtr;
+namespace Moo {
+    class RenderTarget;
+    typedef SmartPointer<RenderTarget> RenderTargetPtr;
 }
 
-namespace Terrain
-{
-	class TerrainRenderer2;
-	class BaseTerrainBlock;
+namespace Terrain {
+    class TerrainRenderer2;
+    class BaseTerrainBlock;
 
-	/**
-	 */
-	class TerrainPhotographer
-	{
-	public:
-		TerrainPhotographer(TerrainRenderer2& drawer);
-		~TerrainPhotographer();
+    /**
+     */
+    class TerrainPhotographer
+    {
+      public:
+        TerrainPhotographer(TerrainRenderer2& drawer);
+        ~TerrainPhotographer();
 
-		bool init( uint32 basePhotoSize );
-		bool photographBlock(	BaseTerrainBlock*	pBlock,
-								const Matrix&		transform );
+        bool init(uint32 basePhotoSize);
+        bool photographBlock(BaseTerrainBlock* pBlock, const Matrix& transform);
 
-		bool output(ComObjectWrap<DX::Texture>&	pDestTexture,
-					D3DFORMAT					destImageFormat = D3DFMT_UNKNOWN );
+        bool output(ComObjectWrap<DX::Texture>& pDestTexture,
+                    D3DFORMAT destImageFormat = D3DFMT_UNKNOWN);
 
-	private:
-		Moo::RenderTargetPtr	pBasePhoto_;
-		TerrainRenderer2&	 drawer_;	 
-	};
+      private:
+        Moo::RenderTargetPtr pBasePhoto_;
+        TerrainRenderer2&    drawer_;
+    };
 
 } // namespace Terrain
 

@@ -3,7 +3,6 @@
 
 #include "server/server_app_option.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,13 +10,13 @@ BW_BEGIN_NAMESPACE
  */
 class LoginConditionsConfig
 {
-public:
-	static ServerAppOption< float > maxLoad;
-	static ServerAppOption< float > overloadTolerancePeriod;
+  public:
+    static ServerAppOption<float> maxLoad;
+    static ServerAppOption<float> overloadTolerancePeriod;
 
-	static uint64 overloadTolerancePeriodInStamps();
+    static uint64 overloadTolerancePeriodInStamps();
 
-	static bool postInit();
+    static bool postInit();
 };
 
 BW_END_NAMESPACE

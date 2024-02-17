@@ -8,51 +8,47 @@
 BW_BEGIN_NAMESPACE
 BEGIN_GUI_NAMESPACE
 
-class MenuHelper
-	: public IMenuHelper
+class MenuHelper : public IMenuHelper
 {
-public:
-	MenuHelper( HWND hWnd );
+  public:
+    MenuHelper(HWND hWnd);
 
-	void * getMenu();
+    void* getMenu();
 
-	int getMenuItemCount( void * menu );
+    int getMenuItemCount(void* menu);
 
-	void deleteMenu( void * menu, int index );
+    void deleteMenu(void* menu, int index);
 
-	void setMenuInfo( void * menu, void * menuInfo );
+    void setMenuInfo(void* menu, void* menuInfo);
 
-	void destroyMenu( void * menu );
+    void destroyMenu(void* menu);
 
-	GUI::Item * getMenuItemInfo( void * menu, unsigned int index, void * typeData );
+    GUI::Item* getMenuItemInfo(void* menu, unsigned int index, void* typeData);
 
-	void setMenuItemInfo( void * menu, unsigned int index, void * info );
+    void setMenuItemInfo(void* menu, unsigned int index, void* info);
 
-	void insertMenuItem( void * menu, unsigned int index, GUI::ItemPtr info );
-	 
-	void modifyMenu(
-		void * menu,
-		unsigned int index,
-		GUI::ItemPtr info,
-		const wchar_t * string );
+    void insertMenuItem(void* menu, unsigned int index, GUI::ItemPtr info);
 
-	void enableMenuItem( void * menu, unsigned int index, MenuState state );
+    void modifyMenu(void*          menu,
+                    unsigned int   index,
+                    GUI::ItemPtr   info,
+                    const wchar_t* string);
 
-	void checkMenuItem(
-		void * menu, unsigned int index, MenuCheckState state );
+    void enableMenuItem(void* menu, unsigned int index, MenuState state);
 
-	void setSeperator( void * menu, unsigned int index );
+    void checkMenuItem(void* menu, unsigned int index, MenuCheckState state);
 
-	void updateText(
-		void * hMenu, unsigned index, const BW::wstring & newName );
+    void setSeperator(void* menu, unsigned int index);
 
-	void * setSubMenu( void * hMenu, unsigned index );
+    void updateText(void* hMenu, unsigned index, const BW::wstring& newName);
 
-private:
-	HWND hWnd_;
+    void* setSubMenu(void* hMenu, unsigned index);
+
+  private:
+    HWND hWnd_;
 };
 
 END_GUI_NAMESPACE
 BW_END_NAMESPACE
 
-#endif //MENU_HELPER_HPP
+#endif // MENU_HELPER_HPP

@@ -9,34 +9,33 @@
 
 #include "mongo/client/dbclient.h"
 
-
 BW_BEGIN_NAMESPACE
 
-
-class HostnamesMongoDB : public Hostnames, public HostnamesValidator
+class HostnamesMongoDB
+  : public Hostnames
+  , public HostnamesValidator
 {
-public:
-   	HostnamesMongoDB (TaskManager & mongoDBTaskMgr,
-			mongo::DBClientConnection & conn, const BW::string & collName );
-	
-	bool writeHostnameToDB( const MessageLogger::IPAddress & addr,
-			const BW::string & hostname );
+  public:
+    HostnamesMongoDB(TaskManager&               mongoDBTaskMgr,
+                     mongo::DBClientConnection& conn,
+                     const BW::string&          collName);
 
-	bool init();
+    bool writeHostnameToDB(const MessageLogger::IPAddress& addr,
+                           const BW::string&               hostname);
 
-	HostnamesValidatorProcessStatus validateNextHostname();
+    bool init();
 
-	bool hostnameChanged( MessageLogger::IPAddress addr,
-			const BW::string & newHostname );
+    HostnamesValidatorProcessStatus validateNextHostname();
 
-private:
-	TaskManager & mongoDBTaskMgr_;
-	mongo::DBClientConnection & conn_;
-	BW::string namespace_;
+    bool hostnameChanged(MessageLogger::IPAddress addr,
+                         const BW::string&        newHostname);
+
+  private:
+    TaskManager&               mongoDBTaskMgr_;
+    mongo::DBClientConnection& conn_;
+    BW::string                 namespace_;
 };
 
-
 BW_END_NAMESPACE
-
 
 #endif // HOSTNAMES_MONGODB_HPP

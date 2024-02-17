@@ -15,164 +15,162 @@
 
 #include <map>
 
-
 BW_BEGIN_NAMESPACE
-
 
 class Endpoint;
 
-namespace Mercury
-{
+namespace Mercury {
 
-class UDPChannel;
-class InterfaceElement;
-class InterfaceTable;
-class NetworkInterface;
-class ReplyMessageHandler;
-class RequestManager;
-class ProcessSocketStatsHelper;
-class SendingStats;
+    class UDPChannel;
+    class InterfaceElement;
+    class InterfaceTable;
+    class NetworkInterface;
+    class ReplyMessageHandler;
+    class RequestManager;
+    class ProcessSocketStatsHelper;
+    class SendingStats;
 
+    /**
+     *	A UDP bundle is bundle sent over a UDP channel.
+     *
+     *	@ingroup mercury
+     */
+    class UDPBundle : public Bundle
+    {
+      public:
+        UDPBundle(uint8 spareSize = 0, UDPChannel* pChannel = NULL);
+        UDPBundle(Packet* p);
 
-/**
- *	A UDP bundle is bundle sent over a UDP channel.
- *
- *	@ingroup mercury
- */
-class UDPBundle : public Bundle
-{
-public:
-	UDPBundle( uint8 spareSize = 0, UDPChannel * pChannel = NULL );
-	UDPBundle( Packet * p );
+        virtual ~UDPBundle();
 
-	virtual ~UDPBundle();
+        // Overrides from Bundle
 
-	// Overrides from Bundle
+        virtual void startMessage(const InterfaceElement& ie,
+                                  ReliableType reliable = RELIABLE_DRIVER);
 
-	virtual void startMessage( const InterfaceElement & ie,
-		ReliableType reliable = RELIABLE_DRIVER );
+        virtual void startRequest(const InterfaceElement& ie,
+                                  ReplyMessageHandler*    handler,
+                                  void*                   arg = NULL,
+                                  int timeout = DEFAULT_REQUEST_TIMEOUT,
+                                  ReliableType reliable = RELIABLE_DRIVER);
 
-	virtual void startRequest( const InterfaceElement & ie,
-		ReplyMessageHandler * handler,
-		void * arg = NULL,
-		int timeout = DEFAULT_REQUEST_TIMEOUT,
-		ReliableType reliable = RELIABLE_DRIVER );
+        virtual void startReply(ReplyID      id,
+                                ReliableType reliable = RELIABLE_DRIVER);
 
-	virtual void startReply( ReplyID id, 
-		ReliableType reliable = RELIABLE_DRIVER );
-	
-	virtual void clear( bool newBundle = false );
+        virtual void clear(bool newBundle = false);
 
-	virtual int freeBytesInLastDataUnit() const;
+        virtual int freeBytesInLastDataUnit() const;
 
-	virtual int numDataUnits() const;
+        virtual int numDataUnits() const;
 
-	virtual void doFinalise();
+        virtual void doFinalise();
 
-	// Overrides from BinaryOStream
-	virtual void * reserve( int nBytes );
-	virtual void addBlob( const void * pBlob, int size );
+        // Overrides from BinaryOStream
+        virtual void* reserve(int nBytes);
+        virtual void  addBlob(const void* pBlob, int size);
 
-	// Own methods
-	
-	bool isEmpty() const;
+        // Own methods
 
-	int size() const;
+        bool isEmpty() const;
 
-	bool hasDataFooters() const;
+        int size() const;
 
-	void reliable( ReliableType currentMsgReliabile );
-	bool isReliable() const;
+        bool hasDataFooters() const;
 
-	bool isCritical() const { return isCritical_; }
+        void reliable(ReliableType currentMsgReliabile);
+        bool isReliable() const;
 
-	bool isOnExternalChannel() const;
+        bool isCritical() const { return isCritical_; }
 
-	INLINE void * qreserve( int nBytes );
+        bool isOnExternalChannel() const;
 
-	void reliableOrders( Packet * p,
-		const ReliableOrder *& roBeg, const ReliableOrder *& roEnd );
-	uint numReliableMessages() const { return numReliableMessages_; }
+        INLINE void* qreserve(int nBytes);
 
-	void writeFlags( Packet * p ) const;
+        void reliableOrders(Packet*               p,
+                            const ReliableOrder*& roBeg,
+                            const ReliableOrder*& roEnd);
+        uint numReliableMessages() const { return numReliableMessages_; }
 
-	bool piggyback( SeqNum seq, const ReliableVector & reliableOrders,
-		Packet * p );
+        void writeFlags(Packet* p) const;
 
-	Packet * pFirstPacket() const		{ return pFirstPacket_.get(); }
+        bool piggyback(SeqNum                seq,
+                       const ReliableVector& reliableOrders,
+                       Packet*               p);
 
-	Packet * preparePackets( UDPChannel * pChannel,
-		SeqNumAllocator & seqNumAllocator,
-		SendingStats & sendingStats,
-		bool shouldUseChecksums );
+        Packet* pFirstPacket() const { return pFirstPacket_.get(); }
 
-	int addAck( SeqNum seq ) 
-	{ 
-		MF_ASSERT( ack_ == SEQ_NULL );
-		ack_ = seq;
-		return true;
-	}
+        Packet* preparePackets(UDPChannel*      pChannel,
+                               SeqNumAllocator& seqNumAllocator,
+                               SendingStats&    sendingStats,
+                               bool             shouldUseChecksums);
 
-	SeqNum getAck() const
-	{
-		MF_ASSERT( ack_ != SEQ_NULL );
-		return ack_;
-	}
+        int addAck(SeqNum seq)
+        {
+            MF_ASSERT(ack_ == SEQ_NULL);
+            ack_ = seq;
+            return true;
+        }
 
-private:
-	void * sreserve( int nBytes );
-	void dispose();
-	void startPacket( Packet * p );
-	void endPacket( bool isExtending );
-	void endMessage( bool isEarlyCall = false );
-	char * newMessage( int extra = 0 );
-	void addReliableOrder();
+        SeqNum getAck() const
+        {
+            MF_ASSERT(ack_ != SEQ_NULL);
+            return ack_;
+        }
 
-	Packet::Flags packetFlags() const { return pCurrentPacket_->flags(); }
+      private:
+        void* sreserve(int nBytes);
+        void  dispose();
+        void  startPacket(Packet* p);
+        void  endPacket(bool isExtending);
+        void  endMessage(bool isEarlyCall = false);
+        char* newMessage(int extra = 0);
+        void  addReliableOrder();
 
-	UDPChannel & udpChannel();
+        Packet::Flags packetFlags() const { return pCurrentPacket_->flags(); }
 
-	const UDPChannel & udpChannel() const 
-	{ 
-		return const_cast< UDPBundle * >( this )->udpChannel(); 
-	}
+        UDPChannel& udpChannel();
 
-	UDPBundle( const UDPBundle & );
-	UDPBundle & operator=( const UDPBundle & );
+        const UDPChannel& udpChannel() const
+        {
+            return const_cast<UDPBundle*>(this)->udpChannel();
+        }
 
-	// per bundle stuff
-	PacketPtr pFirstPacket_;		///< The first packet in the bundle
-	Packet * pCurrentPacket_;	///< The current packet in the bundle
-	bool	hasEndedMsgEarly_;	///< True if the message has been ended
-								/// early in piggyback()
-	bool	reliableDriver_;	///< True if any driving reliable messages added
-	uint8	extraSize_;			///< Size of extra bytes needed for e.g. filter
+        UDPBundle(const UDPBundle&);
+        UDPBundle& operator=(const UDPBundle&);
 
-	/// This vector stores all the reliable messages for this bundle.
-	ReliableVector	reliableOrders_;
-	int				reliableOrdersExtracted_;
+        // per bundle stuff
+        PacketPtr pFirstPacket_;     ///< The first packet in the bundle
+        Packet*   pCurrentPacket_;   ///< The current packet in the bundle
+        bool      hasEndedMsgEarly_; ///< True if the message has been ended
+                                     /// early in piggyback()
+        bool  reliableDriver_; ///< True if any driving reliable messages added
+        uint8 extraSize_;      ///< Size of extra bytes needed for e.g. filter
 
-	/// If true, this UDPBundle's packets will be considered to be 'critical'
-	/// by the Channel.
-	bool			isCritical_;
+        /// This vector stores all the reliable messages for this bundle.
+        ReliableVector reliableOrders_;
+        int            reliableOrdersExtracted_;
 
-	BundlePiggybacks piggybacks_;
+        /// If true, this UDPBundle's packets will be considered to be
+        /// 'critical' by the Channel.
+        bool isCritical_;
 
-	// Off channel acking, we only store one but we only need one
-	SeqNum	ack_;
+        BundlePiggybacks piggybacks_;
 
-	// per message stuff
-	InterfaceElement 	curIE_;
-	int					msgLen_;
-	int					msgExtra_;
-	uint8 * 			msgBeg_;
-	uint16				msgChunkOffset_;
-	bool				msgIsReliable_;
-	bool				msgIsRequest_;
+        // Off channel acking, we only store one but we only need one
+        SeqNum ack_;
 
-	// Statistics
-	uint	numReliableMessages_;
-};
+        // per message stuff
+        InterfaceElement curIE_;
+        int              msgLen_;
+        int              msgExtra_;
+        uint8*           msgBeg_;
+        uint16           msgChunkOffset_;
+        bool             msgIsReliable_;
+        bool             msgIsRequest_;
+
+        // Statistics
+        uint numReliableMessages_;
+    };
 
 } // namespace Mercury
 
@@ -180,8 +178,6 @@ private:
 #include "udp_bundle.ipp"
 #endif
 
-
 BW_END_NAMESPACE
-
 
 #endif // UDP_BUNDLE_HPP

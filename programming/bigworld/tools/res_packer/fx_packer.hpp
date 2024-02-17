@@ -6,7 +6,6 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -17,24 +16,28 @@ BW_BEGIN_NAMESPACE
  */
 class FxPacker : public BasePacker
 {
-public:
-	enum Type {
-		FX,
-		FXH,
-		FXO
-	};
+  public:
+    enum Type
+    {
+        FX,
+        FXH,
+        FXO
+    };
 
-	FxPacker() : type_( FX ) {}
+    FxPacker()
+      : type_(FX)
+    {
+    }
 
-	virtual bool prepare( const BW::string & src, const BW::string & dst );
-	virtual bool print();
-	virtual bool pack();
+    virtual bool prepare(const BW::string& src, const BW::string& dst);
+    virtual bool print();
+    virtual bool pack();
 
-private:
-	DECLARE_PACKER()
-	BW::string src_;
-	BW::string dst_;
-	Type type_;
+  private:
+    DECLARE_PACKER()
+    BW::string src_;
+    BW::string dst_;
+    Type       type_;
 };
 
 BW_END_NAMESPACE

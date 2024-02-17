@@ -3,37 +3,35 @@
 
 #include "math/matrix.hpp"
 
-namespace BW
-{
+namespace BW {
 
-namespace Moo
-{
-	class DrawContext;
-}
+    namespace Moo {
+        class DrawContext;
+    }
 
-class Scene;
+    class Scene;
 
-class SceneDrawContext
-{
-public:
-	SceneDrawContext( const Scene & scene, Moo::DrawContext & drawContext );
+    class SceneDrawContext
+    {
+      public:
+        SceneDrawContext(const Scene& scene, Moo::DrawContext& drawContext);
 
-	const Scene & scene() const;
-	Moo::DrawContext & drawContext() const;
+        const Scene&      scene() const;
+        Moo::DrawContext& drawContext() const;
 
-	bool renderFlares() const;
-	void renderFlares( bool b );
+        bool renderFlares() const;
+        void renderFlares(bool b);
 
-	void lodCameraView( const Matrix& view );
-	const Matrix& lodCameraView() const;
+        void          lodCameraView(const Matrix& view);
+        const Matrix& lodCameraView() const;
 
-private:
-	const Scene & scene_;
-	Moo::DrawContext & drawContext_;
-	Matrix lodCameraView_;
+      private:
+        const Scene&      scene_;
+        Moo::DrawContext& drawContext_;
+        Matrix            lodCameraView_;
 
-	bool renderFlares_;
-};
+        bool renderFlares_;
+    };
 
 } // namespace BW
 

@@ -12,19 +12,19 @@ BW_BEGIN_NAMESPACE
  */
 class InputManager : public InputHandler
 {
-public:
-	InputManager();
-	~InputManager();
+  public:
+    InputManager();
+    ~InputManager();
 
-	//input handler methods
-	bool handleKeyEvent( const KeyEvent & /*event*/ );
-	bool handleMouseEvent( const MouseEvent & /*event*/ );
+    // input handler methods
+    bool handleKeyEvent(const KeyEvent& /*event*/);
+    bool handleMouseEvent(const MouseEvent& /*event*/);
 
-private:
-	InputManager(const InputManager&);
-	InputManager& operator=(const InputManager&);
+  private:
+    InputManager(const InputManager&);
+    InputManager& operator=(const InputManager&);
 
-	friend std::ostream& operator<<(std::ostream&, const InputManager&);
+    friend std::ostream& operator<<(std::ostream&, const InputManager&);
 };
 
 BW_END_NAMESPACE

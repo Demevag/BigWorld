@@ -1,4 +1,4 @@
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 #pragma once
 #endif
 
@@ -8,7 +8,6 @@
 #include "forward_declarations.hpp"
 #include "model.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -16,16 +15,17 @@ BW_BEGIN_NAMESPACE
  */
 class ModelActionsIterator
 {
-public:
-	ModelActionsIterator( const Model * pModel );
-	const ModelAction & operator*();
-	const ModelAction * operator->();
-	void operator++( int );
-	bool operator==( const ModelActionsIterator & other ) const;
-	bool operator!=( const ModelActionsIterator & other ) const;
-private:
-	const Model * pModel_;
-	int index_;
+  public:
+    ModelActionsIterator(const Model* pModel);
+    const ModelAction& operator*();
+    const ModelAction* operator->();
+    void               operator++(int);
+    bool               operator==(const ModelActionsIterator& other) const;
+    bool               operator!=(const ModelActionsIterator& other) const;
+
+  private:
+    const Model* pModel_;
+    int          index_;
 };
 
 BW_END_NAMESPACE

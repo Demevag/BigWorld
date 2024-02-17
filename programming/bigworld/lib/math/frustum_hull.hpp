@@ -9,25 +9,25 @@ BW_END_NAMESPACE
 
 namespace BW {
 
-class ConvexHull;
+    class ConvexHull;
 
-/**
- * Frustum hull class, which currently lives only to be queried as a ConvexHull.
- */
-class FrustumHull
-{
-public:
-	FrustumHull( const Matrix & viewProjection );
+    /**
+     * Frustum hull class, which currently lives only to be queried as a
+     * ConvexHull.
+     */
+    class FrustumHull
+    {
+      public:
+        FrustumHull(const Matrix& viewProjection);
 
-	ConvexHull hull();
+        ConvexHull hull();
 
-	static void createPlanesFromViewProjection( const Matrix & viewProjection,
-		PlaneEq planes[6] );
+        static void createPlanesFromViewProjection(const Matrix& viewProjection,
+                                                   PlaneEq       planes[6]);
 
-private:
-	PlaneEq planes_[6];
-};
-
+      private:
+        PlaneEq planes_[6];
+    };
 
 } // namespace BW
 

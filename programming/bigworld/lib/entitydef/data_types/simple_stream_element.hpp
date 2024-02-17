@@ -13,36 +13,34 @@ BW_BEGIN_NAMESPACE
  *	This template class provides a simple DataType::StreamElement
  *	implementation for use by the various primitive types
  */
-template< typename TYPE >
+template <typename TYPE>
 class SimpleStreamElement : public DataType::StreamElement
 {
-public:
-	SimpleStreamElement( const DataType & type ) :
-		DataType::StreamElement( type )
-	{};
+  public:
+    SimpleStreamElement(const DataType& type)
+      : DataType::StreamElement(type){};
 
-	bool fromSourceToStream( DataSource & source, BinaryOStream & stream ) const
-	{
-		TYPE value = TYPE();
+    bool fromSourceToStream(DataSource& source, BinaryOStream& stream) const
+    {
+        TYPE value = TYPE();
 
-		bool result = source.read( value );
-		stream << value;
-		return result;
-	}
+        bool result = source.read(value);
+        stream << value;
+        return result;
+    }
 
-	bool fromStreamToSink( BinaryIStream & stream, DataSink & sink ) const
-	{
-		TYPE value;
-		stream >> value;
+    bool fromStreamToSink(BinaryIStream& stream, DataSink& sink) const
+    {
+        TYPE value;
+        stream >> value;
 
-		if (stream.error())
-		{
-			ERROR_MSG( "SimpleStreamElement: Not enough data on stream to read "
-				"value\n");
-			return false;
-		}
-		return sink.write( value );
-	}
+        if (stream.error()) {
+            ERROR_MSG("SimpleStreamElement: Not enough data on stream to read "
+                      "value\n");
+            return false;
+        }
+        return sink.write(value);
+    }
 };
 
 BW_END_NAMESPACE

@@ -10,73 +10,63 @@ BW_BEGIN_NAMESPACE
 IMPLEMENT_DYNAMIC(ColorPickerDialog, CDialog)
 
 ColorPickerDialog::ColorPickerDialog(CWnd* pParent /*=NULL*/)
-	: CDialog(ColorPickerDialog::IDD, pParent)
+  : CDialog(ColorPickerDialog::IDD, pParent)
 {
 }
 
-ColorPickerDialog::~ColorPickerDialog()
-{
-}
+ColorPickerDialog::~ColorPickerDialog() {}
 
 void ColorPickerDialog::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
+    CDialog::DoDataExchange(pDX);
 }
-
 
 BOOL ColorPickerDialog::OnInitDialog()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	CDialog::OnInitDialog();
+    CDialog::OnInitDialog();
 
-	CWnd * pickerWnd = GetDlgItem(IDC_COLOR_PICKER_DIALOG_WND);
-	CRect pickerRect;
-	pickerWnd->GetWindowRect( &pickerRect );
-	ScreenToClient(&pickerRect);
+    CWnd* pickerWnd = GetDlgItem(IDC_COLOR_PICKER_DIALOG_WND);
+    CRect pickerRect;
+    pickerWnd->GetWindowRect(&pickerRect);
+    ScreenToClient(&pickerRect);
 
-	colorPicker_.Create(WS_CHILD|WS_VISIBLE, pickerRect, this, false);
+    colorPicker_.Create(WS_CHILD | WS_VISIBLE, pickerRect, this, false);
 
-	return TRUE;  // return TRUE unless you set the focus to a control
+    return TRUE; // return TRUE unless you set the focus to a control
 }
-
 
 BEGIN_MESSAGE_MAP(ColorPickerDialog, CDialog)
 END_MESSAGE_MAP()
 
-
 // ColorPickerDialog message handlers
-
-
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
 IMPLEMENT_DYNCREATE(ColorPickerDialogThread, CWinThread)
-BOOL ColorPickerDialogThread::InitInstance() 
+BOOL ColorPickerDialogThread::InitInstance()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	WindowTextNotifier::instance();
+    WindowTextNotifier::instance();
 
-	ColorPickerDialog dlg(m_pMainWnd);
-	colorDialog_ = &dlg;
-	m_pMainWnd = &dlg;
+    ColorPickerDialog dlg(m_pMainWnd);
+    colorDialog_ = &dlg;
+    m_pMainWnd   = &dlg;
 
-	// set initial color to be same as current background
-	Moo::Colour currentColor = MainFrame::instance()->BgColour();
-	Vector4 currentColorVector(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
-	colorDialog_->selectColor(currentColorVector);
+    // set initial color to be same as current background
+    Moo::Colour currentColor = MainFrame::instance()->BgColour();
+    Vector4     currentColorVector(
+      currentColor.r, currentColor.g, currentColor.b, currentColor.a);
+    colorDialog_->selectColor(currentColorVector);
 
-	INT_PTR result = dlg.DoModal();	
+    INT_PTR result = dlg.DoModal();
 
-	// tell mainframe the window is closing
-	MainFrame::instance()->DereferenceColorDialogThread();
+    // tell mainframe the window is closing
+    MainFrame::instance()->DereferenceColorDialogThread();
 
-	// return false so windows does the cleanup
-	return FALSE;
-} 
+    // return false so windows does the cleanup
+    return FALSE;
+}
 BW_END_NAMESPACE
-

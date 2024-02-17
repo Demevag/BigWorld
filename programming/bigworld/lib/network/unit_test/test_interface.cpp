@@ -2,31 +2,27 @@
 
 #include "network/network_interface.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace
-{
+namespace {
 
-struct Fixture
-{
-	Fixture() :
-		interface_( NULL, Mercury::NETWORK_INTERFACE_INTERNAL )
-	{
-	}
+    struct Fixture
+    {
+        Fixture()
+          : interface_(NULL, Mercury::NETWORK_INTERFACE_INTERNAL)
+        {
+        }
 
-	~Fixture()
-	{
-	}
+        ~Fixture() {}
 
-	Mercury::NetworkInterface interface_;
-};
+        Mercury::NetworkInterface interface_;
+    };
 
-TEST_F( Fixture, Nub_testConstruction )
-{
-	// Test that it has correctly opened a socket.
-	CHECK( interface_.socket().fileno() != -1 );
-}
+    TEST_F(Fixture, Nub_testConstruction)
+    {
+        // Test that it has correctly opened a socket.
+        CHECK(interface_.socket().fileno() != -1);
+    }
 
 };
 

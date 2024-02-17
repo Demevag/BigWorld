@@ -1,7 +1,6 @@
 #ifndef RECAST_PROCESSOR_HPP
 #define RECAST_PROCESSOR_HPP
 
-
 #include "cstdmf/debug.hpp"
 #include "cstdmf/watcher.hpp"
 
@@ -20,42 +19,39 @@ BW_BEGIN_NAMESPACE
 
 class EditorChunkNavmeshCacheBase;
 
-
 class RecastProcessor : public ChunkProcessor
 {
-public:
-	RecastProcessor(
-		EditorChunkNavmeshCacheBase* navmeshCache,
-		Chunk* chunk,
-		UnsavedList& unsavedList,
-		Girths girths,
-		ChunkProcessorManager* manager );
+  public:
+    RecastProcessor(EditorChunkNavmeshCacheBase* navmeshCache,
+                    Chunk*                       chunk,
+                    UnsavedList&                 unsavedList,
+                    Girths                       girths,
+                    ChunkProcessorManager*       manager);
 
-	virtual RecastProcessor::~RecastProcessor();
+    virtual RecastProcessor::~RecastProcessor();
 
-protected:
-	virtual bool processInBackground( ChunkProcessorManager& manager );
-	virtual bool processInMainThread( ChunkProcessorManager& manager,
-		bool backgroundTaskResult );
-	virtual void cleanup( ChunkProcessorManager& manager );
-	virtual void stop();
+  protected:
+    virtual bool processInBackground(ChunkProcessorManager& manager);
+    virtual bool processInMainThread(ChunkProcessorManager& manager,
+                                     bool backgroundTaskResult);
+    virtual void cleanup(ChunkProcessorManager& manager);
+    virtual void stop();
 
-	Girths girths_;
-	EditorChunkNavmeshCacheBase* navmeshCache_;
-	CollisionSceneProviders collisionSceneProvider_;
-	RecastGenerator generator_;
-	BW::vector<unsigned char> navmesh_;
-	Chunk* chunk_;
-	UnsavedList& unsavedList_;
-	ScopedLockedChunkHolder lockedChunks_;
+    Girths                       girths_;
+    EditorChunkNavmeshCacheBase* navmeshCache_;
+    CollisionSceneProviders      collisionSceneProvider_;
+    RecastGenerator              generator_;
+    BW::vector<unsigned char>    navmesh_;
+    Chunk*                       chunk_;
+    UnsavedList&                 unsavedList_;
+    ScopedLockedChunkHolder      lockedChunks_;
 
-	SimpleMutex mutex_;
-	bool bgtaskFinished_;
+    SimpleMutex mutex_;
+    bool        bgtaskFinished_;
 };
-
 
 typedef SmartPointer<RecastProcessor> RecastProcessorPtr;
 
 BW_END_NAMESPACE
 
-#endif //RECAST_PROCESSOR_HPP
+#endif // RECAST_PROCESSOR_HPP

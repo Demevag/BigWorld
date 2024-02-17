@@ -13,7 +13,6 @@
 #include "cstdmf/bw_string.hpp"
 #include "cstdmf/bw_vector.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BinaryFile;
@@ -24,43 +23,50 @@ class LogStringWriter;
  */
 class LogStringInterpolator : public FormatStringHandler
 {
-public:
-	LogStringInterpolator();
-	LogStringInterpolator( const BW::string & formatString );
-	virtual ~LogStringInterpolator();
+  public:
+    LogStringInterpolator();
+    LogStringInterpolator(const BW::string& formatString);
+    virtual ~LogStringInterpolator();
 
-	bool isOk() { return isOk_; }
+    bool isOk() { return isOk_; }
 
-	// FormatStringHandler interface
-	virtual void onString( size_t start, size_t end );
-	virtual void onToken( char type, int cflags, int min, int max,
-		int flags, uint8 base, int vflags );
+    // FormatStringHandler interface
+    virtual void onString(size_t start, size_t end);
+    virtual void onToken(char  type,
+                         int   cflags,
+                         int   min,
+                         int   max,
+                         int   flags,
+                         uint8 base,
+                         int   vflags);
 
-	MessageLogger::FormatStringOffsetId fileOffset() const;
-	bool write( FileStream &fs );
-	void read( FileStream &fs );
+    MessageLogger::FormatStringOffsetId fileOffset() const;
+    bool                                write(FileStream& fs);
+    void                                read(FileStream& fs);
 
-	const BW::string & formatString() const;
+    const BW::string& formatString() const;
 
-	bool streamToLog( LogStringWriter &writer, 
-		BinaryIStream & inputStream,
-		MessageLogger::NetworkVersion version = MESSAGE_LOGGER_VERSION );
+    bool streamToLog(
+      LogStringWriter&              writer,
+      BinaryIStream&                inputStream,
+      MessageLogger::NetworkVersion version = MESSAGE_LOGGER_VERSION);
 
-	bool streamToString( BinaryIStream & inputStream, BW::string &str,
-		MessageLogger::NetworkVersion version = MESSAGE_LOGGER_VERSION );
+    bool streamToString(
+      BinaryIStream&                inputStream,
+      BW::string&                   str,
+      MessageLogger::NetworkVersion version = MESSAGE_LOGGER_VERSION);
 
-protected:
-	BW::string formatString_;
-	BW::string components_;
-	StringOffsetList stringOffsets_;
-	BW::vector< FormatData > fmtData_;
-	MessageLogger::FormatStringOffsetId fileOffset_;
+  protected:
+    BW::string                          formatString_;
+    BW::string                          components_;
+    StringOffsetList                    stringOffsets_;
+    BW::vector<FormatData>              fmtData_;
+    MessageLogger::FormatStringOffsetId fileOffset_;
 
-private:
-	bool isOk_;
-	template < class Handler >
-	bool interpolate( Handler &handler, BinaryIStream &is, uint8 version );
-
+  private:
+    bool isOk_;
+    template <class Handler>
+    bool interpolate(Handler& handler, BinaryIStream& is, uint8 version);
 };
 
 BW_END_NAMESPACE

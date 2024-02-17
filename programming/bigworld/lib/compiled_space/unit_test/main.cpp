@@ -14,31 +14,31 @@
 
 BW_USE_NAMESPACE
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
-	BW_SYSTEMSTAGE_MAIN();
+    BW_SYSTEMSTAGE_MAIN();
 
-	BW::Allocator::setCrashOnLeak( true );
+    BW::Allocator::setCrashOnLeak(true);
 
-	// saved away for the test harness
-	CompiledSpaceUnitTestHarness::s_cmdArgC = argc;
-	CompiledSpaceUnitTestHarness::s_cmdArgV = argv;
+    // saved away for the test harness
+    CompiledSpaceUnitTestHarness::s_cmdArgC = argc;
+    CompiledSpaceUnitTestHarness::s_cmdArgV = argv;
 
-	const int result = BWUnitTest::runTest( "compiled_space", argc, argv );
+    const int result = BWUnitTest::runTest("compiled_space", argc, argv);
 
-	// Prevent memory leaks
-	DebugFilter::fini();
-	Moo::AnimationChannel::fini();
-	MainLoopTasks::finiAll();
-	ChunkVLO::fini();
-	Chunk::fini();
-	DogWatchManager::fini();
+    // Prevent memory leaks
+    DebugFilter::fini();
+    Moo::AnimationChannel::fini();
+    MainLoopTasks::finiAll();
+    ChunkVLO::fini();
+    Chunk::fini();
+    DogWatchManager::fini();
 
 #if ENABLE_WATCHERS
-	Watcher::fini();
+    Watcher::fini();
 #endif
 
-	return result;
+    return result;
 }
 
 // main.cpp

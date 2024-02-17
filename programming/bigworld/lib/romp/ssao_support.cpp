@@ -13,16 +13,15 @@ BW_BEGIN_NAMESPACE
 
 //-- start unnamed namespace.
 //--------------------------------------------------------------------------------------------------
-namespace
-{
-    bool g_bluring = true;
-    bool g_useNormal = true;
+namespace {
+    bool g_bluring                = true;
+    bool g_useNormal              = true;
     bool g_useStencilOptimization = true;
 
-    int g_ssaoBufferDownsampleFactor = 0;
+    int g_ssaoBufferDownsampleFactor  = 0;
     int g_depthBufferDownsampleFactor = 0;
 
-    int g_sampleNum = 2; // from 1 to 8
+    int  g_sampleNum      = 2; // from 1 to 8
     bool g_showSSAOBuffer = false;
 
     SSAOSettings g_settings;
@@ -31,8 +30,9 @@ namespace
     //----------------------------------------------------------------------------------------------
     class SSAOParamsConstant : public Moo::EffectConstantValue
     {
-    public:
-        SSAOParamsConstant(const SSAOSupport& ssao) : m_ssao(ssao)
+      public:
+        SSAOParamsConstant(const SSAOSupport& ssao)
+          : m_ssao(ssao)
         {
             m_params.setZero();
         }
@@ -41,103 +41,134 @@ namespace
         {
             BW_GUARD;
 
-            if (m_ssao.enable())
-            {
-                const SSAOSettings::InfluenceFactors& cfg = m_ssao.settings().m_influences;
+            if (m_ssao.enable()) {
+                const SSAOSettings::InfluenceFactors& cfg =
+                  m_ssao.settings().m_influences;
 
-                m_params.row(0, Vector4(cfg.m_speedtree.x, cfg.m_speedtree.y, 0, 0));
-                m_params.row(1, Vector4(cfg.m_terrain.x, cfg.m_terrain.y, 0, 0));
-                m_params.row(2, Vector4(cfg.m_objects.x, cfg.m_objects.y, 0, 0));
+                m_params.row(
+                  0, Vector4(cfg.m_speedtree.x, cfg.m_speedtree.y, 0, 0));
+                m_params.row(1,
+                             Vector4(cfg.m_terrain.x, cfg.m_terrain.y, 0, 0));
+                m_params.row(2,
+                             Vector4(cfg.m_objects.x, cfg.m_objects.y, 0, 0));
             }
 
             pEffect->SetMatrix(constantHandle, &m_params);
             return true;
         }
 
-    private:
-        const SSAOSupport&  m_ssao;
-        Matrix              m_params;
+      private:
+        const SSAOSupport& m_ssao;
+        Matrix             m_params;
     };
 }
 //--------------------------------------------------------------------------------------------------
 //-- end unnamed namespace.
 
 SSAOSupport::SSAOSupport()
-    : m_enabled(true)
-    , m_noiseMap(NULL)
-    , m_rt(NULL)
-    , m_rtBlure(NULL)
-    , m_mat(NULL)
-    , m_matBlure(NULL)
-    , m_matDepth(NULL)
+  : m_enabled(true)
+  , m_noiseMap(NULL)
+  , m_rt(NULL)
+  , m_rtBlure(NULL)
+  , m_mat(NULL)
+  , m_matBlure(NULL)
+  , m_matDepth(NULL)
 {
     BW_GUARD;
 
-    MF_WATCH("Render/SSAO/enabled", g_settings.m_enabled, Watcher::WT_READ_WRITE,
-        "Enable/disable SSAO.");
+    MF_WATCH("Render/SSAO/enabled",
+             g_settings.m_enabled,
+             Watcher::WT_READ_WRITE,
+             "Enable/disable SSAO.");
 
-    MF_WATCH("Render/SSAO/dev/bluring", g_bluring, Watcher::WT_READ_WRITE, 
-        "Enable/disable bluring of SSAO map.");
+    MF_WATCH("Render/SSAO/dev/bluring",
+             g_bluring,
+             Watcher::WT_READ_WRITE,
+             "Enable/disable bluring of SSAO map.");
 
-    MF_WATCH("Render/SSAO/dev/useNormal", g_useNormal, Watcher::WT_READ_WRITE, 
-        "Enable/disable using normals during SSAO calculation.");
+    MF_WATCH("Render/SSAO/dev/useNormal",
+             g_useNormal,
+             Watcher::WT_READ_WRITE,
+             "Enable/disable using normals during SSAO calculation.");
 
-    MF_WATCH("Render/SSAO/dev/useStencilOptimization", g_useStencilOptimization, 
-        Watcher::WT_READ_WRITE, "Enable/disable stencil optimization during SSAO calculation.");
+    MF_WATCH("Render/SSAO/dev/useStencilOptimization",
+             g_useStencilOptimization,
+             Watcher::WT_READ_WRITE,
+             "Enable/disable stencil optimization during SSAO calculation.");
 
-    MF_WATCH("Render/SSAO/dev/samplesNum", g_sampleNum, Watcher::WT_READ_WRITE, 
-        "Multiplier for number of samples. Valid value range is from 1 to 8. "
-        "Real number of samples is 4 * samplesNum.");
+    MF_WATCH(
+      "Render/SSAO/dev/samplesNum",
+      g_sampleNum,
+      Watcher::WT_READ_WRITE,
+      "Multiplier for number of samples. Valid value range is from 1 to 8. "
+      "Real number of samples is 4 * samplesNum.");
 
-    MF_WATCH("Render/SSAO/radius", g_settings.m_radius, Watcher::WT_READ_WRITE, 
-        "Sampling radius. In screen space.");
+    MF_WATCH("Render/SSAO/radius",
+             g_settings.m_radius,
+             Watcher::WT_READ_WRITE,
+             "Sampling radius. In screen space.");
 
-    MF_WATCH("Render/SSAO/amplify", g_settings.m_amplify, Watcher::WT_READ_WRITE, 
-        "Amplify resultign SSAO value. "
-        "If from 0 to 1 -- SSAO becomes darker. "
-        "If above 1 -- becomes lighter. "
-        "If 1 -- SSAO value isn't affected. ");
+    MF_WATCH("Render/SSAO/amplify",
+             g_settings.m_amplify,
+             Watcher::WT_READ_WRITE,
+             "Amplify resultign SSAO value. "
+             "If from 0 to 1 -- SSAO becomes darker. "
+             "If above 1 -- becomes lighter. "
+             "If 1 -- SSAO value isn't affected. ");
 
-    MF_WATCH("Render/SSAO/fade", g_settings.m_fade, Watcher::WT_READ_WRITE, 
-        "Fade SSAO value if the distance between sample point and occludder gets hight."
-        "Measured in g_radius in linear depth space.");
+    MF_WATCH("Render/SSAO/fade",
+             g_settings.m_fade,
+             Watcher::WT_READ_WRITE,
+             "Fade SSAO value if the distance between sample point and "
+             "occludder gets hight."
+             "Measured in g_radius in linear depth space.");
 
     //--
     MF_WATCH("Render/SSAO/influence factors/speedtree/ambient",
-        g_settings.m_influences.m_speedtree.x, Watcher::WT_READ_WRITE, "0.0 - 1.0."
-        );
+             g_settings.m_influences.m_speedtree.x,
+             Watcher::WT_READ_WRITE,
+             "0.0 - 1.0.");
 
     MF_WATCH("Render/SSAO/influence factors/speedtree/lighting",
-        g_settings.m_influences.m_speedtree.y, Watcher::WT_READ_WRITE, "0.0 - 1.0."
-        );
+             g_settings.m_influences.m_speedtree.y,
+             Watcher::WT_READ_WRITE,
+             "0.0 - 1.0.");
 
     //--
     MF_WATCH("Render/SSAO/influence factors/terrain/ambient",
-        g_settings.m_influences.m_terrain.x, Watcher::WT_READ_WRITE, "0.0 - 1.0."
-        );
+             g_settings.m_influences.m_terrain.x,
+             Watcher::WT_READ_WRITE,
+             "0.0 - 1.0.");
 
     MF_WATCH("Render/SSAO/influence factors/terrain/lighting",
-        g_settings.m_influences.m_terrain.y, Watcher::WT_READ_WRITE, "0.0 - 1.0."
-        );
+             g_settings.m_influences.m_terrain.y,
+             Watcher::WT_READ_WRITE,
+             "0.0 - 1.0.");
 
     MF_WATCH("Render/SSAO/influence factors/objects/ambient",
-        g_settings.m_influences.m_objects.x, Watcher::WT_READ_WRITE, "0.0 - 1.0."
-        );
+             g_settings.m_influences.m_objects.x,
+             Watcher::WT_READ_WRITE,
+             "0.0 - 1.0.");
 
     MF_WATCH("Render/SSAO/influence factors/objects/lighting",
-        g_settings.m_influences.m_objects.y, Watcher::WT_READ_WRITE, "0.0 - 1.0."
-        );
+             g_settings.m_influences.m_objects.y,
+             Watcher::WT_READ_WRITE,
+             "0.0 - 1.0.");
 
-    MF_WATCH("Render/SSAO/dev/bufferSsaoDownsampleFactor", *this,  
-        &SSAOSupport::getSsaoBufferDownsampleFactor, 
-        &SSAOSupport::setSsaoBufferDownsampleFactor);
+    MF_WATCH("Render/SSAO/dev/bufferSsaoDownsampleFactor",
+             *this,
+             &SSAOSupport::getSsaoBufferDownsampleFactor,
+             &SSAOSupport::setSsaoBufferDownsampleFactor);
 
-    MF_WATCH("Render/SSAO/dev/bufferDepthDownsampleFactor", *this,
-        &SSAOSupport::getDepthBufferDownsampleFactor, 
-        &SSAOSupport::setDepthBufferDownsampleFactor);
+    MF_WATCH("Render/SSAO/dev/bufferDepthDownsampleFactor",
+             *this,
+             &SSAOSupport::getDepthBufferDownsampleFactor,
+             &SSAOSupport::setDepthBufferDownsampleFactor);
 
-    MF_WATCH("Render/SSAO/dev/showBuffer", g_showSSAOBuffer, Watcher::WT_READ_WRITE, 
-        "Show SSAO buffer.");
+    MF_WATCH("Render/SSAO/dev/showBuffer",
+             g_showSSAOBuffer,
+             Watcher::WT_READ_WRITE,
+             "Show SSAO buffer.");
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -147,8 +178,7 @@ SSAOSupport::~SSAOSupport()
     BW_GUARD;
 
 #if ENABLE_WATCHERS
-    if (Watcher::hasRootWatcher())
-    {
+    if (Watcher::hasRootWatcher()) {
         Watcher::rootWatcher().removeChild("Render/SSAO");
     }
 #endif //-- ENABLE_WATCHERS
@@ -170,7 +200,6 @@ const SSAOSettings& SSAOSupport::settings() const
 {
     return g_settings;
 }
-
 
 //----------------------------------------------------------------------------------------------
 
@@ -197,13 +226,12 @@ void SSAOSupport::setQualityOption(int optionIndex)
     };
 
     //-- should be in sync with graphic setting LIGHTING_QUALITY
-    const QualityOption options[] =
-    {
-        {4, true,  true,  true},    //-- MAX
-        {3, true,  true,  true},    //-- HIGH
-        {2, true,  true,  true},    //-- MEDIUM
-        {1, true,  true,  true},    //-- LOW
-        {1, false, false, false}    //-- OFF
+    const QualityOption options[] = {
+        { 4, true, true, true },   //-- MAX
+        { 3, true, true, true },   //-- HIGH
+        { 2, true, true, true },   //-- MEDIUM
+        { 1, true, true, true },   //-- LOW
+        { 1, false, false, false } //-- OFF
     };
 
     //--
@@ -222,7 +250,7 @@ bool SSAOSupport::showBuffer() const
     return g_showSSAOBuffer;
 }
 
-void SSAOSupport::showBuffer( bool show )
+void SSAOSupport::showBuffer(bool show)
 {
     g_showSSAOBuffer = show;
 }
@@ -246,40 +274,39 @@ void SSAOSupport::resolve()
 
     //-- downsample depth
 
-    if(g_depthBufferDownsampleFactor > 0 && m_rtDownsampledDepth->push())
-    {
+    if (g_depthBufferDownsampleFactor > 0 && m_rtDownsampledDepth->push()) {
         Moo::rc().fsQuad().draw(*m_matDepth.get());
         m_rtDownsampledDepth->pop();
     }
 
     //-- resolve
 
-    if(m_rt->push())
-    {
-        //-- clear buffer only in editor or when show buffer is on in client for debug purposes.
+    if (m_rt->push()) {
+        //-- clear buffer only in editor or when show buffer is on in client for
+        //debug purposes.
         bool clearBuffer = g_showSSAOBuffer;
 #ifdef EDITOR_ENABLED
         clearBuffer = true;
 #endif
-        if (clearBuffer)
-        {
-            Moo::rc().device()->Clear(0, NULL, D3DCLEAR_TARGET, Moo::Colour(1,1,1,1), 1, 0);
+        if (clearBuffer) {
+            Moo::rc().device()->Clear(
+              0, NULL, D3DCLEAR_TARGET, Moo::Colour(1, 1, 1, 1), 1, 0);
         }
 
-        ID3DXEffect* effect = m_mat->pEffect()->pEffect();
-        IRendererPipeline* rp = Renderer::instance().pipeline();
-        if(effect)
-        {
-            if(g_depthBufferDownsampleFactor > 0)
-            {
+        ID3DXEffect*       effect = m_mat->pEffect()->pEffect();
+        IRendererPipeline* rp     = Renderer::instance().pipeline();
+        if (effect) {
+            if (g_depthBufferDownsampleFactor > 0) {
                 effect->SetTexture("g_depth", m_rtDownsampledDepth->pTexture());
             }
-            effect->SetBool("g_useDownsampledDepth", g_depthBufferDownsampleFactor > 0 ? 1 : 0);
+            effect->SetBool("g_useDownsampledDepth",
+                            g_depthBufferDownsampleFactor > 0 ? 1 : 0);
 
             effect->SetTexture("g_noiseMapSSAO", m_noiseMap->pTexture());
             effect->SetInt("g_sampleNum", g_sampleNum);
             effect->SetInt("g_useNormal", g_useNormal);
-            effect->SetBool("g_useStencilOptimization", g_useStencilOptimization);
+            effect->SetBool("g_useStencilOptimization",
+                            g_useStencilOptimization);
             effect->SetFloat("g_radius", g_settings.m_radius);
             effect->SetFloat("g_amplify", g_settings.m_amplify);
             effect->SetFloat("g_fade", g_settings.m_fade);
@@ -292,38 +319,39 @@ void SSAOSupport::resolve()
 
     //-- blure
 
-    if(g_bluring)
-    {
-        if(m_rtBlure->push())
-        {
+    if (g_bluring) {
+        if (m_rtBlure->push()) {
             //-- clear buffer only in editor for debug purposes.
 #ifdef EDITOR_ENABLED
-            Moo::rc().device()->Clear(0, NULL, D3DCLEAR_TARGET, Moo::Colour(1,1,1,1), 1, 0);
+            Moo::rc().device()->Clear(
+              0, NULL, D3DCLEAR_TARGET, Moo::Colour(1, 1, 1, 1), 1, 0);
 #endif
 
             ID3DXEffect* effect = m_matBlure->pEffect()->pEffect();
 
             m_matBlure->hTechnique("VERTICAL_BLURE");
             effect->SetTexture("g_srcMap", m_rt->pTexture());
-            effect->SetBool("g_useStencilOptimization", g_useStencilOptimization);
+            effect->SetBool("g_useStencilOptimization",
+                            g_useStencilOptimization);
             effect->CommitChanges();
 
             Moo::rc().fsQuad().draw(*m_matBlure.get());
             m_rtBlure->pop();
         }
 
-        if(m_rt->push())
-        {
+        if (m_rt->push()) {
             //-- clear buffer only in editor for debug purposes.
 #ifdef EDITOR_ENABLED
-            Moo::rc().device()->Clear(0, NULL, D3DCLEAR_TARGET, Moo::Colour(1,1,1,1), 1, 0);
+            Moo::rc().device()->Clear(
+              0, NULL, D3DCLEAR_TARGET, Moo::Colour(1, 1, 1, 1), 1, 0);
 #endif
 
             ID3DXEffect* effect = m_matBlure->pEffect()->pEffect();
 
             m_matBlure->hTechnique("HORIZONTAL_BLURE");
             effect->SetTexture("g_srcMap", m_rtBlure->pTexture());
-            effect->SetBool("g_useStencilOptimization", g_useStencilOptimization);
+            effect->SetBool("g_useStencilOptimization",
+                            g_useStencilOptimization);
             effect->CommitChanges();
 
             Moo::rc().fsQuad().draw(*m_matBlure.get());
@@ -352,8 +380,8 @@ void SSAOSupport::deleteUnmanagedObjects()
 {
     BW_GUARD;
 
-    m_rt = NULL;
-    m_rtBlure = NULL;
+    m_rt                 = NULL;
+    m_rtBlure            = NULL;
     m_rtDownsampledDepth = NULL;
 }
 
@@ -370,24 +398,33 @@ void SSAOSupport::createUnmanagedObjects()
     uint s = -g_ssaoBufferDownsampleFactor;
     uint d = -g_depthBufferDownsampleFactor;
 
-    success &= createRenderTarget(m_rt, s, s, D3DFMT_R32F, "texture/SSAO map", true, true);
+    success &= createRenderTarget(
+      m_rt, s, s, D3DFMT_R32F, "texture/SSAO map", true, true);
 
     //-- TODO: ...
-    //if(g_bluring)
+    // if(g_bluring)
     //{
-        success &= createRenderTarget(m_rtBlure, s, s, D3DFMT_R32F, "texture/SSAO blure", true, true);
+    success &= createRenderTarget(
+      m_rtBlure, s, s, D3DFMT_R32F, "texture/SSAO blure", true, true);
     //}
 
-    if(g_depthBufferDownsampleFactor > 0)
-    {
-        success &= createRenderTarget(m_rtDownsampledDepth, d, d, D3DFMT_R32F, "texture/SSAO depth", true, true);
+    if (g_depthBufferDownsampleFactor > 0) {
+        success &= createRenderTarget(m_rtDownsampledDepth,
+                                      d,
+                                      d,
+                                      D3DFMT_R32F,
+                                      "texture/SSAO depth",
+                                      true,
+                                      true);
     }
 
-    m_noiseMap = Moo::TextureManager::instance()->get("system/maps/noise4x4.dds");
+    m_noiseMap =
+      Moo::TextureManager::instance()->get("system/maps/noise4x4.dds");
 
     success &= (m_noiseMap != NULL);
 
-    MF_ASSERT(success && "Not all system resources have been loaded correctly.");
+    MF_ASSERT(success &&
+              "Not all system resources have been loaded correctly.");
 }
 
 //----------------------------------------------------------------------------------------------
@@ -397,15 +434,16 @@ void SSAOSupport::createManagedObjects()
 
     //-- register shared auto-constant.
     Moo::rc().effectVisualContext().registerAutoConstant(
-        Moo::EffectVisualContext::AUTO_CONSTANT_TYPE_PER_FRAME, "SSAOParams",
-        new SSAOParamsConstant(*this)
-        );
+      Moo::EffectVisualContext::AUTO_CONSTANT_TYPE_PER_FRAME,
+      "SSAOParams",
+      new SSAOParamsConstant(*this));
 
     bool success = true;
     success &= createEffect(m_mat, "shaders/ssao/ssao.fx");
     success &= createEffect(m_matBlure, "shaders/ssao/blure4x4.fx");
     success &= createEffect(m_matDepth, "shaders/ssao/depth.fx");
-    MF_ASSERT(success && "Not all system resources have been loaded correctly.");
+    MF_ASSERT(success &&
+              "Not all system resources have been loaded correctly.");
 }
 
 //----------------------------------------------------------------------------------------------
@@ -415,11 +453,10 @@ void SSAOSupport::deleteManagedObjects()
 
     //-- unregister shared auto-constant.
     Moo::rc().effectVisualContext().unregisterAutoConstant(
-        Moo::EffectVisualContext::AUTO_CONSTANT_TYPE_PER_FRAME, "SSAOParams"
-        );
+      Moo::EffectVisualContext::AUTO_CONSTANT_TYPE_PER_FRAME, "SSAOParams");
 
     m_noiseMap = NULL;
-    m_mat = NULL;
+    m_mat      = NULL;
     m_matBlure = NULL;
     m_matDepth = NULL;
 }
@@ -428,13 +465,13 @@ void SSAOSupport::deleteManagedObjects()
 
 void SSAOSupport::setSsaoBufferDownsampleFactor(int value)
 {
-    g_ssaoBufferDownsampleFactor=value;
+    g_ssaoBufferDownsampleFactor = value;
 
     deleteUnmanagedObjects();
     createUnmanagedObjects();
 }
 
-int SSAOSupport::getSsaoBufferDownsampleFactor() const 
+int SSAOSupport::getSsaoBufferDownsampleFactor() const
 {
     return g_ssaoBufferDownsampleFactor;
 }
@@ -443,7 +480,7 @@ int SSAOSupport::getSsaoBufferDownsampleFactor() const
 
 void SSAOSupport::setDepthBufferDownsampleFactor(int value)
 {
-    g_depthBufferDownsampleFactor=value;
+    g_depthBufferDownsampleFactor = value;
 
     deleteUnmanagedObjects();
     createUnmanagedObjects();

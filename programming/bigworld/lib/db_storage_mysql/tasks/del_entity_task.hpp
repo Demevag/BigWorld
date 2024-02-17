@@ -4,7 +4,6 @@
 #include "db_storage/idatabase.hpp"
 #include "entity_task_with_id.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class EntityDBKey;
@@ -17,19 +16,19 @@ class MySqlDatabase;
  */
 class DelEntityTask : public EntityTaskWithID
 {
-public:
-	DelEntityTask( const EntityTypeMapping * pEntityMapping,
-					const EntityDBKey & ekey,
-					EntityID entityID,
-					IDatabase::IDelEntityHandler & handler );
+  public:
+    DelEntityTask(const EntityTypeMapping*      pEntityMapping,
+                  const EntityDBKey&            ekey,
+                  EntityID                      entityID,
+                  IDatabase::IDelEntityHandler& handler);
 
-	virtual void performBackgroundTask( MySql & conn );
-	virtual void performEntityMainThreadTask( bool succeeded );
+    virtual void performBackgroundTask(MySql& conn);
+    virtual void performEntityMainThreadTask(bool succeeded);
 
-private:
-	EntityDBKey entityKey_;
+  private:
+    EntityDBKey entityKey_;
 
-	IDatabase::IDelEntityHandler &	handler_;
+    IDatabase::IDelEntityHandler& handler_;
 };
 
 BW_END_NAMESPACE

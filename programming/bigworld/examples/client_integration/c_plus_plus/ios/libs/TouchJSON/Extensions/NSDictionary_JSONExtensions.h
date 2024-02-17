@@ -31,6 +31,6 @@
 
 @interface NSDictionary (NSDictionary_JSONExtensions)
 
-+ (id)dictionaryWithJSONData:(NSData *)inData error:(NSError **)outError;
++ (id)dictionaryWithJSONData:(NSData*)inData error:(NSError**)outError;
 
 @end

@@ -12,36 +12,43 @@ BW_BEGIN_NAMESPACE
  */
 class UnicodeStringDataType : public DataType
 {
-public:
-	UnicodeStringDataType( MetaDataType * pMeta ) : DataType( pMeta ) {}
-	virtual ~UnicodeStringDataType() {}
+  public:
+    UnicodeStringDataType(MetaDataType* pMeta)
+      : DataType(pMeta)
+    {
+    }
+    virtual ~UnicodeStringDataType() {}
 
-protected:
-	virtual bool isSameType( ScriptObject pValue );
-	virtual void setDefaultValue( DataSectionPtr pSection );
-	virtual bool getDefaultValue( DataSink & output ) const;
+  protected:
+    virtual bool isSameType(ScriptObject pValue);
+    virtual void setDefaultValue(DataSectionPtr pSection);
+    virtual bool getDefaultValue(DataSink& output) const;
 
-	virtual int streamSize() const;
+    virtual int streamSize() const;
 
-	virtual bool addToSection( DataSource & source, DataSectionPtr pSection )
-			const;
-	virtual bool createFromSection( DataSectionPtr pSection, DataSink & sink )
-			const;
+    virtual bool addToSection(DataSource&    source,
+                              DataSectionPtr pSection) const;
+    virtual bool createFromSection(DataSectionPtr pSection,
+                                   DataSink&      sink) const;
 
-	virtual bool fromStreamToSection( BinaryIStream & stream,
-			DataSectionPtr pSection, bool isPersistentOnly ) const;
-	virtual bool fromSectionToStream( DataSectionPtr pSection,
-			BinaryOStream & stream, bool isPersistentOnly ) const;
+    virtual bool fromStreamToSection(BinaryIStream& stream,
+                                     DataSectionPtr pSection,
+                                     bool           isPersistentOnly) const;
+    virtual bool fromSectionToStream(DataSectionPtr pSection,
+                                     BinaryOStream& stream,
+                                     bool           isPersistentOnly) const;
 
-	virtual void addToMD5( MD5 & md5 ) const;
+    virtual void addToMD5(MD5& md5) const;
 
-	virtual StreamElementPtr getStreamElement( size_t index,
-		size_t & size, bool & isNone, bool isPersistentOnly ) const;
+    virtual StreamElementPtr getStreamElement(size_t  index,
+                                              size_t& size,
+                                              bool&   isNone,
+                                              bool    isPersistentOnly) const;
 
-	virtual bool operator<( const DataType & other ) const;
+    virtual bool operator<(const DataType& other) const;
 
-private:
-	BW::wstring defaultValue_;
+  private:
+    BW::wstring defaultValue_;
 };
 
 BW_END_NAMESPACE

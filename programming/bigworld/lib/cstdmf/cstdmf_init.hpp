@@ -11,34 +11,30 @@ BW_BEGIN_NAMESPACE
 
 class CStdMf : public Singleton<CStdMf>
 {
-public:
-						CStdMf();
-	virtual				~CStdMf();
+  public:
+    CStdMf();
+    virtual ~CStdMf();
 
-	DebugFilter&		debugFilter();
-	DogWatchManager&	dogWatchManager();
-	BgTaskManager&		bgTaskManager();
+    DebugFilter&     debugFilter();
+    DogWatchManager& dogWatchManager();
+    BgTaskManager&   bgTaskManager();
 
-	CSTDMF_DLL static bool	checkUnattended();
-
+    CSTDMF_DLL static bool checkUnattended();
 };
-
 
 inline DebugFilter& CStdMf::debugFilter()
 {
-	return DebugFilter::instance();
+    return DebugFilter::instance();
 }
-
 
 inline DogWatchManager& CStdMf::dogWatchManager()
 {
-	return DogWatchManager::instance();
+    return DogWatchManager::instance();
 }
-
 
 inline BgTaskManager& CStdMf::bgTaskManager()
 {
-	return BgTaskManager::instance();
+    return BgTaskManager::instance();
 }
 
 BW_END_NAMESPACE

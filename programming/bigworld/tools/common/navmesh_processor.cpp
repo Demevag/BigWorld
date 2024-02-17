@@ -7,119 +7,106 @@
 
 BW_BEGIN_NAMESPACE
 
-NavmeshProcessor::NavmeshProcessor(
-	EditorChunkNavmeshCacheBase* navmeshCache,
-	Chunk& chunk,
-	UnsavedList& unsavedList,
-	Girths girths,
-	ChunkProcessorManager* manager ) :
+NavmeshProcessor::NavmeshProcessor(EditorChunkNavmeshCacheBase* navmeshCache,
+                                   Chunk&                       chunk,
+                                   UnsavedList&                 unsavedList,
+                                   Girths                       girths,
+                                   ChunkProcessorManager*       manager)
+  :
 
-	girths_( girths ),
-	navmeshCache_( navmeshCache ),
-	chunk_( chunk ),
-	unsavedList_( unsavedList ),
-	lockedChunks_( manager ),
-	bgtaskFinished_( false ),
-	flooder_( &chunk_, "" )
+  girths_(girths)
+  , navmeshCache_(navmeshCache)
+  , chunk_(chunk)
+  , unsavedList_(unsavedList)
+  , lockedChunks_(manager)
+  , bgtaskFinished_(false)
+  , flooder_(&chunk_, "")
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (chunk_.isOutsideChunk())
-	{
-		lockedChunks_.lock( &chunk, 1, 1 );
-	}
-	else
-	{
-		lockedChunks_.lock( &chunk, 1 );
-	}
+    if (chunk_.isOutsideChunk()) {
+        lockedChunks_.lock(&chunk, 1, 1);
+    } else {
+        lockedChunks_.lock(&chunk, 1);
+    }
 }
 
 NavmeshProcessor::~NavmeshProcessor()
 {
-	// Check chunks are unlocked
-	if ( !lockedChunks_.empty() )
-	{
-		ERROR_MSG( "NavmeshProcessor is being destroyed when it has chunks"
-			"locked\n" );
-	}
+    // Check chunks are unlocked
+    if (!lockedChunks_.empty()) {
+        ERROR_MSG("NavmeshProcessor is being destroyed when it has chunks"
+                  "locked\n");
+    }
 }
 
-bool NavmeshProcessor::processInBackground( ChunkProcessorManager& manager )
+bool NavmeshProcessor::processInBackground(ChunkProcessorManager& manager)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// Start processing
-	for ( size_t i = 0; i < girths_.size(); ++i )
-	{
-		// Check if we have stopped before going on to next girth
-		if (BgTaskManager::shouldAbortTask())
-		{
-			return false;
-		}
+    // Start processing
+    for (size_t i = 0; i < girths_.size(); ++i) {
+        // Check if we have stopped before going on to next girth
+        if (BgTaskManager::shouldAbortTask()) {
+            return false;
+        }
 
-		// Get ready to flood
-		const Girth& girth = girths_[ i ];
+        // Get ready to flood
+        const Girth& girth = girths_[i];
 
-		PhysicsHandler phand( chunk_.space(), girth );
-		BW::vector<Vector3> entityPts;
+        PhysicsHandler      phand(chunk_.space(), girth);
+        BW::vector<Vector3> entityPts;
 
-		EditorChunkEntityCache::instance( chunk_ ).getEntityPositions(
-			entityPts );
+        EditorChunkEntityCache::instance(chunk_).getEntityPositions(entityPts);
 
-		// Try to flood
-		if ( !flooder_.flood( girth, entityPts, NULL, 0, false ) )
-		{
-			// Flood was stopped or failed
-			return false;
-		}
+        // Try to flood
+        if (!flooder_.flood(girth, entityPts, NULL, 0, false)) {
+            // Flood was stopped or failed
+            return false;
+        }
 
-		// Finish up and save
-		int w = flooder_.width(), h = flooder_.height();
+        // Finish up and save
+        int w = flooder_.width(), h = flooder_.height();
 
-		gener_.init( w, h, flooder_.minBounds(), flooder_.resolution() );
+        gener_.init(w, h, flooder_.minBounds(), flooder_.resolution());
 
-		for (int g = 0; g < 16; ++g)
-		{
-			memcpy( gener_.adjGrids()[g], flooder_.adjGrids()[g], w*h*4 );
-			memcpy( gener_.hgtGrids()[g], flooder_.hgtGrids()[g], w*h*4 );
-		}
+        for (int g = 0; g < 16; ++g) {
+            memcpy(gener_.adjGrids()[g], flooder_.adjGrids()[g], w * h * 4);
+            memcpy(gener_.hgtGrids()[g], flooder_.hgtGrids()[g], w * h * 4);
+        }
 
-		gener_.generate();
+        gener_.generate();
 
-		gener_.determineEdgesAdjacentToOtherChunks( &chunk_, &phand );
-		gener_.streamline();
-		gener_.extendThroughUnboundPortals( &chunk_ );
-		gener_.calculateSetMembership( entityPts, chunk_.identifier() );
+        gener_.determineEdgesAdjacentToOtherChunks(&chunk_, &phand);
+        gener_.streamline();
+        gener_.extendThroughUnboundPortals(&chunk_);
+        gener_.calculateSetMembership(entityPts, chunk_.identifier());
 
-		BinaryPtr bp = gener_.asBinary( Matrix::identity, girth.girth() );
+        BinaryPtr bp = gener_.asBinary(Matrix::identity, girth.girth());
 
-		navmesh_.insert( navmesh_.end(), (unsigned char*)bp->data(),
-			(unsigned char*)bp->data() + bp->len() );
-	}
+        navmesh_.insert(navmesh_.end(),
+                        (unsigned char*)bp->data(),
+                        (unsigned char*)bp->data() + bp->len());
+    }
 
-	// Success
-	return true;
+    // Success
+    return true;
 }
 
-
-bool NavmeshProcessor::processInMainThread(
-	ChunkProcessorManager& manager,
-	bool backgroundTaskResult )
+bool NavmeshProcessor::processInMainThread(ChunkProcessorManager& manager,
+                                           bool backgroundTaskResult)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	navmeshCache_->calcDone(
-		this, backgroundTaskResult, navmesh_, unsavedList_ );
+    navmeshCache_->calcDone(this, backgroundTaskResult, navmesh_, unsavedList_);
 
-	return true;
+    return true;
 }
 
-
-void NavmeshProcessor::cleanup( ChunkProcessorManager& manager )
+void NavmeshProcessor::cleanup(ChunkProcessorManager& manager)
 {
-	BW_GUARD;
-	ChunkProcessor::cleanup( manager );
-	lockedChunks_.clear();
+    BW_GUARD;
+    ChunkProcessor::cleanup(manager);
+    lockedChunks_.clear();
 }
 BW_END_NAMESPACE
-

@@ -8,21 +8,21 @@ BW_BEGIN_NAMESPACE
 
 class LightContainerDebugger : public EditorRenderable
 {
-public:
-	static LightContainerDebugger* instance();
-	static void fini();
+  public:
+    static LightContainerDebugger* instance();
+    static void                    fini();
 
-	void	setItems( const BW::vector<ChunkItemPtr>& items ) { items_ = items; }
-	size_t	numItems() const { return items_.size(); }
-	void	clearItems() { items_.clear(); }
+    void   setItems(const BW::vector<ChunkItemPtr>& items) { items_ = items; }
+    size_t numItems() const { return items_.size(); }
+    void   clearItems() { items_.clear(); }
 
-	void render();
+    void render();
 
-private:
-	static SmartPointer<LightContainerDebugger> s_instance_;
-	LightContainerDebugger();	
+  private:
+    static SmartPointer<LightContainerDebugger> s_instance_;
+    LightContainerDebugger();
 
-	BW::vector<ChunkItemPtr> items_;
+    BW::vector<ChunkItemPtr> items_;
 };
 
 BW_END_NAMESPACE

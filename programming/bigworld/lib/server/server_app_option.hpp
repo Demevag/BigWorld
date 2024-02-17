@@ -8,7 +8,6 @@
 #include "cstdmf/intrusive_object.hpp"
 #include "cstdmf/watcher.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -16,29 +15,27 @@ BW_BEGIN_NAMESPACE
  *	ServerAppOption. These are created instead of adding the functionality to
  *	ServerAppOption so that all options can sit closer in memory.
  */
-class ServerAppOptionIniter :
-	public IntrusiveObject< ServerAppOptionIniter >
+class ServerAppOptionIniter : public IntrusiveObject<ServerAppOptionIniter>
 {
-public:
-	ServerAppOptionIniter( const char * configPath,
-			const char * watcherPath,
-			Watcher::Mode watcherMode );
+  public:
+    ServerAppOptionIniter(const char*   configPath,
+                          const char*   watcherPath,
+                          Watcher::Mode watcherMode);
 
-	virtual void init() = 0;
-	virtual void print() = 0;
+    virtual void init()  = 0;
+    virtual void print() = 0;
 
-	static void initAll();
-	static void printAll();
-	static void deleteAll();
+    static void initAll();
+    static void printAll();
+    static void deleteAll();
 
-protected:
-	const char * configPath_;
-	const char * watcherPath_;
-	Watcher::Mode watcherMode_;
+  protected:
+    const char*   configPath_;
+    const char*   watcherPath_;
+    Watcher::Mode watcherMode_;
 
-	static Container * s_pContainer_;
+    static Container* s_pContainer_;
 };
-
 
 /**
  *	This class is a ServerAppOptionIniter that is type specific.
@@ -46,65 +43,59 @@ protected:
 template <class TYPE>
 class ServerAppOptionIniterT : public ServerAppOptionIniter
 {
-public:
-	ServerAppOptionIniterT( TYPE & value,
-			const char * configPath,
-			const char * watcherPath,
-			Watcher::Mode watcherMode ) :
-		ServerAppOptionIniter( configPath, watcherPath, watcherMode ),
-		value_( value ),
-		defaultValue_( value )
-	{
-	}
+  public:
+    ServerAppOptionIniterT(TYPE&         value,
+                           const char*   configPath,
+                           const char*   watcherPath,
+                           Watcher::Mode watcherMode)
+      : ServerAppOptionIniter(configPath, watcherPath, watcherMode)
+      , value_(value)
+      , defaultValue_(value)
+    {
+    }
 
-	virtual void init()
-	{
-		if (configPath_[0])
-		{
-			if (!BWConfig::update( configPath_, value_ ))
-			{
-				CONFIG_WARNING_MSG( "ServerAppConfig::init: "
-						"%s not read from bw.xml chain. Using default (%s)\n",
-					configPath_, watcherValueToString( value_ ).c_str() );
-			}
-		}
+    virtual void init()
+    {
+        if (configPath_[0]) {
+            if (!BWConfig::update(configPath_, value_)) {
+                CONFIG_WARNING_MSG(
+                  "ServerAppConfig::init: "
+                  "%s not read from bw.xml chain. Using default (%s)\n",
+                  configPath_,
+                  watcherValueToString(value_).c_str());
+            }
+        }
 
-		if (watcherPath_[0])
-		{
-			MF_WATCH( watcherPath_, value_, watcherMode_ );
-		}
-	}
+        if (watcherPath_[0]) {
+            MF_WATCH(watcherPath_, value_, watcherMode_);
+        }
+    }
 
-	virtual void print();
+    virtual void print();
 
-private:
-	TYPE & value_;
-	TYPE defaultValue_;
+  private:
+    TYPE& value_;
+    TYPE  defaultValue_;
 };
-
 
 template <class TYPE>
 void ServerAppOptionIniterT<TYPE>::print()
 {
-	const char * name = configPath_;
+    const char* name = configPath_;
 
-	if ((name  == NULL) || (name[0] == '\0'))
-	{
-		return;
-	}
+    if ((name == NULL) || (name[0] == '\0')) {
+        return;
+    }
 
-	if (value_ == defaultValue_)
-	{
-		CONFIG_INFO_MSG( "  %-34s = %s\n",
-			name, watcherValueToString( value_ ).c_str() );
-	}
-	else
-	{
-		CONFIG_INFO_MSG( "  %-34s = %s (default: %s)\n",
-			name,
-			watcherValueToString( value_ ).c_str(),
-			watcherValueToString( defaultValue_ ).c_str() );
-	}
+    if (value_ == defaultValue_) {
+        CONFIG_INFO_MSG(
+          "  %-34s = %s\n", name, watcherValueToString(value_).c_str());
+    } else {
+        CONFIG_INFO_MSG("  %-34s = %s (default: %s)\n",
+                        name,
+                        watcherValueToString(value_).c_str(),
+                        watcherValueToString(defaultValue_).c_str());
+    }
 }
 
 template <>
@@ -119,70 +110,65 @@ void ServerAppOptionIniterT<double>::print();
 template <class TYPE>
 class ServerAppOptionIniterGetSetT : public ServerAppOptionIniter
 {
-public:
-	ServerAppOptionIniterGetSetT( TYPE (*getterMethod)(),
-			void (*setterMethod)( TYPE value ),
-			const char * configPath,
-			const char * watcherPath ) :
-		ServerAppOptionIniter( configPath, watcherPath,
-			Watcher::WT_READ_WRITE ),
-		getterMethod_( getterMethod ),
-		setterMethod_( setterMethod ),
-		defaultValue_( getterMethod() )
-	{
-	}
+  public:
+    ServerAppOptionIniterGetSetT(TYPE (*getterMethod)(),
+                                 void (*setterMethod)(TYPE value),
+                                 const char* configPath,
+                                 const char* watcherPath)
+      : ServerAppOptionIniter(configPath, watcherPath, Watcher::WT_READ_WRITE)
+      , getterMethod_(getterMethod)
+      , setterMethod_(setterMethod)
+      , defaultValue_(getterMethod())
+    {
+    }
 
-	virtual void init()
-	{
-		if (configPath_[0])
-		{
-			TYPE value =  defaultValue_;
-			if (!BWConfig::update( configPath_, value ))
-			{
-				CONFIG_WARNING_MSG( "ServerAppConfig::init: "
-						"%s not read from bw.xml chain. Using default (%s)\n",
-					configPath_, watcherValueToString( value ).c_str() );
-			}
+    virtual void init()
+    {
+        if (configPath_[0]) {
+            TYPE value = defaultValue_;
+            if (!BWConfig::update(configPath_, value)) {
+                CONFIG_WARNING_MSG(
+                  "ServerAppConfig::init: "
+                  "%s not read from bw.xml chain. Using default (%s)\n",
+                  configPath_,
+                  watcherValueToString(value).c_str());
+            }
 
-			setterMethod_( value );
-		}
+            setterMethod_(value);
+        }
 
-		if (watcherPath_[0])
-		{
-			MF_WATCH( watcherPath_, getterMethod_, setterMethod_ );
-		}
-	}
+        if (watcherPath_[0]) {
+            MF_WATCH(watcherPath_, getterMethod_, setterMethod_);
+        }
+    }
 
-	virtual void print();
-private:
-	TYPE (*getterMethod_)();
-	void (*setterMethod_)( TYPE value );
-	TYPE defaultValue_;
+    virtual void print();
+
+  private:
+    TYPE (*getterMethod_)();
+    void (*setterMethod_)(TYPE value);
+    TYPE defaultValue_;
 };
 
 template <class TYPE>
 void ServerAppOptionIniterGetSetT<TYPE>::print()
 {
-	const char * name = configPath_;
-	TYPE value = getterMethod_();
+    const char* name  = configPath_;
+    TYPE        value = getterMethod_();
 
-	if ((name  == NULL) || (name[0] == '\0'))
-	{
-		return;
-	}
+    if ((name == NULL) || (name[0] == '\0')) {
+        return;
+    }
 
-	if (value == defaultValue_)
-	{
-		CONFIG_INFO_MSG( "  %-34s = %s\n",
-			name, watcherValueToString( value ).c_str() );
-	}
-	else
-	{
-		CONFIG_INFO_MSG( "  %-34s = %s (default: %s)\n",
-			name,
-			watcherValueToString( value ).c_str(),
-			watcherValueToString( defaultValue_ ).c_str() );
-	}
+    if (value == defaultValue_) {
+        CONFIG_INFO_MSG(
+          "  %-34s = %s\n", name, watcherValueToString(value).c_str());
+    } else {
+        CONFIG_INFO_MSG("  %-34s = %s (default: %s)\n",
+                        name,
+                        watcherValueToString(value).c_str(),
+                        watcherValueToString(defaultValue_).c_str());
+    }
 }
 
 template <>
@@ -190,8 +176,6 @@ void ServerAppOptionIniterGetSetT<float>::print();
 
 template <>
 void ServerAppOptionIniterGetSetT<double>::print();
-
-
 
 /**
  *	This class is used to add a configuration option to an application. It
@@ -201,25 +185,24 @@ void ServerAppOptionIniterGetSetT<double>::print();
 template <class TYPE>
 class ServerAppOption
 {
-public:
-	ServerAppOption( TYPE value,
-			const char * configPath,
-			const char * watcherPath,
-			Watcher::Mode watcherMode = Watcher::WT_READ_WRITE ) :
-		value_( value )
-	{
-		new ServerAppOptionIniterT< TYPE >( value_,
-				configPath, watcherPath, watcherMode );
-	}
-	
-	TYPE operator()() const	{ return value_; }
-	void set( TYPE value ) { value_ = value; }
-	TYPE & getRef()	{ return value_; }
+  public:
+    ServerAppOption(TYPE          value,
+                    const char*   configPath,
+                    const char*   watcherPath,
+                    Watcher::Mode watcherMode = Watcher::WT_READ_WRITE)
+      : value_(value)
+    {
+        new ServerAppOptionIniterT<TYPE>(
+          value_, configPath, watcherPath, watcherMode);
+    }
 
-private:
-	TYPE value_;
+    TYPE  operator()() const { return value_; }
+    void  set(TYPE value) { value_ = value; }
+    TYPE& getRef() { return value_; }
+
+  private:
+    TYPE value_;
 };
-
 
 /**
  *	This class is used to add a configuration option to an application. It
@@ -229,32 +212,25 @@ private:
 template <class TYPE>
 class ServerAppOptionGetSet
 {
-public:
-	ServerAppOptionGetSet( TYPE (*getterMethod)(),
-			void (*setterMethod)( TYPE value ),
-			const char * configPath,
-			const char * watcherPath ) :
-		getterMethod_( getterMethod ),
-		setterMethod_( setterMethod )
-	{
-		new ServerAppOptionIniterGetSetT< TYPE >( getterMethod,
-			setterMethod, configPath, watcherPath );
-	}
+  public:
+    ServerAppOptionGetSet(TYPE (*getterMethod)(),
+                          void (*setterMethod)(TYPE value),
+                          const char* configPath,
+                          const char* watcherPath)
+      : getterMethod_(getterMethod)
+      , setterMethod_(setterMethod)
+    {
+        new ServerAppOptionIniterGetSetT<TYPE>(
+          getterMethod, setterMethod, configPath, watcherPath);
+    }
 
-	TYPE operator()() const
-	{ 
-		return getterMethod_();
-	}
+    TYPE operator()() const { return getterMethod_(); }
 
+    void set(TYPE value) { setterMethod_(value); }
 
-	void set( TYPE value ) 
-	{
-		setterMethod_( value );
-	}
-
-private:
-	TYPE (*getterMethod_)();
-	void (*setterMethod_)( TYPE value );
+  private:
+    TYPE (*getterMethod_)();
+    void (*setterMethod_)(TYPE value);
 };
 
 BW_END_NAMESPACE

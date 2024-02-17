@@ -1,0 +1,17 @@
+﻿---
+BasedOnStyle: Mozilla
+AlignConsecutiveAssignments: 'true'
+AlignConsecutiveDeclarations: 'true'
+AlignOperands: 'true'
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+CompactNamespaces: 'true'
+IndentWidth: '4'
+NamespaceIndentation: All
+SortIncludes: 'false'
+SpaceAfterTemplateKeyword: 'true'
+SpaceBeforeAssignmentOperators: 'true'
+TabWidth: '4'
+UseTab: Never
+
+...

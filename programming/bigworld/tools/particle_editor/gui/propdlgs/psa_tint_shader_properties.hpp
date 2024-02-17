@@ -15,20 +15,23 @@ class PsaTintShaderProperties : public PsaProperties
 {
     DECLARE_DYNCREATE(PsaTintShaderProperties)
 
-public:
-    enum { IDD = IDD_PSA_TINT_SHADER_PROPERTIES };
+  public:
+    enum
+    {
+        IDD = IDD_PSA_TINT_SHADER_PROPERTIES
+    };
 
-    PsaTintShaderProperties(); 
+    PsaTintShaderProperties();
 
     /*virtual*/ ~PsaTintShaderProperties();
 
     /*virtual*/ void OnInitialUpdate();
 
-    TintShaderPSA *action();
+    TintShaderPSA* action();
 
-    void SetParameters(SetOperation task);  
+    void SetParameters(SetOperation task);
 
-protected:
+  protected:
     /*virtual*/ void DoDataExchange(CDataExchange* pDX);
 
     afx_msg void OnBnLoop();
@@ -43,30 +46,30 @@ protected:
 
     afx_msg LRESULT OnNewTimelineSel(WPARAM mParam, LPARAM lParam);
 
-    afx_msg LRESULT OnEditClrText(WPARAM mParam, LPARAM lParam);    
+    afx_msg LRESULT OnEditClrText(WPARAM mParam, LPARAM lParam);
 
     afx_msg void OnBnDeleteTint();
 
     afx_msg void OnBnAddNewTint();
 
-	afx_msg void OnHScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar );
+    afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 
     DECLARE_MESSAGE_MAP()
 
-private:
+  private:
     controls::ColorTimeline colorTimelineWnd_;
     controls::ColorPicker   colorPicker_;
-    controls::EditNumeric	period_;
-    CButton                 repeat_;    
-    controls::EditNumeric	fogAmount_;
-    CSliderCtrl				fogAmountSlider_;
-    controls::EditNumeric	pickerRed_;
-    controls::EditNumeric	pickerGreen_;
-    controls::EditNumeric	pickerBlue_;
-    controls::EditNumeric	pickerAlpha_;
+    controls::EditNumeric   period_;
+    CButton                 repeat_;
+    controls::EditNumeric   fogAmount_;
+    CSliderCtrl             fogAmountSlider_;
+    controls::EditNumeric   pickerRed_;
+    controls::EditNumeric   pickerGreen_;
+    controls::EditNumeric   pickerBlue_;
+    controls::EditNumeric   pickerAlpha_;
     CButton                 addTintButton_;
     size_t                  filterChange_;
-	controls::EditNumeric	delay_;
+    controls::EditNumeric   delay_;
 };
 
 BW_END_NAMESPACE

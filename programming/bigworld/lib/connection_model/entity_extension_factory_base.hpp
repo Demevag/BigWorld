@@ -14,16 +14,19 @@ class EntityExtension;
  */
 class EntityExtensionFactoryBase
 {
-public:
-	EntityExtensionFactoryBase() : slot_( -1 ) {}
-	void setSlot( int slot )	{ slot_ = slot; }
+  public:
+    EntityExtensionFactoryBase()
+      : slot_(-1)
+    {
+    }
+    void setSlot(int slot) { slot_ = slot; }
 
-	int slot() const			{ return slot_; }
+    int slot() const { return slot_; }
 
-	EntityExtension * getFrom( const BWEntity & entity ) const;
+    EntityExtension* getFrom(const BWEntity& entity) const;
 
-protected:
-	int slot_;
+  protected:
+    int slot_;
 };
 
 BW_END_NAMESPACE

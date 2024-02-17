@@ -11,17 +11,17 @@ BW_BEGIN_NAMESPACE
  */
 class ChunkVLOObstacle : public ChunkModelObstacle
 {
-public:
-	ChunkVLOObstacle( Chunk & chunk );
-	~ChunkVLOObstacle();
+  public:
+    ChunkVLOObstacle(Chunk& chunk);
+    ~ChunkVLOObstacle();
 
-	static Instance<ChunkVLOObstacle> instance;
-protected:
-	virtual int addToSpace( ChunkObstacle & cso );
-	virtual void delFromSpace( ChunkObstacle & cso );
+    static Instance<ChunkVLOObstacle> instance;
+
+  protected:
+    virtual int  addToSpace(ChunkObstacle& cso);
+    virtual void delFromSpace(ChunkObstacle& cso);
 };
 
 BW_END_NAMESPACE
 
 #endif // CHUNK_VLO_OBSTACLE_HPP
-

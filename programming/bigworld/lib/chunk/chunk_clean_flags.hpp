@@ -16,21 +16,21 @@ BW_BEGIN_NAMESPACE
  */
 struct ChunkCleanFlagsBase
 {
-	uint32 thumbnail_;
-	uint32 shadow_;
-	uint32 terrainLOD_;
+    uint32 thumbnail_;
+    uint32 shadow_;
+    uint32 terrainLOD_;
 };
 
 class ChunkCleanFlags : public ChunkCleanFlagsBase
 {
-public:
-	explicit ChunkCleanFlags( DataSectionPtr cData );
-	ChunkCleanFlags( uint32 thumbnail, uint32 shadow, uint32 terrainLOD );
-	void save( DataSectionPtr cData = NULL );
-	void merge( const ChunkCleanFlags& other );
+  public:
+    explicit ChunkCleanFlags(DataSectionPtr cData);
+    ChunkCleanFlags(uint32 thumbnail, uint32 shadow, uint32 terrainLOD);
+    void save(DataSectionPtr cData = NULL);
+    void merge(const ChunkCleanFlags& other);
 
-private:
-	DataSectionPtr cData_;
+  private:
+    DataSectionPtr cData_;
 };
 
 BW_END_NAMESPACE

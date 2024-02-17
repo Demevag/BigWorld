@@ -5,7 +5,6 @@
 #include "physics.hpp"
 #include "particle/py_meta_particle_system.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class MatrixProvider;
@@ -13,8 +12,8 @@ typedef SmartPointer<MatrixProvider> MatrixProviderPtr;
 class EntityPhotonOccluder;
 
 namespace Moo {
-typedef SmartPointer< class RenderTarget > RenderTargetPtr;
-class DrawContext;
+    typedef SmartPointer<class RenderTarget> RenderTargetPtr;
+    class DrawContext;
 };
 
 /**
@@ -23,43 +22,42 @@ class DrawContext;
  */
 class ScriptPlayer : public InitSingleton<ScriptPlayer>
 {
-public:
-	ScriptPlayer();
-	virtual ~ScriptPlayer();
+  public:
+    ScriptPlayer();
+    virtual ~ScriptPlayer();
 
-	virtual bool doInit();
-	virtual bool doFini();
+    virtual bool doInit();
+    virtual bool doFini();
 
-	bool setPlayer( Entity * newPlayer );
+    bool setPlayer(Entity* newPlayer);
 
-	Entity *	i_entity()		{ return pEntity_; }
+    Entity* i_entity() { return pEntity_; }
 
-	static MatrixProviderPtr camTarget();
+    static MatrixProviderPtr camTarget();
 
-	void updateWeatherParticleSystems( class PlayerAttachments & pa );
+    void updateWeatherParticleSystems(class PlayerAttachments& pa);
 
-	static Entity *		entity()
-	{
-		return pInstance() ? instance().i_entity() : NULL;
-	}
+    static Entity* entity()
+    {
+        return pInstance() ? instance().i_entity() : NULL;
+    }
 
-	Chunk * findChunk();
+    Chunk* findChunk();
 
-	bool drawPlayer( Moo::DrawContext& drawContext );
+    bool drawPlayer(Moo::DrawContext& drawContext);
 
-private:
+  private:
+    struct AttachedPS
+    {
+        SmartPointer<PyModelNode> pNode_;
+        PyMetaParticleSystem*     pAttachment_;
+    };
 
-	struct AttachedPS
-	{
-		SmartPointer<PyModelNode> pNode_;
-		PyMetaParticleSystem* pAttachment_;
-	};
+    BW::vector<AttachedPS> attachedPSs_;
 
-	BW::vector< AttachedPS > attachedPSs_;
+    Entity* pEntity_;
 
-	Entity		* pEntity_;
-
-	EntityPhotonOccluder * playerFlareCollider_;
+    EntityPhotonOccluder* playerFlareCollider_;
 };
 
 BW_END_NAMESPACE

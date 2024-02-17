@@ -5,20 +5,16 @@
 #include "cstdmf/concurrency.hpp"
 #include "cstdmf/guard.hpp"
 
-
 #if UMBRA_ENABLE
 
 #include <ob/umbramodel.hpp>
 #include <ob/umbraobject.hpp>
 
-
 BW_BEGIN_NAMESPACE
 
-
-namespace
-{
-	SimpleMutex modelProxyMutex;
-	SimpleMutex objectProxyMutex;
+namespace {
+    SimpleMutex modelProxyMutex;
+    SimpleMutex objectProxyMutex;
 }
 
 // -----------------------------------------------------------------------------
@@ -26,21 +22,19 @@ namespace
 // -----------------------------------------------------------------------------
 
 UmbraModelProxy::UmbraModelProxy()
-	: pModel_( NULL )
+  : pModel_(NULL)
 {
-
 }
 
 UmbraModelProxy::~UmbraModelProxy()
 {
-	if (pModel_)
-		pModel_->release();
+    if (pModel_)
+        pModel_->release();
 }
-
 
 void UmbraModelProxy::destroy() const
 {
-	UmbraModelProxy::tryDestroy( this );
+    UmbraModelProxy::tryDestroy(this);
 }
 
 /**
@@ -48,24 +42,28 @@ void UmbraModelProxy::destroy() const
  *	@param obb the oritented bounding box in Matrix form
  *	@return the the newly created modelproxy with umbra model
  */
-UmbraModelProxy* UmbraModelProxy::getObbModel( const Matrix& obb )
+UmbraModelProxy* UmbraModelProxy::getObbModel(const Matrix& obb)
 {
-	BW_GUARD;
-	Umbra::OB::Model* pModel = Umbra::OB::OBBModel::create( (Umbra::Matrix4x4&)obb );
-	return get( pModel );
+    BW_GUARD;
+    Umbra::OB::Model* pModel =
+      Umbra::OB::OBBModel::create((Umbra::Matrix4x4&)obb);
+    return get(pModel);
 }
 
 /**
- *	This method creates a oriented bounding box umbra model from a group of vertices.
+ *	This method creates a oriented bounding box umbra model from a group of
+ *vertices.
  *	@param pVertices pointer to the vertex list
  *	@param nVertices the vertex count
  *	@return the the newly created modelproxy with umbra model
  */
-UmbraModelProxy* UmbraModelProxy::getObbModel( const Vector3* pVertices, uint32 nVertices )
+UmbraModelProxy* UmbraModelProxy::getObbModel(const Vector3* pVertices,
+                                              uint32         nVertices)
 {
-	BW_GUARD;
-	Umbra::OB::Model* pModel = Umbra::OB::OBBModel::create( (const Umbra::Vector3*)pVertices, nVertices );
-	return get( pModel );
+    BW_GUARD;
+    Umbra::OB::Model* pModel =
+      Umbra::OB::OBBModel::create((const Umbra::Vector3*)pVertices, nVertices);
+    return get(pModel);
 }
 
 /**
@@ -74,11 +72,13 @@ UmbraModelProxy* UmbraModelProxy::getObbModel( const Vector3* pVertices, uint32 
  *	@param max the maximum values of the bounding box
  *	@return the the newly created modelproxy with umbra model
  */
-UmbraModelProxy* UmbraModelProxy::getObbModel( const Vector3& min, const Vector3& max )
+UmbraModelProxy* UmbraModelProxy::getObbModel(const Vector3& min,
+                                              const Vector3& max)
 {
-	BW_GUARD;
-	Umbra::OB::Model* pModel = Umbra::OB::OBBModel::create( (const Umbra::Vector3&)min, (const Umbra::Vector3&)max );
-	return get( pModel );
+    BW_GUARD;
+    Umbra::OB::Model* pModel = Umbra::OB::OBBModel::create(
+      (const Umbra::Vector3&)min, (const Umbra::Vector3&)max);
+    return get(pModel);
 }
 
 /**
@@ -87,32 +87,31 @@ UmbraModelProxy* UmbraModelProxy::getObbModel( const Vector3& min, const Vector3
  *	@return the the newly created modelproxy with umbra model
  *	@note it is the callers responsibility to manage the lifetime of the object
  */
-UmbraModelProxy* UmbraModelProxy::get( Umbra::OB::Model* pModel )
+UmbraModelProxy* UmbraModelProxy::get(Umbra::OB::Model* pModel)
 {
-	BW_GUARD;
-	SimpleMutexHolder smh( modelProxyMutex );
-	proxies_.push_back( new UmbraModelProxy );
-	proxies_.back()->model( pModel );
-	return proxies_.back();
+    BW_GUARD;
+    SimpleMutexHolder smh(modelProxyMutex);
+    proxies_.push_back(new UmbraModelProxy);
+    proxies_.back()->model(pModel);
+    return proxies_.back();
 }
 
 /**
  *	This method deletes the model proxy from the list of model proxies
  *	@param pProxy the model proxy to delete from the list
  */
-void UmbraModelProxy::tryDestroy( const UmbraModelProxy * pProxy )
+void UmbraModelProxy::tryDestroy(const UmbraModelProxy* pProxy)
 {
-	BW_GUARD_PROFILER( UmbraModelProxy_del );
-	SimpleMutexHolder smh( modelProxyMutex );
-	if (pProxy->refCount() == 0)
-	{
-		Proxies::iterator it = std::find( proxies_.begin(), proxies_.end(), pProxy );
-		if (it != proxies_.end())
-		{
-			proxies_.erase( it );
-		}
-		delete pProxy;
-	}
+    BW_GUARD_PROFILER(UmbraModelProxy_del);
+    SimpleMutexHolder smh(modelProxyMutex);
+    if (pProxy->refCount() == 0) {
+        Proxies::iterator it =
+          std::find(proxies_.begin(), proxies_.end(), pProxy);
+        if (it != proxies_.end()) {
+            proxies_.erase(it);
+        }
+        delete pProxy;
+    }
 }
 
 /**
@@ -120,15 +119,14 @@ void UmbraModelProxy::tryDestroy( const UmbraModelProxy * pProxy )
  */
 void UmbraModelProxy::invalidateAll()
 {
-	BW_GUARD;
-	SimpleMutexHolder smh( modelProxyMutex );
-	Proxies::iterator it = proxies_.begin();
-	Proxies::iterator end = proxies_.end();
-	while (it != end)
-	{
-		(*it)->invalidate();
-		++it;
-	}
+    BW_GUARD;
+    SimpleMutexHolder smh(modelProxyMutex);
+    Proxies::iterator it  = proxies_.begin();
+    Proxies::iterator end = proxies_.end();
+    while (it != end) {
+        (*it)->invalidate();
+        ++it;
+    }
 }
 
 /**
@@ -136,82 +134,72 @@ void UmbraModelProxy::invalidateAll()
  */
 void UmbraModelProxy::invalidate()
 {
-	BW_GUARD;
-	if (pModel_)
-	{
-		pModel_->release();
-		pModel_ = NULL;
-	}
+    BW_GUARD;
+    if (pModel_) {
+        pModel_->release();
+        pModel_ = NULL;
+    }
 }
 
 UmbraModelProxy::Proxies UmbraModelProxy::proxies_;
-
 
 // -----------------------------------------------------------------------------
 // Section: UmbraObjectProxy
 // -----------------------------------------------------------------------------
 
-UmbraObjectProxy::UmbraObjectProxy(UmbraModelProxyPtr pModel) :
-	pObject_( NULL ),
-	pModel_(pModel)
+UmbraObjectProxy::UmbraObjectProxy(UmbraModelProxyPtr pModel)
+  : pObject_(NULL)
+  , pModel_(pModel)
 {
 }
 
 UmbraObjectProxy::~UmbraObjectProxy()
 {
-	if (pObject_)
-		invalidate();
+    if (pObject_)
+        invalidate();
 }
-
 
 void UmbraObjectProxy::destroy() const
 {
-	UmbraObjectProxy::tryDestroy( this );
-
+    UmbraObjectProxy::tryDestroy(this);
 }
 
-
-void UmbraObjectProxy::pModelProxy( UmbraModelProxyPtr pModel )
+void UmbraObjectProxy::pModelProxy(UmbraModelProxyPtr pModel)
 {
-	if ( pObject_ )
-	{
-		pObject_->setModel( pModel->model() );
-	}
+    if (pObject_) {
+        pObject_->setModel(pModel->model());
+    }
 
-	pModel_ = pModel;
+    pModel_ = pModel;
 }
-
 
 /**
  *	This method creates a umbra object and proxy
  *	@param pModel the test model used by the umbra object
  *	@param pWriteModel the write model used by the umbra object
- *	@param identifier the identifier of this proxy or 
+ *	@param identifier the identifier of this proxy or
  *		empty string if the object is unnamed
  *	@return the umbra object proxy
  *	@note it is the callers responsibility to manage the lifetime of the object
  */
-UmbraObjectProxy* UmbraObjectProxy::get( UmbraModelProxyPtr pModel, 
-	const BW::string& identifier )
+UmbraObjectProxy* UmbraObjectProxy::get(UmbraModelProxyPtr pModel,
+                                        const BW::string&  identifier)
 {
-	BW_GUARD;
-	SimpleMutexHolder smh( objectProxyMutex );
-	Umbra::OB::Model* pMod = pModel.hasObject() ? pModel->model() : NULL;
+    BW_GUARD;
+    SimpleMutexHolder smh(objectProxyMutex);
+    Umbra::OB::Model* pMod = pModel.hasObject() ? pModel->model() : NULL;
 
-	Umbra::OB::Object* pObject = Umbra::OB::Object::create( pMod );
+    Umbra::OB::Object* pObject = Umbra::OB::Object::create(pMod);
 
-	UmbraObjectProxy* pProxy = new UmbraObjectProxy(pModel);
-	pProxy->object( pObject );
+    UmbraObjectProxy* pProxy = new UmbraObjectProxy(pModel);
+    pProxy->object(pObject);
 
-	if (identifier.empty())
-	{
-		proxies_.push_back( pProxy );
-	}
-	else
-	{
-		namedProxies_.insert( std::make_pair(identifier, pProxy ) );
-	}
-	return pProxy;
+    if (identifier.empty()) {
+        proxies_.push_back(pProxy);
+    } else {
+        namedProxies_.insert(std::make_pair(identifier, pProxy));
+    }
+    return pProxy;
 }
 /**
  *	This method creates a umbra object proxy for the supplied object
@@ -219,15 +207,15 @@ UmbraObjectProxy* UmbraObjectProxy::get( UmbraModelProxyPtr pModel,
  *	@return the newly created object proxy
  *	@note it is the callers responsibility to manage the lifetime of the object
  */
-UmbraObjectProxy* UmbraObjectProxy::get( Umbra::OB::Object* pObject )
+UmbraObjectProxy* UmbraObjectProxy::get(Umbra::OB::Object* pObject)
 {
-	BW_GUARD;
-	UmbraObjectProxy* pProxy = new UmbraObjectProxy(NULL);
-	pProxy->object( pObject );
+    BW_GUARD;
+    UmbraObjectProxy* pProxy = new UmbraObjectProxy(NULL);
+    pProxy->object(pObject);
 
-	proxies_.push_back( pProxy );
+    proxies_.push_back(pProxy);
 
-	return pProxy;
+    return pProxy;
 }
 
 /**
@@ -236,15 +224,14 @@ UmbraObjectProxy* UmbraObjectProxy::get( Umbra::OB::Object* pObject )
  *	@return the new object proxy or NULL if source proxy is not found
  *	@note it is the callers responsibility to manage the lifetime of the object
  */
-UmbraObjectProxy* UmbraObjectProxy::getCopy( const BW::string& identifier )
+UmbraObjectProxy* UmbraObjectProxy::getCopy(const BW::string& identifier)
 {
-	BW_GUARD;
-	NamedProxies::iterator it = namedProxies_.find( identifier );
-	if (it != namedProxies_.end())
-	{
-		return get( it->second->pModel_ );
-	}
-	return NULL;
+    BW_GUARD;
+    NamedProxies::iterator it = namedProxies_.find(identifier);
+    if (it != namedProxies_.end()) {
+        return get(it->second->pModel_);
+    }
+    return NULL;
 }
 
 /*
@@ -253,42 +240,41 @@ UmbraObjectProxy* UmbraObjectProxy::getCopy( const BW::string& identifier )
  */
 class NamedObjectProxyFinder
 {
-public:
-	NamedObjectProxyFinder( const UmbraObjectProxy * pProxy ) :
-	  pProxy_(pProxy) {}
-	bool operator () (const std::pair<BW::string, UmbraObjectProxy*>& item) const
-	{
-		return item.second == pProxy_;
-	}
-	const UmbraObjectProxy * pProxy_;
+  public:
+    NamedObjectProxyFinder(const UmbraObjectProxy* pProxy)
+      : pProxy_(pProxy)
+    {
+    }
+    bool operator()(const std::pair<BW::string, UmbraObjectProxy*>& item) const
+    {
+        return item.second == pProxy_;
+    }
+    const UmbraObjectProxy* pProxy_;
 };
-
 
 /**
  *	This method deletes the object proxy from the list of object proxies
  *	@param pProxy the object proxy to delete from the list
  */
-void UmbraObjectProxy::tryDestroy( const UmbraObjectProxy * pProxy )
+void UmbraObjectProxy::tryDestroy(const UmbraObjectProxy* pProxy)
 {
-	BW_GUARD_PROFILER( UmbraObjectProxy_del );
-	SimpleMutexHolder smh( objectProxyMutex );
-	if (pProxy->refCount() == 0)
-	{
-		Proxies::iterator it = std::find( proxies_.begin(), proxies_.end(), 
-			pProxy );
-		if (it != proxies_.end())
-		{
-			proxies_.erase( it );
-		}
-		else
-		{
-			NamedProxies::iterator it = std::find_if(namedProxies_.begin(), 
-				namedProxies_.end(), NamedObjectProxyFinder(pProxy));
-			if (it != namedProxies_.end())
-				namedProxies_.erase( it );
-		}
-		delete pProxy;
-	}
+    BW_GUARD_PROFILER(UmbraObjectProxy_del);
+    SimpleMutexHolder smh(objectProxyMutex);
+    if (pProxy->refCount() == 0) {
+        Proxies::iterator it =
+          std::find(proxies_.begin(), proxies_.end(), pProxy);
+        if (it != proxies_.end()) {
+            proxies_.erase(it);
+        } else {
+            NamedProxies::iterator it =
+              std::find_if(namedProxies_.begin(),
+                           namedProxies_.end(),
+                           NamedObjectProxyFinder(pProxy));
+            if (it != namedProxies_.end())
+                namedProxies_.erase(it);
+        }
+        delete pProxy;
+    }
 }
 
 /**
@@ -296,22 +282,20 @@ void UmbraObjectProxy::tryDestroy( const UmbraObjectProxy * pProxy )
  */
 void UmbraObjectProxy::invalidateAll()
 {
-	BW_GUARD;
-	SimpleMutexHolder smh( objectProxyMutex );
-	Proxies::iterator it = proxies_.begin();
-	Proxies::iterator end = proxies_.end();
-	while (it != end)
-	{
-		(*it)->invalidate();
-		++it;
-	}
-	NamedProxies::iterator nit = namedProxies_.begin();
-	NamedProxies::iterator nend = namedProxies_.end();
-	while (nit != nend)
-	{
-		nit->second->invalidate();
-		++nit;
-	}
+    BW_GUARD;
+    SimpleMutexHolder smh(objectProxyMutex);
+    Proxies::iterator it  = proxies_.begin();
+    Proxies::iterator end = proxies_.end();
+    while (it != end) {
+        (*it)->invalidate();
+        ++it;
+    }
+    NamedProxies::iterator nit  = namedProxies_.begin();
+    NamedProxies::iterator nend = namedProxies_.end();
+    while (nit != nend) {
+        nit->second->invalidate();
+        ++nit;
+    }
 }
 
 /**
@@ -319,20 +303,19 @@ void UmbraObjectProxy::invalidateAll()
  */
 void UmbraObjectProxy::invalidate()
 {
-	BW_GUARD;
-	if (pObject_)
-	{
-		pObject_->setCell( NULL );
-		pObject_->release();
-		pObject_ = NULL;
-	}
+    BW_GUARD;
+    if (pObject_) {
+        pObject_->setCell(NULL);
+        pObject_->release();
+        pObject_ = NULL;
+    }
 
-	pModel_ = NULL;
+    pModel_ = NULL;
 }
 
-UmbraObjectProxy::Proxies UmbraObjectProxy::proxies_;
+UmbraObjectProxy::Proxies      UmbraObjectProxy::proxies_;
 UmbraObjectProxy::NamedProxies UmbraObjectProxy::namedProxies_;
 
 BW_END_NAMESPACE
 
-#endif //UMBRA_ENABLE
+#endif // UMBRA_ENABLE

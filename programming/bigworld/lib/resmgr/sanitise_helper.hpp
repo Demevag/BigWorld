@@ -9,17 +9,15 @@ BW_BEGIN_NAMESPACE
 
 class SanitiseHelper
 {
-public:
-	// Sanitising token
-	static const BW::string SANITISING_TOKEN;	// = ".."
-	static const BW::string SPACE_TOKEN;	// = " "
+  public:
+    // Sanitising token
+    static const BW::string SANITISING_TOKEN; // = ".."
+    static const BW::string SPACE_TOKEN;      // = " "
 
-	static BW::string substringReplace
-		(
-		 	const BW::StringRef& val,
-		 	const BW::string& oldSubstr = SPACE_TOKEN,
-			const BW::string& newSubstr = SANITISING_TOKEN
-		);
+    static BW::string substringReplace(
+      const BW::StringRef& val,
+      const BW::string&    oldSubstr = SPACE_TOKEN,
+      const BW::string&    newSubstr = SANITISING_TOKEN);
 };
 
 BW_END_NAMESPACE

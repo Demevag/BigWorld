@@ -7,79 +7,79 @@
 #include "cstdmf/bw_set.hpp"
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-typedef BW::set< BW::string > StrSet;
+typedef BW::set<BW::string> StrSet;
 
 class MySql;
 class TableIndices;
 
 #define PARENTID_INDEX_NAME "parentIDIndex"
 
-BW::string generateIndexName( const BW::string & colName );
+BW::string generateIndexName(const BW::string& colName);
 
-namespace TableMetaData
-{
+namespace TableMetaData {
 
-class ColumnInfo
-{
-public:
-	ColumnType		columnType;
-	ColumnIndexType	indexType;
+    class ColumnInfo
+    {
+      public:
+        ColumnType      columnType;
+        ColumnIndexType indexType;
 
-	ColumnInfo( const MYSQL_FIELD& field, const TableIndices& indices );
-	ColumnInfo();
+        ColumnInfo(const MYSQL_FIELD& field, const TableIndices& indices);
+        ColumnInfo();
 
-	bool isIndexEqual( const ColumnInfo & other) const;
+        bool isIndexEqual(const ColumnInfo& other) const;
 
-private:
-	static ColumnIndexType deriveIndexType(
-			const MYSQL_FIELD& field, const TableIndices& indices );
-};
+      private:
+        static ColumnIndexType deriveIndexType(const MYSQL_FIELD&  field,
+                                               const TableIndices& indices);
+    };
 
-// Map of column name to ColumnInfo.
-typedef BW::map< BW::string, ColumnInfo > NameToColInfoMap;
+    // Map of column name to ColumnInfo.
+    typedef BW::map<BW::string, ColumnInfo> NameToColInfoMap;
 
-struct IndexedColumnInfo : public ColumnInfo
-{
-	ColumnIndexType	oldIndexType;
+    struct IndexedColumnInfo : public ColumnInfo
+    {
+        ColumnIndexType oldIndexType;
 
-	IndexedColumnInfo( const ColumnInfo & newCol, const ColumnInfo & oldCol ) :
-	   	ColumnInfo( newCol ),
-		oldIndexType( oldCol.indexType )
-	{}
-};
+        IndexedColumnInfo(const ColumnInfo& newCol, const ColumnInfo& oldCol)
+          : ColumnInfo(newCol)
+          , oldIndexType(oldCol.indexType)
+        {
+        }
+    };
 
-// Map of column name to IndexedColumnInfo.
-typedef BW::map< BW::string, IndexedColumnInfo > NameToIdxColInfoMap;
+    // Map of column name to IndexedColumnInfo.
+    typedef BW::map<BW::string, IndexedColumnInfo> NameToIdxColInfoMap;
 
-void getEntityTables( StrSet & tables, MySql & connection );
-void getTableColumns( NameToColInfoMap & columns,
-		MySql & connection, const BW::string & tableName );
+    void getEntityTables(StrSet& tables, MySql& connection);
+    void getTableColumns(NameToColInfoMap& columns,
+                         MySql&            connection,
+                         const BW::string& tableName);
 
 } // namespace TableMetaData
-
-
 
 /**
  *	This class retrieves the fields and indexes of a table.
  */
 class MySqlTableMetadata
 {
-public:
-	MySqlTableMetadata( MySql & connection, const BW::string tableName );
-	~MySqlTableMetadata();
+  public:
+    MySqlTableMetadata(MySql& connection, const BW::string tableName);
+    ~MySqlTableMetadata();
 
-	bool isValid() const 				{ return result_; }
-	unsigned int getNumFields() const	{ return numFields_; }
-	const MYSQL_FIELD& getField( unsigned int index ) const
-	{ return fields_[index]; }
+    bool               isValid() const { return result_; }
+    unsigned int       getNumFields() const { return numFields_; }
+    const MYSQL_FIELD& getField(unsigned int index) const
+    {
+        return fields_[index];
+    }
 
-private:
-	MYSQL_RES*		result_;
-	unsigned int 	numFields_;
-	MYSQL_FIELD* 	fields_;
+  private:
+    MYSQL_RES*   result_;
+    unsigned int numFields_;
+    MYSQL_FIELD* fields_;
 };
 
 BW_END_NAMESPACE

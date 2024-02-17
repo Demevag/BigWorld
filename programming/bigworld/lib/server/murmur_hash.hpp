@@ -4,19 +4,16 @@
 #include "cstdmf/bw_namespace.hpp"
 #include "cstdmf/stdmf.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
  *	This namespace exposes a hash function that uses the MurmurHash3 algorithm.
  */
-namespace MurmurHash
-{
+namespace MurmurHash {
 
-uint64 hash( const void * data, size_t length, uint seed );
+    uint64 hash(const void* data, size_t length, uint seed);
 
 } // end namespace MurmurHash
-
 
 BW_END_NAMESPACE
 

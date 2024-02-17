@@ -5,83 +5,74 @@
 #include "cstdmf/stdmf.hpp"
 #include "cstdmf/debug.hpp"
 
-
 #include "cstdmf/bw_map.hpp"
 #include <memory>
-
 
 BW_BEGIN_NAMESPACE
 
 typedef void CURLM;
 typedef void CURL;
 
-namespace Mercury
-{
-	class EventDispatcher;
-	class FrequentTask;
+namespace Mercury {
+    class EventDispatcher;
+    class FrequentTask;
 }
 
+namespace URL {
 
-namespace URL
-{
+    class Request;
+    class Response;
+    class StringList;
 
-class Request;
-class Response;
-class StringList;
+    /**
+     *	This class is used to manage multiple URL requests simultaneously.
+     */
+    class Manager
+    {
+      public:
+        typedef URL::Method Method;
 
+        Manager(Mercury::EventDispatcher& dispatcher);
+        ~Manager();
 
-/**
- *	This class is used to manage multiple URL requests simultaneously.
- */
-class Manager
-{
-public:
-	typedef URL::Method Method;
+        bool fetchURL(const BW::string& url,
+                      Response*         pResponse,
+                      Headers*          pHeaders                = NULL,
+                      Method            method                  = METHOD_GET,
+                      float             connectTimeoutInSeconds = 0.f,
+                      PostData*         pPostData               = NULL,
+                      Request**         pOutRequest             = NULL);
 
-	Manager( Mercury::EventDispatcher & dispatcher );
-	~Manager();
+        void checkHandles();
 
-	bool fetchURL( const BW::string & url,
-		Response * pResponse,
-		Headers * pHeaders = NULL,
-		Method method = METHOD_GET,
-		float connectTimeoutInSeconds = 0.f,
-		PostData * pPostData = NULL,
-		Request ** pOutRequest = NULL );
+        void deregisterRequest(Request& request);
 
-	void checkHandles( );
+        void cancelRequest(Request* pRequest);
 
-	void deregisterRequest( Request & request );
+        static bool init(Mercury::EventDispatcher& dispatcher);
+        static void fini();
 
-	void cancelRequest ( Request * pRequest );
+        static Manager* instance() { return s_managerInstance_; }
 
-	static bool init( Mercury::EventDispatcher & dispatcher );
-	static void fini();
+      private:
+        void registerRequest(Request& request);
 
-	static Manager * instance()
-	{
-		return s_managerInstance_;
-	}
+        void processEvents();
 
-private:
-	void registerRequest( Request & request );
+        Mercury::FrequentTask* pCheckHandlesTask_;
 
-	void processEvents();
+        CURLM* curlMultiState_;
 
-	Mercury::FrequentTask * pCheckHandlesTask_;
+        typedef BW::map<CURL*, Request*> Requests;
+        Requests                         requests_;
 
-	CURLM * curlMultiState_;
+        int numRunning_;
 
-	typedef BW::map< CURL *, Request * > Requests;
-	Requests requests_;
+        static Manager* s_managerInstance_;
+    };
 
-	int numRunning_;
-
-	static Manager * s_managerInstance_;
-};
-
-BW::string escape( const BW::string & in );
-BW::string unescape( const BW::string & in );
+    BW::string escape(const BW::string& in);
+    BW::string unescape(const BW::string& in);
 
 } // namespace URL
 

@@ -10,105 +10,101 @@
 
 BW_BEGIN_NAMESPACE
 
-typedef SmartPointer< ChunkSpace > ChunkSpacePtr;
+typedef SmartPointer<ChunkSpace> ChunkSpacePtr;
 
-class PhysicalChunkSpace: public IPhysicalSpace
+class PhysicalChunkSpace : public IPhysicalSpace
 {
-public:
-	
-	PhysicalChunkSpace( SpaceID id, GeometryMapper & mapper );
-	~PhysicalChunkSpace() {}
-	
-	/**
-	 *	This method requests to load the specified resource, 
-	 *	possibly using a translation matrix,
-	 *	and assigns it the given SpaceEntryID.
-	 *	(The loading itself may be performed asynchronously.)
-	 */
-	void loadResource( const SpaceEntryID & mappingID, 
-					   const BW::string & path,
-					   float * matrix = NULL ); 
-	
-	/**
-	 *	This method requests to unload the resource specified by the given
-	 *	SpaceEntryID.
-	 *	(The unloading itself may be performed asynchronously.)
-	 */
-	void unloadResource( const SpaceEntryID & mappingID );
-	
-	
-	/**
-	 *	This method loads and/or unloads resources, to cover the axis-aligned
-	 *	rectangle (the updated area that we serve).
-	 *	Return value: whether any new resources have been loaded.
-	 */
-	bool update( const BW::Rect & rect, bool unloadOnly );
-	
-	/**
-	 *	This method does the best it can to determine an axis-aligned
-	 *	rectangle that has been loaded. If there is no loaded resource, 
-	 *	then a very big rectangle is returned.
-	 */
-	void getLoadedRect( BW::Rect & rect ) const;
-	
-	bool getLoadableRects( IPhysicalSpace::BoundsList & rects ) const /* override */;
+  public:
+    PhysicalChunkSpace(SpaceID id, GeometryMapper& mapper);
+    ~PhysicalChunkSpace() {}
 
-	/* Override from IPhysicalSpace */
-	BoundingBox bounds() const /* override */;
+    /**
+     *	This method requests to load the specified resource,
+     *	possibly using a translation matrix,
+     *	and assigns it the given SpaceEntryID.
+     *	(The loading itself may be performed asynchronously.)
+     */
+    void loadResource(const SpaceEntryID& mappingID,
+                      const BW::string&   path,
+                      float*              matrix = NULL);
 
-	/* Override from IPhysicalSpace */
-	BoundingBox subBounds() const /* override */;
+    /**
+     *	This method requests to unload the resource specified by the given
+     *	SpaceEntryID.
+     *	(The unloading itself may be performed asynchronously.)
+     */
+    void unloadResource(const SpaceEntryID& mappingID);
 
-	/**
-	 *	This function goes through any resources that have been requested to be 
-	 *	loaded, and cancels their loading process.
-	 */
-	void cancelCurrentlyLoading();
+    /**
+     *	This method loads and/or unloads resources, to cover the axis-aligned
+     *	rectangle (the updated area that we serve).
+     *	Return value: whether any new resources have been loaded.
+     */
+    bool update(const BW::Rect& rect, bool unloadOnly);
 
-	/**
-	 *	This method returns whether or not the space is fully unloaded.
-	 */
-	bool isFullyUnloaded() const;
+    /**
+     *	This method does the best it can to determine an axis-aligned
+     *	rectangle that has been loaded. If there is no loaded resource,
+     *	then a very big rectangle is returned.
+     */
+    void getLoadedRect(BW::Rect& rect) const;
 
-	/**
-	 *	This method prepares the space to be reused.
-	 */
-	void reuse() /* override */;
+    bool getLoadableRects(IPhysicalSpace::BoundsList& rects) const
+      /* override */;
 
-	/**
-	 *	This method unloads all resources and clears all state.
-	 */
-	void clear();
-	
-	/**
-	 *	A Chunk Space getter for cases that really require the underlying
-	 *	Chunk Space. This 
-	 */
-	ChunkSpacePtr pChunkSpace() const { return pChunkSpace_; }
+    /* Override from IPhysicalSpace */
+    BoundingBox bounds() const /* override */;
 
-private:
+    /* Override from IPhysicalSpace */
+    BoundingBox subBounds() const /* override */;
 
-	/**
-	 *	This class is used by loadResource to notify the result of loading.
-	 */
-	class LoadResourceCallback : public AddMappingAsyncCallback 
-	{
-	public:
-		LoadResourceCallback( SpaceID spaceID );
-		virtual ~LoadResourceCallback() {};
+    /**
+     *	This function goes through any resources that have been requested to be
+     *	loaded, and cancels their loading process.
+     */
+    void cancelCurrentlyLoading();
 
-		virtual void onAddMappingAsyncCompleted(
-				SpaceEntryID spaceEntryID,
-				AddMappingAsyncCallback::AddMappingResult result );
+    /**
+     *	This method returns whether or not the space is fully unloaded.
+     */
+    bool isFullyUnloaded() const;
 
-	private:
-		SpaceID spaceID_;
-	};
+    /**
+     *	This method prepares the space to be reused.
+     */
+    void reuse() /* override */;
 
+    /**
+     *	This method unloads all resources and clears all state.
+     */
+    void clear();
 
-	ChunkSpacePtr pChunkSpace_;
-	EdgeGeometryMappings	geometryMappings_;
+    /**
+     *	A Chunk Space getter for cases that really require the underlying
+     *	Chunk Space. This
+     */
+    ChunkSpacePtr pChunkSpace() const { return pChunkSpace_; }
 
+  private:
+    /**
+     *	This class is used by loadResource to notify the result of loading.
+     */
+    class LoadResourceCallback : public AddMappingAsyncCallback
+    {
+      public:
+        LoadResourceCallback(SpaceID spaceID);
+        virtual ~LoadResourceCallback(){};
+
+        virtual void onAddMappingAsyncCompleted(
+          SpaceEntryID                              spaceEntryID,
+          AddMappingAsyncCallback::AddMappingResult result);
+
+      private:
+        SpaceID spaceID_;
+    };
+
+    ChunkSpacePtr        pChunkSpace_;
+    EdgeGeometryMappings geometryMappings_;
 };
 
 BW_END_NAMESPACE

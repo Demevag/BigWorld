@@ -9,12 +9,12 @@ class PanelManagerFunctor;
 
 class BasePanelManager
 {
-public:
-	BasePanelManager();
-	virtual ~BasePanelManager();
+  public:
+    BasePanelManager();
+    virtual ~BasePanelManager();
 
-private:
-	class PanelManagerFunctor * pFunctor_;
+  private:
+    class PanelManagerFunctor* pFunctor_;
 };
 
 BW_END_NAMESPACE

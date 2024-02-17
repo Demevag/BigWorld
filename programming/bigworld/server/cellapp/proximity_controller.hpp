@@ -4,7 +4,6 @@
 #include "controller.hpp"
 #include "pyscript/script.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class ProximityRangeTrigger;
@@ -19,31 +18,31 @@ class ProximityRangeTrigger;
 
 class ProximityController : public Controller
 {
-	DECLARE_CONTROLLER_TYPE( ProximityController )
+    DECLARE_CONTROLLER_TYPE(ProximityController)
 
-public:
-	ProximityController( float range = 20.f );
-	virtual ~ProximityController();
+  public:
+    ProximityController(float range = 20.f);
+    virtual ~ProximityController();
 
-	virtual void	startReal( bool isInitialStart );
-	virtual void	stopReal( bool isFinalStop );
+    virtual void startReal(bool isInitialStart);
+    virtual void stopReal(bool isFinalStop);
 
-	void	writeRealToStream( BinaryOStream & stream );
-	bool 	readRealFromStream( BinaryIStream & stream );
+    void writeRealToStream(BinaryOStream& stream);
+    bool readRealFromStream(BinaryIStream& stream);
 
-	float	range()			{ return range_; }
+    float range() { return range_; }
 
-	void setRange( float range );
+    void setRange(float range);
 
-	static FactoryFnRet New( float range, int userArg = 0 );
-	PY_AUTO_CONTROLLER_FACTORY_DECLARE( ProximityController,
-		ARG( float, OPTARG( int, 0, END ) ) )
+    static FactoryFnRet New(float range, int userArg = 0);
+    PY_AUTO_CONTROLLER_FACTORY_DECLARE(ProximityController,
+                                       ARG(float, OPTARG(int, 0, END)))
 
-private:
-	float	range_;
-	ProximityRangeTrigger* pProximityTrigger_;
+  private:
+    float                  range_;
+    ProximityRangeTrigger* pProximityTrigger_;
 
-	BW::vector< EntityID > * pOnloadedSet_;
+    BW::vector<EntityID>* pOnloadedSet_;
 };
 
 BW_END_NAMESPACE

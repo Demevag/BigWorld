@@ -11,37 +11,32 @@ BW_BEGIN_NAMESPACE
 
 class Renderer;
 
-namespace Moo
-{
-	class ConvertTextureTool
-	{
-	public:
-		ConvertTextureTool() 
-			: hWnd_( NULL )
-			, pRenderer_(NULL)
-		{
-		};
+namespace Moo {
+    class ConvertTextureTool
+    {
+      public:
+        ConvertTextureTool()
+          : hWnd_(NULL)
+          , pRenderer_(NULL){};
 
-		bool init();
-		void fini();
+        bool init();
+        void fini();
 
-		// convert the texture, no questions asked.
-		bool convert(const BW::string& srcName,
-			const BW::string& destName, 
-			TextureDetailLevelPtr& texLod,
-			const bool bCompressionOption );
-		
-		bool initResources();
-		void resourcesFini();
-		bool initMoo();
-		void MooFini();
+        // convert the texture, no questions asked.
+        bool convert(const BW::string&      srcName,
+                     const BW::string&      destName,
+                     TextureDetailLevelPtr& texLod,
+                     const bool             bCompressionOption);
 
-private:
-		HWND hWnd_;
-		Renderer* pRenderer_;
-	};
+        bool initResources();
+        void resourcesFini();
+        bool initMoo();
+        void MooFini();
 
-	
+      private:
+        HWND      hWnd_;
+        Renderer* pRenderer_;
+    };
 
 } // namespace Moo
 

@@ -6,13 +6,12 @@
 
 #include "cstdmf/debug.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Script", 0 )
+DECLARE_DEBUG_COMPONENT2("Script", 0)
 
 BW_BEGIN_NAMESPACE
 
-namespace
-{
-ScriptEvents * g_pInstance = NULL;
+namespace {
+    ScriptEvents* g_pInstance = NULL;
 }
 
 // -----------------------------------------------------------------------------
@@ -22,81 +21,72 @@ ScriptEvents * g_pInstance = NULL;
 /**
  *	This method calls the function associated with this element.
  */
-PyObject * ScriptEventList::Element::call( PyObject * pArgs )
+PyObject* ScriptEventList::Element::call(PyObject* pArgs)
 {
-	Py_INCREF( pFunc_.get() );
-	Py_INCREF( pArgs );
+    Py_INCREF(pFunc_.get());
+    Py_INCREF(pArgs);
 
-	return Script::ask( pFunc_.get(), pArgs );
+    return Script::ask(pFunc_.get(), pArgs);
 }
-
 
 /**
  *	This method calls all of the listeners in this list.
  */
-bool ScriptEventList::triggerEvent( PyObject * pArgs, ScriptList resultsList )
+bool ScriptEventList::triggerEvent(PyObject* pArgs, ScriptList resultsList)
 {
-	bool isOkay = true;
-	ScriptEventList copy( *this );
+    bool            isOkay = true;
+    ScriptEventList copy(*this);
 
-	Container::iterator iter = copy.container_.begin();
+    Container::iterator iter = copy.container_.begin();
 
-	while (iter != copy.container_.end())
-	{
-		ScriptObject pResult = ScriptObject( iter->call( pArgs ),
-			ScriptObject::FROM_NEW_REFERENCE );
+    while (iter != copy.container_.end()) {
+        ScriptObject pResult =
+          ScriptObject(iter->call(pArgs), ScriptObject::FROM_NEW_REFERENCE);
 
-		isOkay &= (pResult != NULL);
+        isOkay &= (pResult != NULL);
 
-		if (resultsList)
-		{
-			resultsList.append( pResult ? pResult : ScriptObject::none() );
-		}
+        if (resultsList) {
+            resultsList.append(pResult ? pResult : ScriptObject::none());
+        }
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	return isOkay;
+    return isOkay;
 }
-
 
 /**
  *	This method adds a listener to this list.
  */
-bool ScriptEventList::add( PyObject * pListener, int level )
+bool ScriptEventList::add(PyObject* pListener, int level)
 {
-	Container::iterator iter = container_.begin();
+    Container::iterator iter = container_.begin();
 
-	while ((iter != container_.end()) && (iter->level() <= level))
-	{
-		++iter;
-	}
+    while ((iter != container_.end()) && (iter->level() <= level)) {
+        ++iter;
+    }
 
-	container_.insert( iter, Element( pListener, level ) );
+    container_.insert(iter, Element(pListener, level));
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method removes a listener from this list.
  */
-bool ScriptEventList::remove( PyObject * pListener )
+bool ScriptEventList::remove(PyObject* pListener)
 {
-	Container::iterator iter = container_.begin();
+    Container::iterator iter = container_.begin();
 
-	while (iter != container_.end())
-	{
-		if (iter->matches( pListener ))
-		{
-			container_.erase( iter );
-			return true;
-		}
-	}
+    while (iter != container_.end()) {
+        if (iter->matches(pListener)) {
+            container_.erase(iter);
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: ScriptEvents
@@ -107,157 +97,141 @@ bool ScriptEventList::remove( PyObject * pListener )
  */
 ScriptEvents::ScriptEvents()
 {
-	if (g_pInstance == NULL)
-	{
-		g_pInstance = this;
-	}
-	else
-	{
-		WARNING_MSG( "ScriptEvents::ScriptEvents: "
-				"Already have a ScriptEvents instance.\n" );
-	}
+    if (g_pInstance == NULL) {
+        g_pInstance = this;
+    } else {
+        WARNING_MSG("ScriptEvents::ScriptEvents: "
+                    "Already have a ScriptEvents instance.\n");
+    }
 }
-
 
 /**
  *	Destructor.
  */
 ScriptEvents::~ScriptEvents()
 {
-	if (g_pInstance == this)
-	{
-		g_pInstance = NULL;
-	}
-	else
-	{
-		WARNING_MSG( "ScriptEvents::~ScriptEvents: "
-				"Was not singleton instance.\n" );
-	}
+    if (g_pInstance == this) {
+        g_pInstance = NULL;
+    } else {
+        WARNING_MSG("ScriptEvents::~ScriptEvents: "
+                    "Was not singleton instance.\n");
+    }
 }
-
 
 /**
  *	This method creates a new event type. This must be called before
  *	addEventListener or triggerEvent is called for this event type.
  */
-void ScriptEvents::createEventType( const char * eventName )
+void ScriptEvents::createEventType(const char* eventName)
 {
-	container_[ eventName ] = ScriptEventList();
+    container_[eventName] = ScriptEventList();
 }
-
 
 /**
  *	This method clears the script events list.
  */
 void ScriptEvents::clear()
 {
-	container_.clear();
+    container_.clear();
 }
-
 
 /**
  *	This method calls the listeners associated with an event type.
  */
-bool ScriptEvents::triggerEvent( const char * eventName, PyObject * pArgs,
-		ScriptList resultsList )
+bool ScriptEvents::triggerEvent(const char* eventName,
+                                PyObject*   pArgs,
+                                ScriptList  resultsList)
 {
-	PyObjectPtr pArgsHolder( pArgs, PyObjectPtr::STEAL_REFERENCE );
+    PyObjectPtr pArgsHolder(pArgs, PyObjectPtr::STEAL_REFERENCE);
 
-	Container::iterator iter = container_.find( eventName );
+    Container::iterator iter = container_.find(eventName);
 
-	if (iter == container_.end())
-	{
-		ERROR_MSG( "ScriptEvents::triggerEvent: Invalid event type '%s'\n",
-				eventName );
+    if (iter == container_.end()) {
+        ERROR_MSG("ScriptEvents::triggerEvent: Invalid event type '%s'\n",
+                  eventName);
 
-		return false;
-	}
+        return false;
+    }
 
-	return iter->second.triggerEvent( pArgs, resultsList );
+    return iter->second.triggerEvent(pArgs, resultsList);
 }
-
 
 /**
  *	This is a simple convenience method that allows triggering two events with
  *	the same arguments.
  */
-bool ScriptEvents::triggerTwoEvents( const char * event1, const char * event2,
-		PyObject * pArgs )
+bool ScriptEvents::triggerTwoEvents(const char* event1,
+                                    const char* event2,
+                                    PyObject*   pArgs)
 {
-	Py_INCREF( pArgs );
+    Py_INCREF(pArgs);
 
-	bool result1 = this->triggerEvent( event1, pArgs );
-	bool result2 = this->triggerEvent( event2, pArgs );
+    bool result1 = this->triggerEvent(event1, pArgs);
+    bool result2 = this->triggerEvent(event2, pArgs);
 
-	return result1 && result2;
+    return result1 && result2;
 }
-
 
 /**
  *	This method associates a listener with an event type.
  */
-bool ScriptEvents::addEventListener( const char * eventName,
-		PyObject * pListener, int level )
+bool ScriptEvents::addEventListener(const char* eventName,
+                                    PyObject*   pListener,
+                                    int         level)
 {
-	MF_ASSERT( pListener );
-	MF_ASSERT( PyCallable_Check( pListener ) );
+    MF_ASSERT(pListener);
+    MF_ASSERT(PyCallable_Check(pListener));
 
-	Container::iterator iter = container_.find( eventName );
+    Container::iterator iter = container_.find(eventName);
 
-	if (iter == container_.end())
-	{
-		ERROR_MSG( "ScriptEvents::addEventListener: Invalid event type '%s'\n",
-				eventName );
-		return false;
-	}
+    if (iter == container_.end()) {
+        ERROR_MSG("ScriptEvents::addEventListener: Invalid event type '%s'\n",
+                  eventName);
+        return false;
+    }
 
-	return iter->second.add( pListener, level );
+    return iter->second.add(pListener, level);
 }
-
 
 /**
  *	This method removes a listener from an event type.
  */
-bool ScriptEvents::removeEventListener( const char * eventName,
-		PyObject * pListener )
+bool ScriptEvents::removeEventListener(const char* eventName,
+                                       PyObject*   pListener)
 {
-	Container::iterator iter = container_.find( eventName );
+    Container::iterator iter = container_.find(eventName);
 
-	if (iter == container_.end())
-	{
-		ERROR_MSG( "ScriptEvents::removeEventListener: "
-				"Invalid event type '%s'\n", eventName );
-		return false;
-	}
+    if (iter == container_.end()) {
+        ERROR_MSG("ScriptEvents::removeEventListener: "
+                  "Invalid event type '%s'\n",
+                  eventName);
+        return false;
+    }
 
-	return iter->second.remove( pListener );
+    return iter->second.remove(pListener);
 }
-
 
 /**
  *	This method retrieves all of the BwPersonality callbacks and adds them as
  *	event listeners.
  */
-void ScriptEvents::initFromPersonality( ScriptModule personality )
+void ScriptEvents::initFromPersonality(ScriptModule personality)
 {
-	MF_ASSERT( personality );
+    MF_ASSERT(personality);
 
-	Container::iterator iter = container_.begin();
+    Container::iterator iter = container_.begin();
 
-	while (iter != container_.end())
-	{
-		ScriptObject ret = personality.getAttribute( iter->first.c_str(),
-			ScriptErrorClear() );
+    while (iter != container_.end()) {
+        ScriptObject ret =
+          personality.getAttribute(iter->first.c_str(), ScriptErrorClear());
 
-		if (ret)
-		{
-			iter->second.add( ret.get(), 0 );
-		}
+        if (ret) {
+            iter->second.add(ret.get(), 0);
+        }
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 /*~ function BigWorld.addEventListener
  *	@components{ base, cell, db }
@@ -276,36 +250,35 @@ void ScriptEvents::initFromPersonality( ScriptModule personality )
  *	@param level An optional integer level. Listeners with a higher level are
  *		called later. The default value is 0.
  */
-bool addEventListener( BW::string eventName, PyObjectPtr pCallback, int level )
+bool addEventListener(BW::string eventName, PyObjectPtr pCallback, int level)
 {
-	if (!PyCallable_Check( pCallback.get() ))
-	{
-		PyErr_SetString( PyExc_TypeError, "Argument is not callable" );
+    if (!PyCallable_Check(pCallback.get())) {
+        PyErr_SetString(PyExc_TypeError, "Argument is not callable");
 
-		return false;
-	}
+        return false;
+    }
 
-	if (!g_pInstance)
-	{
-		PyErr_SetString( PyExc_SystemError, "ScriptEvents not initialised" );
-		return false;
-	}
+    if (!g_pInstance) {
+        PyErr_SetString(PyExc_SystemError, "ScriptEvents not initialised");
+        return false;
+    }
 
-	if (!g_pInstance->addEventListener( eventName.c_str(),
-				pCallback.get(), level ))
-	{
-		PyErr_Format( PyExc_ValueError,
-				"Invalid event type '%s'", eventName.c_str() );
-		return false;
-	}
+    if (!g_pInstance->addEventListener(
+          eventName.c_str(), pCallback.get(), level)) {
+        PyErr_Format(
+          PyExc_ValueError, "Invalid event type '%s'", eventName.c_str());
+        return false;
+    }
 
-	return true;
+    return true;
 }
-PY_AUTO_MODULE_FUNCTION_WITH_DOC( RETOK, addEventListener,
-		ARG( BW::string, ARG( PyObjectPtr, OPTARG( int, 0, END ) ) ), BigWorld,
-		"Associates an event listener with an event. The callback will be "
-		"called whenever the event is triggered." );
-
+PY_AUTO_MODULE_FUNCTION_WITH_DOC(
+  RETOK,
+  addEventListener,
+  ARG(BW::string, ARG(PyObjectPtr, OPTARG(int, 0, END))),
+  BigWorld,
+  "Associates an event listener with an event. The callback will be "
+  "called whenever the event is triggered.");
 
 /*~ function BigWorld.removeEventListener
  *	@components{ base, cell, db }
@@ -316,33 +289,33 @@ PY_AUTO_MODULE_FUNCTION_WITH_DOC( RETOK, addEventListener,
  *	@param eventName The name of the event that was listened for.
  *	@param callback The callable object that should be removed.
  */
-bool removeEventListener( BW::string eventName, PyObjectPtr pCallback )
+bool removeEventListener(BW::string eventName, PyObjectPtr pCallback)
 {
-	if (!PyCallable_Check( pCallback.get() ))
-	{
-		PyErr_SetString( PyExc_TypeError, "Argument is not callable" );
+    if (!PyCallable_Check(pCallback.get())) {
+        PyErr_SetString(PyExc_TypeError, "Argument is not callable");
 
-		return false;
-	}
+        return false;
+    }
 
-	if (!g_pInstance)
-	{
-		PyErr_SetString( PyExc_SystemError, "ScriptEvents not initialised" );
-		return false;
-	}
+    if (!g_pInstance) {
+        PyErr_SetString(PyExc_SystemError, "ScriptEvents not initialised");
+        return false;
+    }
 
-	if (!g_pInstance->removeEventListener( eventName.c_str(), pCallback.get() ))
-	{
-		PyErr_Format( PyExc_ValueError,
-				"Invalid event type '%s'", eventName.c_str() );
-		return false;
-	}
+    if (!g_pInstance->removeEventListener(eventName.c_str(), pCallback.get())) {
+        PyErr_Format(
+          PyExc_ValueError, "Invalid event type '%s'", eventName.c_str());
+        return false;
+    }
 
-	return true;
+    return true;
 }
-PY_AUTO_MODULE_FUNCTION_WITH_DOC( RETOK, removeEventListener,
-		ARG( BW::string, ARG( PyObjectPtr, END ) ), BigWorld,
-		"Removes an event listener previously added via addEventListener" );
+PY_AUTO_MODULE_FUNCTION_WITH_DOC(
+  RETOK,
+  removeEventListener,
+  ARG(BW::string, ARG(PyObjectPtr, END)),
+  BigWorld,
+  "Removes an event listener previously added via addEventListener");
 
 BW_END_NAMESPACE
 

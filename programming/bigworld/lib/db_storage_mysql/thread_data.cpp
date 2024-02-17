@@ -7,8 +7,7 @@
 
 #include "network/event_dispatcher.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "DBEngine", 0 )
-
+DECLARE_DEBUG_COMPONENT2("DBEngine", 0)
 
 BW_BEGIN_NAMESPACE
 
@@ -19,54 +18,48 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor.
  */
-MySqlThreadData::MySqlThreadData( const DBConfig::ConnectionInfo & connInfo ) :
-	pConnection_( NULL ),
-	connectionInfo_( connInfo )
+MySqlThreadData::MySqlThreadData(const DBConfig::ConnectionInfo& connInfo)
+  : pConnection_(NULL)
+  , connectionInfo_(connInfo)
 {
 }
-
 
 /**
  *	This method is called in the background thread when the thread has just
  *	started.
  */
-bool MySqlThreadData::onStart( BackgroundTaskThread & thread )
+bool MySqlThreadData::onStart(BackgroundTaskThread& thread)
 {
-	mysql_thread_init();
+    mysql_thread_init();
 
-	try
-	{
-		pConnection_ = new MySql( connectionInfo_ );
-	}
-	catch ( std::exception& e )
-	{
-		ERROR_MSG( "MySqlThreadData::onStart: "
-				"Failed to set up a mysql connection\n" );
-		return false;
-	}
-	
-	return true;
+    try {
+        pConnection_ = new MySql(connectionInfo_);
+    } catch (std::exception& e) {
+        ERROR_MSG("MySqlThreadData::onStart: "
+                  "Failed to set up a mysql connection\n");
+        return false;
+    }
+
+    return true;
 }
-
 
 /**
  *	This method is called in the background thread when the thread is just about
  *	to stop.
  */
-void MySqlThreadData::onEnd( BackgroundTaskThread & thread )
+void MySqlThreadData::onEnd(BackgroundTaskThread& thread)
 {
-	delete pConnection_;
-	pConnection_ = NULL;
-	mysql_thread_end();
+    delete pConnection_;
+    pConnection_ = NULL;
+    mysql_thread_end();
 }
-
 
 /**
  *	This method will attempt to reconnect this thread to the database.
  */
 bool MySqlThreadData::reconnect()
 {
-	return pConnection_ ? pConnection_->reconnectTo( connectionInfo_ ) : false;
+    return pConnection_ ? pConnection_->reconnectTo(connectionInfo_) : false;
 }
 
 BW_END_NAMESPACE

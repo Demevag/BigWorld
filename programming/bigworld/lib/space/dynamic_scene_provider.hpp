@@ -13,117 +13,115 @@
 #include <cstdmf/lookup_table.hpp>
 #include <math/loose_octree.hpp>
 
-namespace BW
-{
+namespace BW {
 
-class ObjectChangeSceneView;
+    class ObjectChangeSceneView;
 
-class DynamicSceneProvider : 
-	public SceneProvider,
-	public ITickSceneProvider,
-	public ICollisionSceneViewProvider,
-	public IIntersectSceneViewProvider,
-	public ITickSceneListener
-{
-public:
-	
-	DynamicSceneProvider();
+    class DynamicSceneProvider
+      : public SceneProvider
+      , public ITickSceneProvider
+      , public ICollisionSceneViewProvider
+      , public IIntersectSceneViewProvider
+      , public ITickSceneListener
+    {
+      public:
+        DynamicSceneProvider();
 
-	void setPartitionSizeHint( float nodeSizeHint );
-	void resizeScene( const AABB& sceneBB );
+        void setPartitionSizeHint(float nodeSizeHint);
+        void resizeScene(const AABB& sceneBB);
 
-	DynamicObjectHandle addObject( const SceneObject & obj, 
-		const Matrix & worldXForm, 
-		const AABB & collisionBB, 
-		const AABB & visibilityBB);
-	void removeObject( const DynamicObjectHandle & handle );
-	void updateObject( const DynamicObjectHandle & handle, 
-		const Matrix & worldXForm, 
-		const AABB & collisionBB,
-		const AABB & visibleBB );
+        DynamicObjectHandle addObject(const SceneObject& obj,
+                                      const Matrix&      worldXForm,
+                                      const AABB&        collisionBB,
+                                      const AABB&        visibilityBB);
+        void                removeObject(const DynamicObjectHandle& handle);
+        void                updateObject(const DynamicObjectHandle& handle,
+                                         const Matrix&              worldXForm,
+                                         const AABB&                collisionBB,
+                                         const AABB&                visibleBB);
 
-private:
-	// Scene view interfaces
-	virtual void * getView( 
-		const SceneTypeSystem::RuntimeTypeID & sceneInterfaceTypeID );
-	virtual void onSetScene( Scene* pOldScene, Scene* pNewScene );
+      private:
+        // Scene view interfaces
+        virtual void* getView(
+          const SceneTypeSystem::RuntimeTypeID& sceneInterfaceTypeID);
+        virtual void onSetScene(Scene* pOldScene, Scene* pNewScene);
 
-	virtual void tick( float dTime );
-	virtual void updateAnimations( float dTime );
-	virtual void onPreTick();
-	virtual void onPostTick();
-	
-	virtual bool collide( const Vector3 & source,
-		const Vector3 & extent,
-		const SweepParams& sp,
-		CollisionState & cs ) const;
+        virtual void tick(float dTime);
+        virtual void updateAnimations(float dTime);
+        virtual void onPreTick();
+        virtual void onPostTick();
 
-	virtual bool collide( const WorldTriangle & source,
-		const Vector3 & extent,
-		const SweepParams& sp,
-		CollisionState & cs ) const;
+        virtual bool collide(const Vector3&     source,
+                             const Vector3&     extent,
+                             const SweepParams& sp,
+                             CollisionState&    cs) const;
 
-	virtual size_t intersect( const SceneIntersectContext& context, 
-		const ConvexHull & hull, 
-		IntersectionSet & intersection) const;
+        virtual bool collide(const WorldTriangle& source,
+                             const Vector3&       extent,
+                             const SweepParams&   sp,
+                             CollisionState&      cs) const;
 
-private:
-	class Detail;
-	class DebugDraw;
+        virtual size_t intersect(const SceneIntersectContext& context,
+                                 const ConvexHull&            hull,
+                                 IntersectionSet& intersection) const;
 
-	DynamicObjectHandle insertObject_internal( const SceneObject & object,
-		const Matrix & worldXform, 
-		const AABB & collisionBB, 
-		const AABB & visibilityBB);
-	void removeObject_internal( const DynamicObjectHandle & handle );
-	void updateObject_internal( const DynamicObjectHandle & handle, 
-		const Matrix & worldXForm, 
-		const AABB & collisionBB,
-		const AABB & visibleBB );
+      private:
+        class Detail;
+        class DebugDraw;
 
-	typedef DynamicLooseOctree Octree;
-	typedef BW::vector<DynamicObjectHandle> OctreeNodeContents;
-	typedef BW::LookUpTable< OctreeNodeContents > OctreeContents; 
+        DynamicObjectHandle insertObject_internal(const SceneObject& object,
+                                                  const Matrix&      worldXform,
+                                                  const AABB& collisionBB,
+                                                  const AABB& visibilityBB);
+        void removeObject_internal(const DynamicObjectHandle& handle);
+        void updateObject_internal(const DynamicObjectHandle& handle,
+                                   const Matrix&              worldXForm,
+                                   const AABB&                collisionBB,
+                                   const AABB&                visibleBB);
 
-	struct DynamicObjectStorageInfo
-	{
-		Octree::NodeIndex collisionNode_;
-		Octree::NodeIndex visibilityNode_;
-	};
+        typedef DynamicLooseOctree                  Octree;
+        typedef BW::vector<DynamicObjectHandle>     OctreeNodeContents;
+        typedef BW::LookUpTable<OctreeNodeContents> OctreeContents;
 
-	typedef BW::vector<SceneObject> SceneObjectCollection;
-	typedef BW::vector<DynamicObjectHandle> ObjectHandleCollection;
-	SceneObjectCollection objects_;
-	ObjectHandleCollection objectHandles_;
+        struct DynamicObjectStorageInfo
+        {
+            Octree::NodeIndex collisionNode_;
+            Octree::NodeIndex visibilityNode_;
+        };
 
-	typedef HandleTable< DynamicObjectHandle > DynamicObjectHandlePool;
-	typedef LookUpTable<AABB> BoundingBoxCollection;
-	typedef LookUpTable<size_t> SceneObjectLookup;
-	typedef LookUpTable<Matrix> TransformCollection;
-	typedef LookUpTable<DynamicObjectStorageInfo> DynamicObjectTable;
-	typedef LookUpTable<uint8> DirtyObjectTable;
+        typedef BW::vector<SceneObject>         SceneObjectCollection;
+        typedef BW::vector<DynamicObjectHandle> ObjectHandleCollection;
+        SceneObjectCollection                   objects_;
+        ObjectHandleCollection                  objectHandles_;
 
-	DynamicObjectHandlePool dynamicObjectHandles_;
-	SceneObjectLookup objectLookup_;
-	BoundingBoxCollection objectCollisionBBs_;
-	BoundingBoxCollection objectVisibilityBBs_;
-	TransformCollection objectWorldXform_;
-	DynamicObjectTable objectStorageInfo_;
-	
-	BoundingBoxCollection latestObjectCollisionBBs_;
-	BoundingBoxCollection latestObjectVisibilityBBs_;
-	TransformCollection latestObjectWorldXform_;
-	DirtyObjectTable objectDirtyFlags_;
+        typedef HandleTable<DynamicObjectHandle>      DynamicObjectHandlePool;
+        typedef LookUpTable<AABB>                     BoundingBoxCollection;
+        typedef LookUpTable<size_t>                   SceneObjectLookup;
+        typedef LookUpTable<Matrix>                   TransformCollection;
+        typedef LookUpTable<DynamicObjectStorageInfo> DynamicObjectTable;
+        typedef LookUpTable<uint8>                    DirtyObjectTable;
 
-	Octree collisionTree_;
-	OctreeContents collisionTreeContents_;
-	Octree visibilityTree_;
-	OctreeContents visibilityTreeContents_;
+        DynamicObjectHandlePool dynamicObjectHandles_;
+        SceneObjectLookup       objectLookup_;
+        BoundingBoxCollection   objectCollisionBBs_;
+        BoundingBoxCollection   objectVisibilityBBs_;
+        TransformCollection     objectWorldXform_;
+        DynamicObjectTable      objectStorageInfo_;
 
-	ObjectChangeSceneView* pObjectChangeView_;
-	uint32 numDirtyObjects_;
-	float partitionSizeHint_;
-};
+        BoundingBoxCollection latestObjectCollisionBBs_;
+        BoundingBoxCollection latestObjectVisibilityBBs_;
+        TransformCollection   latestObjectWorldXform_;
+        DirtyObjectTable      objectDirtyFlags_;
+
+        Octree         collisionTree_;
+        OctreeContents collisionTreeContents_;
+        Octree         visibilityTree_;
+        OctreeContents visibilityTreeContents_;
+
+        ObjectChangeSceneView* pObjectChangeView_;
+        uint32                 numDirtyObjects_;
+        float                  partitionSizeHint_;
+    };
 
 } // namespace BW
 

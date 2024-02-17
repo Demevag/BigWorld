@@ -3,7 +3,6 @@
 
 #include "base_acceleration_controller.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -13,22 +12,22 @@ BW_BEGIN_NAMESPACE
  */
 class AccelerateAlongPathController : public BaseAccelerationController
 {
-	DECLARE_CONTROLLER_TYPE( AccelerateAlongPathController )
+    DECLARE_CONTROLLER_TYPE(AccelerateAlongPathController)
 
-public:
-	AccelerateAlongPathController();
-	AccelerateAlongPathController(	BW::vector< Position3D > & waypoints,
-									float acceleration,
-									float maxSpeed,
-									Facing facing );
+  public:
+    AccelerateAlongPathController();
+    AccelerateAlongPathController(BW::vector<Position3D>& waypoints,
+                                  float                   acceleration,
+                                  float                   maxSpeed,
+                                  Facing                  facing);
 
-	virtual void		writeRealToStream( BinaryOStream & stream );
-	virtual bool		readRealFromStream( BinaryIStream & stream );
-	void				update();
+    virtual void writeRealToStream(BinaryOStream& stream);
+    virtual bool readRealFromStream(BinaryIStream& stream);
+    void         update();
 
-private:
-	BW::vector< Position3D >	waypoints_;
-	uint						progress_;
+  private:
+    BW::vector<Position3D> waypoints_;
+    uint                   progress_;
 };
 
 BW_END_NAMESPACE

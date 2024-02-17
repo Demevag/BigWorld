@@ -2,13 +2,13 @@
 
 BW_USE_NAMESPACE
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
-	BW_SYSTEMSTAGE_MAIN();
-	Allocator::setReportOnExit( true );
-	Allocator::setCrashOnLeak( true );
+    BW_SYSTEMSTAGE_MAIN();
+    Allocator::setReportOnExit(true);
+    Allocator::setCrashOnLeak(true);
 
-	return BWUnitTest::runTest( "loginapp", argc, argv );
+    return BWUnitTest::runTest("loginapp", argc, argv);
 }
 
 // main.cpp

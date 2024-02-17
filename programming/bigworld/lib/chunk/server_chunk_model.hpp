@@ -15,36 +15,35 @@ class SuperModel;
  */
 class ServerChunkModel : public ChunkItem
 {
-	DECLARE_CHUNK_ITEM( ServerChunkModel )
-	DECLARE_CHUNK_ITEM_ALIAS( ServerChunkModel, shell )
+    DECLARE_CHUNK_ITEM(ServerChunkModel)
+    DECLARE_CHUNK_ITEM_ALIAS(ServerChunkModel, shell)
 
-public:
-	ServerChunkModel();
-	~ServerChunkModel();
-	BoundingBox localBB() const;
+  public:
+    ServerChunkModel();
+    ~ServerChunkModel();
+    BoundingBox localBB() const;
 
-	static const BW::string & getSectionName();
+    static const BW::string& getSectionName();
 
-	bool load( DataSectionPtr pSection,BW::string* pErrorString = NULL );
+    bool load(DataSectionPtr pSection, BW::string* pErrorString = NULL);
 
-	void transform( Matrix newTransform ) { transform_ = newTransform; }
-	const Matrix & transform() const { return transform_; }
+    void          transform(Matrix newTransform) { transform_ = newTransform; }
+    const Matrix& transform() const { return transform_; }
 
-	SuperModel * getSuperModel() { return pSuperModel_; }
+    SuperModel* getSuperModel() { return pSuperModel_; }
 
-protected:
-	virtual void toss( Chunk * pChunk );
-	virtual const char * label() const;
+  protected:
+    virtual void        toss(Chunk* pChunk);
+    virtual const char* label() const;
 
-protected:
-	SuperModel *				pSuperModel_;
-	BW::string					label_;
-	Matrix						transform_;
+  protected:
+    SuperModel* pSuperModel_;
+    BW::string  label_;
+    Matrix      transform_;
 
-	// virtual void lend( Chunk * pLender );
+    // virtual void lend( Chunk * pLender );
 };
 
 BW_END_NAMESPACE
 
 #endif // SERVER_CHUNK_MODEL_HPP
-

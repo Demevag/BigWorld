@@ -3,8 +3,8 @@
  *
  *	The ParticleEditor Module is a Python module that provides an interface to
  *	the various information about the particles(s) loaded into ParticleEditor.
- *	It also provides an interface to change and edit particle-specific information
- *	and the various ParticleEditor preferences.
+ *	It also provides an interface to change and edit particle-specific
+ *information and the various ParticleEditor preferences.
  */
 #include "pch.hpp"
 #include "particle_editor.hpp"
@@ -66,55 +66,56 @@
 
 #include "tools/editor_shared/mfc/menu_helper.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "ParticleEditor", 0 )
+DECLARE_DEBUG_COMPONENT2("ParticleEditor", 0)
 
 BW_BEGIN_NAMESPACE
 
-DECLARE_WATCHER_DATA( NULL )
-DECLARE_COPY_STACK_INFO( false )
+DECLARE_WATCHER_DATA(NULL)
+DECLARE_COPY_STACK_INFO(false)
 DEFINE_CREATE_EDITOR_PROPERTY_STUB
 
-static AutoConfigString s_LanguageFile( "system/language" );
+static AutoConfigString s_LanguageFile("system/language");
 
-namespace
-{
+namespace {
     // A helper class that allows display of a html dialog for the shortcut
     // information.
-    class ShortcutsDlg: public CDHtmlDialog
+    class ShortcutsDlg : public CDHtmlDialog
     {
-    public:
-	    ShortcutsDlg( int ID ): CDHtmlDialog( ID ) {}
+      public:
+        ShortcutsDlg(int ID)
+          : CDHtmlDialog(ID)
+        {
+        }
 
-	    BOOL ShortcutsDlg::OnInitDialog() 
-	    {
-			BW_GUARD;
+        BOOL ShortcutsDlg::OnInitDialog()
+        {
+            BW_GUARD;
 
-		    BW::string shortcutsHtml = Options::getOptionString(
-			    "help/shortcutsHtml",
-			    "resources/html/shortcuts.html");
+            BW::string shortcutsHtml = Options::getOptionString(
+              "help/shortcutsHtml", "resources/html/shortcuts.html");
 
-			shortcutsHtml = localiseFileName( shortcutsHtml );
+            shortcutsHtml = localiseFileName(shortcutsHtml);
 
-		    BW::string shortcutsUrl = BWResource::resolveFilename( shortcutsHtml );
-		    CDHtmlDialog::OnInitDialog();
-		    Navigate( bw_utf8tow( shortcutsUrl ).c_str() );
-		    return TRUE; 
-	    }
+            BW::string shortcutsUrl =
+              BWResource::resolveFilename(shortcutsHtml);
+            CDHtmlDialog::OnInitDialog();
+            Navigate(bw_utf8tow(shortcutsUrl).c_str());
+            return TRUE;
+        }
 
         /*virtual*/ void OnCancel()
         {
-			BW_GUARD;
+            BW_GUARD;
 
             DestroyWindow();
             s_instance = NULL;
         }
 
-        static ShortcutsDlg *instance()
+        static ShortcutsDlg* instance()
         {
-			BW_GUARD;
+            BW_GUARD;
 
-            if (s_instance == NULL)
-            {
+            if (s_instance == NULL) {
                 s_instance = new ShortcutsDlg(IDD_KEY_CUTS);
                 s_instance->Create(IDD_KEY_CUTS);
             }
@@ -123,17 +124,17 @@ namespace
 
         static void cleanup()
         {
-			BW_GUARD;
+            BW_GUARD;
 
             if (s_instance != NULL)
                 s_instance->OnCancel();
         }
 
-    private:
-        static ShortcutsDlg    *s_instance;
+      private:
+        static ShortcutsDlg* s_instance;
     };
 
-    ShortcutsDlg *ShortcutsDlg::s_instance = NULL;
+    ShortcutsDlg* ShortcutsDlg::s_instance = NULL;
 }
 
 // Make sure that these items are linked in:
@@ -149,115 +150,108 @@ ParticleEditorApp theApp;
 BEGIN_MESSAGE_MAP(ParticleEditorApp, CWinApp)
 END_MESSAGE_MAP()
 
-/*static*/ ParticleEditorApp *ParticleEditorApp::s_instance = NULL;
+/*static*/ ParticleEditorApp* ParticleEditorApp::s_instance = NULL;
 
-ParticleEditorApp::ParticleEditorApp() :
-	m_appShell(NULL),
-	m_peApp(NULL),
-	mfApp_( NULL ),
-	m_desiredFrameRate(60.0f),
-	m_state(PE_PLAYING)
+ParticleEditorApp::ParticleEditorApp()
+  : m_appShell(NULL)
+  , m_peApp(NULL)
+  , mfApp_(NULL)
+  , m_desiredFrameRate(60.0f)
+  , m_state(PE_PLAYING)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     ASSERT(s_instance == NULL);
     s_instance = this;
 
-	MsgHandler::instance();  // Init messages early
+    MsgHandler::instance(); // Init messages early
 }
 
 ParticleEditorApp::~ParticleEditorApp()
 {
-	BW_GUARD;
+    BW_GUARD;
 
     ASSERT(s_instance != NULL);
-	s_instance = NULL;
+    s_instance = NULL;
 }
 
-namespace
+namespace {
+    wchar_t* s_lpCmdLine = NULL;
+
+}
+
+bool ParticleEditorApp::InitialiseMF(BW::string& openFile)
 {
-	wchar_t * s_lpCmdLine = NULL;
+    BW_GUARD;
 
+    // parse command line
+    const int MAX_ARGS = 20;
+    char*     argv[MAX_ARGS];
+    int       argc = 0;
+
+    char cmdline[32768];
+    bw_wtoutf8(s_lpCmdLine, wcslen(s_lpCmdLine), cmdline, ARRAY_SIZE(cmdline));
+    char* str = cmdline;
+
+    while (char* token = StringUtils::retrieveCmdTokenT(str)) {
+        if (argc >= MAX_ARGS) {
+            ERROR_MSG("ParticleEditor::InitialiseMF: Too many arguments!!\n");
+            return FALSE;
+        }
+        if (argc &&
+            (!strcmp(argv[argc - 1], "-o") || !strcmp(argv[argc - 1], "-O"))) {
+            openFile = BW::string(token);
+        }
+        argv[argc++] = token;
+    }
+
+    return BWResource::init(argc, (const char**)argv) &&
+           Options::init(argc, argv, L"particleeditor.options");
 }
-
-bool ParticleEditorApp::InitialiseMF( BW::string &openFile )
-{
-	BW_GUARD;
-
-	// parse command line
-	const int MAX_ARGS = 20;
-	char * argv[ MAX_ARGS ];
-	int argc = 0;
-
-	char cmdline [32768];
-	bw_wtoutf8( s_lpCmdLine, wcslen( s_lpCmdLine ), cmdline, ARRAY_SIZE( cmdline ) );
-	char * str = cmdline;
-
-	while (char * token = StringUtils::retrieveCmdTokenT( str ))
-	{
-		if (argc >= MAX_ARGS)
-		{
-			ERROR_MSG( "ParticleEditor::InitialiseMF: Too many arguments!!\n" );
-			return FALSE;
-		}
-		if (argc && (!strcmp( argv[ argc-1 ], "-o" ) || !strcmp( argv[ argc-1 ], "-O" )))
-		{
-			openFile = BW::string( token );
-		}
-		argv[argc++] = token;
-	}
-	
-	return BWResource::init( argc, (const char **)argv ) &&
-		Options::init( argc, argv, L"particleeditor.options" );
-}
-
 
 BOOL ParticleEditorApp::InitInstance()
 {
-	BW::Allocator::setSystemStage( BW::Allocator::SS_MAIN );
-	BOOL result = CallWithExceptionFilter( this, &ParticleEditorApp::InternalInitInstance );
+    BW::Allocator::setSystemStage(BW::Allocator::SS_MAIN);
+    BOOL result =
+      CallWithExceptionFilter(this, &ParticleEditorApp::InternalInitInstance);
 
-	if (!result)
-	{
-		ERROR_MSG( "ParticleEditor failed to initialise itself correctly\n" );
+    if (!result) {
+        ERROR_MSG("ParticleEditor failed to initialise itself correctly\n");
 
-		if (!CStdMf::checkUnattended())
-		{
-			MessageBox(
-				NULL,
-				L"ParticleEditor failed to initialise itself correctly.\n\
+        if (!CStdMf::checkUnattended()) {
+            MessageBox(
+              NULL,
+              L"ParticleEditor failed to initialise itself correctly.\n\
 Please check the debug log for detailed information.",
-				 L"ParticleEditor",
-				 MB_OK );
-		}
-	}
+              L"ParticleEditor",
+              MB_OK);
+        }
+    }
 
-	return result;
+    return result;
 }
-
 
 int ParticleEditorApp::ExitInstance()
 {
-	BOOL result = CallWithExceptionFilter( this, &ParticleEditorApp::InternalExitInstance );
-	BW::Allocator::setSystemStage( BW::Allocator::SS_POST_MAIN );
-	return result;
+    BOOL result =
+      CallWithExceptionFilter(this, &ParticleEditorApp::InternalExitInstance);
+    BW::Allocator::setSystemStage(BW::Allocator::SS_POST_MAIN);
+    return result;
 }
-
 
 int ParticleEditorApp::Run()
 {
-	return CallWithExceptionFilter( this, &ParticleEditorApp::InternalRun );
+    return CallWithExceptionFilter(this, &ParticleEditorApp::InternalRun);
 }
-
 
 // ParticleEditorApp initialisation
 BOOL ParticleEditorApp::InternalInitInstance()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	Name::init();
+    Name::init();
 
-	waitForRestarting();
+    waitForRestarting();
 
     // InitCommonControls() is required on Windows XP if an application
     // manifest specifies use of ComCtl32.dll version 6 or later to enable
@@ -266,15 +260,14 @@ BOOL ParticleEditorApp::InternalInitInstance()
 
     CWinApp::InitInstance();
 
-	s_lpCmdLine = new wchar_t[ wcslen( m_lpCmdLine ) + 1];
-	wcscpy( s_lpCmdLine, m_lpCmdLine );
+    s_lpCmdLine = new wchar_t[wcslen(m_lpCmdLine) + 1];
+    wcscpy(s_lpCmdLine, m_lpCmdLine);
 
     // Get the command line before ParseCommandLine has a go at it.
     BW::wstring commandLine = m_lpCmdLine;
 
     // Initialise OLE libraries
-    if (!AfxOleInit())
-    {
+    if (!AfxOleInit()) {
         AfxMessageBox(IDP_OLE_INIT_FAILED);
         return FALSE;
     }
@@ -287,73 +280,83 @@ BOOL ParticleEditorApp::InternalInitInstance()
     // TODO: You should modify this string to be something appropriate
     // such as the name of your company or organization
     SetRegistryKey(_T("Local AppWizard-Generated Applications"));
-    LoadStdProfileSettings(4);  // Load standard INI file options (including MRU)
+    LoadStdProfileSettings(4); // Load standard INI file options (including MRU)
 
 #ifdef USE_MEMHOOK
-	// Need to disable custom allocation so MFC doesn't get confused on exit
-	// trying to delete the doc template created classes below.
-	BW::Memhook::AllocFuncs sysAllocFuncs = { ::malloc, ::free, ::_aligned_malloc, ::_aligned_free, ::realloc, ::_msize };
-	BW::Memhook::AllocFuncs bwAllocFuncs= BW::Memhook::allocFuncs();
-	BW::Memhook::allocFuncs( sysAllocFuncs );
+    // Need to disable custom allocation so MFC doesn't get confused on exit
+    // trying to delete the doc template created classes below.
+    BW::Memhook::AllocFuncs sysAllocFuncs = {
+        ::malloc,        ::free,    ::_aligned_malloc,
+        ::_aligned_free, ::realloc, ::_msize
+    };
+    BW::Memhook::AllocFuncs bwAllocFuncs = BW::Memhook::allocFuncs();
+    BW::Memhook::allocFuncs(sysAllocFuncs);
 #endif
 
     // Register the application's document templates.  Document templates
     //  serve as the connection between documents, frame windows and views
     CSingleDocTemplate* pDocTemplate;
-    pDocTemplate = new CSingleDocTemplate(
-        IDR_MAINFRAME,
-        RUNTIME_CLASS(ParticleEditorDoc),
-        RUNTIME_CLASS(MainFrame),       // main SDI frame window
-        RUNTIME_CLASS(ParticleEditorView));
+    pDocTemplate =
+      new CSingleDocTemplate(IDR_MAINFRAME,
+                             RUNTIME_CLASS(ParticleEditorDoc),
+                             RUNTIME_CLASS(MainFrame), // main SDI frame window
+                             RUNTIME_CLASS(ParticleEditorView));
     AddDocTemplate(pDocTemplate);
 
 #ifdef USE_MEMHOOK
-	// Re-enabling custom allocation
-	BW::Memhook::allocFuncs( bwAllocFuncs );
+    // Re-enabling custom allocation
+    BW::Memhook::allocFuncs(bwAllocFuncs);
 #endif
 
     // Initialise MF things
-	BW::string openFile;
+    BW::string openFile;
     if (!InitialiseMF(openFile))
         return 0;
 
-	// initialise language provider
-	if( !s_LanguageFile.value().empty() )
-		StringProvider::instance().load( BWResource::openSection( s_LanguageFile ) );
-	BW::vector<DataSectionPtr> languages;
-	Options::pRoot()->openSections( "language", languages );
-	if (!languages.empty())
-	{
-		for( BW::vector<DataSectionPtr>::iterator iter = languages.begin(); iter != languages.end(); ++iter )
-			if( !(*iter)->asString().empty() )
-				StringProvider::instance().load( BWResource::openSection( (*iter)->asString() ) );
-	}
-	else
-	{
-		// Force English:
-		StringProvider::instance().load( BWResource::openSection("helpers/languages/particleeditor_gui_en.xml"));
-		StringProvider::instance().load( BWResource::openSection("helpers/languages/particleeditor_rc_en.xml" ));
-		StringProvider::instance().load( BWResource::openSection("helpers/languages/files_en.xml"             ));
-	}
+    // initialise language provider
+    if (!s_LanguageFile.value().empty())
+        StringProvider::instance().load(
+          BWResource::openSection(s_LanguageFile));
+    BW::vector<DataSectionPtr> languages;
+    Options::pRoot()->openSections("language", languages);
+    if (!languages.empty()) {
+        for (BW::vector<DataSectionPtr>::iterator iter = languages.begin();
+             iter != languages.end();
+             ++iter)
+            if (!(*iter)->asString().empty())
+                StringProvider::instance().load(
+                  BWResource::openSection((*iter)->asString()));
+    } else {
+        // Force English:
+        StringProvider::instance().load(BWResource::openSection(
+          "helpers/languages/particleeditor_gui_en.xml"));
+        StringProvider::instance().load(BWResource::openSection(
+          "helpers/languages/particleeditor_rc_en.xml"));
+        StringProvider::instance().load(
+          BWResource::openSection("helpers/languages/files_en.xml"));
+    }
 
-	BW::string currentLanguage = Options::getOptionString( "currentLanguage", "" );
-	BW::string currentCountry  = Options::getOptionString( "currentCountry", "" );
-	if ( currentLanguage != "" )
-		StringProvider::instance().setLanguages( bw_utf8tow( currentLanguage ), bw_utf8tow( currentCountry  ) );
-	else
-		StringProvider::instance().setLanguage();
-	
-	WindowTextNotifier::instance();
-    
+    BW::string currentLanguage =
+      Options::getOptionString("currentLanguage", "");
+    BW::string currentCountry = Options::getOptionString("currentCountry", "");
+    if (currentLanguage != "")
+        StringProvider::instance().setLanguages(bw_utf8tow(currentLanguage),
+                                                bw_utf8tow(currentCountry));
+    else
+        StringProvider::instance().setLanguage();
+
+    WindowTextNotifier::instance();
+
     // Parse command line for standard shell commands, DDE, file open
-	MFCommandLineInfo cmdInfo;
+    MFCommandLineInfo cmdInfo;
     ParseCommandLine(cmdInfo);
 
     // Dispatch commands specified on the command line.  Will return FALSE if
-    // app was launcAhed with /RegServer, /Register, /Unregserver or /Unregister.
-    if (!ProcessShellCommand(cmdInfo))
-    {
-        ERROR_MSG("ParticleEditorApp::InitInstance - ProcessShellCommand failed\n");
+    // app was launcAhed with /RegServer, /Register, /Unregserver or
+    // /Unregister.
+    if (!ProcessShellCommand(cmdInfo)) {
+        ERROR_MSG(
+          "ParticleEditorApp::InitInstance - ProcessShellCommand failed\n");
         return FALSE;
     }
 
@@ -363,252 +366,234 @@ BOOL ParticleEditorApp::InternalInitInstance()
     // call DragAcceptFiles only if there's a suffix
     //  In an SDI app, this should occur after ProcessShellCommand
 
-    MainFrame *mainFrame = (MainFrame *)(m_pMainWnd);
-    CView     *mainView  = mainFrame->GetActiveView();
+    MainFrame* mainFrame = (MainFrame*)(m_pMainWnd);
+    CView*     mainView  = mainFrame->GetActiveView();
 
-	mainFrame->UpdateTitle();
+    mainFrame->UpdateTitle();
 
     // create the app and module
     ASSERT(!mfApp_);
     mfApp_ = new App;
 
     ASSERT(!m_appShell);
-    m_appShell = new PeShell;    
+    m_appShell = new PeShell;
 
-    
     HINSTANCE hInst = AfxGetInstanceHandle();
-    if 
-    (
-        !mfApp_->init
-        ( 
-            hInst, 
-            mainFrame->m_hWnd, 
-            mainView->m_hWnd, 
-			NULL,
-            PeShell::initApp 
-        )
-    )
-    {
-        ERROR_MSG( "ParticleEditorApp::InitInstance - init failed\n" );
+    if (!mfApp_->init(
+          hInst, mainFrame->m_hWnd, mainView->m_hWnd, NULL, PeShell::initApp)) {
+        ERROR_MSG("ParticleEditorApp::InitInstance - init failed\n");
         return FALSE;
     }
 
     m_peApp = new PeApp();
 
-	CooperativeMoo::init();
+    CooperativeMoo::init();
 
-	GUI::Manager::init();
+    GUI::Manager::init();
 
-	// Must do this after the panels are inited, they init GUI::Manager.
-	GUI::Manager::instance().pythonFunctor().defaultModule( "MenuUIAdapter" );
-	GUI::Manager::instance().optionFunctor().setOption(this);
-	DataSectionPtr section = BWResource::openSection("resources/data/gui.xml");
-	for (int i = 0; i < section->countChildren(); ++i)
-		GUI::Manager::instance().add(new GUI::Item(section->openChild(i)));
+    // Must do this after the panels are inited, they init GUI::Manager.
+    GUI::Manager::instance().pythonFunctor().defaultModule("MenuUIAdapter");
+    GUI::Manager::instance().optionFunctor().setOption(this);
+    DataSectionPtr section = BWResource::openSection("resources/data/gui.xml");
+    for (int i = 0; i < section->countChildren(); ++i)
+        GUI::Manager::instance().add(new GUI::Item(section->openChild(i)));
 
-	menuHelper_.reset( new GUI::MenuHelper( mainFrame->GetSafeHwnd() ) );
-	// Setup the main menu:
-	GUI::Manager::instance().add
-    (
-        new GUI::Menu("MainMenu", menuHelper_.get() ) 
-    );
+    menuHelper_.reset(new GUI::MenuHelper(mainFrame->GetSafeHwnd()));
+    // Setup the main menu:
+    GUI::Manager::instance().add(new GUI::Menu("MainMenu", menuHelper_.get()));
 
-	updateLanguageList();
+    updateLanguageList();
 
-	AfxGetMainWnd()->DrawMenuBar();
+    AfxGetMainWnd()->DrawMenuBar();
 
-	// Add the toolbar(s) using the BaseMainFrame helper method
-	mainFrame->createToolbars( "AppToolbars" );
+    // Add the toolbar(s) using the BaseMainFrame helper method
+    mainFrame->createToolbars("AppToolbars");
 
     // GUITABS Tearoff tabs system init and setup
-	PanelManager::init(mainFrame, mainView, L"particleeditor.layout");		
+    PanelManager::init(mainFrame, mainView, L"particleeditor.layout");
 
     // kick off the chunk loading
-	BgTaskManager::instance().init();
-	BgTaskManager::instance().initWatchers( "ParticleEditor" );
-	BgTaskManager::instance().startThreads( 1 );
+    BgTaskManager::instance().init();
+    BgTaskManager::instance().initWatchers("ParticleEditor");
+    BgTaskManager::instance().startThreads(1);
 
-	FileIOTaskManager::instance().init();
-	FileIOTaskManager::instance().initWatchers( "FileIO" );
-	FileIOTaskManager::instance().startThreads( 1 );
-	
-	/* Disable Umbra if it is enabled
-	 * This fixes mouse lag issues caused by the present thread allowing the cpu to 
-	 * get a few frames ahead of the GPU and then stalling for it to catch up
-	 * Note identical code is set in the Model Editor InitInstance code, please
-	 * update it if you update the code below.
-	 */
-	#if UMBRA_ENABLE
-	if (Options::getOptionInt( "render/useUmbra", 1) == 1)
-	{
-		WARNING_MSG( "Umbra is enabled in Particle Editor, It will now be disabled\n" );
-	}
-	Options::setOptionInt( "render/useUmbra", 0 );
-	ChunkManager::instance().umbra()->umbraEnabled( false );
-	#endif
+    FileIOTaskManager::instance().init();
+    FileIOTaskManager::instance().initWatchers("FileIO");
+    FileIOTaskManager::instance().startThreads(1);
 
-	// Load up particles into GUI
-	// If this isn't here, you have to click the window and wait for it to load
-	// all of the particles into the tree and it's very annoying
-	if ( !c_useScripting )
-	{
-	    MainFrame::instance()->InitialiseMetaSystemRegister();
-		MainFrame::instance()->UpdateGUI();
-	}
-    
-	/**
-	 * this loads the selected particle system passed in via the commandline.
-	 * This NEEDS to be done after the nodes are loaded as it uses them to
-	 * select the correct system.
-	 */
-	if ( !openFile.empty() )
-	{
-		openDirectory( BWResource::getFilePath( openFile ) );
-		update();
-		BW::StringRef psName = BWResource::getFilename( openFile );
-		psName = BWResource::removeExtension( psName );
-        bool ok =
-			((MainFrame*)AfxGetMainWnd())->SelectParticleSystem( psName.to_string() );
-        if (!ok)
-        {
+/* Disable Umbra if it is enabled
+ * This fixes mouse lag issues caused by the present thread allowing the cpu to
+ * get a few frames ahead of the GPU and then stalling for it to catch up
+ * Note identical code is set in the Model Editor InitInstance code, please
+ * update it if you update the code below.
+ */
+#if UMBRA_ENABLE
+    if (Options::getOptionInt("render/useUmbra", 1) == 1) {
+        WARNING_MSG(
+          "Umbra is enabled in Particle Editor, It will now be disabled\n");
+    }
+    Options::setOptionInt("render/useUmbra", 0);
+    ChunkManager::instance().umbra()->umbraEnabled(false);
+#endif
+
+    // Load up particles into GUI
+    // If this isn't here, you have to click the window and wait for it to load
+    // all of the particles into the tree and it's very annoying
+    if (!c_useScripting) {
+        MainFrame::instance()->InitialiseMetaSystemRegister();
+        MainFrame::instance()->UpdateGUI();
+    }
+
+    /**
+     * this loads the selected particle system passed in via the commandline.
+     * This NEEDS to be done after the nodes are loaded as it uses them to
+     * select the correct system.
+     */
+    if (!openFile.empty()) {
+        openDirectory(BWResource::getFilePath(openFile));
+        update();
+        BW::StringRef psName = BWResource::getFilename(openFile);
+        psName               = BWResource::removeExtension(psName);
+        bool ok              = ((MainFrame*)AfxGetMainWnd())
+                    ->SelectParticleSystem(psName.to_string());
+        if (!ok) {
             AfxMessageBox(Localise(L"RCS_IDS_COULDNTOPENFILE", openFile));
         }
     }
 
-	Automation::parseCommandLine( m_lpCmdLine );
+    Automation::parseCommandLine(m_lpCmdLine);
 
     return TRUE;
 }
 
-
-int ParticleEditorApp::InternalExitInstance() 
+int ParticleEditorApp::InternalExitInstance()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if ( mfApp_ )
-	{
-		ShortcutsDlg::cleanup();
+    if (mfApp_) {
+        ShortcutsDlg::cleanup();
 
-		GizmoManager::instance().removeAllGizmo();
-		while ( ToolManager::instance().tool() )
-		{
-			ToolManager::instance().popTool();
-		}
+        GizmoManager::instance().removeAllGizmo();
+        while (ToolManager::instance().tool()) {
+            ToolManager::instance().popTool();
+        }
 
-		MsgHandler::fini();
+        MsgHandler::fini();
 
-		PanelManager::fini();
+        PanelManager::fini();
 
-		//GeneralEditor::Editors none;
-		//GeneralEditor::currentEditors(none);
+        // GeneralEditor::Editors none;
+        // GeneralEditor::currentEditors(none);
 
-		mfApp_->fini();
-		delete mfApp_;
-		mfApp_ = NULL;
+        mfApp_->fini();
+        delete mfApp_;
+        mfApp_ = NULL;
 
-		delete m_peApp; 
-		m_peApp = NULL;
+        delete m_peApp;
+        m_peApp = NULL;
 
-		m_appShell->fini();
-		delete m_appShell; 
-		m_appShell = NULL;
+        m_appShell->fini();
+        delete m_appShell;
+        m_appShell = NULL;
 
-		GUI::Manager::fini();
-	
-		WindowTextNotifier::fini();	
-		Options::fini();
+        GUI::Manager::fini();
 
-		Name::fini();
-	}
+        WindowTextNotifier::fini();
+        Options::fini();
 
-	BWResource::fini();
-	DataSectionCensus::fini();
+        Name::fini();
+    }
 
-	delete [] s_lpCmdLine;
-	return CWinApp::ExitInstance();
+    BWResource::fini();
+    DataSectionCensus::fini();
+
+    delete[] s_lpCmdLine;
+    return CWinApp::ExitInstance();
 }
-
 
 int ParticleEditorApp::InternalRun()
 {
-	return CWinApp::Run();
+    return CWinApp::Run();
 }
-
 
 void ParticleEditorApp::updateLanguageList()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	GUI::ItemPtr languageList = GUI::Manager::instance()( "/MainMenu/Languages/LanguageList" );
-	if( languageList )
-	{
-		while( languageList->num() )
-			languageList->remove( 0 );
-		for( unsigned int i = 0; i < StringProvider::instance().languageNum(); ++i )
-		{
-			LanguagePtr l = StringProvider::instance().getLanguage( i );
-			BW::wstringstream wname, wdisplayName;
-			wname << L"language" << i;
-			wdisplayName << L'&' << l->getLanguageName();
-			BW::string name, displayName;
-			bw_wtoutf8( wname.str(), name );
-			bw_wtoutf8( wdisplayName.str(), displayName );
-			GUI::ItemPtr item = new GUI::Item( "CHILD", name, displayName,
-				"",	"", "", "setLanguage", "updateLanguage", "" );
-			item->set( "LanguageName", l->getIsoLangNameUTF8() );
-			item->set( "CountryName", l->getIsoCountryNameUTF8() );
-			languageList->add( item );
-		}
-	}
+    GUI::ItemPtr languageList =
+      GUI::Manager::instance()("/MainMenu/Languages/LanguageList");
+    if (languageList) {
+        while (languageList->num())
+            languageList->remove(0);
+        for (unsigned int i = 0; i < StringProvider::instance().languageNum();
+             ++i) {
+            LanguagePtr       l = StringProvider::instance().getLanguage(i);
+            BW::wstringstream wname, wdisplayName;
+            wname << L"language" << i;
+            wdisplayName << L'&' << l->getLanguageName();
+            BW::string name, displayName;
+            bw_wtoutf8(wname.str(), name);
+            bw_wtoutf8(wdisplayName.str(), displayName);
+            GUI::ItemPtr item = new GUI::Item("CHILD",
+                                              name,
+                                              displayName,
+                                              "",
+                                              "",
+                                              "",
+                                              "setLanguage",
+                                              "updateLanguage",
+                                              "");
+            item->set("LanguageName", l->getIsoLangNameUTF8());
+            item->set("CountryName", l->getIsoCountryNameUTF8());
+            languageList->add(item);
+        }
+    }
 }
 
 BOOL ParticleEditorApp::OnIdle(LONG lCount)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// The following two lines need to be uncommented for toolbar docking to
-	// work properly, and the application's toolbars have to inherit from
-	// GUI::CGUIToolBar
-	if ( CWinApp::OnIdle( lCount ) )
-		return TRUE; // give priority to windows GUI as MS says it should be.
+    // The following two lines need to be uncommented for toolbar docking to
+    // work properly, and the application's toolbars have to inherit from
+    // GUI::CGUIToolBar
+    if (CWinApp::OnIdle(lCount))
+        return TRUE; // give priority to windows GUI as MS says it should be.
 
-    HWND foreWindow = GetForegroundWindow();
-    CWnd *mainFrame = MainFrame::instance();
+    HWND  foreWindow = GetForegroundWindow();
+    CWnd* mainFrame  = MainFrame::instance();
 
-	bool isWindowActive =
-		foreWindow == mainFrame->m_hWnd || GetParent( foreWindow ) == mainFrame->m_hWnd;
+    bool isWindowActive = foreWindow == mainFrame->m_hWnd ||
+                          GetParent(foreWindow) == mainFrame->m_hWnd;
 
-
-	
-	// Window is inactive - pause
-	if ( !CooperativeMoo::canUseMoo( this, isWindowActive ) || !isWindowActive )
-    {
-		// If activate failed, because the app is minimised, there's not enough
-		// videomem to restore, or the app is in the background and other apps
-		// we need to cooperate with are running, we just try again later.
-		mfApp_->calculateFrameTime(); // Do this to effectively freeze time
+    // Window is inactive - pause
+    if (!CooperativeMoo::canUseMoo(this, isWindowActive) || !isWindowActive) {
+        // If activate failed, because the app is minimised, there's not enough
+        // videomem to restore, or the app is in the background and other apps
+        // we need to cooperate with are running, we just try again later.
+        mfApp_->calculateFrameTime(); // Do this to effectively freeze time
     }
-	// Window is active - update
-    else
-    {
-		// measure the update time
-		uint64 beforeTime = timestamp();
+    // Window is active - update
+    else {
+        // measure the update time
+        uint64 beforeTime = timestamp();
 
-		update();
+        update();
 
-		uint64 afterTime = timestamp();
-		float lastUpdateMilliseconds = (float) (((int64)(afterTime - beforeTime)) / stampsPerSecondD()) * 1000.f;
+        uint64 afterTime = timestamp();
+        float  lastUpdateMilliseconds =
+          (float)(((int64)(afterTime - beforeTime)) / stampsPerSecondD()) *
+          1000.f;
 
-        if (m_desiredFrameRate > 0)
-        {
+        if (m_desiredFrameRate > 0) {
             // limit the frame rate
-            const float desiredFrameTime = 1000.f/m_desiredFrameRate; // milliseconds
+            const float desiredFrameTime =
+              1000.f / m_desiredFrameRate; // milliseconds
             float lastFrameTime = PeModule::instance().lastTimeStep();
 
-            if (desiredFrameTime > lastUpdateMilliseconds)
-            {
+            if (desiredFrameTime > lastUpdateMilliseconds) {
                 float compensation = desiredFrameTime - lastUpdateMilliseconds;
-                compensation = std::min(compensation, 2000.f);
+                compensation       = std::min(compensation, 2000.f);
                 Sleep((int)compensation);
             }
             MainFrame::instance()->UpdateGUI();
@@ -618,34 +603,24 @@ BOOL ParticleEditorApp::OnIdle(LONG lCount)
     return TRUE;
 }
 
-
 void ParticleEditorApp::update()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-    if (!c_useScripting)
-    {
-        mfApp_->updateFrame();        
-    }
-    else
-    {
-        PyObject *pScript     = PyImport_ImportModule("pe_shell");
-        PyObject *pScriptDict = PyModule_GetDict(pScript);
-        PyObject *pUpdate     = PyDict_GetItemString(pScriptDict, "update");
-        if (pUpdate != NULL)
-        {
-            PyObject * pResult = PyObject_CallFunction(pUpdate, "");
-            if (pResult != NULL)
-            {
-                Py_DECREF( pResult );
-            }
-            else
-            {
+    if (!c_useScripting) {
+        mfApp_->updateFrame();
+    } else {
+        PyObject* pScript     = PyImport_ImportModule("pe_shell");
+        PyObject* pScriptDict = PyModule_GetDict(pScript);
+        PyObject* pUpdate     = PyDict_GetItemString(pScriptDict, "update");
+        if (pUpdate != NULL) {
+            PyObject* pResult = PyObject_CallFunction(pUpdate, "");
+            if (pResult != NULL) {
+                Py_DECREF(pResult);
+            } else {
                 PyErr_Print();
             }
-        }
-        else
-        {
+        } else {
             PyErr_Print();
         }
     }
@@ -656,14 +631,13 @@ void ParticleEditorApp::update()
  *
  *	This function forces ParticleEditor to update each of its modules.
  */
-PY_MODULE_STATIC_METHOD( ParticleEditorApp, update, ParticleEditor )
+PY_MODULE_STATIC_METHOD(ParticleEditorApp, update, ParticleEditor)
 
-PyObject * ParticleEditorApp::py_update( PyObject * args )
+PyObject* ParticleEditorApp::py_update(PyObject* args)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (ParticleEditorApp::instance().mfApp())
-    {
+    if (ParticleEditorApp::instance().mfApp()) {
         // update all of the modules
         ParticleEditorApp::instance().mfApp()->updateFrame();
     }
@@ -679,106 +653,94 @@ PyObject * ParticleEditorApp::py_update( PyObject * args )
  */
 PY_MODULE_STATIC_METHOD(ParticleEditorApp, particleSystem, ParticleEditor)
 
-PyObject *ParticleEditorApp::py_particleSystem(PyObject * args)
+PyObject* ParticleEditorApp::py_particleSystem(PyObject* args)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-    if (MainFrame::instance()->IsMetaParticleSystem())
-	{
-        return Script::getData( new PyMetaParticleSystem(MainFrame::instance()->GetMetaParticleSystem()));
-	}
+    if (MainFrame::instance()->IsMetaParticleSystem()) {
+        return Script::getData(new PyMetaParticleSystem(
+          MainFrame::instance()->GetMetaParticleSystem()));
+    }
 
-    if (MainFrame::instance()->IsCurrentParticleSystem())
-	{
-        return Script::getData( new PyParticleSystem(MainFrame::instance()->GetCurrentParticleSystem()));
-	}
+    if (MainFrame::instance()->IsCurrentParticleSystem()) {
+        return Script::getData(new PyParticleSystem(
+          MainFrame::instance()->GetCurrentParticleSystem()));
+    }
 
     Py_RETURN_NONE;
 }
 
 void ParticleEditorApp::OnDirectoryOpen()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-    DirDialog dlg; 
+    DirDialog dlg;
 
-    dlg.windowTitle_ = Localise(L"PARTICLEEDITOR/OPEN");
-    dlg.promptText_  = Localise(L"PARTICLEEDITOR/CHOOSE_PS_DIR");
+    dlg.windowTitle_       = Localise(L"PARTICLEEDITOR/OPEN");
+    dlg.promptText_        = Localise(L"PARTICLEEDITOR/CHOOSE_PS_DIR");
     dlg.fakeRootDirectory_ = dlg.basePath();
 
     // Set the start directory, check if exists:
-    dlg.startDirectory_ = dlg.basePath();
-	BW::wstring fullDirectory =
-        BWResource::resolveFilenameW
-        (
-            MainFrame::instance()->ParticlesDirectory().GetString()
-        );
+    dlg.startDirectory_       = dlg.basePath();
+    BW::wstring fullDirectory = BWResource::resolveFilenameW(
+      MainFrame::instance()->ParticlesDirectory().GetString());
     WIN32_FIND_DATA data;
-    HANDLE hFind;
-    wchar_t lastChar = fullDirectory.at(fullDirectory.length()-1);
-    if ( (lastChar != L'/') && (lastChar != L'\\') )
+    HANDLE          hFind;
+    wchar_t         lastChar = fullDirectory.at(fullDirectory.length() - 1);
+    if ((lastChar != L'/') && (lastChar != L'\\'))
         fullDirectory += L"/";
-    
+
     hFind = FindFirstFile((fullDirectory + L"*").c_str(), &data);
-    if (hFind != INVALID_HANDLE_VALUE)
-    {
-        dlg.startDirectory_ = 
-            BWResource::resolveFilenameW
-            (
-                MainFrame::instance()->ParticlesDirectory().GetString()
-            ).c_str();
+    if (hFind != INVALID_HANDLE_VALUE) {
+        dlg.startDirectory_ =
+          BWResource::resolveFilenameW(
+            MainFrame::instance()->ParticlesDirectory().GetString())
+            .c_str();
         FindClose(hFind);
     }
 
-    if (dlg.doBrowse(AfxGetApp()->m_pMainWnd)) 
-    {
-        openDirectory(bw_wtoutf8( dlg.userSelectedDirectory_.GetString() ));
+    if (dlg.doBrowse(AfxGetApp()->m_pMainWnd)) {
+        openDirectory(bw_wtoutf8(dlg.userSelectedDirectory_.GetString()));
     }
 }
 
-void
-ParticleEditorApp::setState(State state)
+void ParticleEditorApp::setState(State state)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-    MainFrame *mainFrame = MainFrame::instance();
-    switch (state)
-    {
-    case PE_PLAYING:
-		mfApp_->pause( false );
-		{
-			bool restart = m_state != PE_PAUSED;
-			if (m_state == PE_PLAYING)
-			{
-				// try and spawn an additional ps
-				size_t numAppendPS = mainFrame->numberAppendPS();
-				mainFrame->appendOneShotPS();
-				restart = numAppendPS == mainFrame->numberAppendPS();
-			}
-			if (restart)
-			{
-				if (mainFrame->IsMetaParticleSystem())
-				{
-					mainFrame->GetMetaParticleSystem()->clear(); 
-					mainFrame->GetMetaParticleSystem()->spawn(); 
-				}
-			}
-		}
-        break;
-    case PE_STOPPED:
-        mfApp_->pause( true );
-        if (mainFrame->IsMetaParticleSystem())
-		{
-			mainFrame->GetMetaParticleSystem()->clear();
-			mainFrame->GetMetaParticleSystem()->setFirstUpdate();
-			// remove flares when stopping particle editor
-			LensEffectManager::instance().clear();
-			mainFrame->clearAppendedPS();
-		}
-        break;
-    case PE_PAUSED:
-        mfApp_->pause( true );
-        break;
+    MainFrame* mainFrame = MainFrame::instance();
+    switch (state) {
+        case PE_PLAYING:
+            mfApp_->pause(false);
+            {
+                bool restart = m_state != PE_PAUSED;
+                if (m_state == PE_PLAYING) {
+                    // try and spawn an additional ps
+                    size_t numAppendPS = mainFrame->numberAppendPS();
+                    mainFrame->appendOneShotPS();
+                    restart = numAppendPS == mainFrame->numberAppendPS();
+                }
+                if (restart) {
+                    if (mainFrame->IsMetaParticleSystem()) {
+                        mainFrame->GetMetaParticleSystem()->clear();
+                        mainFrame->GetMetaParticleSystem()->spawn();
+                    }
+                }
+            }
+            break;
+        case PE_STOPPED:
+            mfApp_->pause(true);
+            if (mainFrame->IsMetaParticleSystem()) {
+                mainFrame->GetMetaParticleSystem()->clear();
+                mainFrame->GetMetaParticleSystem()->setFirstUpdate();
+                // remove flares when stopping particle editor
+                LensEffectManager::instance().clear();
+                mainFrame->clearAppendedPS();
+            }
+            break;
+        case PE_PAUSED:
+            mfApp_->pause(true);
+            break;
     }
     m_state = state;
 }
@@ -788,54 +750,43 @@ ParticleEditorApp::State ParticleEditorApp::getState() const
     return m_state;
 }
 
-
-
-
 void ParticleEditorApp::OnAppAbout()
 {
-	BW_GUARD;
+    BW_GUARD;
 
     CAboutDlg aboutDlg;
     aboutDlg.DoModal();
 }
 
-
 // App command to show the keyboard shortcuts
 void ParticleEditorApp::OnAppShortcuts()
 {
-	BW_GUARD;
+    BW_GUARD;
 
     ShortcutsDlg::instance()->ShowWindow(SW_SHOW);
 }
 
-void 
-ParticleEditorApp::openDirectory
-(
-    BW::string      const &dir_, 
-    bool        forceRefresh    /*= false*/
+void ParticleEditorApp::openDirectory(BW::string const& dir_,
+                                      bool              forceRefresh /*= false*/
 )
 {
-	BW_GUARD;
+    BW_GUARD;
 
     BW::string dir = BWResource::formatPath(dir_);
 
     BW::string relativeDirectory = BWResource::dissolveFilename(dir);
 
     // check if directory changed
-    if 
-    (
-        MainFrame::instance()->ParticlesDirectory() 
-        != 
-        CString(relativeDirectory.c_str())
-        ||
-        forceRefresh
-    )
-    {
+    if (MainFrame::instance()->ParticlesDirectory() !=
+          CString(relativeDirectory.c_str()) ||
+        forceRefresh) {
         MainFrame::instance()->PromptSave(MB_YESNO, true);
         // record the change
-        MainFrame::instance()->ParticlesDirectory(bw_utf8tow( relativeDirectory ).c_str());
-        ParticleEditorDoc::instance().SetTitle(bw_utf8tow( relativeDirectory ).c_str());
-        MainFrame::instance()->PotentiallyDirty( false );       
+        MainFrame::instance()->ParticlesDirectory(
+          bw_utf8tow(relativeDirectory).c_str());
+        ParticleEditorDoc::instance().SetTitle(
+          bw_utf8tow(relativeDirectory).c_str());
+        MainFrame::instance()->PotentiallyDirty(false);
         // tell the window
         MainFrame::instance()->InitialiseMetaSystemRegister();
     }
@@ -843,55 +794,57 @@ ParticleEditorApp::openDirectory
 
 void ParticleEditorApp::OnFileSaveParticleSystem()
 {
-	BW_GUARD;
+    BW_GUARD;
 
     MainFrame::instance()->ForceSave();
 }
 
 void ParticleEditorApp::OnViewShowSide()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-    bool vis = PanelManager::instance().isPanelVisible( ActionSelection::contentID );
+    bool vis =
+      PanelManager::instance().isPanelVisible(ActionSelection::contentID);
 
-	PanelManager::instance().showPanel( ActionSelection::contentID, !vis );
+    PanelManager::instance().showPanel(ActionSelection::contentID, !vis);
 }
 
 void ParticleEditorApp::OnViewShowUAL()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	bool vis = PanelManager::instance().isPanelVisible( UalDialog::contentID );
+    bool vis = PanelManager::instance().isPanelVisible(UalDialog::contentID);
 
-	PanelManager::instance().showPanel( UalDialog::contentID, !vis );
+    PanelManager::instance().showPanel(UalDialog::contentID, !vis);
 }
 
 void ParticleEditorApp::OnViewShowMsgs()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	bool vis = PanelManager::instance().isPanelVisible( PageMessages::contentID );
+    bool vis = PanelManager::instance().isPanelVisible(PageMessages::contentID);
 
-	PanelManager::instance().showPanel( PageMessages::contentID, !vis );
+    PanelManager::instance().showPanel(PageMessages::contentID, !vis);
 }
 
-/*virtual*/ BW::string ParticleEditorApp::get(BW::string const &key) const
+/*virtual*/ BW::string ParticleEditorApp::get(BW::string const& key) const
 {
-	BW_GUARD;
+    BW_GUARD;
 
     return Options::getOptionString(key);
 }
 
-/*virtual*/ bool ParticleEditorApp::exist(BW::string const &key) const
+/*virtual*/ bool ParticleEditorApp::exist(BW::string const& key) const
 {
-	BW_GUARD;
+    BW_GUARD;
 
     return Options::optionExists(key);
 }
 
-/*virtual*/ void ParticleEditorApp::set(BW::string const &key, BW::string const &value)
+/*virtual*/ void ParticleEditorApp::set(BW::string const& key,
+                                        BW::string const& value)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     return Options::setOptionString(key, value);
 }
@@ -899,30 +852,32 @@ void ParticleEditorApp::OnViewShowMsgs()
 /*~ function ParticleEditor.openFile
  *	@components{ particleeditor }
  *
- *	This function enables the Open ParticleSystem dialog, which allows a ParticleSystem to be loaded.
+ *	This function enables the Open ParticleSystem dialog, which allows a
+ *ParticleSystem to be loaded.
  */
-static PyObject *py_openFile(PyObject * /*args*/)
+static PyObject* py_openFile(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     ParticleEditorApp::instance().OnDirectoryOpen();
 
-	Py_RETURN_NONE;
+    Py_RETURN_NONE;
 }
 PY_MODULE_FUNCTION(openFile, ParticleEditor)
 
 /*~ function ParticleEditor.savePS
  *	@components{ particleeditor }
  *
- *	This function saves any changes made to the currently selected ParticleSystem.
+ *	This function saves any changes made to the currently selected
+ *ParticleSystem.
  */
-static PyObject *py_savePS(PyObject * /*args*/)
+static PyObject* py_savePS(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     ParticleEditorApp::instance().OnFileSaveParticleSystem();
 
-	Py_RETURN_NONE;
+    Py_RETURN_NONE;
 }
 PY_MODULE_FUNCTION(savePS, ParticleEditor)
 
@@ -931,30 +886,27 @@ PY_MODULE_FUNCTION(savePS, ParticleEditor)
  *
  *	This function forces ParticleEditor to reload all its textures.
  */
-static PyObject * py_reloadTextures( PyObject * args )
+static PyObject* py_reloadTextures(PyObject* args)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	CWaitCursor wait;
-	
-	Moo::ManagedTexture::accErrs(true);
-	
-	Moo::TextureManager::instance()->reloadAllTextures();
+    CWaitCursor wait;
 
-	BW::string errStr = Moo::ManagedTexture::accErrStr();
-	if (errStr != "")
-	{
-		ERROR_MSG
-        ( 
-            "Moo:ManagedTexture::load, unable to load the following textures:\n"
-			"%s\n\nPlease ensure these textures exist.", 
-            errStr.c_str() 
-        );
-	}
+    Moo::ManagedTexture::accErrs(true);
 
-	Moo::ManagedTexture::accErrs(false);
+    Moo::TextureManager::instance()->reloadAllTextures();
 
-	Py_RETURN_NONE;
+    BW::string errStr = Moo::ManagedTexture::accErrStr();
+    if (errStr != "") {
+        ERROR_MSG(
+          "Moo:ManagedTexture::load, unable to load the following textures:\n"
+          "%s\n\nPlease ensure these textures exist.",
+          errStr.c_str());
+    }
+
+    Moo::ManagedTexture::accErrs(false);
+
+    Py_RETURN_NONE;
 }
 PY_MODULE_FUNCTION(reloadTextures, ParticleEditor)
 
@@ -963,13 +915,13 @@ PY_MODULE_FUNCTION(reloadTextures, ParticleEditor)
  *
  *	This function closes ParticleEditor.
  */
-static PyObject *py_exit(PyObject * /*args*/)
+static PyObject* py_exit(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-    AfxGetApp()->GetMainWnd()->PostMessage( WM_COMMAND, ID_APP_EXIT );
+    AfxGetApp()->GetMainWnd()->PostMessage(WM_COMMAND, ID_APP_EXIT);
 
-	Py_RETURN_NONE;
+    Py_RETURN_NONE;
 }
 PY_MODULE_FUNCTION(exit, ParticleEditor)
 
@@ -980,21 +932,20 @@ PY_MODULE_FUNCTION(exit, ParticleEditor)
  *
  *	@param str	The name of the toolbar to show.
  */
-static PyObject *py_showToolbar(PyObject* args)
+static PyObject* py_showToolbar(PyObject* args)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if ( !MainFrame::instance() )
-		return PyInt_FromLong( 0 );
+    if (!MainFrame::instance())
+        return PyInt_FromLong(0);
 
-	char * str;
-	if (!PyArg_ParseTuple( args, "s", &str ))
-	{
-		PyErr_SetString( PyExc_TypeError,
-			"py_showToolbar: Argument parsing error." );
-		return NULL;
-	}
-	MainFrame::instance()->showToolbarIndex( atoi( str ) );
+    char* str;
+    if (!PyArg_ParseTuple(args, "s", &str)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "py_showToolbar: Argument parsing error.");
+        return NULL;
+    }
+    MainFrame::instance()->showToolbarIndex(atoi(str));
 
     Py_RETURN_NONE;
 }
@@ -1007,21 +958,20 @@ PY_MODULE_FUNCTION(showToolbar, ParticleEditor)
  *
  *	@param str	The name of the toolbar to hide.
  */
-static PyObject *py_hideToolbar(PyObject* args)
+static PyObject* py_hideToolbar(PyObject* args)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if ( !MainFrame::instance() )
-		return PyInt_FromLong( 0 );
+    if (!MainFrame::instance())
+        return PyInt_FromLong(0);
 
-	char * str;
-	if (!PyArg_ParseTuple( args, "s", &str ))
-	{
-		PyErr_SetString( PyExc_TypeError,
-			"py_showToolbar: Argument parsing error." );
-		return NULL;
-	}
-	MainFrame::instance()->hideToolbarIndex( atoi( str ) );
+    char* str;
+    if (!PyArg_ParseTuple(args, "s", &str)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "py_showToolbar: Argument parsing error.");
+        return NULL;
+    }
+    MainFrame::instance()->hideToolbarIndex(atoi(str));
 
     Py_RETURN_NONE;
 }
@@ -1030,48 +980,43 @@ PY_MODULE_FUNCTION(hideToolbar, ParticleEditor)
 /*~ function ParticleEditor.updateShowToolbar
  *	@components{ particleeditor }
  *
- *	This function updates the status of the tick next to the specified toolbar in the
- *	View->Toolbars menu.
+ *	This function updates the status of the tick next to the specified toolbar
+ *in the View->Toolbars menu.
  *
  *	@param str	The name of the toolbar to update status.
  *
- *	@return Returns True (0) if the toolbar is currently shown, False (0) otherwise.
+ *	@return Returns True (0) if the toolbar is currently shown, False (0)
+ *otherwise.
  */
-static PyObject *py_updateShowToolbar(PyObject* args)
+static PyObject* py_updateShowToolbar(PyObject* args)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if ( !MainFrame::instance() )
-		return PyInt_FromLong( 0 );
+    if (!MainFrame::instance())
+        return PyInt_FromLong(0);
 
-	char * str;
-	if (!PyArg_ParseTuple( args, "s", &str ))
-	{
-		PyErr_SetString( PyExc_TypeError,
-			"py_showToolbar: Argument parsing error." );
-		return NULL;
-	}
+    char* str;
+    if (!PyArg_ParseTuple(args, "s", &str)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "py_showToolbar: Argument parsing error.");
+        return NULL;
+    }
 
-	return PyInt_FromLong(
-		MainFrame::instance()->updateToolbarIndex( atoi( str ) ) );
+    return PyInt_FromLong(MainFrame::instance()->updateToolbarIndex(atoi(str)));
 }
 PY_MODULE_FUNCTION(updateShowToolbar, ParticleEditor)
- 
+
 /*~ function ParticleEditor.showStatusbar
  *	@components{ particleeditor }
  *
  *	This function shows the status bar.
  */
-static PyObject *py_showStatusbar(PyObject * /*args*/)
+static PyObject* py_showStatusbar(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-    MainFrame::instance()->ShowControlBar
-    (
-        &MainFrame::instance()->getStatusBar(),
-        TRUE,
-        FALSE
-    );
+    MainFrame::instance()->ShowControlBar(
+      &MainFrame::instance()->getStatusBar(), TRUE, FALSE);
     Py_RETURN_NONE;
 }
 PY_MODULE_FUNCTION(showStatusbar, ParticleEditor)
@@ -1081,16 +1026,12 @@ PY_MODULE_FUNCTION(showStatusbar, ParticleEditor)
  *
  *	This function hides the status bar.
  */
-static PyObject *py_hideStatusbar(PyObject * /*args*/)
+static PyObject* py_hideStatusbar(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-    MainFrame::instance()->ShowControlBar
-    (
-        &MainFrame::instance()->getStatusBar(),
-        FALSE,
-        FALSE
-    );
+    MainFrame::instance()->ShowControlBar(
+      &MainFrame::instance()->getStatusBar(), FALSE, FALSE);
     Py_RETURN_NONE;
 }
 PY_MODULE_FUNCTION(hideStatusbar, ParticleEditor)
@@ -1098,21 +1039,23 @@ PY_MODULE_FUNCTION(hideStatusbar, ParticleEditor)
 /*~ function ParticleEditor.updateShowStatusbar
  *	@components{ particleeditor }
  *
- *	This function updates the status of the tick next to the status bar in the view menu.
+ *	This function updates the status of the tick next to the status bar in the
+ *view menu.
  *
- *	@return Returns True (0) if the toolbar is currently shown, False (1) otherwise.
+ *	@return Returns True (0) if the toolbar is currently shown, False (1)
+ *otherwise.
  */
-static PyObject *py_updateShowStatusbar(PyObject * /*args*/)
+static PyObject* py_updateShowStatusbar(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-    bool valid = 
-        MainFrame::instance() != NULL
-        &&
-        ::IsWindow(MainFrame::instance()->getStatusBar().GetSafeHwnd());
+    bool valid =
+      MainFrame::instance() != NULL &&
+      ::IsWindow(MainFrame::instance()->getStatusBar().GetSafeHwnd());
     bool visible = true;
     if (valid)
-        visible = MainFrame::instance()->getStatusBar().IsWindowVisible() != FALSE;
+        visible =
+          MainFrame::instance()->getStatusBar().IsWindowVisible() != FALSE;
     return PyInt_FromLong(visible ? 0 : 1);
 }
 PY_MODULE_FUNCTION(updateShowStatusbar, ParticleEditor)
@@ -1122,9 +1065,9 @@ PY_MODULE_FUNCTION(updateShowStatusbar, ParticleEditor)
  *
  *	This function toggles the panels' visibility.
  */
-static PyObject *py_toggleShowPanels(PyObject * /*args*/)
+static PyObject* py_toggleShowPanels(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     ParticleEditorApp::instance().OnViewShowSide();
     Py_RETURN_NONE;
@@ -1136,9 +1079,9 @@ PY_MODULE_FUNCTION(toggleShowPanels, ParticleEditor)
  *
  *	This function toggles the UAL panel's visibility.
  */
-static PyObject *py_toggleShowUALPanel(PyObject * /*args*/)
+static PyObject* py_toggleShowUALPanel(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     ParticleEditorApp::instance().OnViewShowUAL();
     Py_RETURN_NONE;
@@ -1150,9 +1093,9 @@ PY_MODULE_FUNCTION(toggleShowUALPanel, ParticleEditor)
  *
  *	This function toggles the UAL panel's visibility.
  */
-static PyObject *py_toggleShowMsgsPanel(PyObject * /*args*/)
+static PyObject* py_toggleShowMsgsPanel(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     ParticleEditorApp::instance().OnViewShowMsgs();
     Py_RETURN_NONE;
@@ -1164,13 +1107,13 @@ PY_MODULE_FUNCTION(toggleShowMsgsPanel, ParticleEditor)
  *
  *	This function loads the default panel arrangement.
  */
-static PyObject *py_loadDefaultPanels(PyObject * /*args*/)
+static PyObject* py_loadDefaultPanels(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     XMLSectionPtr data = new XMLSection("ActionSelection_state");
     ActionSelection::instance()->saveState(data);
-    PanelManager   ::instance().loadDefaultPanels(NULL);
+    PanelManager ::instance().loadDefaultPanels(NULL);
     ActionSelection::instance()->restoreState(data);
     Py_RETURN_NONE;
 }
@@ -1181,43 +1124,40 @@ PY_MODULE_FUNCTION(loadDefaultPanels, ParticleEditor)
  *
  *	This function loads the most recent panel arrangement.
  */
-static PyObject *py_loadRecentPanels(PyObject * /*args*/)
+static PyObject* py_loadRecentPanels(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     XMLSectionPtr data = new XMLSection("ActionSelection_state");
     ActionSelection::instance()->saveState(data);
-    PanelManager   ::instance().loadLastPanels(NULL, L"particleeditor.layout");
+    PanelManager ::instance().loadLastPanels(NULL, L"particleeditor.layout");
     ActionSelection::instance()->restoreState(data);
     Py_RETURN_NONE;
 }
 PY_MODULE_FUNCTION(loadRecentPanels, ParticleEditor)
-
-
 
 /*~ function ParticleEditor.aboutApp
  *	@components{ particleeditor }
  *
  *	This function displays the ParticleEditor's About box.
  */
-static PyObject *py_aboutApp(PyObject * /*args*/)
+static PyObject* py_aboutApp(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     ParticleEditorApp::instance().OnAppAbout();
     Py_RETURN_NONE;
 }
 PY_MODULE_FUNCTION(aboutApp, ParticleEditor)
 
-
 /*~ function ParticleEditor.doShortcuts
  *	@components{ particleeditor }
  *
  *	This function opens the ParticleEditor's Shortcuts dialog.
  */
-static PyObject *py_doShortcuts(PyObject * /*args*/)
+static PyObject* py_doShortcuts(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     ParticleEditorApp::instance().OnAppShortcuts();
     Py_RETURN_NONE;
@@ -1230,23 +1170,23 @@ PY_MODULE_FUNCTION(doShortcuts, ParticleEditor)
  *	This function centres the particle system in view and zooms the camera until
  *	the particle system just fits in view.
  */
-static PyObject * py_zoomToExtents( PyObject * args )
+static PyObject* py_zoomToExtents(PyObject* args)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	PeShell::instance().camera().zoomToExtents( true );
-	Py_RETURN_NONE;
+    PeShell::instance().camera().zoomToExtents(true);
+    Py_RETURN_NONE;
 }
-PY_MODULE_FUNCTION( zoomToExtents, ParticleEditor )
+PY_MODULE_FUNCTION(zoomToExtents, ParticleEditor)
 
 /*~ function ParticleEditor.doViewFree
  *	@components{ particleeditor }
  *
  *	This function enables the free view camera mode.
  */
-static PyObject *py_doViewFree(PyObject * /*args*/)
+static PyObject* py_doViewFree(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     MainFrame::instance()->OnButtonViewFree();
     Py_RETURN_NONE;
@@ -1256,11 +1196,12 @@ PY_MODULE_FUNCTION(doViewFree, ParticleEditor)
 /*~ function ParticleEditor.doViewX
  *	@components{ particleeditor }
  *
- *	This function positions the camera to look toward the origin along the X-axis.
+ *	This function positions the camera to look toward the origin along the
+ *X-axis.
  */
-static PyObject *py_doViewX(PyObject * /*args*/)
+static PyObject* py_doViewX(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     MainFrame::instance()->OnButtonViewX();
     Py_RETURN_NONE;
@@ -1270,11 +1211,12 @@ PY_MODULE_FUNCTION(doViewX, ParticleEditor)
 /*~ function ParticleEditor.doViewY
  *	@components{ particleeditor }
  *
- *	This function positions the camera to look toward the origin along the Y-axis.
+ *	This function positions the camera to look toward the origin along the
+ *Y-axis.
  */
-static PyObject *py_doViewY(PyObject * /*args*/)
+static PyObject* py_doViewY(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     MainFrame::instance()->OnButtonViewY();
     Py_RETURN_NONE;
@@ -1284,11 +1226,12 @@ PY_MODULE_FUNCTION(doViewY, ParticleEditor)
 /*~ function ParticleEditor.doViewZ
  *	@components{ particleeditor }
  *
- *	This function positions the camera to look toward the origin along the Z-axis.
+ *	This function positions the camera to look toward the origin along the
+ *Z-axis.
  */
-static PyObject *py_doViewZ(PyObject * /*args*/)
+static PyObject* py_doViewZ(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     MainFrame::instance()->OnButtonViewZ();
     Py_RETURN_NONE;
@@ -1300,9 +1243,9 @@ PY_MODULE_FUNCTION(doViewZ, ParticleEditor)
  *
  *	This function enables the orbit view camera mode.
  */
-static PyObject *py_doViewOrbit(PyObject * /*args*/)
+static PyObject* py_doViewOrbit(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     MainFrame::instance()->OnButtonViewOrbit();
     Py_RETURN_NONE;
@@ -1318,9 +1261,9 @@ PY_MODULE_FUNCTION(doViewOrbit, ParticleEditor)
  *			returns 2 if in y-locked view, returns 3 if in z-locked view,
  *			returns 4 if in orbit view.
  */
-static PyObject *py_cameraMode(PyObject * /*args*/)
+static PyObject* py_cameraMode(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     int result = PeShell::instance().camera().mode();
     return PyInt_FromLong(result);
@@ -1334,24 +1277,24 @@ PY_MODULE_FUNCTION(cameraMode, ParticleEditor)
  *
  *	@return The ParticleEditor camera object.
  */
-static PyObject * py_camera( PyObject * args )
+static PyObject* py_camera(PyObject* args)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	Py_INCREF(&PeShell::instance().camera());
-	return &PeShell::instance().camera();
+    Py_INCREF(&PeShell::instance().camera());
+    return &PeShell::instance().camera();
 }
 PY_MODULE_FUNCTION(camera, ParticleEditor)
 
 /*~ function ParticleEditor.doSetBkClr
  *	@components{ particleeditor }
  *
- *	This function enables ParticleEditor's Colour Picker dialog, which allows the 
- *	background colour to be changed.
+ *	This function enables ParticleEditor's Colour Picker dialog, which allows
+ *the background colour to be changed.
  */
-static PyObject *py_doSetBkClr(PyObject * /*args*/)
+static PyObject* py_doSetBkClr(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     MainFrame::instance()->OnBackgroundColor();
     Py_RETURN_NONE;
@@ -1365,20 +1308,14 @@ PY_MODULE_FUNCTION(doSetBkClr, ParticleEditor)
  *
  *	@return Returns True (0) if a background colour is set, False (1) otherwise.
  */
-static PyObject *py_updateBkClr(PyObject * /*args*/)
+static PyObject* py_updateBkClr(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-    if (MainFrame::instance() != NULL)
-    {
-        return 
-            PyInt_FromLong
-            (
-		        MainFrame::instance()->showingBackgroundColor() ? 0 : 1 
-            );
-    }
-    else
-    {
+    if (MainFrame::instance() != NULL) {
+        return PyInt_FromLong(
+          MainFrame::instance()->showingBackgroundColor() ? 0 : 1);
+    } else {
         return PyInt_FromLong(1);
     }
 }
@@ -1389,12 +1326,13 @@ PY_MODULE_FUNCTION(updateBkClr, ParticleEditor)
  *
  *	This function toggles the display of the 1x1m measurement grid.
  */
-static PyObject *py_showGrid(PyObject * /*args*/)
+static PyObject* py_showGrid(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	Options::setOptionInt( "render/showGrid", !Options::getOptionInt( "render/showGrid", 0 ));
-	GUI::Manager::instance().update();
+    Options::setOptionInt("render/showGrid",
+                          !Options::getOptionInt("render/showGrid", 0));
+    GUI::Manager::instance().update();
     Py_RETURN_NONE;
 }
 PY_MODULE_FUNCTION(showGrid, ParticleEditor)
@@ -1402,15 +1340,17 @@ PY_MODULE_FUNCTION(showGrid, ParticleEditor)
 /*~ function ParticleEditor.isShowingGrid
  *	@components{ particleeditor }
  *
- *	This function checks whether the 1x1m measurement grid is currently being displayed.
+ *	This function checks whether the 1x1m measurement grid is currently being
+ *displayed.
  *
- *	@return Returns True (1) if the 1x1m measurement grid is being displayed, False (0) otherwise.
+ *	@return Returns True (1) if the 1x1m measurement grid is being displayed,
+ *False (0) otherwise.
  */
-static PyObject *py_isShowingGrid(PyObject * /*args*/)
+static PyObject* py_isShowingGrid(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-    return PyInt_FromLong(Options::getOptionInt( "render/showGrid", 0 ));
+    return PyInt_FromLong(Options::getOptionInt("render/showGrid", 0));
 }
 PY_MODULE_FUNCTION(isShowingGrid, ParticleEditor)
 
@@ -1419,26 +1359,27 @@ PY_MODULE_FUNCTION(isShowingGrid, ParticleEditor)
  *
  *	This function undoes the most recent operation.
  */
-static PyObject *py_undo(PyObject * /*args*/)
+static PyObject* py_undo(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if ( MainFrame::instance()->CanUndo() )
-		MainFrame::instance()->OnUndo();
+    if (MainFrame::instance()->CanUndo())
+        MainFrame::instance()->OnUndo();
     Py_RETURN_NONE;
 }
 PY_MODULE_FUNCTION(undo, ParticleEditor)
-   
+
 /*~ function ParticleEditor.canUndo
  *	@components{ particleeditor }
  *
- *	This function checks whether it is possible to undo the most recent operation.
+ *	This function checks whether it is possible to undo the most recent
+ *operation.
  *
  *	@return Returns True (1) if can undo, False (0) otherwise.
  */
-static PyObject *py_canUndo(PyObject * /*args*/)
+static PyObject* py_canUndo(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     int result = MainFrame::instance()->CanUndo() ? 1 : 0;
     return PyInt_FromLong(result);
@@ -1450,12 +1391,12 @@ PY_MODULE_FUNCTION(canUndo, ParticleEditor)
  *
  *	This function redoes the most recent undo operation.
  */
-static PyObject *py_redo(PyObject * /*args*/)
+static PyObject* py_redo(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if ( MainFrame::instance()->CanRedo() )
-		MainFrame::instance()->OnRedo();
+    if (MainFrame::instance()->CanRedo())
+        MainFrame::instance()->OnRedo();
     Py_RETURN_NONE;
 }
 PY_MODULE_FUNCTION(redo, ParticleEditor)
@@ -1463,13 +1404,14 @@ PY_MODULE_FUNCTION(redo, ParticleEditor)
 /*~ function ParticleEditor.canRedo
  *	@components{ particleeditor }
  *
- *	This function checks whether it is possible to redo the most recent undo operation.
+ *	This function checks whether it is possible to redo the most recent undo
+ *operation.
  *
  *	@return Returns True (1) if can redo, False (0) otherwise.
  */
-static PyObject *py_canRedo(PyObject * /*args*/)
+static PyObject* py_canRedo(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     int result = MainFrame::instance()->CanRedo() ? 1 : 0;
     return PyInt_FromLong(result);
@@ -1479,18 +1421,19 @@ PY_MODULE_FUNCTION(canRedo, ParticleEditor)
 /*~ function ParticleEditor.doSpawn
  *	@components{ particleeditor }
  *
- *	This function spawns the currently selected Particle System and sets its state to 'playing'.
+ *	This function spawns the currently selected Particle System and sets its
+ *state to 'playing'.
  */
-static PyObject *py_doSpawn(PyObject * /*args*/)
+static PyObject* py_doSpawn(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (ParticleEditorApp::instance().getState() == ParticleEditorApp::PE_PAUSED)
-	{
-		// resume the existing particle system
-		ParticleEditorApp::instance().setState(ParticleEditorApp::PE_PLAYING);
-	}
-	// spawn a new particle system
+    if (ParticleEditorApp::instance().getState() ==
+        ParticleEditorApp::PE_PAUSED) {
+        // resume the existing particle system
+        ParticleEditorApp::instance().setState(ParticleEditorApp::PE_PLAYING);
+    }
+    // spawn a new particle system
     ParticleEditorApp::instance().setState(ParticleEditorApp::PE_PLAYING);
     Py_RETURN_NONE;
 }
@@ -1499,15 +1442,16 @@ PY_MODULE_FUNCTION(doSpawn, ParticleEditor)
 /*~ function ParticleEditor.doRestart
  *	@components{ particleeditor }
  *
- *	This function restarts the currently selected Particle System and sets its state to 'playing'.
+ *	This function restarts the currently selected Particle System and sets its
+ *state to 'playing'.
  */
-static PyObject *py_doRestart(PyObject * /*args*/)
+static PyObject* py_doRestart(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// stop the existing particle system
-	ParticleEditorApp::instance().setState(ParticleEditorApp::PE_STOPPED);
-	// spawn a new particle system
+    // stop the existing particle system
+    ParticleEditorApp::instance().setState(ParticleEditorApp::PE_STOPPED);
+    // spawn a new particle system
     ParticleEditorApp::instance().setState(ParticleEditorApp::PE_PLAYING);
     Py_RETURN_NONE;
 }
@@ -1518,14 +1462,14 @@ PY_MODULE_FUNCTION(doRestart, ParticleEditor)
  *
  *	This function sets the currently selected Particle System to 'playing'.
  */
-static PyObject *py_doPlay(PyObject * /*args*/)
+static PyObject* py_doPlay(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (ParticleEditorApp::instance().getState() != ParticleEditorApp::PE_PLAYING)
-	{
-		ParticleEditorApp::instance().setState(ParticleEditorApp::PE_PLAYING);
-	}
+    if (ParticleEditorApp::instance().getState() !=
+        ParticleEditorApp::PE_PLAYING) {
+        ParticleEditorApp::instance().setState(ParticleEditorApp::PE_PLAYING);
+    }
     Py_RETURN_NONE;
 }
 PY_MODULE_FUNCTION(doPlay, ParticleEditor)
@@ -1533,11 +1477,12 @@ PY_MODULE_FUNCTION(doPlay, ParticleEditor)
 /*~ function ParticleEditor.doStop
  *	@components{ particleeditor }
  *
- *	This function sets the currently selected Particle System state to 'stopped'.
+ *	This function sets the currently selected Particle System state to
+ *'stopped'.
  */
-static PyObject *py_doStop(PyObject * /*args*/)
+static PyObject* py_doStop(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     ParticleEditorApp::instance().setState(ParticleEditorApp::PE_STOPPED);
     Py_RETURN_NONE;
@@ -1547,18 +1492,17 @@ PY_MODULE_FUNCTION(doStop, ParticleEditor)
 /*~ function ParticleEditor.doPause
  *	@components{ particleeditor }
  *
- *	This function sets the the currently selected Particle System state to 'paused'.
+ *	This function sets the the currently selected Particle System state to
+ *'paused'.
  */
-static PyObject *py_doPause(PyObject * /*args*/)
+static PyObject* py_doPause(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (ParticleEditorApp::instance().getState() == ParticleEditorApp::PE_PAUSED)
-	{
+    if (ParticleEditorApp::instance().getState() ==
+        ParticleEditorApp::PE_PAUSED) {
         ParticleEditorApp::instance().setState(ParticleEditorApp::PE_PLAYING);
-    }
-    else
-    {
+    } else {
         ParticleEditorApp::instance().setState(ParticleEditorApp::PE_PAUSED);
     }
     Py_RETURN_NONE;
@@ -1568,14 +1512,15 @@ PY_MODULE_FUNCTION(doPause, ParticleEditor)
 /*~ function ParticleEditor.getState
  *	@components{ particleeditor }
  *
- *	This function returns the current state of the Particle System, whether it is Playing, Paused or Stopped.
+ *	This function returns the current state of the Particle System, whether it
+ *is Playing, Paused or Stopped.
  *
  *	@return Returns 0 if the state is Playing, returns 1 if the state is Paused,
  *			and returns 2 if the state is Stopped.
  */
-static PyObject *py_getState(PyObject * /*args*/)
+static PyObject* py_getState(PyObject* /*args*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     int result = (int)ParticleEditorApp::instance().getState();
     return PyInt_FromLong(result);
@@ -1583,4 +1528,3 @@ static PyObject *py_getState(PyObject * /*args*/)
 PY_MODULE_FUNCTION(getState, ParticleEditor)
 
 BW_END_NAMESPACE
-

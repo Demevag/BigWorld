@@ -14,45 +14,44 @@ BW_BEGIN_NAMESPACE
  */
 class EditorChunkModelBase : public ChunkModel
 {
-	DECLARE_EDITOR_CHUNK_ITEM_WITHOUT_DESCRIPTION( EditorChunkModelBase )
-	DECLARE_CHUNK_ITEM_ALIAS( EditorChunkModelBase, shell )
+    DECLARE_EDITOR_CHUNK_ITEM_WITHOUT_DESCRIPTION(EditorChunkModelBase)
+    DECLARE_CHUNK_ITEM_ALIAS(EditorChunkModelBase, shell)
 
-public:
-	EditorChunkModelBase();
+  public:
+    EditorChunkModelBase();
 
-	virtual bool load( DataSectionPtr pSection, Chunk * pChunk = NULL,
-		BW::string* pErrorString = NULL );
+    virtual bool load(DataSectionPtr pSection,
+                      Chunk*         pChunk       = NULL,
+                      BW::string*    pErrorString = NULL);
 
-	void tossWithExtra( Chunk * pChunk, SuperModel* extraModel );
+    void tossWithExtra(Chunk* pChunk, SuperModel* extraModel);
 
-	virtual bool edSave( DataSectionPtr pSection ) { return true; };
+    virtual bool edSave(DataSectionPtr pSection) { return true; };
 
-	virtual const Matrix & edTransform() { return transform_; }
+    virtual const Matrix& edTransform() { return transform_; }
 
-	virtual DataSectionPtr pOwnSect()	{ return pOwnSect_; }
-	virtual const DataSectionPtr pOwnSect()	const { return pOwnSect_; }
+    virtual DataSectionPtr       pOwnSect() { return pOwnSect_; }
+    virtual const DataSectionPtr pOwnSect() const { return pOwnSect_; }
 
-protected:
-	/**
-	 * As extractVisuals(), but returns the names of the visuals rather than
-	 * a Ptr to them.
-	 */
-	BW::vector<BW::string> extractVisualNames() const;
+  protected:
+    /**
+     * As extractVisuals(), but returns the names of the visuals rather than
+     * a Ptr to them.
+     */
+    BW::vector<BW::string> extractVisualNames() const;
 
-	// check if the model file is a new date then the binary data file
-	bool isVisualFileNewer() const;
+    // check if the model file is a new date then the binary data file
+    bool isVisualFileNewer() const;
 
-	DataSectionPtr	pOwnSect_;
-	bool			firstToss_;
+    DataSectionPtr pOwnSect_;
+    bool           firstToss_;
 
-private:
-	EditorChunkModelBase( const EditorChunkModelBase& );
-	EditorChunkModelBase& operator=( const EditorChunkModelBase& );
+  private:
+    EditorChunkModelBase(const EditorChunkModelBase&);
+    EditorChunkModelBase& operator=(const EditorChunkModelBase&);
 };
 
-
 typedef SmartPointer<EditorChunkModelBase> EditorChunkModelBasePtr;
-
 
 BW_END_NAMESPACE
 #endif // EDITOR_CHUNK_MODEL_BASE_HPP

@@ -12,7 +12,6 @@
 
 #include <fmod_event.hpp>
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -22,46 +21,47 @@ BW_BEGIN_NAMESPACE
  */
 class PyEventGroup : public PyObjectPlus
 {
-	Py_Header( PyEventGroup, PyObjectPlus )
+    Py_Header(PyEventGroup, PyObjectPlus)
 
-public:
-    PyEventGroup( SoundManager::EventGroup * pEventGroup, PyTypeObject * pType = &PyEventGroup::s_type_ );   
+      public
+      : PyEventGroup(SoundManager::EventGroup* pEventGroup,
+                     PyTypeObject*             pType = &PyEventGroup::s_type_);
 
-	void fini();
+    void fini();
 
     //  Methods
     void loadEventData(bool blocking = true);
-	PY_AUTO_METHOD_DECLARE( RETVOID, loadEventData, OPTARG( bool, true, END ) )
+    PY_AUTO_METHOD_DECLARE(RETVOID, loadEventData, OPTARG(bool, true, END))
 
     void freeEventData();
-	PY_AUTO_METHOD_DECLARE( RETVOID, freeEventData, END )
+    PY_AUTO_METHOD_DECLARE(RETVOID, freeEventData, END)
 
-	//  Attributes
+    //  Attributes
     unsigned int memoryUsed();
-	PY_RO_ATTRIBUTE_DECLARE( memoryUsed(), memoryUsed ); 
+    PY_RO_ATTRIBUTE_DECLARE(memoryUsed(), memoryUsed);
 
     bool isPlaying();
-	PY_RO_ATTRIBUTE_DECLARE( isPlaying(), isPlaying );
+    PY_RO_ATTRIBUTE_DECLARE(isPlaying(), isPlaying);
 
     bool isLoaded();
-	PY_RO_ATTRIBUTE_DECLARE( isLoaded(), isLoaded );
+    PY_RO_ATTRIBUTE_DECLARE(isLoaded(), isLoaded);
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-	void invalidate();
+    void invalidate();
 
-protected:
-    SoundManager::EventGroup *eventGroup_;
+  protected:
+    SoundManager::EventGroup* eventGroup_;
 
-private:
+  private:
     PyEventGroup();
-	~PyEventGroup();
+    ~PyEventGroup();
 
-	PyEventGroup(const PyEventGroup&);
-	PyEventGroup& operator=(const PyEventGroup&);
+    PyEventGroup(const PyEventGroup&);
+    PyEventGroup& operator=(const PyEventGroup&);
 };
 
-typedef SmartPointer< PyEventGroup > PyEventGroupPtr;
+typedef SmartPointer<PyEventGroup> PyEventGroupPtr;
 
 BW_END_NAMESPACE
 

@@ -10,18 +10,20 @@ class MethodDescription;
 
 class DelegateEntityMethod : public PyObjectPlus
 {
-	Py_Header( DelegateEntityMethod, PyObjectPlus );
-public:
-	DelegateEntityMethod( const IEntityDelegatePtr & delegate,
-		const MethodDescription * pMethodDescription,
-		EntityID sourceID,
-		PyTypeObject * pType = &s_type_ );
+    Py_Header(DelegateEntityMethod, PyObjectPlus);
 
-	PY_KEYWORD_METHOD_DECLARE( pyCall );
-private:
-	IEntityDelegatePtr delegate_;
-	const MethodDescription * pMethodDescription_;
-	EntityID sourceID_;
+  public:
+    DelegateEntityMethod(const IEntityDelegatePtr& delegate,
+                         const MethodDescription*  pMethodDescription,
+                         EntityID                  sourceID,
+                         PyTypeObject*             pType = &s_type_);
+
+    PY_KEYWORD_METHOD_DECLARE(pyCall);
+
+  private:
+    IEntityDelegatePtr       delegate_;
+    const MethodDescription* pMethodDescription_;
+    EntityID                 sourceID_;
 };
 
 BW_END_NAMESPACE

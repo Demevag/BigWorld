@@ -59,15 +59,13 @@
  *          RowSizer *col = new RowSizer(RowSizer::VERTICAL);
  *          col->addChild
  *          (
- *              new WndSizer(this, IDOK, WndSizer::FIT_WIDTH, WndSizer::FIT_VCENTER),
- *              0,
- *              RowSizer::PIXELS
+ *              new WndSizer(this, IDOK, WndSizer::FIT_WIDTH,
+ * WndSizer::FIT_VCENTER), 0, RowSizer::PIXELS
  *          );
  *          col->addChild
  *          (
- *              new WndSizer(this, IDCANCEL, WndSizer::FIT_WIDTH, WndSizer::FIT_VCENTER),
- *              0,
- *              RowSizer::PIXELS
+ *              new WndSizer(this, IDCANCEL, WndSizer::FIT_WIDTH,
+ * WndSizer::FIT_VCENTER), 0, RowSizer::PIXELS
  *          );
  *          col->addChild(new NullSizer(0, 0));
  *          row->addChild(col, 0, RowSizer::PIXELS);
@@ -84,6 +82,5 @@
 #include "null_sizer.hpp"
 #include "wnd_sizer.hpp"
 #include "grid_sizer.hpp"
-
 
 #endif // LAYOUTMANAGER_HPP

@@ -2,12 +2,11 @@
 
 @class WorldUIModel;
 
-@interface HUDLayer : CCLayer
-{
-	CCSprite * compass_;
-	WorldUIModel * uiModel_;
+@interface HUDLayer : CCLayer {
+    CCSprite*     compass_;
+    WorldUIModel* uiModel_;
 }
 
-- (id) initWithUIModel: (WorldUIModel *)model;
+- (id)initWithUIModel:(WorldUIModel*)model;
 
 @end

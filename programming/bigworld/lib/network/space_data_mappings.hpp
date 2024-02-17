@@ -10,45 +10,52 @@
 
 #include "network/space_data_mapping.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
  *	This class represents a collection of SpaceDataMappings
  */
-class SpaceDataMappings : public SafeReferenceCount, public SafeAllocatable
+class SpaceDataMappings
+  : public SafeReferenceCount
+  , public SafeAllocatable
 {
-public:
-	BWENTITY_API SpaceDataMappings() {}
+  public:
+    BWENTITY_API SpaceDataMappings() {}
 
-	BWENTITY_API void clear( bool remoteOnly );
+    BWENTITY_API void clear(bool remoteOnly);
 
-	BWENTITY_API bool addSpace( SpaceID spaceID, bool isLocal = false );
-	BWENTITY_API bool delSpace( SpaceID spaceID );
-	
-	BWENTITY_API SpaceDataMapping * mapping( SpaceID spaceID );
+    BWENTITY_API bool addSpace(SpaceID spaceID, bool isLocal = false);
+    BWENTITY_API bool delSpace(SpaceID spaceID);
 
-private:
-	SpaceDataMappings( SpaceDataMappings & );
-	void operator=( SpaceDataMappings & );
+    BWENTITY_API SpaceDataMapping* mapping(SpaceID spaceID);
 
-	class SpaceMappingEntry
-	{
-	public:
-		SpaceMappingEntry() : isLocal_( false ) {}
+  private:
+    SpaceDataMappings(SpaceDataMappings&);
+    void operator=(SpaceDataMappings&);
 
-		SpaceMappingEntry( const SpaceDataMapping & mapping, bool isLocal ) :
-			mapping_( mapping ), isLocal_( isLocal ) {}
+    class SpaceMappingEntry
+    {
+      public:
+        SpaceMappingEntry()
+          : isLocal_(false)
+        {
+        }
 
-		SpaceDataMapping mapping_;
-		bool isLocal_;
-	};
+        SpaceMappingEntry(const SpaceDataMapping& mapping, bool isLocal)
+          : mapping_(mapping)
+          , isLocal_(isLocal)
+        {
+        }
 
-	typedef BW::map< SpaceID, SpaceMappingEntry > SpaceMap;
-	SpaceMap spaceMap_;
+        SpaceDataMapping mapping_;
+        bool             isLocal_;
+    };
+
+    typedef BW::map<SpaceID, SpaceMappingEntry> SpaceMap;
+    SpaceMap                                    spaceMap_;
 };
 
-typedef SmartPointer< SpaceDataMappings >  SpaceDataMappingsPtr;
+typedef SmartPointer<SpaceDataMappings> SpaceDataMappingsPtr;
 
 BW_END_NAMESPACE
 

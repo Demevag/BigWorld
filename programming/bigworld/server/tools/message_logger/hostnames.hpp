@@ -7,7 +7,6 @@
 
 #include "types.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -16,54 +15,54 @@ BW_BEGIN_NAMESPACE
  */
 class HostnameVisitor
 {
-public:
-	virtual bool onHost( MessageLogger::IPAddress ipAddress,
-		const BW::string &hostname ) = 0;
+  public:
+    virtual bool onHost(MessageLogger::IPAddress ipAddress,
+                        const BW::string&        hostname) = 0;
 };
-
 
 enum GetHostResult
 {
-	BW_GET_HOST_ERROR,
-	BW_GET_HOST_FOUND,
-	BW_GET_HOST_ADDED
+    BW_GET_HOST_ERROR,
+    BW_GET_HOST_FOUND,
+    BW_GET_HOST_ADDED
 };
-
 
 /**
  * This class handles the mapping between IP addresses and hostnames
  */
 class Hostnames
 {
-public:
-	virtual bool writeHostnameToDB( const MessageLogger::IPAddress & addr,
-		const BW::string & hostname ) = 0;
+  public:
+    virtual bool writeHostnameToDB(const MessageLogger::IPAddress& addr,
+                                   const BW::string& hostname) = 0;
 
-	GetHostResult getHostByAddr( MessageLogger::IPAddress addr,
-		BW::string & hostname );
+    GetHostResult getHostByAddr(MessageLogger::IPAddress addr,
+                                BW::string&              hostname);
 
-	uint32 getHostByName( const char *hostname ) const;
+    uint32 getHostByName(const char* hostname) const;
 
-	bool visitAllWith( HostnameVisitor &visitor ) const;
+    bool visitAllWith(HostnameVisitor& visitor) const;
 
-	void updateHostname(  const MessageLogger::IPAddress & addr,
-			const BW::string & hostname )
-	{
-		if (hostnames_.find( addr ) != hostnames_.end())
-		{
-			hostnames_[ addr ] = hostname;
-		}
-	}
+    void updateHostname(const MessageLogger::IPAddress& addr,
+                        const BW::string&               hostname)
+    {
+        if (hostnames_.find(addr) != hostnames_.end()) {
+            hostnames_[addr] = hostname;
+        }
+    }
 
-protected:
-	void clear();
+  protected:
+    void clear();
 
-	void addHostnameToMap( const MessageLogger::IPAddress & addr,
-		const BW::string & hostname ) { hostnames_[ addr ] = hostname; }
+    void addHostnameToMap(const MessageLogger::IPAddress& addr,
+                          const BW::string&               hostname)
+    {
+        hostnames_[addr] = hostname;
+    }
 
-private:
-	typedef BW::map< MessageLogger::IPAddress, BW::string > HostnamesMap;
-	HostnamesMap hostnames_;
+  private:
+    typedef BW::map<MessageLogger::IPAddress, BW::string> HostnamesMap;
+    HostnamesMap                                          hostnames_;
 };
 
 BW_END_NAMESPACE

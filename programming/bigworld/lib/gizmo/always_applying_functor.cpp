@@ -2,20 +2,19 @@
 #include "always_applying_functor.hpp"
 #include "tool_manager.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Editor", 0 )
+DECLARE_DEBUG_COMPONENT2("Editor", 0)
 
 BW_BEGIN_NAMESPACE
 
 /**
  *	Constructor.
  */
-AlwaysApplyingFunctor::AlwaysApplyingFunctor( bool allowedToDiscardChanges,
-	PyTypeObject * pType ) :
-	ToolFunctor( allowedToDiscardChanges, pType )
+AlwaysApplyingFunctor::AlwaysApplyingFunctor(bool allowedToDiscardChanges,
+                                             PyTypeObject* pType)
+  : ToolFunctor(allowedToDiscardChanges, pType)
 {
-	BW_GUARD;
+    BW_GUARD;
 }
-
 
 /**
  *	Update the constant apply functor.
@@ -23,23 +22,19 @@ AlwaysApplyingFunctor::AlwaysApplyingFunctor( bool allowedToDiscardChanges,
  *	@param dTime the change in time since last update.
  *	@param tool the tool.
  */
-void AlwaysApplyingFunctor::update( float dTime, Tool& tool )
+void AlwaysApplyingFunctor::update(float dTime, Tool& tool)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	MF_ASSERT( applying_ );
+    MF_ASSERT(applying_);
 
-	// see if we want to commit this action
-	if (this->checkStopApplying())
-	{
-		this->stopApplying( tool, true );
-	}
-	else
-	{
-		this->doApply( dTime, tool );
-	}
+    // see if we want to commit this action
+    if (this->checkStopApplying()) {
+        this->stopApplying(tool, true);
+    } else {
+        this->doApply(dTime, tool);
+    }
 }
-
 
 /**
  *	Check if we should stop applying.
@@ -47,35 +42,32 @@ void AlwaysApplyingFunctor::update( float dTime, Tool& tool )
  */
 bool AlwaysApplyingFunctor::checkStopApplying() const
 {
-	BW_GUARD;
-	// Left mouse button released
-	return (!InputDevices::isKeyDown( KeyCode::KEY_LEFTMOUSE ));
+    BW_GUARD;
+    // Left mouse button released
+    return (!InputDevices::isKeyDown(KeyCode::KEY_LEFTMOUSE));
 }
-
 
 /**
  *	Called when the tool becomes the currently used tool.
  *	@param tool
  */
-void AlwaysApplyingFunctor::onBeginUsing( Tool & tool )
+void AlwaysApplyingFunctor::onBeginUsing(Tool& tool)
 {
-	BW_GUARD;
-	this->beginApply();
+    BW_GUARD;
+    this->beginApply();
 }
-
 
 /**
  *	Called when the tool ceases to be the currently used tool.
  *	@param tool
  */
-void AlwaysApplyingFunctor::onEndUsing( Tool & tool )
+void AlwaysApplyingFunctor::onEndUsing(Tool& tool)
 {
-	BW_GUARD;
-	// Don't call stopApplying here as
-	// onEndUsing -> stopApplying -> popTool -> onEndUsing *loop*
-	MF_ASSERT( !this->applying() );
+    BW_GUARD;
+    // Don't call stopApplying here as
+    // onEndUsing -> stopApplying -> popTool -> onEndUsing *loop*
+    MF_ASSERT(!this->applying());
 }
-
 
 /**
  *	Called when we want to force the tool to stop.
@@ -85,24 +77,20 @@ void AlwaysApplyingFunctor::onEndUsing( Tool & tool )
  *	Don't call stopApplying inside onEndUsing or it will loop.
  *	@param tool
  */
-void AlwaysApplyingFunctor::stopApplying( Tool & tool, bool saveChanges )
+void AlwaysApplyingFunctor::stopApplying(Tool& tool, bool saveChanges)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// Save changes unless the force-discard flag is set
-	if (saveChanges || !this->isAllowedToDiscardChanges())
-	{
-		this->stopApplyCommitChanges( tool, true );
-	}
-	else
-	{
-		this->stopApplyDiscardChanges( tool );
-	}
+    // Save changes unless the force-discard flag is set
+    if (saveChanges || !this->isAllowedToDiscardChanges()) {
+        this->stopApplyCommitChanges(tool, true);
+    } else {
+        this->stopApplyDiscardChanges(tool);
+    }
 
-	// and this tool's job is over
-	ToolManager::instance().popTool();
+    // and this tool's job is over
+    ToolManager::instance().popTool();
 }
-
 
 /**
  *	Key event method.
@@ -110,30 +98,28 @@ void AlwaysApplyingFunctor::stopApplying( Tool & tool, bool saveChanges )
  *	@param tool the tool.
  *	@return true if handled.
  */
-bool AlwaysApplyingFunctor::handleKeyEvent( const KeyEvent & event, Tool& tool )
+bool AlwaysApplyingFunctor::handleKeyEvent(const KeyEvent& event, Tool& tool)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (!event.isKeyDown())
-	{
-		return false;
-	}
+    if (!event.isKeyDown()) {
+        return false;
+    }
 
-	if (event.key() == KeyCode::KEY_ESCAPE)
-	{
-		// Don't keep changes
-		this->stopApplying( tool, false );
-		return true;
-	}
+    if (event.key() == KeyCode::KEY_ESCAPE) {
+        // Don't keep changes
+        this->stopApplying(tool, false);
+        return true;
+    }
 
-	return false;
+    return false;
 }
 
-bool AlwaysApplyingFunctor::handleMouseEvent( const MouseEvent & event,
-	Tool& tool )
+bool AlwaysApplyingFunctor::handleMouseEvent(const MouseEvent& event,
+                                             Tool&             tool)
 {
-	BW_GUARD;
-	return false;
+    BW_GUARD;
+    return false;
 }
 
 BW_END_NAMESPACE

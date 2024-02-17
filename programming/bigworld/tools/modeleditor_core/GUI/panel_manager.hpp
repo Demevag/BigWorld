@@ -21,80 +21,80 @@ class PanelManager :
 	public GUI::UpdaterMaker<PanelManager>,	 // update show/hide panels
 	public BasePanelManager
 {
-public:
-	~PanelManager();
+  public:
+    ~PanelManager();
 
-	static bool init(
-		CFrameWnd* mainFrameWnd, CWnd* mainView,
-		IModelEditorApp * editorApp, IMainFrame * mainFrame );
-	static void fini();
+    static bool init(CFrameWnd*       mainFrameWnd,
+                     CWnd*            mainView,
+                     IModelEditorApp* editorApp,
+                     IMainFrame*      mainFrame);
+    static void fini();
 
-	// panel stuff
-	bool ready();
-	void showPanel( const BW::string& pyID, int show = 1 );
-	int isPanelVisible( const BW::string& pyID );
-	BW::wstring getPanelID( const BW::string& pyID );
-	int currentTool();
-	bool handelGUIAction( GUI::ItemPtr item );
-	bool showSidePanel( GUI::ItemPtr item );
-	bool hideSidePanel( GUI::ItemPtr item );
-	unsigned int handleGUIUpdate( GUI::ItemPtr item );
-	unsigned int updateSidePanel( GUI::ItemPtr item );
-	void updateControls();
-	void onClose();
-	void ualAddItemToHistory( BW::string filePath );
+    // panel stuff
+    bool         ready();
+    void         showPanel(const BW::string& pyID, int show = 1);
+    int          isPanelVisible(const BW::string& pyID);
+    BW::wstring  getPanelID(const BW::string& pyID);
+    int          currentTool();
+    bool         handelGUIAction(GUI::ItemPtr item);
+    bool         showSidePanel(GUI::ItemPtr item);
+    bool         hideSidePanel(GUI::ItemPtr item);
+    unsigned int handleGUIUpdate(GUI::ItemPtr item);
+    unsigned int updateSidePanel(GUI::ItemPtr item);
+    void         updateControls();
+    void         onClose();
+    void         ualAddItemToHistory(BW::string filePath);
 
-	GUITABS::Manager& panels() { return panels_; }
-	
-	IModelEditorApp * getEditorApp() const { return editorApp_; }
+    GUITABS::Manager& panels() { return panels_; }
 
-private:
-	PanelManager();
+    IModelEditorApp* getEditorApp() const { return editorApp_; }
 
-	BW::map< BW::string, BW::wstring > contentID_;
+  private:
+    PanelManager();
 
-	int currentTool_;
-	CFrameWnd * mainFrameWnd_;
-	IMainFrame * mainFrame_;
-	CWnd* mainView_;
-	bool ready_;
-	HCURSOR addCursor_;
+    BW::map<BW::string, BW::wstring> contentID_;
 
-	UalManager ualManager_;
+    int         currentTool_;
+    CFrameWnd*  mainFrameWnd_;
+    IMainFrame* mainFrame_;
+    CWnd*       mainView_;
+    bool        ready_;
+    HCURSOR     addCursor_;
 
-	GUITABS::Manager panels_;
+    UalManager ualManager_;
 
-	BW::string currentLanguageName_; 
-	BW::string currentCountryName_; 
-	IModelEditorApp * editorApp_;
+    GUITABS::Manager panels_;
 
-	// guimanager stuff
-	bool recent_models( GUI::ItemPtr item );
-	bool recent_lights( GUI::ItemPtr item );
-	bool setLanguage( GUI::ItemPtr item );
-	unsigned int updateLanguage( GUI::ItemPtr item );
-	bool OnAppAbout( GUI::ItemPtr item );
-	bool OnShortcuts( GUI::ItemPtr item );
-	
+    BW::string       currentLanguageName_;
+    BW::string       currentCountryName_;
+    IModelEditorApp* editorApp_;
 
-	// panel stuff
-	void finishLoad();
-	bool initPanels();
-	bool loadDefaultPanels( GUI::ItemPtr item );
-	bool loadLastPanels( GUI::ItemPtr item );
-	BW::string getContentID( BW::string& pyID );
+    // guimanager stuff
+    bool         recent_models(GUI::ItemPtr item);
+    bool         recent_lights(GUI::ItemPtr item);
+    bool         setLanguage(GUI::ItemPtr item);
+    unsigned int updateLanguage(GUI::ItemPtr item);
+    bool         OnAppAbout(GUI::ItemPtr item);
+    bool         OnShortcuts(GUI::ItemPtr item);
 
-	// UAL callbacks
-	void ualItemDblClick( UalItemInfo* ii );
-	void ualStartDrag( UalItemInfo* ii );
-	void ualUpdateDrag( UalItemInfo* ii );
-	void ualEndDrag( UalItemInfo* ii );
-	void ualStartPopupMenu( UalItemInfo* ii, UalPopupMenuItems& menuItems );
-	void ualEndPopupMenu( UalItemInfo* ii, int result );
+    // panel stuff
+    void       finishLoad();
+    bool       initPanels();
+    bool       loadDefaultPanels(GUI::ItemPtr item);
+    bool       loadLastPanels(GUI::ItemPtr item);
+    BW::string getContentID(BW::string& pyID);
 
-	struct Impl;
-	Impl* pImpl;
-	friend Impl;
+    // UAL callbacks
+    void ualItemDblClick(UalItemInfo* ii);
+    void ualStartDrag(UalItemInfo* ii);
+    void ualUpdateDrag(UalItemInfo* ii);
+    void ualEndDrag(UalItemInfo* ii);
+    void ualStartPopupMenu(UalItemInfo* ii, UalPopupMenuItems& menuItems);
+    void ualEndPopupMenu(UalItemInfo* ii, int result);
+
+    struct Impl;
+    Impl* pImpl;
+    friend Impl;
 };
 
 BW_END_NAMESPACE

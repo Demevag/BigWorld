@@ -3,23 +3,22 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace controls
-{
+namespace controls {
 
-class DragImage
-{
-public:
-	DragImage( CImageList & imgList, const CPoint & pos, const CPoint & offset );
-	~DragImage();
+    class DragImage
+    {
+      public:
+        DragImage(CImageList& imgList, const CPoint& pos, const CPoint& offset);
+        ~DragImage();
 
-	void update( const CPoint & pos, BYTE alpha = 160 );
+        void update(const CPoint& pos, BYTE alpha = 160);
 
-private:
-	CImageList & imgList_;
-	HWND hwnd_;
-	CRect rect_;
-	CPoint offset_;
-};
+      private:
+        CImageList& imgList_;
+        HWND        hwnd_;
+        CRect       rect_;
+        CPoint      offset_;
+    };
 
 } // namespace controls
 

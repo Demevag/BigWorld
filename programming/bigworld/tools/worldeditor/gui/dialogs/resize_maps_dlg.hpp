@@ -1,7 +1,6 @@
 #ifndef RESIZE_MAPS_DLG_HPP
 #define RESIZE_MAPS_DLG_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "worldeditor/resource.h"
@@ -14,32 +13,35 @@ BW_BEGIN_NAMESPACE
 
 class ResizeMapsDlg : public CDialog
 {
-	DECLARE_DYNAMIC(ResizeMapsDlg)
+    DECLARE_DYNAMIC(ResizeMapsDlg)
 
-	DECLARE_AUTO_TOOLTIP( ResizeMapsDlg, CDialog )
+    DECLARE_AUTO_TOOLTIP(ResizeMapsDlg, CDialog)
 
-public:
-	ResizeMapsDlg(CWnd* pParent = NULL);   // standard constructor
-	virtual ~ResizeMapsDlg();
+  public:
+    ResizeMapsDlg(CWnd* pParent = NULL); // standard constructor
+    virtual ~ResizeMapsDlg();
 
-// Dialog Data
-	enum { IDD = IDD_RESIZEMAPS };
+    // Dialog Data
+    enum
+    {
+        IDD = IDD_RESIZEMAPS
+    };
 
-	uint32 blendsMapSize() const;
+    uint32 blendsMapSize() const;
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 
-	DECLARE_MESSAGE_MAP()
-public:
-	CStatic curBlendMapSize_;
-	controls::EditNumeric blendMapSize_;
-	CStatic iconWarning_;
-	CButton buttonCancel_;
-	CButton buttonCreate_;
+    DECLARE_MESSAGE_MAP()
+  public:
+    CStatic               curBlendMapSize_;
+    controls::EditNumeric blendMapSize_;
+    CStatic               iconWarning_;
+    CButton               buttonCancel_;
+    CButton               buttonCreate_;
 
-	virtual BOOL OnInitDialog();
-	afx_msg void OnBnClickedOk();
+    virtual BOOL OnInitDialog();
+    afx_msg void OnBnClickedOk();
 };
 
 BW_END_NAMESPACE

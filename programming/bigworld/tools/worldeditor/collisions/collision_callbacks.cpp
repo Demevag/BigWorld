@@ -4,12 +4,11 @@
 #include "physics2/collision_obstacle.hpp"
 #include "gizmo/matrix_mover.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "editor", 0 )
+DECLARE_DEBUG_COMPONENT2("editor", 0)
 
 BW_BEGIN_NAMESPACE
 
 ObstacleLockCollisionCallback ObstacleLockCollisionCallback::s_default;
-
 
 /**
  *  This operator is called by the collision code to test the collided
@@ -22,49 +21,48 @@ ObstacleLockCollisionCallback ObstacleLockCollisionCallback::s_default;
  *
  *  @see ChunkObstacle
  */
-int ObstacleLockCollisionCallback::operator() ( 
-	const CollisionObstacle & obstacle,
-	const WorldTriangle & triangle, float dist )
+int ObstacleLockCollisionCallback::operator()(const CollisionObstacle& obstacle,
+                                              const WorldTriangle&     triangle,
+                                              float                    dist)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	ChunkItem * pItem = obstacle.sceneObject().isType<ChunkItem>() ?
-			obstacle.sceneObject().getAs<ChunkItem>() : NULL;
-	MF_ASSERT( pItem );
-	if (!pItem)
-	{
-		return COLLIDE_ALL;
-	}
+    ChunkItem* pItem = obstacle.sceneObject().isType<ChunkItem>()
+                         ? obstacle.sceneObject().getAs<ChunkItem>()
+                         : NULL;
+    MF_ASSERT(pItem);
+    if (!pItem) {
+        return COLLIDE_ALL;
+    }
 
-	if( MatrixMover::moving() && !pItem->isShellModel() && WorldManager::instance().isItemSelected(pItem) )
-		return COLLIDE_ALL;
-	// ignore selected
-	if ( !pItem->edIsSnappable() )
-		return COLLIDE_ALL;
+    if (MatrixMover::moving() && !pItem->isShellModel() &&
+        WorldManager::instance().isItemSelected(pItem))
+        return COLLIDE_ALL;
+    // ignore selected
+    if (!pItem->edIsSnappable())
+        return COLLIDE_ALL;
 
-	// ignore back facing
-	Vector3 trin = obstacle.transform().applyVector( triangle.normal() );
-	trin.normalise();
-	Vector3 lookv = obstacle.transform().applyPoint( triangle.v0() ) -
-		Moo::rc().invView()[3];
-	lookv.normalise();
-	const float dotty = trin.dotProduct( lookv );
-	if ( dotty > 0.f )
-		return COLLIDE_ALL;
+    // ignore back facing
+    Vector3 trin = obstacle.transform().applyVector(triangle.normal());
+    trin.normalise();
+    Vector3 lookv =
+      obstacle.transform().applyPoint(triangle.v0()) - Moo::rc().invView()[3];
+    lookv.normalise();
+    const float dotty = trin.dotProduct(lookv);
+    if (dotty > 0.f)
+        return COLLIDE_ALL;
 
-	// choose if closer
-	if ( dist < dist_ )
-	{
-		dist_ = dist;
-		normal_ = trin;
-		pItem_ = pItem;
-		triangleNormal_ = triangle.normal();
-	}
+    // choose if closer
+    if (dist < dist_) {
+        dist_           = dist;
+        normal_         = trin;
+        pItem_          = pItem;
+        triangleNormal_ = triangle.normal();
+    }
 
-	//return COLLIDE_BEFORE;
-	return COLLIDE_ALL;
+    // return COLLIDE_BEFORE;
+    return COLLIDE_ALL;
 }
-
 
 /**
  *  This method releases the references/resources gathered during the collision
@@ -73,10 +71,9 @@ int ObstacleLockCollisionCallback::operator() (
  */
 void ObstacleLockCollisionCallback::clear()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	pItem_ = NULL;
+    pItem_ = NULL;
 }
 
 BW_END_NAMESPACE
-

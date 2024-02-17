@@ -6,80 +6,77 @@
 #include <stdio.h>
 #include <algorithm>
 
-
 BW_BEGIN_NAMESPACE
 
-TEST( FormatPath )
+TEST(FormatPath)
 {
-	BW::string validPath( "/home/tester/mf/" );
-	BW::string workingPathWithout( "/home/tester/mf" );
-	BW::string workingPathWith( "/home/tester/mf/" );
+    BW::string validPath("/home/tester/mf/");
+    BW::string workingPathWithout("/home/tester/mf");
+    BW::string workingPathWith("/home/tester/mf/");
 
-	CHECK_EQUAL( validPath, BWUtil::formatPath( workingPathWith ) );
-	CHECK_EQUAL( validPath, BWUtil::formatPath( workingPathWithout ) );
+    CHECK_EQUAL(validPath, BWUtil::formatPath(workingPathWith));
+    CHECK_EQUAL(validPath, BWUtil::formatPath(workingPathWithout));
 }
 
-
-TEST( SanitisePath )
+TEST(SanitisePath)
 {
-	BW::string validPath( "/home/tester/mf" );
+    BW::string validPath("/home/tester/mf");
 
 #ifdef _WIN32
-	BW::string windowsPath( "\\home\\tester\\mf" );
-	BWUtil::sanitisePath( windowsPath );
-	CHECK_EQUAL( validPath, windowsPath );
+    BW::string windowsPath("\\home\\tester\\mf");
+    BWUtil::sanitisePath(windowsPath);
+    CHECK_EQUAL(validPath, windowsPath);
 #else
-	BW::string linuxPath( "/home/tester/mf" );
-	BWUtil::sanitisePath( linuxPath );
-	CHECK_EQUAL( validPath, linuxPath );
+    BW::string linuxPath("/home/tester/mf");
+    BWUtil::sanitisePath(linuxPath);
+    CHECK_EQUAL(validPath, linuxPath);
 #endif
 }
 
-TEST( NormalisePath )
+TEST(NormalisePath)
 {
-	CHECK( BWUtil::normalisePath( "" ) == "." );
-	CHECK( BWUtil::normalisePath( "." ) == "." );
-	CHECK( BWUtil::normalisePath( ".." ) == ".." );
+    CHECK(BWUtil::normalisePath("") == ".");
+    CHECK(BWUtil::normalisePath(".") == ".");
+    CHECK(BWUtil::normalisePath("..") == "..");
 
-	CHECK( BWUtil::normalisePath( "..\\.." ) == "../.." );
-	CHECK( BWUtil::normalisePath( "..\\." ) == ".." );
-	CHECK( BWUtil::normalisePath( ".\\.." ) == ".." );
-	CHECK( BWUtil::normalisePath( "./.." ) == ".." );
-	CHECK( BWUtil::normalisePath( "../." ) == ".." );
+    CHECK(BWUtil::normalisePath("..\\..") == "../..");
+    CHECK(BWUtil::normalisePath("..\\.") == "..");
+    CHECK(BWUtil::normalisePath(".\\..") == "..");
+    CHECK(BWUtil::normalisePath("./..") == "..");
+    CHECK(BWUtil::normalisePath("../.") == "..");
 
-	CHECK( BWUtil::normalisePath( "../a" ) == "../a" );
-	CHECK( BWUtil::normalisePath( "../../a" ) == "../../a" );
-	CHECK( BWUtil::normalisePath( "../a/../b" ) == "../b" );
-	CHECK( BWUtil::normalisePath( "../a/../b/../" ) == ".." );
+    CHECK(BWUtil::normalisePath("../a") == "../a");
+    CHECK(BWUtil::normalisePath("../../a") == "../../a");
+    CHECK(BWUtil::normalisePath("../a/../b") == "../b");
+    CHECK(BWUtil::normalisePath("../a/../b/../") == "..");
 
-	CHECK( BWUtil::normalisePath( "a\\b\\c" ) == "a/b/c" );
-	CHECK( BWUtil::normalisePath( "a/b/c" ) == "a/b/c" );
-	CHECK( BWUtil::normalisePath( "/a/b/c" ) == "/a/b/c" );
-	CHECK( BWUtil::normalisePath( "a\\\\c" ) == "a/c" );
-	CHECK( BWUtil::normalisePath( "c:\\a\\b\\c" ) == "c:/a/b/c" );
-	CHECK( BWUtil::normalisePath( "c:\\a\\b\\c\\..\\..\\d" ) == "c:/a/d" );
-	CHECK( BWUtil::normalisePath( "c:\\a\\b\\c\\..\\..\\d\\.." ) == "c:/a" );
-	CHECK( BWUtil::normalisePath( "c:\\a\\b\\c\\..\\..\\d\\..\\.." ) == "c:/" );
+    CHECK(BWUtil::normalisePath("a\\b\\c") == "a/b/c");
+    CHECK(BWUtil::normalisePath("a/b/c") == "a/b/c");
+    CHECK(BWUtil::normalisePath("/a/b/c") == "/a/b/c");
+    CHECK(BWUtil::normalisePath("a\\\\c") == "a/c");
+    CHECK(BWUtil::normalisePath("c:\\a\\b\\c") == "c:/a/b/c");
+    CHECK(BWUtil::normalisePath("c:\\a\\b\\c\\..\\..\\d") == "c:/a/d");
+    CHECK(BWUtil::normalisePath("c:\\a\\b\\c\\..\\..\\d\\..") == "c:/a");
+    CHECK(BWUtil::normalisePath("c:\\a\\b\\c\\..\\..\\d\\..\\..") == "c:/");
 
-	CHECK( BWUtil::normalisePath( "a/./b/../c" ) == "a/c" );
-	CHECK( BWUtil::normalisePath( "a/../b/./c" ) == "b/c" );
-	CHECK( BWUtil::normalisePath( "a/../b/../c" ) == "c" );
-	CHECK( BWUtil::normalisePath( "a/../b/../c/.." ) == "." );
-	CHECK( BWUtil::normalisePath( "../a/../b/../c/.." ) == ".." );
-	CHECK( BWUtil::normalisePath( "../a/../b/../c/.." ) == ".." );
+    CHECK(BWUtil::normalisePath("a/./b/../c") == "a/c");
+    CHECK(BWUtil::normalisePath("a/../b/./c") == "b/c");
+    CHECK(BWUtil::normalisePath("a/../b/../c") == "c");
+    CHECK(BWUtil::normalisePath("a/../b/../c/..") == ".");
+    CHECK(BWUtil::normalisePath("../a/../b/../c/..") == "..");
+    CHECK(BWUtil::normalisePath("../a/../b/../c/..") == "..");
 }
 
-TEST( IsAbsolutePath )
+TEST(IsAbsolutePath)
 {
-	CHECK( !BWUtil::isAbsolutePath( "" ) );
-	CHECK( !BWUtil::isAbsolutePath( "." ) );
-	CHECK( !BWUtil::isAbsolutePath( "a/b/c" ) );
+    CHECK(!BWUtil::isAbsolutePath(""));
+    CHECK(!BWUtil::isAbsolutePath("."));
+    CHECK(!BWUtil::isAbsolutePath("a/b/c"));
 
-	CHECK( BWUtil::isAbsolutePath( "/." ) );
-	CHECK( BWUtil::isAbsolutePath( "/.." ) );
-	CHECK( BWUtil::isAbsolutePath( "/a/b/c" ) );
+    CHECK(BWUtil::isAbsolutePath("/."));
+    CHECK(BWUtil::isAbsolutePath("/.."));
+    CHECK(BWUtil::isAbsolutePath("/a/b/c"));
 }
-
 
 // Currently commented out as the implementation for windows and linux
 // differ in behaviour
@@ -103,18 +100,20 @@ TEST( FilePath )
 }
 #endif
 
-
-TEST( SanitiseNonPrintableChars )
+TEST(SanitiseNonPrintableChars)
 {
-	using namespace BW;
-	CHECK_EQUAL( sanitiseNonPrintableChars( string() ), string() );
-	CHECK_EQUAL( sanitiseNonPrintableChars( string( "\x0", 1 ) ), "\\x00" );
-	CHECK_EQUAL( sanitiseNonPrintableChars( "\t" ), "\\x09" );
-	CHECK_EQUAL( sanitiseNonPrintableChars( "\x7F" ), "\\x7F" );
-	CHECK_EQUAL( sanitiseNonPrintableChars( "\xFF" ), "\\xFF" );
-	CHECK_EQUAL( sanitiseNonPrintableChars(
-		string( "\x0""foobar\x0", sizeof( "\x0""foobar\x0" ) - 1 ) ),
-		"\\x00foobar\\x00" );
+    using namespace BW;
+    CHECK_EQUAL(sanitiseNonPrintableChars(string()), string());
+    CHECK_EQUAL(sanitiseNonPrintableChars(string("\x0", 1)), "\\x00");
+    CHECK_EQUAL(sanitiseNonPrintableChars("\t"), "\\x09");
+    CHECK_EQUAL(sanitiseNonPrintableChars("\x7F"), "\\x7F");
+    CHECK_EQUAL(sanitiseNonPrintableChars("\xFF"), "\\xFF");
+    CHECK_EQUAL(sanitiseNonPrintableChars(string("\x0"
+                                                 "foobar\x0",
+                                                 sizeof("\x0"
+                                                        "foobar\x0") -
+                                                   1)),
+                "\\x00foobar\\x00");
 }
 
 BW_END_NAMESPACE

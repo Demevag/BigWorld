@@ -29,569 +29,586 @@ BW_BEGIN_NAMESPACE
 ///////////////////////////////////////////////////////////////////////////////
 //	EntityIntProxy: A helper class to access entity INT properties
 ///////////////////////////////////////////////////////////////////////////////
-EntityIntProxy::EntityIntProxy( BasePropertiesHelper* props, int index ) :
-	props_( props ),
-	index_( index ),
-	useTransient_( false ),
-	min_( std::numeric_limits< int >::min() ),
-	max_( std::numeric_limits< int >::max() )
+EntityIntProxy::EntityIntProxy(BasePropertiesHelper* props, int index)
+  : props_(props)
+  , index_(index)
+  , useTransient_(false)
+  , min_(std::numeric_limits<int>::min())
+  , max_(std::numeric_limits<int>::max())
 {
-	MF_ASSERT_DEBUG( min_ < max_ );
+    MF_ASSERT_DEBUG(min_ < max_);
 }
 
-
-EntityIntProxy::EntityIntProxy( BasePropertiesHelper* props, int index,
-								int min, int max ) :
-	props_( props ),
-	index_( index ),
-	useTransient_( false ),
-	min_( min ),
-	max_( max )
+EntityIntProxy::EntityIntProxy(BasePropertiesHelper* props,
+                               int                   index,
+                               int                   min,
+                               int                   max)
+  : props_(props)
+  , index_(index)
+  , useTransient_(false)
+  , min_(min)
+  , max_(max)
 {
-	MF_ASSERT_DEBUG( min_ < max_ );
+    MF_ASSERT_DEBUG(min_ < max_);
 }
 
-
-
-bool EntityIntProxy::getRange( int& min, int& max ) const
+bool EntityIntProxy::getRange(int& min, int& max) const
 {
-	min = min_;
-	max = max_;
-	return true;
+    min = min_;
+    max = max_;
+    return true;
 }
-
 
 int EntityIntProxy::get() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (useTransient_)
-		return transientValue_;
-	else
-		return props_->propGetInt( index_ );
+    if (useTransient_)
+        return transientValue_;
+    else
+        return props_->propGetInt(index_);
 }
 
-
-void EntityIntProxy::setTransient( int i )
+void EntityIntProxy::setTransient(int i)
 {
-	transientValue_ = i;
-	useTransient_ = true;
+    transientValue_ = i;
+    useTransient_   = true;
 }
 
-
-bool EntityIntProxy::setPermanent( int i )
+bool EntityIntProxy::setPermanent(int i)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	useTransient_ = false;
+    useTransient_ = false;
 
-	// set it
-	bool ok = props_->propSetInt( index_, i );
-	if (!ok) return false;
+    // set it
+    bool ok = props_->propSetInt(index_, i);
+    if (!ok)
+        return false;
 
-	// flag the chunk as having changed
-	WorldManager::instance().changedChunk( props_->pItem()->chunk() );
-	props_->pItem()->edPostModify();
+    // flag the chunk as having changed
+    WorldManager::instance().changedChunk(props_->pItem()->chunk());
+    props_->pItem()->edPostModify();
 
-	// update its data section
-	props_->pItem()->edSave( props_->pItem()->pOwnSect() );
+    // update its data section
+    props_->pItem()->edSave(props_->pItem()->pOwnSect());
 
-	return true;
+    return true;
 }
-
 
 BW::string EntityIntProxy::opName()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return LocaliseUTF8( L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
-		props_->pItem()->edDescription().c_str(),
-		props_->propName( index_ ) );
+    return LocaliseUTF8(
+      L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
+      props_->pItem()->edDescription().c_str(),
+      props_->propName(index_));
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //	EntityUIntProxy: A helper class to access entity UINT properties
 ///////////////////////////////////////////////////////////////////////////////
-EntityUIntProxy::EntityUIntProxy( BasePropertiesHelper* props, int index ) :
-	props_( props ),
-	index_( index ),
-	useTransient_( false ),
-	min_( std::numeric_limits< uint32 >::min() ),
-	max_( std::numeric_limits< uint32 >::max() )
+EntityUIntProxy::EntityUIntProxy(BasePropertiesHelper* props, int index)
+  : props_(props)
+  , index_(index)
+  , useTransient_(false)
+  , min_(std::numeric_limits<uint32>::min())
+  , max_(std::numeric_limits<uint32>::max())
 {
-	MF_ASSERT_DEBUG( min_ < max_ );
+    MF_ASSERT_DEBUG(min_ < max_);
 }
 
-
-EntityUIntProxy::EntityUIntProxy( BasePropertiesHelper* props, int index,
-								uint32 min, uint32 max ) :
-	props_( props ),
-	index_( index ),
-	useTransient_( false ),
-	min_( min ),
-	max_( max )
+EntityUIntProxy::EntityUIntProxy(BasePropertiesHelper* props,
+                                 int                   index,
+                                 uint32                min,
+                                 uint32                max)
+  : props_(props)
+  , index_(index)
+  , useTransient_(false)
+  , min_(min)
+  , max_(max)
 {
-	MF_ASSERT_DEBUG( min_ < max_ );
+    MF_ASSERT_DEBUG(min_ < max_);
 }
 
-
-
-bool EntityUIntProxy::getRange( uint32& min, uint32& max ) const
+bool EntityUIntProxy::getRange(uint32& min, uint32& max) const
 {
-	min = min_;
-	max = max_;
-	return true;
+    min = min_;
+    max = max_;
+    return true;
 }
-
 
 uint32 EntityUIntProxy::get() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (useTransient_)
-		return transientValue_;
-	else
-		return props_->propGetUInt( index_ );
+    if (useTransient_)
+        return transientValue_;
+    else
+        return props_->propGetUInt(index_);
 }
 
-
-void EntityUIntProxy::setTransient( uint32 i )
+void EntityUIntProxy::setTransient(uint32 i)
 {
-	transientValue_ = i;
-	useTransient_ = true;
+    transientValue_ = i;
+    useTransient_   = true;
 }
 
-
-bool EntityUIntProxy::setPermanent( uint32 i )
+bool EntityUIntProxy::setPermanent(uint32 i)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	useTransient_ = false;
+    useTransient_ = false;
 
-	// set it
-	bool ok = props_->propSetUInt( index_, i );
-	if (!ok) return false;
+    // set it
+    bool ok = props_->propSetUInt(index_, i);
+    if (!ok)
+        return false;
 
-	// flag the chunk as having changed
-	WorldManager::instance().changedChunk( props_->pItem()->chunk() );
-	props_->pItem()->edPostModify();
+    // flag the chunk as having changed
+    WorldManager::instance().changedChunk(props_->pItem()->chunk());
+    props_->pItem()->edPostModify();
 
-	// update its data section
-	props_->pItem()->edSave( props_->pItem()->pOwnSect() );
+    // update its data section
+    props_->pItem()->edSave(props_->pItem()->pOwnSect());
 
-	return true;
+    return true;
 }
-
 
 BW::string EntityUIntProxy::opName()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return LocaliseUTF8( L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
-		props_->pItem()->edDescription().c_str(),
-		props_->propName( index_ ) );
+    return LocaliseUTF8(
+      L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
+      props_->pItem()->edDescription().c_str(),
+      props_->propName(index_));
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //	EntityFloatProxy: A helper class to access entity FLOAT properties
 ///////////////////////////////////////////////////////////////////////////////
-EntityFloatProxy::EntityFloatProxy( BasePropertiesHelper* props, int index ) :
-	props_( props ),
-	index_( index ),
-	useTransient_( false )
+EntityFloatProxy::EntityFloatProxy(BasePropertiesHelper* props, int index)
+  : props_(props)
+  , index_(index)
+  , useTransient_(false)
 {
 }
 
 float EntityFloatProxy::get() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (useTransient_)
-		return transientValue_;
-	else
-		return props_->propGetFloat( index_ );
+    if (useTransient_)
+        return transientValue_;
+    else
+        return props_->propGetFloat(index_);
 }
 
-void EntityFloatProxy::setTransient( float f )
+void EntityFloatProxy::setTransient(float f)
 {
-	transientValue_ = f;
-	useTransient_ = true;
+    transientValue_ = f;
+    useTransient_   = true;
 }
 
-bool EntityFloatProxy::setPermanent( float f )
+bool EntityFloatProxy::setPermanent(float f)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	useTransient_ = false;
+    useTransient_ = false;
 
-	// set it
-	bool ok = props_->propSetFloat( index_, f );
-	if (!ok) return false;
+    // set it
+    bool ok = props_->propSetFloat(index_, f);
+    if (!ok)
+        return false;
 
-	// flag the chunk as having changed
-	WorldManager::instance().changedChunk( props_->pItem()->chunk() );
-	props_->pItem()->edPostModify();
+    // flag the chunk as having changed
+    WorldManager::instance().changedChunk(props_->pItem()->chunk());
+    props_->pItem()->edPostModify();
 
-	// update its data section
-	props_->pItem()->edSave( props_->pItem()->pOwnSect() );
+    // update its data section
+    props_->pItem()->edSave(props_->pItem()->pOwnSect());
 
-	return true;
+    return true;
 }
 
 BW::string EntityFloatProxy::opName()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return LocaliseUTF8( L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
-		props_->pItem()->edDescription().c_str(),
-		props_->propName( index_ ) );
+    return LocaliseUTF8(
+      L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
+      props_->pItem()->edDescription().c_str(),
+      props_->propName(index_));
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //	EntityFloatEnumProxy: A helper class to access entity ENUM FLOAT properties
 ///////////////////////////////////////////////////////////////////////////////
-EntityFloatEnumProxy::EntityFloatEnumProxy( BasePropertiesHelper* props, int index, BW::map<float,int> enumMap ) :
-	props_( props ),
-	index_( index ),
-	useTransient_( false ),
-	enumMapString_( enumMap )
+EntityFloatEnumProxy::EntityFloatEnumProxy(BasePropertiesHelper* props,
+                                           int                   index,
+                                           BW::map<float, int>   enumMap)
+  : props_(props)
+  , index_(index)
+  , useTransient_(false)
+  , enumMapString_(enumMap)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	for( BW::map<float,int>::iterator iter = enumMapString_.begin(); iter != enumMapString_.end(); ++iter )
-		enumMapInt_[ iter->second ] = iter->first;
+    for (BW::map<float, int>::iterator iter = enumMapString_.begin();
+         iter != enumMapString_.end();
+         ++iter)
+        enumMapInt_[iter->second] = iter->first;
 }
 
 int EntityFloatEnumProxy::get() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (useTransient_)
-		return transientValue_;
-	else
-		return enumMapString_.find( props_->propGetFloat( index_ ) )->second;
+    if (useTransient_)
+        return transientValue_;
+    else
+        return enumMapString_.find(props_->propGetFloat(index_))->second;
 }
 
-void EntityFloatEnumProxy::setTransient( int i )
+void EntityFloatEnumProxy::setTransient(int i)
 {
-	transientValue_ = i;
-	useTransient_ = true;
+    transientValue_ = i;
+    useTransient_   = true;
 }
 
-bool EntityFloatEnumProxy::setPermanent( int i )
+bool EntityFloatEnumProxy::setPermanent(int i)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	useTransient_ = false;
+    useTransient_ = false;
 
-	// set it
-	bool ok = props_->propSetFloat( index_, enumMapInt_[ i ] );
-	if (!ok) return false;
+    // set it
+    bool ok = props_->propSetFloat(index_, enumMapInt_[i]);
+    if (!ok)
+        return false;
 
-	// flag the chunk as having changed
-	WorldManager::instance().changedChunk( props_->pItem()->chunk() );
-	props_->pItem()->edPostModify();
+    // flag the chunk as having changed
+    WorldManager::instance().changedChunk(props_->pItem()->chunk());
+    props_->pItem()->edPostModify();
 
-	// update its data section
-	props_->pItem()->edSave( props_->pItem()->pOwnSect() );
+    // update its data section
+    props_->pItem()->edSave(props_->pItem()->pOwnSect());
 
-	return true;
+    return true;
 }
 
 BW::string EntityFloatEnumProxy::opName()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return LocaliseUTF8( L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP", props_->pItem()->edDescription().c_str(),
-		props_->propName( index_ ) );
+    return LocaliseUTF8(
+      L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
+      props_->pItem()->edDescription().c_str(),
+      props_->propName(index_));
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //	EntityVector2Proxy: A helper class to access entity FLOAT properties
 ///////////////////////////////////////////////////////////////////////////////
-EntityVector2Proxy::EntityVector2Proxy( BasePropertiesHelper* props, int index ) :
-	props_( props ),
-	index_( index ),
-	useTransient_( false )
+EntityVector2Proxy::EntityVector2Proxy(BasePropertiesHelper* props, int index)
+  : props_(props)
+  , index_(index)
+  , useTransient_(false)
 {
 }
 
 Vector2 EntityVector2Proxy::get() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (useTransient_)
-		return transientValue_;
-	else
-		return props_->propGetVector2( index_ );
+    if (useTransient_)
+        return transientValue_;
+    else
+        return props_->propGetVector2(index_);
 }
 
-void EntityVector2Proxy::setTransient( Vector2 v )
+void EntityVector2Proxy::setTransient(Vector2 v)
 {
-	transientValue_ = v;
-	useTransient_ = true;
+    transientValue_ = v;
+    useTransient_   = true;
 }
 
-bool EntityVector2Proxy::setPermanent( Vector2 v )
+bool EntityVector2Proxy::setPermanent(Vector2 v)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	useTransient_ = false;
+    useTransient_ = false;
 
-	// set it
-	bool ok = props_->propSetVector2( index_, v );
-	if (!ok) return false;
+    // set it
+    bool ok = props_->propSetVector2(index_, v);
+    if (!ok)
+        return false;
 
-	// flag the chunk as having changed
-	WorldManager::instance().changedChunk( props_->pItem()->chunk() );
+    // flag the chunk as having changed
+    WorldManager::instance().changedChunk(props_->pItem()->chunk());
 
-	// update its data section
-	props_->pItem()->edSave( props_->pItem()->pOwnSect() );
+    // update its data section
+    props_->pItem()->edSave(props_->pItem()->pOwnSect());
 
-	return true;
+    return true;
 }
 
 BW::string EntityVector2Proxy::opName()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return LocaliseUTF8( L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
-		props_->pItem()->edDescription().c_str(),
-		props_->propName( index_ ) );
+    return LocaliseUTF8(
+      L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
+      props_->pItem()->edDescription().c_str(),
+      props_->propName(index_));
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
-//	EntityVector2EnumProxy: A helper class to access entity ENUM FLOAT properties
+//	EntityVector2EnumProxy: A helper class to access entity ENUM FLOAT
+// properties
 ///////////////////////////////////////////////////////////////////////////////
-EntityVector2EnumProxy::EntityVector2EnumProxy( BasePropertiesHelper* props, int index, BW::map<Vector2,int> enumMap ) :
-	props_( props ),
-	index_( index ),
-	useTransient_( false ),
-	enumMapString_( enumMap )
+EntityVector2EnumProxy::EntityVector2EnumProxy(BasePropertiesHelper* props,
+                                               int                   index,
+                                               BW::map<Vector2, int> enumMap)
+  : props_(props)
+  , index_(index)
+  , useTransient_(false)
+  , enumMapString_(enumMap)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	for( BW::map<Vector2,int>::iterator iter = enumMapString_.begin(); iter != enumMapString_.end(); ++iter )
-		enumMapInt_[ iter->second ] = iter->first;
+    for (BW::map<Vector2, int>::iterator iter = enumMapString_.begin();
+         iter != enumMapString_.end();
+         ++iter)
+        enumMapInt_[iter->second] = iter->first;
 }
 
 int EntityVector2EnumProxy::get() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (useTransient_)
-		return transientValue_;
-	else
-		return enumMapString_.find( props_->propGetVector2( index_ ) )->second;
+    if (useTransient_)
+        return transientValue_;
+    else
+        return enumMapString_.find(props_->propGetVector2(index_))->second;
 }
 
-void EntityVector2EnumProxy::setTransient( int i )
+void EntityVector2EnumProxy::setTransient(int i)
 {
-	transientValue_ = i;
-	useTransient_ = true;
+    transientValue_ = i;
+    useTransient_   = true;
 }
 
-bool EntityVector2EnumProxy::setPermanent( int i )
+bool EntityVector2EnumProxy::setPermanent(int i)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	useTransient_ = false;
+    useTransient_ = false;
 
-	// set it
-	bool ok = props_->propSetVector2( index_, enumMapInt_[ i ] );
-	if (!ok) return false;
+    // set it
+    bool ok = props_->propSetVector2(index_, enumMapInt_[i]);
+    if (!ok)
+        return false;
 
-	// flag the chunk as having changed
-	WorldManager::instance().changedChunk( props_->pItem()->chunk() );
+    // flag the chunk as having changed
+    WorldManager::instance().changedChunk(props_->pItem()->chunk());
 
-	// update its data section
-	props_->pItem()->edSave( props_->pItem()->pOwnSect() );
+    // update its data section
+    props_->pItem()->edSave(props_->pItem()->pOwnSect());
 
-	return true;
+    return true;
 }
 
 BW::string EntityVector2EnumProxy::opName()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return LocaliseUTF8( L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP", props_->pItem()->edDescription().c_str(),
-		props_->propName( index_ ) );
+    return LocaliseUTF8(
+      L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
+      props_->pItem()->edDescription().c_str(),
+      props_->propName(index_));
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //	EntityVector4Proxy: A helper class to access entity FLOAT properties
 ///////////////////////////////////////////////////////////////////////////////
-EntityVector4Proxy::EntityVector4Proxy( BasePropertiesHelper* props, int index ) :
-	props_( props ),
-	index_( index ),
-	useTransient_( false )
+EntityVector4Proxy::EntityVector4Proxy(BasePropertiesHelper* props, int index)
+  : props_(props)
+  , index_(index)
+  , useTransient_(false)
 {
 }
 
 Vector4 EntityVector4Proxy::get() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (useTransient_)
-		return transientValue_;
-	else
-		return props_->propGetVector4( index_ );
+    if (useTransient_)
+        return transientValue_;
+    else
+        return props_->propGetVector4(index_);
 }
 
-void EntityVector4Proxy::setTransient( Vector4 v )
+void EntityVector4Proxy::setTransient(Vector4 v)
 {
-	transientValue_ = v;
-	useTransient_ = true;
+    transientValue_ = v;
+    useTransient_   = true;
 }
 
-bool EntityVector4Proxy::setPermanent( Vector4 v )
+bool EntityVector4Proxy::setPermanent(Vector4 v)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	useTransient_ = false;
+    useTransient_ = false;
 
-	// set it
-	bool ok = props_->propSetVector4( index_, v );
-	if (!ok) return false;
+    // set it
+    bool ok = props_->propSetVector4(index_, v);
+    if (!ok)
+        return false;
 
-	// flag the chunk as having changed
-	WorldManager::instance().changedChunk( props_->pItem()->chunk() );
+    // flag the chunk as having changed
+    WorldManager::instance().changedChunk(props_->pItem()->chunk());
 
-	// update its data section
-	props_->pItem()->edSave( props_->pItem()->pOwnSect() );
+    // update its data section
+    props_->pItem()->edSave(props_->pItem()->pOwnSect());
 
-	return true;
+    return true;
 }
 
 BW::string EntityVector4Proxy::opName()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return LocaliseUTF8( L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
-		props_->pItem()->edDescription().c_str(),
-		props_->propName( index_ ) );
+    return LocaliseUTF8(
+      L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
+      props_->pItem()->edDescription().c_str(),
+      props_->propName(index_));
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
-//	EntityVector4EnumProxy: A helper class to access entity ENUM FLOAT properties
+//	EntityVector4EnumProxy: A helper class to access entity ENUM FLOAT
+// properties
 ///////////////////////////////////////////////////////////////////////////////
-EntityVector4EnumProxy::EntityVector4EnumProxy( BasePropertiesHelper* props, int index, BW::map<Vector4,int> enumMap ) :
-	props_( props ),
-	index_( index ),
-	useTransient_( false ),
-	enumMapString_( enumMap )
+EntityVector4EnumProxy::EntityVector4EnumProxy(BasePropertiesHelper* props,
+                                               int                   index,
+                                               BW::map<Vector4, int> enumMap)
+  : props_(props)
+  , index_(index)
+  , useTransient_(false)
+  , enumMapString_(enumMap)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	for( BW::map<Vector4,int>::iterator iter = enumMapString_.begin(); iter != enumMapString_.end(); ++iter )
-		enumMapInt_[ iter->second ] = iter->first;
+    for (BW::map<Vector4, int>::iterator iter = enumMapString_.begin();
+         iter != enumMapString_.end();
+         ++iter)
+        enumMapInt_[iter->second] = iter->first;
 }
 
 int EntityVector4EnumProxy::get() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (useTransient_)
-		return transientValue_;
-	else
-		return enumMapString_.find( props_->propGetVector4( index_ ) )->second;
+    if (useTransient_)
+        return transientValue_;
+    else
+        return enumMapString_.find(props_->propGetVector4(index_))->second;
 }
 
-void EntityVector4EnumProxy::setTransient( int i )
+void EntityVector4EnumProxy::setTransient(int i)
 {
-	transientValue_ = i;
-	useTransient_ = true;
+    transientValue_ = i;
+    useTransient_   = true;
 }
 
-bool EntityVector4EnumProxy::setPermanent( int i )
+bool EntityVector4EnumProxy::setPermanent(int i)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	useTransient_ = false;
+    useTransient_ = false;
 
-	// set it
-	bool ok = props_->propSetVector4( index_, enumMapInt_[ i ] );
-	if (!ok) return false;
+    // set it
+    bool ok = props_->propSetVector4(index_, enumMapInt_[i]);
+    if (!ok)
+        return false;
 
-	// flag the chunk as having changed
-	WorldManager::instance().changedChunk( props_->pItem()->chunk() );
+    // flag the chunk as having changed
+    WorldManager::instance().changedChunk(props_->pItem()->chunk());
 
-	// update its data section
-	props_->pItem()->edSave( props_->pItem()->pOwnSect() );
+    // update its data section
+    props_->pItem()->edSave(props_->pItem()->pOwnSect());
 
-	return true;
+    return true;
 }
 
 BW::string EntityVector4EnumProxy::opName()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return LocaliseUTF8( L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP", props_->pItem()->edDescription().c_str(),
-		props_->propName( index_ ) );
+    return LocaliseUTF8(
+      L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
+      props_->pItem()->edDescription().c_str(),
+      props_->propName(index_));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //	EntityStringProxy: A helper class to access entity STRING properties
 ///////////////////////////////////////////////////////////////////////////////
-EntityStringProxy::EntityStringProxy( BasePropertiesHelper* props, int index ) :
-	props_( props ),
-	index_( index )
+EntityStringProxy::EntityStringProxy(BasePropertiesHelper* props, int index)
+  : props_(props)
+  , index_(index)
 {
 }
 
 BW::string EntityStringProxy::get() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return props_->propGetString( index_ );
+    return props_->propGetString(index_);
 }
 
-void EntityStringProxy::setTransient( BW::string v )
+void EntityStringProxy::setTransient(BW::string v)
 {
-	// we do absolutely nothing here
+    // we do absolutely nothing here
 }
 
-bool EntityStringProxy::setPermanent( BW::string v )
+bool EntityStringProxy::setPermanent(BW::string v)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// set it
-	bool ok = props_->propSetString( index_, v );
-	if (!ok) return false;
+    // set it
+    bool ok = props_->propSetString(index_, v);
+    if (!ok)
+        return false;
 
-	// flag the chunk as having changed
-	WorldManager::instance().changedChunk( props_->pItem()->chunk() );
-	props_->pItem()->edPostModify();
+    // flag the chunk as having changed
+    WorldManager::instance().changedChunk(props_->pItem()->chunk());
+    props_->pItem()->edPostModify();
 
-	// update its data section
-	props_->pItem()->edSave( props_->pItem()->pOwnSect() );
+    // update its data section
+    props_->pItem()->edSave(props_->pItem()->pOwnSect());
 
-	return true;
+    return true;
 }
 
 BW::string EntityStringProxy::opName()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return LocaliseUTF8( L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
-		props_->pItem()->edDescription().c_str(),
-		props_->propName( index_ ) );
+    return LocaliseUTF8(
+      L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
+      props_->pItem()->edDescription().c_str(),
+      props_->propName(index_));
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //	EntityArrayProxy: A helper class to access entity ARRAY properties
 ///////////////////////////////////////////////////////////////////////////////
 
 /*static*/ LinkGizmoPtr EntityArrayProxy::s_pGizmo_;
-/*static*/ int EntityArrayProxy::s_gizmoCount_ = 0;
+/*static*/ int          EntityArrayProxy::s_gizmoCount_ = 0;
 
 /**
  *	Constructor, initialises the ArrayPropertyHelper member used in setting and
@@ -602,108 +619,101 @@ BW::string EntityStringProxy::opName()
  *					SequenceDataType.
  *	@param index	Index of the array property in the entity's properties list
  */
-EntityArrayProxy::EntityArrayProxy( BasePropertiesHelper* props, DataTypePtr dataType, int index ) :
-	props_( props ),
-	dataType_( static_cast<SequenceDataType*>( dataType.getObject() ) ),
-	index_( index ),
-	alwaysShowGizmo_( false ),
-	needsGizmo_( false )
+EntityArrayProxy::EntityArrayProxy(BasePropertiesHelper* props,
+                                   DataTypePtr           dataType,
+                                   int                   index)
+  : props_(props)
+  , dataType_(static_cast<SequenceDataType*>(dataType.getObject()))
+  , index_(index)
+  , alwaysShowGizmo_(false)
+  , needsGizmo_(false)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	DataTypePtr itemDataType = &(dataType_->getElemType());
-	PyObjectPtr ob( props->propGetPy( index_ ), PyObjectPtr::STEAL_REFERENCE );
-	array_.init( props_->pItem(), itemDataType, ob.getObject() );
+    DataTypePtr itemDataType = &(dataType_->getElemType());
+    PyObjectPtr ob(props->propGetPy(index_), PyObjectPtr::STEAL_REFERENCE);
+    array_.init(props_->pItem(), itemDataType, ob.getObject());
 
-	PropertiesHelper* propsHelper = NULL;
-	bool hasPatrolPathProperty = false;
-	if ( props->pItem()->isEditorEntity() )
-	{
-		EditorChunkEntity* entity = static_cast<EditorChunkEntity*>( props->pItem() );
-		propsHelper = entity->propHelper();
-		if ( entity->patrolListPropIdx() != -1 )
-			hasPatrolPathProperty = true;
-	}
-	else if ( props->pItem()->isEditorUserDataObject() )
-	{
-		EditorChunkUserDataObject* udo = static_cast<EditorChunkUserDataObject*>( props->pItem() );
-		propsHelper = udo->propHelper();
-	}
+    PropertiesHelper* propsHelper           = NULL;
+    bool              hasPatrolPathProperty = false;
+    if (props->pItem()->isEditorEntity()) {
+        EditorChunkEntity* entity =
+          static_cast<EditorChunkEntity*>(props->pItem());
+        propsHelper = entity->propHelper();
+        if (entity->patrolListPropIdx() != -1)
+            hasPatrolPathProperty = true;
+    } else if (props->pItem()->isEditorUserDataObject()) {
+        EditorChunkUserDataObject* udo =
+          static_cast<EditorChunkUserDataObject*>(props->pItem());
+        propsHelper = udo->propHelper();
+    }
 
-	if ( propsHelper != NULL )
-	{
-		if ( !hasPatrolPathProperty )
-		{
-			int linkPropCount = 0;
-			int numProps = propsHelper->propCount();
-			for (int i = 0; i < numProps && linkPropCount <= 1; ++i)
-			{
-				if ( (propsHelper->isUserDataObjectLink( i ) ||
-					 propsHelper->isUserDataObjectLinkArray( i )) &&
-					 propsHelper->pType()->property( i )->editable())
-					linkPropCount++;
-			}
-			if ( linkPropCount == 1 )
-				alwaysShowGizmo_ = true;
-		}
+    if (propsHelper != NULL) {
+        if (!hasPatrolPathProperty) {
+            int linkPropCount = 0;
+            int numProps      = propsHelper->propCount();
+            for (int i = 0; i < numProps && linkPropCount <= 1; ++i) {
+                if ((propsHelper->isUserDataObjectLink(i) ||
+                     propsHelper->isUserDataObjectLinkArray(i)) &&
+                    propsHelper->pType()->property(i)->editable())
+                    linkPropCount++;
+            }
+            if (linkPropCount == 1)
+                alwaysShowGizmo_ = true;
+        }
 
-		if ( propsHelper->isUserDataObjectLinkArray( index_ ) )
-		{
-			needsGizmo_ = true;
-		}
-	}
+        if (propsHelper->isUserDataObjectLinkArray(index_)) {
+            needsGizmo_ = true;
+        }
+    }
 }
-
 
 /**
  *	Destructor, destroys the array item properties
  */
 EntityArrayProxy::~EntityArrayProxy()
 {
-	clearProperties();
+    clearProperties();
 }
-
 
 /**
  *	This method deletes an item from the array. If it's a special case, such
- *	an Entity or a UserDataObject, it'll make all the checks to ensure that 
+ *	an Entity or a UserDataObject, it'll make all the checks to ensure that
  *	links are kept consistent with other Entities/UDOs.
  *
  *	@param index	index of the PropertyItem in the array.
  *	@return			true if the item could be deleted, false otherwise.
  */
-bool EntityArrayProxy::deleteArrayItem( int index )
+bool EntityArrayProxy::deleteArrayItem(int index)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if ( array_.isUserDataObjectLink( index ) )
-	{
-		DataSectionPtr linkInfo = array_.propGet( index );
-		BW::string guid = linkInfo->readString( "guid" );
-		BW::string chunkId = linkInfo->readString( "chunkId" );
-		bool validLink = !guid.empty() && !chunkId.empty();
+    if (array_.isUserDataObjectLink(index)) {
+        DataSectionPtr linkInfo  = array_.propGet(index);
+        BW::string     guid      = linkInfo->readString("guid");
+        BW::string     chunkId   = linkInfo->readString("chunkId");
+        bool           validLink = !guid.empty() && !chunkId.empty();
 
-		if ( validLink )
-		{
-			GeometryMapping* dirMap = WorldManager::instance().geometryMapping();
-			int16 gridX, gridZ;
-			if ( dirMap->gridFromChunkName( chunkId, gridX, gridZ ) &&
-				!EditorChunk::outsideChunkWriteable( gridX, gridZ ) )
-			{
-				// can't touch the other linker, so return
-				ERROR_MSG(
-					"The link to %s can't be removed because the chunk %s is not locked for writing.\n",
-					guid.c_str(), chunkId.c_str() );
-				return false;
-			}
-		}
-	}
+        if (validLink) {
+            GeometryMapping* dirMap =
+              WorldManager::instance().geometryMapping();
+            int16 gridX, gridZ;
+            if (dirMap->gridFromChunkName(chunkId, gridX, gridZ) &&
+                !EditorChunk::outsideChunkWriteable(gridX, gridZ)) {
+                // can't touch the other linker, so return
+                ERROR_MSG("The link to %s can't be removed because the chunk "
+                          "%s is not locked for writing.\n",
+                          guid.c_str(),
+                          chunkId.c_str());
+                return false;
+            }
+        }
+    }
 
-	array_.delItem( index );
+    array_.delItem(index);
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method is passed to the property list using a BWFunctor, and it's
@@ -711,93 +721,91 @@ bool EntityArrayProxy::deleteArrayItem( int index )
  *
  *	@param index	index of the PropertyItem in the array.
  */
-void EntityArrayProxy::delItem( int index )
+void EntityArrayProxy::delItem(int index)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// Need to determine what linker object this property currently points to
-	// and create an undo/redo operation that can reverse the deleting of this
-	// item
-	EditorChunkItemLinkable* linker = NULL;
-	BW::string guid;
-	BW::string chunkId;
-	bool validLink = false;
-	if ( array_.isUserDataObjectLink( index ) )
-	{
-		if ( props_->pItem()->isEditorEntity() )
-			linker = static_cast<EditorChunkEntity*>( props_->pItem() )->chunkItemLinker();
-		else if ( props_->pItem()->isEditorUserDataObject() )
-			linker = static_cast<EditorChunkUserDataObject*>( props_->pItem() )->chunkItemLinker();
+    // Need to determine what linker object this property currently points to
+    // and create an undo/redo operation that can reverse the deleting of this
+    // item
+    EditorChunkItemLinkable* linker = NULL;
+    BW::string               guid;
+    BW::string               chunkId;
+    bool                     validLink = false;
+    if (array_.isUserDataObjectLink(index)) {
+        if (props_->pItem()->isEditorEntity())
+            linker = static_cast<EditorChunkEntity*>(props_->pItem())
+                       ->chunkItemLinker();
+        else if (props_->pItem()->isEditorUserDataObject())
+            linker = static_cast<EditorChunkUserDataObject*>(props_->pItem())
+                       ->chunkItemLinker();
 
-		DataSectionPtr linkInfo = array_.propGet( index );
-		guid = linkInfo->readString( "guid" );
-		chunkId = linkInfo->readString( "chunkId" );
-		validLink = !guid.empty() && !chunkId.empty();
+        DataSectionPtr linkInfo = array_.propGet(index);
+        guid                    = linkInfo->readString("guid");
+        chunkId                 = linkInfo->readString("chunkId");
+        validLink               = !guid.empty() && !chunkId.empty();
 
-		if (validLink)
-		{
-			EditorChunkItemLinkable* targetEcil =
-				WorldManager::instance().linkerManager().forceLoad(guid, chunkId);
-			if (targetEcil && targetEcil->chunkItem() &&
-				!targetEcil->chunkItem()->edIsEditable())
-			{
-				// Link end is frozen or its chunk is not locked for editing.
-				ERROR_MSG( "The linked object '%s' is not editable\n", guid.c_str() );
-				return;
-			}
+        if (validLink) {
+            EditorChunkItemLinkable* targetEcil =
+              WorldManager::instance().linkerManager().forceLoad(guid, chunkId);
+            if (targetEcil && targetEcil->chunkItem() &&
+                !targetEcil->chunkItem()->edIsEditable()) {
+                // Link end is frozen or its chunk is not locked for editing.
+                ERROR_MSG("The linked object '%s' is not editable\n",
+                          guid.c_str());
+                return;
+            }
 
-			UndoRedo::instance().add
-				(
-					new LinkerUpdateLinkOperation(linker, guid, chunkId)
-				);
-		}
-	}
-	
-	UndoRedo::instance().add(new EntityArrayUndo( props_, index_ ));
-    
-	if ( !deleteArrayItem( index ) )
-	{
-		props_->resetSelUpdate( true );
-		return;
-	}
+            UndoRedo::instance().add(
+              new LinkerUpdateLinkOperation(linker, guid, chunkId));
+        }
+    }
 
-	// Update the linker object previously linked to by this property
-	if (linker && validLink)
-	{
-		EditorChunkItemLinkable* targetEcil =
-			WorldManager::instance().linkerManager().forceLoad(guid, chunkId);
-		if (targetEcil)
-		{
-			WorldManager::instance().linkerManager().updateLink(linker, targetEcil);
+    UndoRedo::instance().add(new EntityArrayUndo(props_, index_));
 
-			// Save the changes
-			targetEcil->chunkItem()->edSave( targetEcil->chunkItem()->pOwnSect() );
-			if ( targetEcil->chunkItem()->chunk() != NULL )
-				WorldManager::instance().changedChunk( targetEcil->chunkItem()->chunk() );
-		}
-		else
-		{
-			WARNING_MSG( "A bad linkable node is being removed." );
-		}
-	}
+    if (!deleteArrayItem(index)) {
+        props_->resetSelUpdate(true);
+        return;
+    }
 
-	// flag the chunk as having changed
-	WorldManager::instance().changedChunk( props_->pItem()->chunk() );
-	props_->pItem()->edPostModify();
+    // Update the linker object previously linked to by this property
+    if (linker && validLink) {
+        EditorChunkItemLinkable* targetEcil =
+          WorldManager::instance().linkerManager().forceLoad(guid, chunkId);
+        if (targetEcil) {
+            WorldManager::instance().linkerManager().updateLink(linker,
+                                                                targetEcil);
 
-	// update its data section
-	props_->pItem()->edSave( props_->pItem()->pOwnSect() );
+            // Save the changes
+            targetEcil->chunkItem()->edSave(
+              targetEcil->chunkItem()->pOwnSect());
+            if (targetEcil->chunkItem()->chunk() != NULL)
+                WorldManager::instance().changedChunk(
+                  targetEcil->chunkItem()->chunk());
+        } else {
+            WARNING_MSG("A bad linkable node is being removed.");
+        }
+    }
 
-	// resetSelUpdate changes the selection, which can shuffle things around
-	// and decref the proxy, so let's keep it alive inside the method.
-	EntityArrayProxyPtr localCopy( this );
+    // flag the chunk as having changed
+    WorldManager::instance().changedChunk(props_->pItem()->chunk());
+    props_->pItem()->edPostModify();
 
-	// Refresh item
-	props_->refreshItem();
+    // update its data section
+    props_->pItem()->edSave(props_->pItem()->pOwnSect());
 
-	UndoRedo::instance().barrier( LocaliseUTF8( L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/UNDO_DEL_ARRAY_ITEM"), false );
+    // resetSelUpdate changes the selection, which can shuffle things around
+    // and decref the proxy, so let's keep it alive inside the method.
+    EntityArrayProxyPtr localCopy(this);
+
+    // Refresh item
+    props_->refreshItem();
+
+    UndoRedo::instance().barrier(
+      LocaliseUTF8(L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/"
+                   L"UNDO_DEL_ARRAY_ITEM"),
+      false);
 }
-
 
 /**
  *	This method is called when the array property item is added to the actual
@@ -806,33 +814,29 @@ void EntityArrayProxy::delItem( int index )
  *
  *	@param parent	Parent (array) property.
  */
-void EntityArrayProxy::elect( GeneralProperty* parent )
+void EntityArrayProxy::elect(GeneralProperty* parent)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// create properties
-	createProperties( parent );
+    // create properties
+    createProperties(parent);
 
-	for( size_t i = 0; i < properties_.size(); ++i )
-	{
-		properties_[i]->elect();
-	}
+    for (size_t i = 0; i < properties_.size(); ++i) {
+        properties_[i]->elect();
+    }
 
-	if (needsGizmo_)
-	{
-		if (s_gizmoCount_++ == 0)
-		{
-			s_pGizmo_ = new LinkGizmo(
-					new EntityArrayLinkProxy( this, props_->pItem(), props_->propName( index_ ) ),
-					NULL );
-		}
-		if (alwaysShowGizmo_)
-		{
-			GizmoManager::instance().addGizmo( s_pGizmo_ );
-		}
-	}
+    if (needsGizmo_) {
+        if (s_gizmoCount_++ == 0) {
+            s_pGizmo_ =
+              new LinkGizmo(new EntityArrayLinkProxy(
+                              this, props_->pItem(), props_->propName(index_)),
+                            NULL);
+        }
+        if (alwaysShowGizmo_) {
+            GizmoManager::instance().addGizmo(s_pGizmo_);
+        }
+    }
 }
-
 
 /**
  *	This method is called when the array property item is removed
@@ -840,23 +844,20 @@ void EntityArrayProxy::elect( GeneralProperty* parent )
  *
  *	@param parent	Parent (array) property.
  */
-void EntityArrayProxy::expel( GeneralProperty* parent )
+void EntityArrayProxy::expel(GeneralProperty* parent)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (needsGizmo_ && --s_gizmoCount_ == 0 && s_pGizmo_)
-	{
-		GizmoManager::instance().removeGizmo( s_pGizmo_ );
-		s_pGizmo_ = NULL;
-	}
+    if (needsGizmo_ && --s_gizmoCount_ == 0 && s_pGizmo_) {
+        GizmoManager::instance().removeGizmo(s_pGizmo_);
+        s_pGizmo_ = NULL;
+    }
 
-	for( size_t i = 0; i < properties_.size(); ++i )
-	{
-		properties_[i]->expel();
-	}
-	clearProperties();
+    for (size_t i = 0; i < properties_.size(); ++i) {
+        properties_[i]->expel();
+    }
+    clearProperties();
 }
-
 
 /**
  *	This method is called when the array property item is selected
@@ -864,20 +865,19 @@ void EntityArrayProxy::expel( GeneralProperty* parent )
  *
  *	@param parent	Parent (array) property.
  */
-void EntityArrayProxy::select( GeneralProperty* parent )
+void EntityArrayProxy::select(GeneralProperty* parent)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (needsGizmo_ && s_pGizmo_)
-	{
-		GizmoSetPtr set = new GizmoSet();
-		s_pGizmo_->update( new EntityArrayLinkProxy(
-					this, props_->pItem(), props_->propName( index_ ) ), NULL );
-		set->add( s_pGizmo_ );
-		GizmoManager::instance().forceGizmoSet( set );
-	}
+    if (needsGizmo_ && s_pGizmo_) {
+        GizmoSetPtr set = new GizmoSet();
+        s_pGizmo_->update(new EntityArrayLinkProxy(
+                            this, props_->pItem(), props_->propName(index_)),
+                          NULL);
+        set->add(s_pGizmo_);
+        GizmoManager::instance().forceGizmoSet(set);
+    }
 }
-
 
 /**
  *	This method returns the properties helper used by this proxy.
@@ -886,9 +886,8 @@ void EntityArrayProxy::select( GeneralProperty* parent )
  */
 BasePropertiesHelper* EntityArrayProxy::propsHelper()
 {
-	return props_;
+    return props_;
 }
-
 
 /**
  *	This method returns the index of the array in the properties.
@@ -897,9 +896,8 @@ BasePropertiesHelper* EntityArrayProxy::propsHelper()
  */
 int EntityArrayProxy::index()
 {
-	return index_;
+    return index_;
 }
-
 
 /**
  *	This method returns the array properties helper used by this proxy.
@@ -908,9 +906,8 @@ int EntityArrayProxy::index()
  */
 ArrayPropertiesHelper* EntityArrayProxy::arrayPropsHelper()
 {
-	return &array_;
+    return &array_;
 }
-
 
 /**
  *	This method adds an item to the array using the ArrayPropertiesHelper.
@@ -919,37 +916,37 @@ ArrayPropertiesHelper* EntityArrayProxy::arrayPropsHelper()
  */
 bool EntityArrayProxy::addItem()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-    UndoRedo::instance().add(new EntityArrayUndo( props_, index_ ));
+    UndoRedo::instance().add(new EntityArrayUndo(props_, index_));
 
-	array_.addItem();
+    array_.addItem();
 
-	// flag the chunk as having changed
-	WorldManager::instance().changedChunk( props_->pItem()->chunk() );
-	props_->pItem()->edPostModify();
+    // flag the chunk as having changed
+    WorldManager::instance().changedChunk(props_->pItem()->chunk());
+    props_->pItem()->edPostModify();
 
-	// update its data section
-	props_->pItem()->edSave( props_->pItem()->pOwnSect() );
+    // update its data section
+    props_->pItem()->edSave(props_->pItem()->pOwnSect());
 
-	UndoRedo::instance().barrier( LocaliseUTF8( L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/UNDO_ADD_ARRAY_ITEM"), false );
+    UndoRedo::instance().barrier(
+      LocaliseUTF8(L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/"
+                   L"UNDO_ADD_ARRAY_ITEM"),
+      false);
 
-	return true;
+    return true;
 }
-
 
 /**
  *	Structure used by EntityArrayProxy::delItems
  */
-namespace
-{
-	struct Link
-	{
-		BW::string guid;
-		BW::string chunkId;
-	};
+namespace {
+    struct Link
+    {
+        BW::string guid;
+        BW::string chunkId;
+    };
 }
-
 
 /**
  *	This method deletes all items from the array iterating using the
@@ -959,112 +956,112 @@ namespace
  */
 bool EntityArrayProxy::delItems()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// Need to determine what linker objects this property array points to
-	// and create an undo/redo operation for each.  These linker objects
-	// will also need to be updated after the array has been cleared below
-	bool validLink = false;
-	Link* linkArray = NULL;
-	int linkArraySize = 0;
-	EditorChunkItemLinkable* linker = NULL;
-	if ( array_.isUserDataObjectLink(0) )
-	{
-		linkArraySize = array_.propCount();
-		linkArray = new Link[linkArraySize];
+    // Need to determine what linker objects this property array points to
+    // and create an undo/redo operation for each.  These linker objects
+    // will also need to be updated after the array has been cleared below
+    bool                     validLink     = false;
+    Link*                    linkArray     = NULL;
+    int                      linkArraySize = 0;
+    EditorChunkItemLinkable* linker        = NULL;
+    if (array_.isUserDataObjectLink(0)) {
+        linkArraySize = array_.propCount();
+        linkArray     = new Link[linkArraySize];
 
-		if ( props_->pItem()->isEditorEntity() )
-			linker = static_cast<EditorChunkEntity*>( props_->pItem() )->chunkItemLinker();
-		else if ( props_->pItem()->isEditorUserDataObject() )
-			linker = static_cast<EditorChunkUserDataObject*>( props_->pItem() )->chunkItemLinker();
+        if (props_->pItem()->isEditorEntity())
+            linker = static_cast<EditorChunkEntity*>(props_->pItem())
+                       ->chunkItemLinker();
+        else if (props_->pItem()->isEditorUserDataObject())
+            linker = static_cast<EditorChunkUserDataObject*>(props_->pItem())
+                       ->chunkItemLinker();
 
-		// First make sure all items about to be deleted are editable.
-		for (int i = 0; i < array_.propCount(); i++)
-		{
-			DataSectionPtr linkInfo = array_.propGet( i );
-			BW::string guid = linkInfo->readString( "guid" );
-			BW::string chunkId = linkInfo->readString( "chunkId" );
-			if (!guid.empty() && !chunkId.empty())
-			{
-				EditorChunkItemLinkable* targetEcil =
-					WorldManager::instance().linkerManager().forceLoad(guid, chunkId);
-				if (targetEcil && targetEcil->chunkItem() &&
-					!targetEcil->chunkItem()->edIsEditable())
-				{
-					// Link end is frozen or its chunk is not locked for editing.
-					ERROR_MSG( "The linked object '%s' is not editable\n", guid.c_str() );
-					bw_safe_delete_array( linkArray );
-					return false;
-				}
-			}
-		}
+        // First make sure all items about to be deleted are editable.
+        for (int i = 0; i < array_.propCount(); i++) {
+            DataSectionPtr linkInfo = array_.propGet(i);
+            BW::string     guid     = linkInfo->readString("guid");
+            BW::string     chunkId  = linkInfo->readString("chunkId");
+            if (!guid.empty() && !chunkId.empty()) {
+                EditorChunkItemLinkable* targetEcil =
+                  WorldManager::instance().linkerManager().forceLoad(guid,
+                                                                     chunkId);
+                if (targetEcil && targetEcil->chunkItem() &&
+                    !targetEcil->chunkItem()->edIsEditable()) {
+                    // Link end is frozen or its chunk is not locked for
+                    // editing.
+                    ERROR_MSG("The linked object '%s' is not editable\n",
+                              guid.c_str());
+                    bw_safe_delete_array(linkArray);
+                    return false;
+                }
+            }
+        }
 
-		for (int i = 0; i < array_.propCount(); i++)
-		{
-			DataSectionPtr linkInfo = array_.propGet( i );
-			BW::string guid = linkInfo->readString( "guid" );
-			BW::string chunkId = linkInfo->readString( "chunkId" );
-			if (!guid.empty() && !chunkId.empty())
-			{
-				validLink = true;
+        for (int i = 0; i < array_.propCount(); i++) {
+            DataSectionPtr linkInfo = array_.propGet(i);
+            BW::string     guid     = linkInfo->readString("guid");
+            BW::string     chunkId  = linkInfo->readString("chunkId");
+            if (!guid.empty() && !chunkId.empty()) {
+                validLink = true;
 
-				linkArray[i].guid = guid;
-				linkArray[i].chunkId = chunkId;
+                linkArray[i].guid    = guid;
+                linkArray[i].chunkId = chunkId;
 
-				UndoRedo::instance().add
-					(
-						new LinkerUpdateLinkOperation(linker, guid, chunkId)
-					);
-			}
-		}
-	}
-    UndoRedo::instance().add(new EntityArrayUndo( props_, index_ ));
+                UndoRedo::instance().add(
+                  new LinkerUpdateLinkOperation(linker, guid, chunkId));
+            }
+        }
+    }
+    UndoRedo::instance().add(new EntityArrayUndo(props_, index_));
 
-	while( array_.propCount() > 0 )
-		if ( !deleteArrayItem( array_.propCount() - 1 ) )
-			break;
+    while (array_.propCount() > 0)
+        if (!deleteArrayItem(array_.propCount() - 1))
+            break;
 
-	// Update the linkers the properties were pointing to
-	if (linker && validLink)
-	{
-		for (int i = 0; i < linkArraySize; i++)
-		{
-			if (!linkArray[i].guid.empty() && !linkArray[i].chunkId.empty())
-			{
-				EditorChunkItemLinkable* targetEcil =
-					WorldManager::instance().linkerManager().forceLoad(linkArray[i].guid, linkArray[i].chunkId);		
-				WorldManager::instance().linkerManager().updateLink(linker, targetEcil);
+    // Update the linkers the properties were pointing to
+    if (linker && validLink) {
+        for (int i = 0; i < linkArraySize; i++) {
+            if (!linkArray[i].guid.empty() && !linkArray[i].chunkId.empty()) {
+                EditorChunkItemLinkable* targetEcil =
+                  WorldManager::instance().linkerManager().forceLoad(
+                    linkArray[i].guid, linkArray[i].chunkId);
+                WorldManager::instance().linkerManager().updateLink(linker,
+                                                                    targetEcil);
 
-				// Save the changes
-				targetEcil->chunkItem()->edSave( targetEcil->chunkItem()->pOwnSect() );
-				if ( targetEcil->chunkItem()->chunk() != NULL )
-					WorldManager::instance().changedChunk( targetEcil->chunkItem()->chunk() );
-			}
-		}
-	}
+                // Save the changes
+                targetEcil->chunkItem()->edSave(
+                  targetEcil->chunkItem()->pOwnSect());
+                if (targetEcil->chunkItem()->chunk() != NULL)
+                    WorldManager::instance().changedChunk(
+                      targetEcil->chunkItem()->chunk());
+            }
+        }
+    }
 
-	// Delete link array if it was created
-	bw_safe_delete_array(linkArray);
+    // Delete link array if it was created
+    bw_safe_delete_array(linkArray);
 
-	// flag the chunk as having changed
-	WorldManager::instance().changedChunk( props_->pItem()->chunk() );
-	props_->pItem()->edPostModify();
+    // flag the chunk as having changed
+    WorldManager::instance().changedChunk(props_->pItem()->chunk());
+    props_->pItem()->edPostModify();
 
-	// update its data section
-	props_->pItem()->edSave( props_->pItem()->pOwnSect() );
+    // update its data section
+    props_->pItem()->edSave(props_->pItem()->pOwnSect());
 
-	// resetSelUpdate changes the selection, which can shuffle things around
-	// and decref the proxy, so let's keep it alive inside the method.
-	EntityArrayProxyPtr localCopy( this );
+    // resetSelUpdate changes the selection, which can shuffle things around
+    // and decref the proxy, so let's keep it alive inside the method.
+    EntityArrayProxyPtr localCopy(this);
 
-	// Refresh item
-	props_->refreshItem();
+    // Refresh item
+    props_->refreshItem();
 
-	UndoRedo::instance().barrier( LocaliseUTF8( L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/UNDO_CLEAR_ARRAY"), false );
+    UndoRedo::instance().barrier(
+      LocaliseUTF8(
+        L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/UNDO_CLEAR_ARRAY"),
+      false);
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method creates a property item in the property list for each array
@@ -1072,59 +1069,52 @@ bool EntityArrayProxy::delItems()
  *
  *	@param parent	Parent (array) property.
  */
-void EntityArrayProxy::createProperties( GeneralProperty* parent )
+void EntityArrayProxy::createProperties(GeneralProperty* parent)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	clearProperties();
+    clearProperties();
 
-	int cnt = array_.propCount();
-	if ( cnt < 0 )
-		return;
+    int cnt = array_.propCount();
+    if (cnt < 0)
+        return;
 
-	DataTypePtr elemDataType = &(dataType_->getElemType());
-	for( int i = 0; i < cnt; ++i )
-	{
-		BW::stringstream name;
-		name << parent->name().c_str() << "[" << i << "]";
-		GeneralProperty* prop = elemDataType->createEditorProperty(
-			name.str(), static_cast<ChunkItem*>( array_.pItem() ), i );
+    DataTypePtr elemDataType = &(dataType_->getElemType());
+    for (int i = 0; i < cnt; ++i) {
+        BW::stringstream name;
+        name << parent->name().c_str() << "[" << i << "]";
+        GeneralProperty* prop = elemDataType->createEditorProperty(
+          name.str(), static_cast<ChunkItem*>(array_.pItem()), i);
 
-		if ( !prop )
-		{
-			EntityPropertyParserPtr parser = EntityPropertyParser::create(
-				NULL, Name( name.str() ), elemDataType, NULL );
-			if ( parser )
-			{
-				prop = parser->createProperty(
-					&array_, i, Name( name.str() ), elemDataType, NULL, NULL );
-			}
-		}
-		if ( prop )
-		{
-			prop->setGroup(
-				parent->name()[0] ? parent->getGroup().str() + parent->name().c_str() :
-				parent->getGroup() );
-			properties_.push_back( prop );
-		}
-	}
+        if (!prop) {
+            EntityPropertyParserPtr parser = EntityPropertyParser::create(
+              NULL, Name(name.str()), elemDataType, NULL);
+            if (parser) {
+                prop = parser->createProperty(
+                  &array_, i, Name(name.str()), elemDataType, NULL, NULL);
+            }
+        }
+        if (prop) {
+            prop->setGroup(parent->name()[0]
+                             ? parent->getGroup().str() + parent->name().c_str()
+                             : parent->getGroup());
+            properties_.push_back(prop);
+        }
+    }
 }
-
 
 /**
  *	This method deletes all the array items' properties.
  */
 void EntityArrayProxy::clearProperties()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	for( size_t i = 0; i < properties_.size(); ++i )
-	{
-		properties_[i]->deleteSelf();
-	}
-	properties_.clear();
+    for (size_t i = 0; i < properties_.size(); ++i) {
+        properties_[i]->deleteSelf();
+    }
+    properties_.clear();
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // EntityArrayLinkProxy : handles linking when the array property is selected.
@@ -1133,13 +1123,14 @@ void EntityArrayProxy::clearProperties()
 /**
  *	Constructor, initialises member variables.
  */
-EntityArrayLinkProxy::EntityArrayLinkProxy( EntityArrayProxy* arrayProxy, EditorChunkItem* item, const BW::string& propName ) :
-	arrayProxy_ ( arrayProxy ),
-	item_( item ),
-	propName_( propName )
+EntityArrayLinkProxy::EntityArrayLinkProxy(EntityArrayProxy* arrayProxy,
+                                           EditorChunkItem*  item,
+                                           const BW::string& propName)
+  : arrayProxy_(arrayProxy)
+  , item_(item)
+  , propName_(propName)
 {
 }
-
 
 /**
  *	This method returns the link type.
@@ -1148,15 +1139,14 @@ EntityArrayLinkProxy::EntityArrayLinkProxy( EntityArrayProxy* arrayProxy, Editor
  */
 EntityArrayLinkProxy::LinkType EntityArrayLinkProxy::linkType() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if ( item_->isEditorUserDataObject() &&
-		static_cast<EditorChunkUserDataObject*>(item_)->showAddGizmo( propName_ ) )
-		return (LinkType)( LT_ADD | LT_LINK );
-	else
-		return LT_LINK;
+    if (item_->isEditorUserDataObject() &&
+        static_cast<EditorChunkUserDataObject*>(item_)->showAddGizmo(propName_))
+        return (LinkType)(LT_ADD | LT_LINK);
+    else
+        return LT_LINK;
 }
-
 
 /**
  *	This method is only an empty implementation of a pure virtual method.
@@ -1165,62 +1155,65 @@ EntityArrayLinkProxy::LinkType EntityArrayLinkProxy::linkType() const
  */
 MatrixProxyPtr EntityArrayLinkProxy::createCopyForLink()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	//TODO: add undo support
+    // TODO: add undo support
 
     // Create a copy of node_:
-    SmartPointer<EditorChunkUserDataObject> newNode = new EditorChunkUserDataObject();
+    SmartPointer<EditorChunkUserDataObject> newNode =
+      new EditorChunkUserDataObject();
     DataSectionPtr newSection = new XMLSection("copy");
-    newSection->copy( item_->pOwnSect() );
-	newSection->delChild( "guid" );
-	newSection->delChild( "backLinks" );
+    newSection->copy(item_->pOwnSect());
+    newSection->delChild("guid");
+    newSection->delChild("backLinks");
 
-	// delete the link property, or the whole array if it's an array of links
-	DataSectionPtr propsSection = newSection->openSection( "properties" );
-	if ( propsSection != NULL )
-		propsSection->delChild( propName_ );
+    // delete the link property, or the whole array if it's an array of links
+    DataSectionPtr propsSection = newSection->openSection("properties");
+    if (propsSection != NULL)
+        propsSection->delChild(propName_);
 
-	// and load it.
-    newNode->load( newSection, item_->chunk() );
-    item_->chunk()->addStaticItem( newNode );
-    newNode->edTransform( item_->edTransform(), false );
+    // and load it.
+    newNode->load(newSection, item_->chunk());
+    item_->chunk()->addStaticItem(newNode);
+    newNode->edTransform(item_->edTransform(), false);
 
-	ChunkItemPtr pItem = (ChunkItem *)newNode.get();
-	
-	UndoRedo::instance().add(
-		new ChunkItemExistenceOperation( pItem, NULL ) );
+    ChunkItemPtr pItem = (ChunkItem*)newNode.get();
 
-	// set the link in the current node to point to the newNode
-	ArrayPropertiesHelper* propHelper = arrayProxy_->arrayPropsHelper();
-	propHelper->addItem();
-	int newItemIndex = propHelper->propCount() - 1;
+    UndoRedo::instance().add(new ChunkItemExistenceOperation(pItem, NULL));
 
-	PropertyIndex propIdx( arrayProxy_->index() );
-	propIdx.append( newItemIndex );
+    // set the link in the current node to point to the newNode
+    ArrayPropertiesHelper* propHelper = arrayProxy_->arrayPropsHelper();
+    propHelper->addItem();
+    int newItemIndex = propHelper->propCount() - 1;
 
-	WorldManager::instance().linkerManager().addLink(
-		static_cast<EditorChunkUserDataObject*>( item_ )->chunkItemLinker(), newNode->chunkItemLinker(), propIdx );
-	
-	PyObjectPtr ob( arrayProxy_->arrayPropsHelper()->propGetPy( newItemIndex ), PyObjectPtr::STEAL_REFERENCE );
-	bw_utf8tow( UserDataObjectLinkDataType::asString( ob.getObject() ), linkValue_ );
+    PropertyIndex propIdx(arrayProxy_->index());
+    propIdx.append(newItemIndex);
 
-	// Set the new node as the selection:
-	int curSel = PropTable::table()->propertyList()->GetCurSel();
+    WorldManager::instance().linkerManager().addLink(
+      static_cast<EditorChunkUserDataObject*>(item_)->chunkItemLinker(),
+      newNode->chunkItemLinker(),
+      propIdx);
+
+    PyObjectPtr ob(arrayProxy_->arrayPropsHelper()->propGetPy(newItemIndex),
+                   PyObjectPtr::STEAL_REFERENCE);
+    bw_utf8tow(UserDataObjectLinkDataType::asString(ob.getObject()),
+               linkValue_);
+
+    // Set the new node as the selection:
+    int curSel = PropTable::table()->propertyList()->GetCurSel();
     BW::vector<ChunkItemPtr> items;
-    items.push_back( newNode );
-    WorldManager::instance().setSelection( items );
-	PropTable::table()->propertyList()->selectItem( curSel, false );
+    items.push_back(newNode);
+    WorldManager::instance().setSelection(items);
+    PropTable::table()->propertyList()->selectItem(curSel, false);
 
-	newNode->propHelper()->resetSelUpdate( true );
+    newNode->propHelper()->resetSelUpdate(true);
 
     // Return a ChunkItemMatrix for the new node so that its position can be
     // edited:
-    ChunkItemMatrix *result = new ChunkItemMatrix( newNode );
+    ChunkItemMatrix* result = new ChunkItemMatrix(newNode);
     result->recordState();
     return result;
 }
-
 
 /**
  *	This method determines if 'this->item' can be linked to the destination
@@ -1231,50 +1224,50 @@ MatrixProxyPtr EntityArrayLinkProxy::createCopyForLink()
  *						cannot be linked, TS_NO_TARGET if there is no valid
  *						object to link to under the locator.
  */
-LinkProxy::TargetState EntityArrayLinkProxy::canLinkAtPos(ToolLocatorPtr toolLocator) const
+LinkProxy::TargetState EntityArrayLinkProxy::canLinkAtPos(
+  ToolLocatorPtr toolLocator) const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	UserDataObjectLinkLocator *locator =
-		( UserDataObjectLinkLocator *)toolLocator.getObject();
+    UserDataObjectLinkLocator* locator =
+      (UserDataObjectLinkLocator*)toolLocator.getObject();
 
     if (locator->chunkItem() == NULL || !item_->edIsEditable())
-		return TS_NO_TARGET;
+        return TS_NO_TARGET;
 
-	if ( locator->chunkItem().getObject() == item_ )
-		return TS_NO_TARGET;	// avoid linking to ourselves
+    if (locator->chunkItem().getObject() == item_)
+        return TS_NO_TARGET; // avoid linking to ourselves
 
-	if (!locator->chunkItem()->edIsEditable())
-		return TS_CANT_LINK;
+    if (!locator->chunkItem()->edIsEditable())
+        return TS_CANT_LINK;
 
-	EditorChunkItem *other = static_cast<EditorChunkItem*>( locator->chunkItem().getObject() );
-	if ( other == NULL || !other->isEditorUserDataObject() )
-		return TS_NO_TARGET;
+    EditorChunkItem* other =
+      static_cast<EditorChunkItem*>(locator->chunkItem().getObject());
+    if (other == NULL || !other->isEditorUserDataObject())
+        return TS_NO_TARGET;
 
-	EditorChunkUserDataObject *ecudo = static_cast<EditorChunkUserDataObject*>( other );
+    EditorChunkUserDataObject* ecudo =
+      static_cast<EditorChunkUserDataObject*>(other);
 
-	// check with them if they are linkable
-	if ( item_->isEditorEntity() )
-	{
-		EditorChunkEntity *entity =  static_cast<EditorChunkEntity*>( item_ );
-		PyObjectPtr ecudoInfo( ecudo->infoDict(), PyObjectPtr::STEAL_REFERENCE );
-		if ( !entity->canLinkTo(
-				arrayProxy_->propsHelper()->propName( arrayProxy_->index() ),
-				ecudoInfo.getObject() ) )
-			return TS_CANT_LINK;
-	}
-	else if ( item_->isEditorUserDataObject() )
-	{
-		EditorChunkUserDataObject *udo =  static_cast<EditorChunkUserDataObject*>( item_ );
-		if ( !udo->canLinkTo(
-				arrayProxy_->propsHelper()->propName( arrayProxy_->index() ),
-				ecudo ) )
-			return TS_CANT_LINK;
-	}
+    // check with them if they are linkable
+    if (item_->isEditorEntity()) {
+        EditorChunkEntity* entity = static_cast<EditorChunkEntity*>(item_);
+        PyObjectPtr ecudoInfo(ecudo->infoDict(), PyObjectPtr::STEAL_REFERENCE);
+        if (!entity->canLinkTo(
+              arrayProxy_->propsHelper()->propName(arrayProxy_->index()),
+              ecudoInfo.getObject()))
+            return TS_CANT_LINK;
+    } else if (item_->isEditorUserDataObject()) {
+        EditorChunkUserDataObject* udo =
+          static_cast<EditorChunkUserDataObject*>(item_);
+        if (!udo->canLinkTo(
+              arrayProxy_->propsHelper()->propName(arrayProxy_->index()),
+              ecudo))
+            return TS_CANT_LINK;
+    }
 
-	return TS_CAN_LINK;
+    return TS_CAN_LINK;
 }
-
 
 /**
  *	This method creates a link between 'this->item' and the destination item
@@ -1285,55 +1278,63 @@ LinkProxy::TargetState EntityArrayLinkProxy::canLinkAtPos(ToolLocatorPtr toolLoc
  */
 void EntityArrayLinkProxy::createLinkAtPos(ToolLocatorPtr toolLocator)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-    UserDataObjectLinkLocator *locator =
-        (UserDataObjectLinkLocator *)toolLocator.getObject();
+    UserDataObjectLinkLocator* locator =
+      (UserDataObjectLinkLocator*)toolLocator.getObject();
     ChunkItemPtr chunkItem = locator->chunkItem();
     if (chunkItem == NULL)
         return;
 
     // The linked udo
-    EditorChunkItem *other = static_cast<EditorChunkItem*>( chunkItem.getObject() );
+    EditorChunkItem* other =
+      static_cast<EditorChunkItem*>(chunkItem.getObject());
     if (!other->isEditorUserDataObject())
         return;
-    EditorChunkUserDataObject *ecudo = static_cast<EditorChunkUserDataObject*>( other );
+    EditorChunkUserDataObject* ecudo =
+      static_cast<EditorChunkUserDataObject*>(other);
 
     if (!ecudo->edIsEditable())
-		return;
+        return;
 
-	EditorChunkItemLinkable* linker = NULL;
-	if ( item_->isEditorEntity() )
-		linker = static_cast<EditorChunkEntity*>( item_ )->chunkItemLinker();
-	else if ( item_->isEditorUserDataObject() )
-		linker = static_cast<EditorChunkUserDataObject*>( item_ )->chunkItemLinker();
-	else
-		return;
+    EditorChunkItemLinkable* linker = NULL;
+    if (item_->isEditorEntity())
+        linker = static_cast<EditorChunkEntity*>(item_)->chunkItemLinker();
+    else if (item_->isEditorUserDataObject())
+        linker =
+          static_cast<EditorChunkUserDataObject*>(item_)->chunkItemLinker();
+    else
+        return;
 
-	// TODO: Create undo point
-    // UndoRedo::instance().add(new EntityArrayUndo( arrayProxy_->propsHelper(), arrayProxy_->index() ));
-	// UndoRedo::instance().barrier( LocaliseUTF8(L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/UNDO_ADD_ARRAY_ITEM"), false );
+    // TODO: Create undo point
+    // UndoRedo::instance().add(new EntityArrayUndo( arrayProxy_->propsHelper(),
+    // arrayProxy_->index() )); UndoRedo::instance().barrier(
+    // LocaliseUTF8(L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/UNDO_ADD_ARRAY_ITEM"),
+    // false );
 
-	// add the new element to the array and link it
-	ArrayPropertiesHelper* propHelper = arrayProxy_->arrayPropsHelper();
-	propHelper->addItem();
-	int newItemIndex = propHelper->propCount() - 1;
+    // add the new element to the array and link it
+    ArrayPropertiesHelper* propHelper = arrayProxy_->arrayPropsHelper();
+    propHelper->addItem();
+    int newItemIndex = propHelper->propCount() - 1;
 
-	PropertyIndex propIdx( arrayProxy_->index() );
-	propIdx.append( newItemIndex );
+    PropertyIndex propIdx(arrayProxy_->index());
+    propIdx.append(newItemIndex);
 
-	WorldManager::instance().linkerManager().addLink(
-		linker, ecudo->chunkItemLinker(), propIdx );
+    WorldManager::instance().linkerManager().addLink(
+      linker, ecudo->chunkItemLinker(), propIdx);
 
-	PyObjectPtr ob( arrayProxy_->arrayPropsHelper()->propGetPy( newItemIndex ), PyObjectPtr::STEAL_REFERENCE );
-	bw_utf8tow( UserDataObjectLinkDataType::asString( ob.getObject() ), linkValue_ );
+    PyObjectPtr ob(arrayProxy_->arrayPropsHelper()->propGetPy(newItemIndex),
+                   PyObjectPtr::STEAL_REFERENCE);
+    bw_utf8tow(UserDataObjectLinkDataType::asString(ob.getObject()),
+               linkValue_);
 
-	UndoRedo::instance().barrier(
-		LocaliseUTF8( L"WORLDEDITOR/WORLDEDITOR/PROPERTIES/STATION_NODE_LINK_PROXY/LINK_NODES" ), false);
+    UndoRedo::instance().barrier(
+      LocaliseUTF8(L"WORLDEDITOR/WORLDEDITOR/PROPERTIES/"
+                   L"STATION_NODE_LINK_PROXY/LINK_NODES"),
+      false);
 
-	propHelper->resetSelUpdate( true );
+    propHelper->resetSelUpdate(true);
 }
-
 
 /**
  *	This method creates the appropriate locator for linking the array.
@@ -1342,126 +1343,126 @@ void EntityArrayLinkProxy::createLinkAtPos(ToolLocatorPtr toolLocator)
  */
 ToolLocatorPtr EntityArrayLinkProxy::createLocator() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	BW::string nlinkValue;
-	bw_wtoutf8( linkValue_, nlinkValue );
-    return 
-        ToolLocatorPtr
-        (
-            new  UserDataObjectLinkLocator(nlinkValue, UserDataObjectLinkLocator::LOCATE_USER_DATA_OBJECTS), 
-            true
-        );
+    BW::string nlinkValue;
+    bw_wtoutf8(linkValue_, nlinkValue);
+    return ToolLocatorPtr(
+      new UserDataObjectLinkLocator(
+        nlinkValue, UserDataObjectLinkLocator::LOCATE_USER_DATA_OBJECTS),
+      true);
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
-//	EntityStringEnumProxy: A helper class to access entity ENUM STRING properties
+//	EntityStringEnumProxy: A helper class to access entity ENUM STRING
+// properties
 ///////////////////////////////////////////////////////////////////////////////
-EntityStringEnumProxy::EntityStringEnumProxy( BasePropertiesHelper* props, int index, BW::map<BW::string,int> enumMap ) :
-	props_( props ),
-	index_( index ),
-	useTransient_( false ),
-	enumMapString_( enumMap )
+EntityStringEnumProxy::EntityStringEnumProxy(BasePropertiesHelper*    props,
+                                             int                      index,
+                                             BW::map<BW::string, int> enumMap)
+  : props_(props)
+  , index_(index)
+  , useTransient_(false)
+  , enumMapString_(enumMap)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	for( BW::map<BW::string,int>::iterator iter = enumMapString_.begin(); iter != enumMapString_.end(); ++iter )
-		enumMapInt_[ iter->second ] = iter->first;
+    for (BW::map<BW::string, int>::iterator iter = enumMapString_.begin();
+         iter != enumMapString_.end();
+         ++iter)
+        enumMapInt_[iter->second] = iter->first;
 }
 
 int EntityStringEnumProxy::get() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (useTransient_)
-		return transientValue_;
-	else
-		return enumMapString_.find(
-			props_->propGetString( index_ ) )->second;
+    if (useTransient_)
+        return transientValue_;
+    else
+        return enumMapString_.find(props_->propGetString(index_))->second;
 }
 
-void EntityStringEnumProxy::setTransient( int i )
+void EntityStringEnumProxy::setTransient(int i)
 {
-	transientValue_ = i;
-	useTransient_ = true;
+    transientValue_ = i;
+    useTransient_   = true;
 }
 
-bool EntityStringEnumProxy::setPermanent( int i )
+bool EntityStringEnumProxy::setPermanent(int i)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	useTransient_ = false;
+    useTransient_ = false;
 
-	// set it
-	bool ok = props_->propSetString( index_, enumMapInt_[ i ] );
-	if (!ok) return false;
+    // set it
+    bool ok = props_->propSetString(index_, enumMapInt_[i]);
+    if (!ok)
+        return false;
 
-	// flag the chunk as having changed
-	WorldManager::instance().changedChunk( props_->pItem()->chunk() );
-	props_->pItem()->edPostModify();
+    // flag the chunk as having changed
+    WorldManager::instance().changedChunk(props_->pItem()->chunk());
+    props_->pItem()->edPostModify();
 
-	// update its data section
-	props_->pItem()->edSave( props_->pItem()->pOwnSect() );
+    // update its data section
+    props_->pItem()->edSave(props_->pItem()->pOwnSect());
 
-	return true;
+    return true;
 }
 
 BW::string EntityStringEnumProxy::opName()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return LocaliseUTF8( L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
-		props_->pItem()->edDescription().c_str(),
-		props_->propName( index_ ) );
+    return LocaliseUTF8(
+      L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
+      props_->pItem()->edDescription().c_str(),
+      props_->propName(index_));
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //	EntityPythonProxy: A helper class to access the entity specific properties
 ///////////////////////////////////////////////////////////////////////////////
-EntityPythonProxy::EntityPythonProxy( BasePropertiesHelper* props, int index ) :
-	props_( props ),
-	index_( index )
+EntityPythonProxy::EntityPythonProxy(BasePropertiesHelper* props, int index)
+  : props_(props)
+  , index_(index)
 {
 }
 
 PyObjectPtr EntityPythonProxy::get() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return PyObjectPtr( props_->propGetPy( index_ ), PyObjectPtr::STEAL_REFERENCE );
+    return PyObjectPtr(props_->propGetPy(index_), PyObjectPtr::STEAL_REFERENCE);
 }
 
-void EntityPythonProxy::setTransient( PyObjectPtr v )
+void EntityPythonProxy::setTransient(PyObjectPtr v)
 {
-	// we do absolutely nothing here
+    // we do absolutely nothing here
 }
 
-bool EntityPythonProxy::setPermanent( PyObjectPtr v )
+bool EntityPythonProxy::setPermanent(PyObjectPtr v)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if( props_->propSetPy(
-			index_, v.getObject() ) )
-	{
-		WorldManager::instance().changedChunk( props_->pItem()->chunk() );
-		props_->pItem()->edPostModify();
+    if (props_->propSetPy(index_, v.getObject())) {
+        WorldManager::instance().changedChunk(props_->pItem()->chunk());
+        props_->pItem()->edPostModify();
 
-		// update its data section
-		props_->pItem()->edSave( props_->pItem()->pOwnSect() );
-	}
-	return true;
+        // update its data section
+        props_->pItem()->edSave(props_->pItem()->pOwnSect());
+    }
+    return true;
 }
 
 BW::string EntityPythonProxy::opName()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return LocaliseUTF8( L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
-		props_->pItem()->edDescription().c_str(),
-		props_->propName( index_ ) );
+    return LocaliseUTF8(
+      L"WORLDEDITOR/WORLDEDITOR/CHUNK/EDITOR_ENTITY_PROXY/SET_OP",
+      props_->pItem()->edDescription().c_str(),
+      props_->propName(index_));
 }
 
 BW_END_NAMESPACE
-

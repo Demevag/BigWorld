@@ -7,7 +7,6 @@
 
 #include "network/basictypes.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -17,50 +16,51 @@ BW_BEGIN_NAMESPACE
  */
 class EntityBoundLevels
 {
-public:
-	EntityBoundLevels( int numLevels ) :
-		entityBounds_( numLevels ),
-		entityLoads_( numLevels )
-	{
-	}
+  public:
+    EntityBoundLevels(int numLevels)
+      : entityBounds_(numLevels)
+      , entityLoads_(numLevels)
+    {
+    }
 
-	// Data manipulation
-	void updateFromStream( BinaryIStream & data );
+    // Data manipulation
+    void updateFromStream(BinaryIStream& data);
 
-	void addToStream( BinaryOStream & stream ) const;
+    void addToStream(BinaryOStream& stream) const;
 
-	void merge( const EntityBoundLevels & left,
-				const EntityBoundLevels & right,
-				bool isHorizontal, float position );
+    void merge(const EntityBoundLevels& left,
+               const EntityBoundLevels& right,
+               bool                     isHorizontal,
+               float                    position);
 
+    // Calculations
+    float entityBoundForLoadDiff(float loadDiff,
+                                 bool  isHorizontal,
+                                 bool  isMax,
+                                 float defaultPosition) const;
 
-	// Calculations
-	float entityBoundForLoadDiff( float loadDiff,
-								bool isHorizontal,
-								bool isMax,
-								float defaultPosition ) const;
+  private:
+    // Accessors
+    const BW::Rect& entityBounds(int level = 0) const;
+    const BW::Rect& entityLoads(int level = 0) const;
 
-private:
-	// Accessors
-	const BW::Rect & entityBounds( int level = 0 ) const;
-	const BW::Rect & entityLoads( int level = 0 ) const;
+    // Helpers
+    void takeSingleBranch(const EntityBoundLevels& single,
+                          bool                     isY,
+                          bool                     isMax,
+                          float                    partitionPosition);
 
-	// Helpers
-	void takeSingleBranch(
-			const EntityBoundLevels & single,
-			bool isY, bool isMax, float partitionPosition );
+    void mergeTwoBranches(const EntityBoundLevels& left,
+                          const EntityBoundLevels& right,
+                          bool                     isY,
+                          bool                     isMax);
 
-	void mergeTwoBranches(
-			const EntityBoundLevels & left,
-			const EntityBoundLevels & right,
-			bool isY, bool isMax );
+    typedef BW::vector<BW::Rect> Rects;
 
-	typedef BW::vector< BW::Rect > Rects;
-
-	Rects    entityBounds_;
-	// entityLoads_ isn't used as an array of actual rectangles
-	// 'left' loads may be greater than a 'right' ones and vice versa
-	Rects    entityLoads_;
+    Rects entityBounds_;
+    // entityLoads_ isn't used as an array of actual rectangles
+    // 'left' loads may be greater than a 'right' ones and vice versa
+    Rects entityLoads_;
 };
 
 BW_END_NAMESPACE

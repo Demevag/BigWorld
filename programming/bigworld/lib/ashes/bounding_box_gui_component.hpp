@@ -6,7 +6,6 @@
 #include "math/boundbox.hpp"
 #include "pyscript/script_math.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /*~ class GUI.BoundingBoxGUIComponent
@@ -25,15 +24,15 @@ BW_BEGIN_NAMESPACE
  *	to give the top left corner.
  *
  *	The outside of the corners line up with the outside of the bounding
- *	rectangle.  The images can be scaled using the functionality of 
+ *	rectangle.  The images can be scaled using the functionality of
  *	SimpleGUIComponent.  If they are too big, then they overlap.
  *
  *	The bounding components are also semi-constrained by the screen.
- *	For example, if the source matrix goes gradually off the left of the screen, then the
- *	two left hand corners will remain on the left hand edge of the screen until
- *	the right hand corners have followed the source off.  At this point, the left
- *	hand corners will gradually move off screen.  The same logic applies to the other
- *	screen edges.
+ *	For example, if the source matrix goes gradually off the left of the screen,
+ *then the two left hand corners will remain on the left hand edge of the screen
+ *until the right hand corners have followed the source off.  At this point, the
+ *left hand corners will gradually move off screen.  The same logic applies to
+ *the other screen edges.
  *
  *	In order to make the BoundingBoxGUIComponent appear, it needs both to be
  *  added to the GUI tree, and it needs	to have its source attribute assigned.
@@ -66,70 +65,75 @@ BW_BEGIN_NAMESPACE
  */
 class BoundingBoxGUIComponent : public SimpleGUIComponent
 {
-	Py_Header( BoundingBoxGUIComponent, SimpleGUIComponent )
+    Py_Header(BoundingBoxGUIComponent, SimpleGUIComponent)
 
-public:
-	BoundingBoxGUIComponent( const BW::string& textureName,
-		PyTypeObject * pType = &s_type_ );
-	~BoundingBoxGUIComponent();
+      public
+      : BoundingBoxGUIComponent(const BW::string& textureName,
+                                PyTypeObject*     pType = &s_type_);
+    ~BoundingBoxGUIComponent();
 
-	virtual void	width( float w );
-	virtual void	height( float h );
-	virtual void	colour( uint32 col );
-	virtual void	textureName( const BW::string& name );
+    virtual void width(float w);
+    virtual void height(float h);
+    virtual void colour(uint32 col);
+    virtual void textureName(const BW::string& name);
 
-	///The bounding box component has a different update / shader model
-	virtual void	applyShaders( float dTime );
-	virtual void	applyShader( GUIShader& shader, float dTime );
-	virtual void	internalApplyShaders( float dTime );
+    /// The bounding box component has a different update / shader model
+    virtual void applyShaders(float dTime);
+    virtual void applyShader(GUIShader& shader, float dTime);
+    virtual void internalApplyShaders(float dTime);
 
-	void		source( MatrixProviderPtr mpp )		{ pSource_ = mpp; }
+    void source(MatrixProviderPtr mpp) { pSource_ = mpp; }
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-	PY_RW_ATTRIBUTE_DECLARE( pSource_, source )
-	PY_RW_ATTRIBUTE_DECLARE( clipSpaceSource_, clipSpaceSource )
-	PY_RW_ATTRIBUTE_DECLARE( clipToBox_, clipToBox )
-	PY_RW_ATTRIBUTE_DECLARE( absoluteSubspace_, absoluteSubspace )
-	PY_RW_ATTRIBUTE_DECLARE( offsetSubspace_, offsetSubspace )
-	PY_RW_ATTRIBUTE_DECLARE( alwaysDisplayChildren_, alwaysDisplayChildren )
+    PY_RW_ATTRIBUTE_DECLARE(pSource_, source)
+    PY_RW_ATTRIBUTE_DECLARE(clipSpaceSource_, clipSpaceSource)
+    PY_RW_ATTRIBUTE_DECLARE(clipToBox_, clipToBox)
+    PY_RW_ATTRIBUTE_DECLARE(absoluteSubspace_, absoluteSubspace)
+    PY_RW_ATTRIBUTE_DECLARE(offsetSubspace_, offsetSubspace)
+    PY_RW_ATTRIBUTE_DECLARE(alwaysDisplayChildren_, alwaysDisplayChildren)
 
-	void		update( float dTime, float relParentWidth, float relParentHeight );
-	void		draw( Moo::DrawContext& drawContext, bool reallyDraw, bool overlay = true );
+    void update(float dTime, float relParentWidth, float relParentHeight);
+    void draw(Moo::DrawContext& drawContext,
+              bool              reallyDraw,
+              bool              overlay = true);
 
-private:
-	BoundingBoxGUIComponent(const BoundingBoxGUIComponent&);
-	BoundingBoxGUIComponent& operator=(const BoundingBoxGUIComponent&);
+  private:
+    BoundingBoxGUIComponent(const BoundingBoxGUIComponent&);
+    BoundingBoxGUIComponent& operator=(const BoundingBoxGUIComponent&);
 
-	void		preDraw( float relParentWidth, float relParentHeight );
+    void preDraw(float relParentWidth, float relParentHeight);
 
-	bool		calculatePostDivideMinMax( Vector3& min, Vector3& max,
-										   BoundingBox& bb,
-										   const Matrix& objectToCamera,
-										   const Matrix& cameraToClip  );
+    bool calculatePostDivideMinMax(Vector3&      min,
+                                   Vector3&      max,
+                                   BoundingBox&  bb,
+                                   const Matrix& objectToCamera,
+                                   const Matrix& cameraToClip);
 
-	SimpleGUIComponent*	corners_[4];
-	BoundingBox			bb_;
-	MatrixProviderPtr	pSource_;
-	float				dTime_;
-	bool				onScreen_;
+    SimpleGUIComponent* corners_[4];
+    BoundingBox         bb_;
+    MatrixProviderPtr   pSource_;
+    float               dTime_;
+    bool                onScreen_;
 
-	bool				clipSpaceSource_;
-	bool				clipToBox_;
-	bool				alwaysDisplayChildren_;
-	int					absoluteSubspace_;
-	Vector3				offsetSubspace_;
+    bool    clipSpaceSource_;
+    bool    clipToBox_;
+    bool    alwaysDisplayChildren_;
+    int     absoluteSubspace_;
+    Vector3 offsetSubspace_;
 
-	Vector3				minInClip_;
-	Vector3				maxInClip_;
+    Vector3 minInClip_;
+    Vector3 maxInClip_;
 
-	Matrix				savedView_;
-	Matrix				savedProjection_;
+    Matrix savedView_;
+    Matrix savedProjection_;
 
-	virtual bool load( DataSectionPtr pSect, const BW::string& ownerName, LoadBindings & bindings );
-	virtual void save( DataSectionPtr pSect, SaveBindings & bindings );
+    virtual bool load(DataSectionPtr    pSect,
+                      const BW::string& ownerName,
+                      LoadBindings&     bindings);
+    virtual void save(DataSectionPtr pSect, SaveBindings& bindings);
 
-	COMPONENT_FACTORY_DECLARE( BoundingBoxGUIComponent("") )
+    COMPONENT_FACTORY_DECLARE(BoundingBoxGUIComponent(""))
 };
 
 BW_END_NAMESPACE
@@ -137,7 +141,6 @@ BW_END_NAMESPACE
 #ifdef CODE_INLINE
 #include "bounding_box_gui_component.ipp"
 #endif
-
 
 #endif
 /*bounding_box_gui_component.hpp*/

@@ -6,7 +6,6 @@
 
 #include "romp/console.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -20,32 +19,32 @@ BW_BEGIN_NAMESPACE
  */
 class EngineStatistics : public StatisticsConsole::Handler
 {
-public:
-	~EngineStatistics();
+  public:
+    ~EngineStatistics();
 
-	static EngineStatistics & instance();
+    static EngineStatistics& instance();
 
-	// Accessors
-	void tick( float dTime );
+    // Accessors
+    void tick(float dTime);
 
-	static bool logSlowFrames_;
+    static bool logSlowFrames_;
 
-private:
-	EngineStatistics();
+  private:
+    EngineStatistics();
 
-	virtual void displayStatistics( XConsole & console );
+    virtual void displayStatistics(XConsole& console);
 
-	void dogWatchDisplay( XConsole& console );
+    void dogWatchDisplay(XConsole& console);
 
-	EngineStatistics( const EngineStatistics& );
-	EngineStatistics& operator=( const EngineStatistics& );
+    EngineStatistics(const EngineStatistics&);
+    EngineStatistics& operator=(const EngineStatistics&);
 
-	friend std::ostream& operator<<( std::ostream&, const EngineStatistics& );
+    friend std::ostream& operator<<(std::ostream&, const EngineStatistics&);
 
-	float lastFrameTime_;
-	float timeToNextUpdate_;
+    float lastFrameTime_;
+    float timeToNextUpdate_;
 
-	static EngineStatistics instance_;
+    static EngineStatistics instance_;
 };
 
 #ifdef CODE_INLINE

@@ -1,7 +1,6 @@
 #ifndef CHECKSUM_STREAM_HPP
 #define CHECKSUM_STREAM_HPP
 
-
 #include "cstdmf/memory_stream.hpp"
 #include "cstdmf/smartpointer.hpp"
 
@@ -13,81 +12,77 @@ BW_BEGIN_NAMESPACE
  */
 class ChecksumScheme : public SafeReferenceCount
 {
-public:
+  public:
+    /**
+     *	This method returns whether the checksum scheme has an error. Call
+     *	reset() to reset the error state.
+     */
+    bool isGood() const { return errorString_.empty(); }
 
-	/**
-	 *	This method returns whether the checksum scheme has an error. Call
-	 *	reset() to reset the error state.
-	 */
-	bool isGood() const 					{ return errorString_.empty(); }
+    /**
+     *	This method returns a description of the last error.
+     */
+    const BW::string& errorString() const { return errorString_; }
 
-	/**
-	 *	This method returns a description of the last error.
-	 */
-	const BW::string & errorString() const 	{ return errorString_; }
+    /**
+     *	This method resets the object so it can be re-used for a new round of
+     *	checksumming.
+     */
+    void reset()
+    {
+        errorString_.clear();
+        this->doReset();
+    }
 
-	/**
-	 *	This method resets the object so it can be re-used for a new round of
-	 *	checksumming.
-	 */
-	void reset()
-	{
-		errorString_.clear();
-		this->doReset();
-	}
+    /**
+     *	Return the size of the checksum that will be added to streams.
+     */
+    virtual size_t streamSize() const = 0;
 
-	/**
-	 *	Return the size of the checksum that will be added to streams.
-	 */
-	virtual size_t streamSize() const = 0;
+    /**
+     *	This method updates the scheme object with data to be summed.
+     *
+     *	@param data 	The data to sum.
+     *	@param size		The size of the data.
+     */
+    virtual void readBlob(const void* data, size_t size) = 0;
 
-	/**
-	 *	This method updates the scheme object with data to be summed.
-	 *
-	 *	@param data 	The data to sum.
-	 *	@param size		The size of the data.
-	 */
-	virtual void readBlob( const void * data, size_t size ) = 0;
+    /**
+     *	This method adds the checksum to the given output stream.
+     *
+     *	@param out 	The output stream.
+     */
+    virtual void addToStream(BinaryOStream& out) = 0;
 
-	/**
-	 *	This method adds the checksum to the given output stream.
-	 *
-	 *	@param out 	The output stream.
-	 */
-	virtual void addToStream( BinaryOStream & out ) = 0;
+    bool verifyFromStream(BinaryIStream& in, BinaryOStream* pChecksum = NULL);
 
-	bool verifyFromStream( BinaryIStream & in,
-		BinaryOStream * pChecksum = NULL );
+  protected:
+    /**
+     *	This method peforms any resetting of state for this scheme object so it
+     *	can be re-used for another round of checksumming.
+     */
+    virtual void            doReset() = 0;
+    CSTDMF_DLL virtual bool doVerifyFromStream(BinaryIStream& in);
+    CSTDMF_DLL void         setErrorMismatched();
 
-protected:
+    /**
+     *	Constructor.
+     *
+     *	Typically schemes should have a static create() method that returns a
+     *	ChecksumSchemePtr.
+     */
+    ChecksumScheme()
+      : SafeReferenceCount()
+    {
+    }
 
-	/**
-	 *	This method peforms any resetting of state for this scheme object so it
-	 *	can be re-used for another round of checksumming.
-	 */
-	virtual void doReset() = 0;
-	CSTDMF_DLL virtual bool doVerifyFromStream( BinaryIStream & in );
-	CSTDMF_DLL void setErrorMismatched();
+    /** Destructor. */
+    virtual ~ChecksumScheme() {}
 
-	/**
-	 *	Constructor.
-	 *
-	 *	Typically schemes should have a static create() method that returns a
-	 *	ChecksumSchemePtr.
-	 */
-	ChecksumScheme() :
-		SafeReferenceCount()
-	{}
-
-
-	/** Destructor. */
-	virtual ~ChecksumScheme() {}
-
-	BW::string errorString_;
+    BW::string errorString_;
 };
 
-typedef SmartPointer< ChecksumScheme > ChecksumSchemePtr;
-
+typedef SmartPointer<ChecksumScheme> ChecksumSchemePtr;
 
 /**
  *	Use an XOR checksum at the word level. For padding, 0 bytes are added to
@@ -96,42 +91,38 @@ typedef SmartPointer< ChecksumScheme > ChecksumSchemePtr;
  */
 class XORChecksumScheme : public ChecksumScheme
 {
-private:
-	typedef uint32 Checksum;
+  private:
+    typedef uint32 Checksum;
 
-public:
+  public:
+    /**
+     *	Factory method.
+     */
+    static ChecksumSchemePtr create(Checksum initialValue = 0)
+    {
+        return new XORChecksumScheme(initialValue);
+    }
 
-	/**
-	 *	Factory method.
-	 */
-	static ChecksumSchemePtr create( Checksum initialValue = 0 )
-	{
-		return new XORChecksumScheme( initialValue );
-	}
+    // Overrides from ChecksumScheme
+    virtual void   doReset();
+    virtual size_t streamSize() const { return sizeof(Checksum); }
+    virtual void   readBlob(const void* rawData, size_t size);
+    virtual void   addToStream(BinaryOStream& out);
 
+  private:
+    virtual bool doVerifyFromStream(BinaryIStream& in);
 
-	// Overrides from ChecksumScheme
-	virtual void doReset();
-	virtual size_t streamSize() const { return sizeof( Checksum ); }
-	virtual void readBlob( const void * rawData, size_t size );
-	virtual void addToStream( BinaryOStream & out );
+    void padRemainder();
 
-private:
-	virtual bool doVerifyFromStream( BinaryIStream & in );
+    XORChecksumScheme(Checksum initialValue);
 
-	void padRemainder();
+    /** Destructor. */
+    virtual ~XORChecksumScheme() {}
 
-	XORChecksumScheme( Checksum initialValue );
-
-	/** Destructor. */
-	virtual ~XORChecksumScheme()
-	{}
-
-	Checksum 	value_;
-	Checksum 	remainder_;
-	uint 		remainderLength_;
+    Checksum value_;
+    Checksum remainder_;
+    uint     remainderLength_;
 };
-
 
 /**
  *	This class implements a MD5 sum checksum scheme.
@@ -140,25 +131,24 @@ private:
  */
 class MD5SumScheme : public ChecksumScheme
 {
-public:
-	static ChecksumSchemePtr create();
+  public:
+    static ChecksumSchemePtr create();
 
-	// Overrides from ChecksumScheme
-	virtual size_t streamSize() const;
-	virtual void readBlob( const void * data , size_t size );
-	virtual void addToStream( BinaryOStream & out );
+    // Overrides from ChecksumScheme
+    virtual size_t streamSize() const;
+    virtual void   readBlob(const void* data, size_t size);
+    virtual void   addToStream(BinaryOStream& out);
 
-private:
-	virtual bool doVerifyFromStream( BinaryIStream & in );
-	virtual void doReset();
+  private:
+    virtual bool doVerifyFromStream(BinaryIStream& in);
+    virtual void doReset();
 
-	MD5SumScheme();
-	virtual ~MD5SumScheme();
+    MD5SumScheme();
+    virtual ~MD5SumScheme();
 
-	class Impl;
-	Impl * pImpl_;
+    class Impl;
+    Impl* pImpl_;
 };
-
 
 /**
  *	This class is used to compose two checksum schemes together, with the output
@@ -168,107 +158,100 @@ private:
  */
 class ChainedChecksumScheme : public ChecksumScheme
 {
-public:
-	/**
-	 *	Factory method.
-	 */
-	static ChecksumSchemePtr create( ChecksumSchemePtr pFirst,
-			ChecksumSchemePtr pSecond )
-	{
-		if (!pFirst || !pSecond)
-		{
-			return ChecksumSchemePtr();
-		}
+  public:
+    /**
+     *	Factory method.
+     */
+    static ChecksumSchemePtr create(ChecksumSchemePtr pFirst,
+                                    ChecksumSchemePtr pSecond)
+    {
+        if (!pFirst || !pSecond) {
+            return ChecksumSchemePtr();
+        }
 
-		return new ChainedChecksumScheme( pFirst, pSecond );
-	}
+        return new ChainedChecksumScheme(pFirst, pSecond);
+    }
 
-	// Overrides from ChecksumScheme
+    // Overrides from ChecksumScheme
 
-	/* Override from ChecksumScheme. */
-	virtual size_t streamSize() const
-	{
-		return pSecond_->streamSize();
-	}
+    /* Override from ChecksumScheme. */
+    virtual size_t streamSize() const { return pSecond_->streamSize(); }
 
-	/* Override from ChecksumScheme. */
-	virtual void readBlob( const void * data, size_t size )
-	{
-		pFirst_->readBlob( data, size );
-	}
+    /* Override from ChecksumScheme. */
+    virtual void readBlob(const void* data, size_t size)
+    {
+        pFirst_->readBlob(data, size);
+    }
 
-	virtual void addToStream( BinaryOStream & out );
+    virtual void addToStream(BinaryOStream& out);
 
-protected:
-	virtual bool doVerifyFromStream( BinaryIStream & in );
+  protected:
+    virtual bool doVerifyFromStream(BinaryIStream& in);
 
-	/* Override from ChecksumScheme. */
-	virtual void doReset()
-	{
-		pFirst_->reset();
-		pSecond_->reset();
-	}
+    /* Override from ChecksumScheme. */
+    virtual void doReset()
+    {
+        pFirst_->reset();
+        pSecond_->reset();
+    }
 
+    /**
+     *	Constructor.
+     *
+     *	@param pFirst 		The first scheme.
+     *	@param pSecond 		The second scheme that wraps the first scheme.
+     */
+    ChainedChecksumScheme(ChecksumSchemePtr pFirst, ChecksumSchemePtr pSecond)
+      : pFirst_(pFirst)
+      , pSecond_(pSecond)
+    {
+    }
 
-	/**
-	 *	Constructor.
-	 *
-	 *	@param pFirst 		The first scheme.
-	 *	@param pSecond 		The second scheme that wraps the first scheme.
-	 */
-	ChainedChecksumScheme( ChecksumSchemePtr pFirst,
-			ChecksumSchemePtr pSecond ) :
-		pFirst_( pFirst ),
-		pSecond_( pSecond )
-	{}
+    /** Destructor. */
+    virtual ~ChainedChecksumScheme() {}
 
-	/** Destructor. */
-	virtual ~ChainedChecksumScheme()
-	{}
-
-private:
-	ChecksumSchemePtr pFirst_;
-	ChecksumSchemePtr pSecond_;
+  private:
+    ChecksumSchemePtr pFirst_;
+    ChecksumSchemePtr pSecond_;
 };
 
 /**
  *	This class is used to add a checksum to the end of a streamed sequence of
  *	bytes.
  */
-class ChecksumOStream : public BinaryOStream, public ReferenceCount
+class ChecksumOStream
+  : public BinaryOStream
+  , public ReferenceCount
 {
-public:
-	ChecksumOStream( MemoryOStream & wrappedStream,
-			ChecksumSchemePtr pChecksumScheme,
-			bool shouldReset = true );
+  public:
+    ChecksumOStream(MemoryOStream&    wrappedStream,
+                    ChecksumSchemePtr pChecksumScheme,
+                    bool              shouldReset = true);
 
-	ChecksumOStream( BinaryOStream & wrappedStream,
-			ChecksumSchemePtr pChecksumScheme,
-			bool shouldReset = true );
+    ChecksumOStream(BinaryOStream&    wrappedStream,
+                    ChecksumSchemePtr pChecksumScheme,
+                    bool              shouldReset = true);
 
-	virtual ~ChecksumOStream();
+    virtual ~ChecksumOStream();
 
-	/**
-	 *	This method returns whether finalise() has been called already.
-	 */
-	bool hasFinalised() const { return (pChecksumScheme_ == NULL); }
-	void cancel();
-	void finalise( BinaryOStream * pChecksum = NULL );
+    /**
+     *	This method returns whether finalise() has been called already.
+     */
+    bool hasFinalised() const { return (pChecksumScheme_ == NULL); }
+    void cancel();
+    void finalise(BinaryOStream* pChecksum = NULL);
 
+    // Overrides from BinaryOStream.
+    virtual void* reserve(int nBytes);
+    virtual int   size() const;
+    virtual void  addBlob(const void* pBlob, int size);
 
-	// Overrides from BinaryOStream.
-	virtual void * reserve( int nBytes );
-	virtual int size() const;
-	virtual void addBlob( const void * pBlob, int size );
+    class Impl; // public because this is actually a base class
 
-
-	class Impl; // public because this is actually a base class
-
-protected:
-	ChecksumSchemePtr 	pChecksumScheme_;
-	Impl * 				pImpl_;
+  protected:
+    ChecksumSchemePtr pChecksumScheme_;
+    Impl*             pImpl_;
 };
-
 
 /**
  *	This class is used to verify a checksum present at the end of a streamed
@@ -276,41 +259,39 @@ protected:
  */
 class ChecksumIStream : public BinaryIStream
 {
-public:
-	ChecksumIStream( BinaryIStream & wrappedStream,
-			ChecksumSchemePtr pChecksumScheme,
-			bool shouldReset = true );
+  public:
+    ChecksumIStream(BinaryIStream&    wrappedStream,
+                    ChecksumSchemePtr pChecksumScheme,
+                    bool              shouldReset = true);
 
-	virtual ~ChecksumIStream();
+    virtual ~ChecksumIStream();
 
-	/**
-	 *	This method cancels verification when the object goes out of scope.
-	 */
-	void cancel() { hasVerified_ = true; }
+    /**
+     *	This method cancels verification when the object goes out of scope.
+     */
+    void cancel() { hasVerified_ = true; }
 
-	bool verify( BinaryOStream * pChecksum = NULL );
+    bool verify(BinaryOStream* pChecksum = NULL);
 
-	/**
-	 *	This method returns the error string, or an empty string if no error.
-	 */
-	const BW::string & errorString() const
-	{
-		return pChecksumScheme_->errorString();
-	}
+    /**
+     *	This method returns the error string, or an empty string if no error.
+     */
+    const BW::string& errorString() const
+    {
+        return pChecksumScheme_->errorString();
+    }
 
-	// Overrides from BinaryIStream
-	virtual const void * retrieve( int nBytes );
-	virtual int remainingLength() const;
-	virtual void finish();
-	virtual char peek();
+    // Overrides from BinaryIStream
+    virtual const void* retrieve(int nBytes);
+    virtual int         remainingLength() const;
+    virtual void        finish();
+    virtual char        peek();
 
-
-private:
-	ChecksumSchemePtr 		pChecksumScheme_;
-	BinaryIStream & 		wrappedStream_;
-	bool 					hasVerified_;
+  private:
+    ChecksumSchemePtr pChecksumScheme_;
+    BinaryIStream&    wrappedStream_;
+    bool              hasVerified_;
 };
-
 
 BW_END_NAMESPACE
 

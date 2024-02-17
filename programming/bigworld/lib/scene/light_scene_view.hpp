@@ -9,35 +9,35 @@ BW_END_NAMESPACE
 
 namespace BW {
 
-class ConvexHull;
+    class ConvexHull;
 
-namespace Moo {
-class LightContainer;
-} // namespace Moo
+    namespace Moo {
+        class LightContainer;
+    } // namespace Moo
 
-class ILightSceneViewProvider
-{
-public:
-	virtual size_t intersect( const ConvexHull & hull,
-		Moo::LightContainer & lightContainer ) const = 0;
+    class ILightSceneViewProvider
+    {
+      public:
+        virtual size_t intersect(const ConvexHull&    hull,
+                                 Moo::LightContainer& lightContainer) const = 0;
 
-	virtual size_t intersect( const AABB & bbox,
-		Moo::LightContainer & lightContainer ) const = 0;
+        virtual size_t intersect(const AABB&          bbox,
+                                 Moo::LightContainer& lightContainer) const = 0;
 
-	virtual void debugDrawLights() const = 0;
-};
+        virtual void debugDrawLights() const = 0;
+    };
 
-class LightSceneView : public SceneView<ILightSceneViewProvider>
-{
-public:
-	size_t intersect( const ConvexHull & hull,
-		Moo::LightContainer & lightContainer ) const;
+    class LightSceneView : public SceneView<ILightSceneViewProvider>
+    {
+      public:
+        size_t intersect(const ConvexHull&    hull,
+                         Moo::LightContainer& lightContainer) const;
 
-	size_t intersect( const AABB & bbox,
-		Moo::LightContainer & lightContainer ) const;
+        size_t intersect(const AABB&          bbox,
+                         Moo::LightContainer& lightContainer) const;
 
-	void debugDrawLights() const;
-};
+        void debugDrawLights() const;
+    };
 
 } // namespace BW
 

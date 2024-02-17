@@ -11,21 +11,21 @@ BW_BEGIN_NAMESPACE
  **/
 class TextureToolView : public ToolView
 {
-	Py_Header( TextureToolView, ToolView )
-public:
-	TextureToolView( const BW::string& resourceID = "resources/maps/gizmo/disc.dds",
-					PyTypeObject * pType = &s_type_ );
+    Py_Header(TextureToolView, ToolView) public
+      : TextureToolView(
+          const BW::string& resourceID = "resources/maps/gizmo/disc.dds",
+          PyTypeObject*     pType      = &s_type_);
 
-	virtual void viewResource( const BW::string& resourceID );
-	virtual void updateAnimations( const Tool& tool );
-	virtual void render( Moo::DrawContext& drawContext, const Tool& tool );
+    virtual void viewResource(const BW::string& resourceID);
+    virtual void updateAnimations(const Tool& tool);
+    virtual void render(Moo::DrawContext& drawContext, const Tool& tool);
 
-	PY_FACTORY_DECLARE()
-protected:	
-	Moo::EffectMaterialPtr		pMaterial_;
-	Moo::BaseTexturePtr			pTexture_;
+    PY_FACTORY_DECLARE()
+  protected:
+    Moo::EffectMaterialPtr pMaterial_;
+    Moo::BaseTexturePtr    pTexture_;
 
-	VIEW_FACTORY_DECLARE( TextureToolView() )
+    VIEW_FACTORY_DECLARE(TextureToolView())
 };
 
 BW_END_NAMESPACE

@@ -5,24 +5,24 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
+namespace Mercury {
 
-/**
- *	This class is used to store irregular channels and manages their resends.
- */
-class IrregularChannels : public MonitoredChannels
-{
-public:
-	void addIfNecessary( UDPChannel & channel );
+    /**
+     *	This class is used to store irregular channels and manages their
+     *resends.
+     */
+    class IrregularChannels : public MonitoredChannels
+    {
+      public:
+        void addIfNecessary(UDPChannel& channel);
 
-protected:
-	iterator & channelIter( UDPChannel & channel ) const;
-	float defaultPeriod() const;
+      protected:
+        iterator& channelIter(UDPChannel& channel) const;
+        float     defaultPeriod() const;
 
-private:
-	virtual void handleTimeout( TimerHandle, void * );
-};
+      private:
+        virtual void handleTimeout(TimerHandle, void*);
+    };
 
 } // namespace Mercury
 

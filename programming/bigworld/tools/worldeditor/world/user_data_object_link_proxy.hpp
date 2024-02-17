@@ -1,7 +1,6 @@
 #ifndef USER_DATA_OBJECT_LINK_PROXY_HPP
 #define USER_DATA_OBJECT_LINK_PROXY_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "worldeditor/editor/link_proxy.hpp"
@@ -15,12 +14,9 @@ BW_BEGIN_NAMESPACE
  */
 class UserDataObjectLinkProxy : public LinkProxy
 {
-public:
-    explicit UserDataObjectLinkProxy
-    (
-	    const BW::string&		linkName,
-		EditorChunkItemLinkable*	linker
-    );
+  public:
+    explicit UserDataObjectLinkProxy(const BW::string&        linkName,
+                                     EditorChunkItemLinkable* linker);
 
     /*virtual*/ ~UserDataObjectLinkProxy();
 
@@ -33,15 +29,14 @@ public:
     /*virtual*/ void createLinkAtPos(ToolLocatorPtr locator);
 
     /*virtual*/ ToolLocatorPtr createLocator() const;
-	
 
-private:
-    UserDataObjectLinkProxy( UserDataObjectLinkProxy const & );
-    UserDataObjectLinkProxy &operator=( UserDataObjectLinkProxy const & );
+  private:
+    UserDataObjectLinkProxy(UserDataObjectLinkProxy const&);
+    UserDataObjectLinkProxy& operator=(UserDataObjectLinkProxy const&);
 
-private:
-    EditorChunkItemLinkable*		linker_;
-	BW::string					linkName_;
+  private:
+    EditorChunkItemLinkable* linker_;
+    BW::string               linkName_;
 };
 
 BW_END_NAMESPACE

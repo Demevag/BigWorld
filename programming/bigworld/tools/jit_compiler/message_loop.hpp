@@ -11,23 +11,21 @@ BW_BEGIN_NAMESPACE
 
 class MainMessageLoop
 {
-public:
-	typedef std::function<void ()> Action;
+  public:
+    typedef std::function<void()> Action;
 
-	MainMessageLoop();
-	~MainMessageLoop();
+    MainMessageLoop();
+    ~MainMessageLoop();
 
-	int run();
+    int run();
 
-	void addAction(Action action);
+    void addAction(Action action);
 
-private:
+  private:
+    void processActions();
 
-	void processActions();
-
-	std::queue<Action> queue_;
-	BW::SimpleMutex guard_;
-
+    std::queue<Action> queue_;
+    BW::SimpleMutex    guard_;
 };
 
 BW_END_NAMESPACE

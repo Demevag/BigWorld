@@ -14,7 +14,7 @@
 
 BW_BEGIN_NAMESPACE
 
-static DogWatch	g_moduleWatchDrawConsole( "Draw Console" );
+static DogWatch g_moduleWatchDrawConsole("Draw Console");
 
 // -----------------------------------------------------------------------------
 // Section: Module
@@ -23,20 +23,16 @@ static DogWatch	g_moduleWatchDrawConsole( "Draw Console" );
 /**
  *	Destructor.
  */
-Module::~Module()
-{
-}
-
+Module::~Module() {}
 
 /**
  *	This method should be overridden by derived classes. It is called when this
  *	module initially is created by the module manager.
  */
-bool Module::init( DataSectionPtr pSection )
+bool Module::init(DataSectionPtr pSection)
 {
-	return true;
+    return true;
 }
-
 
 /**
  *	This method should be overridden by derived classes. It is called when this
@@ -44,10 +40,7 @@ bool Module::init( DataSectionPtr pSection )
  *
  *	@see onStop
  */
-void Module::onStart()
-{
-}
-
+void Module::onStart() {}
 
 /**
  *	This method should be overridden by derived classes. It is called when this
@@ -60,9 +53,8 @@ void Module::onStart()
  */
 int Module::onStop()
 {
-	return 0;
+    return 0;
 }
-
 
 /**
  *	This method should be overridden by derived classes. It is called when this
@@ -71,10 +63,7 @@ int Module::onStop()
  *
  *	@see onResume
  */
-void Module::onPause()
-{
-}
-
+void Module::onPause() {}
 
 /**
  *	This method should be overridden by derived classes. It is called when this
@@ -84,10 +73,7 @@ void Module::onPause()
  *
  *	@see onPause
  */
-void Module::onResume( int exitCode )
-{
-}
-
+void Module::onResume(int exitCode) {}
 
 // -----------------------------------------------------------------------------
 // Section: FrameworkModule
@@ -96,11 +82,10 @@ void Module::onResume( int exitCode )
 /**
  *	This method overrides the module method to add some extra framework.
  */
-void FrameworkModule::updateFrame( float dTime )
+void FrameworkModule::updateFrame(float dTime)
 {
-	bool shouldRender = this->updateState( dTime );
+    bool shouldRender = this->updateState(dTime);
 }
-
 
 /**
  *	This method is meant to be overridden by derived classes. It is called when
@@ -111,9 +96,9 @@ void FrameworkModule::updateFrame( float dTime )
  *	@return	The method should return true if rendering should occur after this
  *		call and false otherwise.
  */
-bool FrameworkModule::updateState( float dTime )
+bool FrameworkModule::updateState(float dTime)
 {
-	return true;
+    return true;
 }
 
 BW_END_NAMESPACE

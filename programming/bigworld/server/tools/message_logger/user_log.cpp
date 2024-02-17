@@ -5,44 +5,40 @@
 #include <dirent.h>
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
  * Constructor.
  */
-UserLog::UserLog( uint16 uid, const BW::string &username ) :
-	uid_( uid ),
-	username_( username ),
-	isGood_( false ),
-	maxHostnameLen_( 8 )
-{ }
-
+UserLog::UserLog(uint16 uid, const BW::string& username)
+  : uid_(uid)
+  , username_(username)
+  , isGood_(false)
+  , maxHostnameLen_(8)
+{
+}
 
 /**
  * Destructor.
  */
 UserLog::~UserLog()
 {
-	for (unsigned i=0; i < userSegments_.size(); i++)
-	{
-		delete userSegments_[i];
-	}
+    for (unsigned i = 0; i < userSegments_.size(); i++) {
+        delete userSegments_[i];
+    }
 }
-
 
 /**
  * Initialises the base UserLog instance.
  */
-bool UserLog::init( const BW::string rootPath )
+bool UserLog::init(const BW::string rootPath)
 {
-	path_ = rootPath;
-	path_.push_back( '/' );
-	path_ += username_;
+    path_ = rootPath;
+    path_.push_back('/');
+    path_ += username_;
 
-	return true;
+    return true;
 }
-
 
 /**
  * Returns whether the UserLog is in a fit state to use or not.
@@ -51,9 +47,8 @@ bool UserLog::init( const BW::string rootPath )
  */
 bool UserLog::isGood() const
 {
-	return isGood_;
+    return isGood_;
 }
-
 
 /**
  * Retrieves the UID this UserLog represents.
@@ -62,9 +57,8 @@ bool UserLog::isGood() const
  */
 uint16 UserLog::getUID() const
 {
-	return uid_;
+    return uid_;
 }
-
 
 /**
  * Retrieves the username this UserLog represents.
@@ -73,9 +67,8 @@ uint16 UserLog::getUID() const
  */
 BW::string UserLog::getUsername() const
 {
-	return username_;
+    return username_;
 }
-
 
 /**
  * This method returns whether there are any UserSegments currently being
@@ -85,9 +78,8 @@ BW::string UserLog::getUsername() const
  */
 bool UserLog::hasActiveSegments() const
 {
-	return !userSegments_.empty();
+    return !userSegments_.empty();
 }
-
 
 /**
  * This method returns the suffix of the current segment being written to.
@@ -97,14 +89,12 @@ bool UserLog::hasActiveSegments() const
  */
 BW::string UserLog::activeSegmentSuffix() const
 {
-	if (!this->hasActiveSegments())
-	{
-		return NULL;
-	}
+    if (!this->hasActiveSegments()) {
+        return NULL;
+    }
 
-	return userSegments_[0]->getSuffix();
+    return userSegments_[0]->getSuffix();
 }
-
 
 /**
  * This method returns the longest hostname length from the user log
@@ -113,16 +103,15 @@ BW::string UserLog::activeSegmentSuffix() const
  */
 int UserLog::maxHostnameLen() const
 {
-	return maxHostnameLen_;
+    return maxHostnameLen_;
 }
-
 
 /**
  * This method sets the longest hostname length from the user log
  */
-void UserLog::maxHostnameLen( int len )
+void UserLog::maxHostnameLen(int len)
 {
-	maxHostnameLen_ = len;
+    maxHostnameLen_ = len;
 }
 
 BW_END_NAMESPACE

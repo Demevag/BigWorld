@@ -19,54 +19,49 @@ BW_BEGIN_NAMESPACE
  *  @param editorPropertyId		Ignored.
  *	@return						Editor property for the link.
  */
-GeneralProperty * UserDataObjectLinkDataType::createEditorProperty(
-	const BW::string& name, ChunkItem* item, int editorPropertyId )
+GeneralProperty* UserDataObjectLinkDataType::createEditorProperty(
+  const BW::string& name,
+  ChunkItem*        item,
+  int               editorPropertyId)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	EditorChunkItemLinkable* linker = NULL;
-	bool alwaysShow = false;
-	if ( item->isEditorEntity() )
-	{
-		EditorChunkEntity* entity =
-			static_cast<EditorChunkEntity*>( item );
+    EditorChunkItemLinkable* linker     = NULL;
+    bool                     alwaysShow = false;
+    if (item->isEditorEntity()) {
+        EditorChunkEntity* entity = static_cast<EditorChunkEntity*>(item);
 
-		// show the gizmo always for the first link property.
-		alwaysShow = !entity->firstLinkFound();
-		entity->firstLinkFound( true );
-		linker = entity->chunkItemLinker();
-	}
-	else if ( item->isEditorUserDataObject() )
-	{
-		EditorChunkUserDataObject* udo =
-			static_cast<EditorChunkUserDataObject*>( item );
+        // show the gizmo always for the first link property.
+        alwaysShow = !entity->firstLinkFound();
+        entity->firstLinkFound(true);
+        linker = entity->chunkItemLinker();
+    } else if (item->isEditorUserDataObject()) {
+        EditorChunkUserDataObject* udo =
+          static_cast<EditorChunkUserDataObject*>(item);
 
-		// show the gizmo always for the first link property.
-		alwaysShow = !udo->firstLinkFound();
-		udo->firstLinkFound( true );
-		linker = udo->chunkItemLinker();
-	}
-	else
-	{
-		// Should never get here.
-		MF_ASSERT( 0 && "Creating a UserDataObjectLinkDataType from an item that "
-			"it's neither a EditorChunkEntity nor a EditorChunkUserDataObject." );
-		return NULL;
-	}
+        // show the gizmo always for the first link property.
+        alwaysShow = !udo->firstLinkFound();
+        udo->firstLinkFound(true);
+        linker = udo->chunkItemLinker();
+    } else {
+        // Should never get here.
+        MF_ASSERT(
+          0 &&
+          "Creating a UserDataObjectLinkDataType from an item that "
+          "it's neither a EditorChunkEntity nor a EditorChunkUserDataObject.");
+        return NULL;
+    }
 
-	return new LinkProperty
-		(
-			Name(name),
-			new UserDataObjectLinkProxy(name.c_str(), linker),
-			NULL,	// use the selection's matrix
-			alwaysShow
-		);
+    return new LinkProperty(Name(name),
+                            new UserDataObjectLinkProxy(name.c_str(), linker),
+                            NULL, // use the selection's matrix
+                            alwaysShow);
 
-	// Should never reach here
-	MF_ASSERT( 0 && "Creating a UserDataObjectLinkDataType from an item that "
-		"it's neither a EditorChunkEntity nor a EditorChunkUserDataObject." );
-	return NULL;
+    // Should never reach here
+    MF_ASSERT(
+      0 && "Creating a UserDataObjectLinkDataType from an item that "
+           "it's neither a EditorChunkEntity nor a EditorChunkUserDataObject.");
+    return NULL;
 }
 
 BW_END_NAMESPACE
-

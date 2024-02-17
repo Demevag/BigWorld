@@ -3,7 +3,6 @@
 
 #include "property_mapping.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class EntityDefs;
@@ -15,25 +14,24 @@ class TableInspector;
  */
 class PropertyMappingsPerType
 {
-public:
-	PropertyMappingsPerType();
-	bool init( const EntityDefs & entityDefs );
+  public:
+    PropertyMappingsPerType();
+    bool init(const EntityDefs& entityDefs);
 
-	PropertyMappings & operator[]( size_t typeID )
-		{ return container_[ typeID ]; }
+    PropertyMappings& operator[](size_t typeID) { return container_[typeID]; }
 
-	bool visit( const EntityDefs& entityDefs, TableInspector & visitor );
+    bool visit(const EntityDefs& entityDefs, TableInspector& visitor);
 
-private:
-	PropertyMappingsPerType( const PropertyMappingsPerType & );
+  private:
+    PropertyMappingsPerType(const PropertyMappingsPerType&);
 
+    static bool initPropertyMappings(
+      PropertyMappings&        properties,
+      const EntityDescription& entityDescription);
 
-	static bool initPropertyMappings( PropertyMappings & properties,
-		const EntityDescription & entityDescription );
+    typedef BW::vector<PropertyMappings> Container;
 
-	typedef BW::vector< PropertyMappings > Container;
-
-	Container container_;
+    Container container_;
 };
 
 BW_END_NAMESPACE

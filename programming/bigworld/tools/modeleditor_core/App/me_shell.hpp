@@ -20,14 +20,12 @@ class FontManager;
 class TextureFeeds;
 class LensEffectManager;
 
-namespace Terrain
-{
-	class Manager;
+namespace Terrain {
+    class Manager;
 }
 
-namespace PostProcessing
-{
-	class Manager;
+namespace PostProcessing {
+    class Manager;
 }
 
 /*
@@ -35,20 +33,16 @@ namespace PostProcessing
  */
 struct MeShellDebugMessageCallback : public DebugMessageCallback
 {
-	MeShellDebugMessageCallback()
-	{
-	}
-	~MeShellDebugMessageCallback()
-	{
-	}
+    MeShellDebugMessageCallback() {}
+    ~MeShellDebugMessageCallback() {}
 
-	virtual bool handleMessage(
-		DebugMessagePriority messagePriority, const char * pCategory,
-		DebugMessageSource messageSource, const LogMetaData & metaData,
-		const char * pFormat, va_list argPtr );
+    virtual bool handleMessage(DebugMessagePriority messagePriority,
+                               const char*          pCategory,
+                               DebugMessageSource   messageSource,
+                               const LogMetaData&   metaData,
+                               const char*          pFormat,
+                               va_list              argPtr);
 };
-
-
 
 /**
  *	This class adds solution specific routines to what already exists in
@@ -56,95 +50,104 @@ struct MeShellDebugMessageCallback : public DebugMessageCallback
  */
 class MeShell
 {
-public:
-						MeShell();
-						~MeShell();
+  public:
+    MeShell();
+    ~MeShell();
 
-	static MeShell & instance() { SINGLETON_MANAGER_WRAPPER( MeShell ) MF_ASSERT(s_instance_); return *s_instance_; }
+    static MeShell& instance()
+    {
+        SINGLETON_MANAGER_WRAPPER(MeShell) MF_ASSERT(s_instance_);
+        return *s_instance_;
+    }
 
-	static bool			initApp( HINSTANCE hInstance, HWND hWndApp, HWND hWndGraphics );	// so easy to pass the fn pointer around
-	
-	bool				init( HINSTANCE hInstance, HWND hWndApp, HWND hWndGraphics );
-	void				fini();
+    static bool initApp(
+      HINSTANCE hInstance,
+      HWND      hWndApp,
+      HWND      hWndGraphics); // so easy to pass the fn pointer around
 
-	HINSTANCE &			hInstance() { return hInstance_; }
-	HWND &				hWndApp() { return hWndApp_; }
-	HWND &				hWndGraphics() { return hWndGraphics_; }
+    bool init(HINSTANCE hInstance, HWND hWndApp, HWND hWndGraphics);
+    void fini();
 
-	RompHarness &		romp() { return *romp_; }
+    HINSTANCE& hInstance() { return hInstance_; }
+    HWND&      hWndApp() { return hWndApp_; }
+    HWND&      hWndGraphics() { return hWndGraphics_; }
 
-	// get time of day
-	TimeOfDay* timeOfDay() { return romp_->timeOfDay(); }
+    RompHarness& romp() { return *romp_; }
 
-	POINT				currentCursorPosition() const;
+    // get time of day
+    TimeOfDay* timeOfDay() { return romp_->timeOfDay(); }
 
-	Renderer* renderer() { return renderer_.get(); }
+    POINT currentCursorPosition() const;
+
+    Renderer* renderer() { return renderer_.get(); }
 
 #ifdef ENABLE_ASSET_PIPE
-	AssetClient* assetClient() const { return pAssetClient_.get(); }
+    AssetClient* assetClient() const { return pAssetClient_.get(); }
 #endif
 
-private:
-	friend std::ostream& operator<<( std::ostream&, const MeShell& );
-	friend struct MeShellDebugMessageCallback;
+  private:
+    friend std::ostream& operator<<(std::ostream&, const MeShell&);
+    friend struct MeShellDebugMessageCallback;
 
-						MeShell(const MeShell&);
-						MeShell& operator=(const MeShell&);
+    MeShell(const MeShell&);
+    MeShell& operator=(const MeShell&);
 
-	static bool			messageHandler( DebugMessagePriority messagePriority,
-										const char * pFormat, va_list argPtr );
+    static bool messageHandler(DebugMessagePriority messagePriority,
+                               const char*          pFormat,
+                               va_list              argPtr);
 
-	bool				initGraphics();
-	void				finiGraphics();
+    bool initGraphics();
+    void finiGraphics();
 
-	bool				initScripts();
-	void				finiScripts();
+    bool initScripts();
+    void finiScripts();
 
-	bool				initConsoles();
-	bool				initErrorHandling();
-	bool				initRomp();
-	bool				initCamera();
+    bool initConsoles();
+    bool initErrorHandling();
+    bool initRomp();
+    bool initCamera();
 
-	bool				initSound();
+    bool initSound();
 
-	bool				initTiming();
-	bool				inited();
+    bool initTiming();
+    bool inited();
 
-	MeShellDebugMessageCallback debugMessageCallback_;
-	
-	static MeShell *		s_instance_;		// the instance of this class (there should be only one!)
+    MeShellDebugMessageCallback debugMessageCallback_;
 
-	// windows variables
-	HINSTANCE					hInstance_;			// the current instance of the application
-	HWND						hWndApp_;			// application window
-	HWND						hWndGraphics_;		// 3D window
+    static MeShell*
+      s_instance_; // the instance of this class (there should be only one!)
 
-	std::auto_ptr<Renderer> renderer_;
+    // windows variables
+    HINSTANCE hInstance_;    // the current instance of the application
+    HWND      hWndApp_;      // application window
+    HWND      hWndGraphics_; // 3D window
 
-	RompHarness *			romp_;
-	bool					inited_;
+    std::auto_ptr<Renderer> renderer_;
 
-	std::auto_ptr< AssetClient > pAssetClient_;
-	typedef std::auto_ptr< FontManager > FontManagerPtr;
-	FontManagerPtr pFontManager_;
-	
-	typedef std::auto_ptr< TextureFeeds > TextureFeedsPtr;
-	TextureFeedsPtr pTextureFeeds_;
+    RompHarness* romp_;
+    bool         inited_;
 
-	typedef std::auto_ptr< Terrain::Manager > TerrainManagerPtr;
-	TerrainManagerPtr pTerrainManager_;
+    std::auto_ptr<AssetClient>         pAssetClient_;
+    typedef std::auto_ptr<FontManager> FontManagerPtr;
+    FontManagerPtr                     pFontManager_;
 
-	typedef std::auto_ptr< PostProcessing::Manager > PostProcessingManagerPtr;
-	PostProcessingManagerPtr pPostProcessingManager_;
+    typedef std::auto_ptr<TextureFeeds> TextureFeedsPtr;
+    TextureFeedsPtr                     pTextureFeeds_;
 
-	typedef std::auto_ptr< LensEffectManager > LensEffectManagerPtr;
-	LensEffectManagerPtr pLensEffectManager_;
+    typedef std::auto_ptr<Terrain::Manager> TerrainManagerPtr;
+    TerrainManagerPtr                       pTerrainManager_;
+
+    typedef std::auto_ptr<PostProcessing::Manager> PostProcessingManagerPtr;
+    PostProcessingManagerPtr                       pPostProcessingManager_;
+
+    typedef std::auto_ptr<LensEffectManager> LensEffectManagerPtr;
+    LensEffectManagerPtr                     pLensEffectManager_;
 };
 
 BW_END_NAMESPACE
 
-//#ifdef CODE_INLINE
-//#include "initialisation.ipp"
-//#endif
+// #ifdef CODE_INLINE
+// #include "initialisation.ipp"
+// #endif
 
 #endif // ME_SHELL_HPP

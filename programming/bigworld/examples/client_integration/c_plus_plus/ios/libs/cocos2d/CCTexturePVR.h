@@ -55,64 +55,64 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 #pragma mark -
 #pragma mark CCTexturePVR
 
-struct CCPVRMipmap {
-	unsigned char *address;
-	unsigned int len;
+struct CCPVRMipmap
+{
+    unsigned char* address;
+    unsigned int   len;
 };
 
-enum {
-	CC_PVRMIPMAP_MAX = 16,
+enum
+{
+    CC_PVRMIPMAP_MAX = 16,
 };
 
 /** CCTexturePVR
- 
+
  Object that loads PVR images.
- 
+
  Supported PVR formats:
-	- RGBA8888
-	- BGRA8888
-	- RGBA4444
-	- RGBA5551
-	- RGB565
-	- A8
-	- I8
-	- AI88
-	- PVRTC 4BPP
-	- PVRTC 2BPP
+    - RGBA8888
+    - BGRA8888
+    - RGBA4444
+    - RGBA5551
+    - RGB565
+    - A8
+    - I8
+    - AI88
+    - PVRTC 4BPP
+    - PVRTC 2BPP
 
  Limitations:
-	Pre-generated mipmaps, such as PVR textures with mipmap levels embedded in file,
-	are only supported if all individual sprites are of _square_ size. 
-	To use mipmaps with non-square textures, instead call CCTexture2D#generateMipmap on the sheet texture itself
-	(and to save space, save the PVR sprite sheet without mip maps included).
+    Pre-generated mipmaps, such as PVR textures with mipmap levels embedded in
+ file, are only supported if all individual sprites are of _square_ size. To use
+ mipmaps with non-square textures, instead call CCTexture2D#generateMipmap on
+ the sheet texture itself (and to save space, save the PVR sprite sheet without
+ mip maps included).
  */
-@interface CCTexturePVR : NSObject
-{
-	struct CCPVRMipmap	mipmaps_[CC_PVRMIPMAP_MAX];	// pointer to mipmap images
-	int		numberOfMipmaps_;					// number of mipmap used
-	
-	unsigned int	tableFormatIndex_;
-	uint32_t width_, height_;
-	GLuint	name_;
-	BOOL hasAlpha_;
-	
-	// cocos2d integration
-	BOOL retainName_;
+@interface CCTexturePVR : NSObject {
+    struct CCPVRMipmap mipmaps_[CC_PVRMIPMAP_MAX]; // pointer to mipmap images
+    int                numberOfMipmaps_;           // number of mipmap used
+
+    unsigned int tableFormatIndex_;
+    uint32_t     width_, height_;
+    GLuint       name_;
+    BOOL         hasAlpha_;
+
+    // cocos2d integration
+    BOOL retainName_;
 }
 
-- (id)initWithContentsOfFile:(NSString *)path;
-- (id)initWithContentsOfURL:(NSURL *)url;
-+ (id)pvrTextureWithContentsOfFile:(NSString *)path;
-+ (id)pvrTextureWithContentsOfURL:(NSURL *)url;
+- (id)initWithContentsOfFile:(NSString*)path;
+- (id)initWithContentsOfURL:(NSURL*)url;
++ (id)pvrTextureWithContentsOfFile:(NSString*)path;
++ (id)pvrTextureWithContentsOfURL:(NSURL*)url;
 
-@property (nonatomic,readonly) GLuint name;
-@property (nonatomic,readonly) uint32_t width;
-@property (nonatomic,readonly) uint32_t height;
-@property (nonatomic,readonly) BOOL hasAlpha;
+@property (nonatomic, readonly) GLuint   name;
+@property (nonatomic, readonly) uint32_t width;
+@property (nonatomic, readonly) uint32_t height;
+@property (nonatomic, readonly) BOOL     hasAlpha;
 
 // cocos2d integration
-@property (nonatomic,readwrite) BOOL retainName;
+@property (nonatomic, readwrite) BOOL retainName;
 
 @end
-
-

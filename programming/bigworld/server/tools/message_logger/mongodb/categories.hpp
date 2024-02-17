@@ -8,26 +8,25 @@
 
 #include "mongo/client/dbclient.h"
 
-
 BW_BEGIN_NAMESPACE
 
 class CategoriesMongoDB : public Categories
 {
-public:
-	CategoriesMongoDB( TaskManager & mongoDBTaskMgr,
-		mongo::DBClientConnection & conn, const BW::string & collName );
+  public:
+    CategoriesMongoDB(TaskManager&               mongoDBTaskMgr,
+                      mongo::DBClientConnection& conn,
+                      const BW::string&          collName);
 
-	bool writeCategoryToDB(	MessageLogger::CategoryID newCategoryID,
-		const BW::string & categoryName );
+    bool writeCategoryToDB(MessageLogger::CategoryID newCategoryID,
+                           const BW::string&         categoryName);
 
-	bool init();
+    bool init();
 
-private:
-	TaskManager & mongoDBTaskMgr_;
-	mongo::DBClientConnection & conn_;
-	BW::string namespace_;
+  private:
+    TaskManager&               mongoDBTaskMgr_;
+    mongo::DBClientConnection& conn_;
+    BW::string                 namespace_;
 };
-
 
 BW_END_NAMESPACE
 

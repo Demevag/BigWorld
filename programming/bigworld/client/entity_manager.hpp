@@ -23,119 +23,127 @@
 
 #include "network/basictypes.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class ClientSpace;
 class ReplayHeader;
 class ReplayMetaData;
 class ReplayURLHandler;
-typedef SmartPointer< ReplayURLHandler > ReplayURLHandlerPtr;
+typedef SmartPointer<ReplayURLHandler> ReplayURLHandlerPtr;
 
-typedef BW::vector< EntityPtr > EntitiesVector;
-typedef SmartPointer< ClientSpace > ClientSpacePtr;
-
-
+typedef BW::vector<EntityPtr>     EntitiesVector;
+typedef SmartPointer<ClientSpace> ClientSpacePtr;
 
 /**
  *	This class stores all the entities that exist on the client,
  *	and controls which ones should be displayed in the world.
  */
-class EntityManager :
-	public BWReplayEventHandler,
-	public BWSpaceDataListener,
-	public BWStreamDataHandler,
-	public BWEntitiesListener
+class EntityManager
+  : public BWReplayEventHandler
+  , public BWSpaceDataListener
+  , public BWStreamDataHandler
+  , public BWEntitiesListener
 {
-public:
-	EntityManager();
-	virtual ~EntityManager();
+  public:
+    EntityManager();
+    virtual ~EntityManager();
 
-	static EntityManager & instance();
+    static EntityManager& instance();
 
-	void fini();
+    void fini();
 
-	// Overrides from BWReplayEventHandler
-	void onReplayHeaderRead( const ReplayHeader & header ) /* override */;
-	bool onReplayMetaData( const ReplayMetaData & metaData ) /* override */;
-	void onReplayReachedEnd() /* override */;
-	void onReplayError( const BW::string & error ) /* override */;
-	void onReplayEntityClientChanged( const BWEntity * pEntity ) /* override */;
-	void onReplayEntityAoIChanged( const BWEntity * pWitness,
-		const BWEntity * pEntity, bool isEnter ) /* override */;
-	void onReplayTicked( GameTime currentTick,
-		GameTime totalTicks ) /* override */;
-	void onReplaySeek( double dTime ) /* override */;
-	void onReplayTerminated( ReplayTerminatedReason reason ) /* override */;
+    // Overrides from BWReplayEventHandler
+    void onReplayHeaderRead(const ReplayHeader& header) /* override */;
+    bool onReplayMetaData(const ReplayMetaData& metaData) /* override */;
+    void onReplayReachedEnd() /* override */;
+    void onReplayError(const BW::string& error) /* override */;
+    void onReplayEntityClientChanged(const BWEntity* pEntity) /* override */;
+    void onReplayEntityAoIChanged(const BWEntity* pWitness,
+                                  const BWEntity* pEntity,
+                                  bool            isEnter) /* override */;
+    void onReplayTicked(GameTime currentTick,
+                        GameTime totalTicks) /* override */;
+    void onReplaySeek(double dTime) /* override */;
+    void onReplayTerminated(ReplayTerminatedReason reason) /* override */;
 
-	// Overrides from BWSpaceDataListener
-	void onGeometryMapping( SpaceID spaceID, Matrix mappingMatrix,
-		const BW::string & mappingName );
-	void onGeometryMappingDeleted( SpaceID spaceID, Matrix mappingMatrix,
-		const BW::string & mappingName );
-	void onTimeOfDay( SpaceID spaceID, float initialTime,
-		float gameSecondsPerSecond );
-	void onUserSpaceData( SpaceID spaceID, uint16 key, bool isInsertion,
-		const BW::string & data );
+    // Overrides from BWSpaceDataListener
+    void onGeometryMapping(SpaceID           spaceID,
+                           Matrix            mappingMatrix,
+                           const BW::string& mappingName);
+    void onGeometryMappingDeleted(SpaceID           spaceID,
+                                  Matrix            mappingMatrix,
+                                  const BW::string& mappingName);
+    void onTimeOfDay(SpaceID spaceID,
+                     float   initialTime,
+                     float   gameSecondsPerSecond);
+    void onUserSpaceData(SpaceID           spaceID,
+                         uint16            key,
+                         bool              isInsertion,
+                         const BW::string& data);
 
-	// Overrides from BWStreamDataHandler
-	void onStreamDataComplete( uint16 streamID,
-		const BW::string & rDescription, BinaryIStream & rData );
-	
-	// Overrides from BWEntitiesListener	
-	virtual void onEntityEnter( BWEntity * pEntity ) /* override */ {}
-	virtual void onEntityLeave( BWEntity * pEntity ) /* override */ {}
-	virtual void onEntitiesReset();
+    // Overrides from BWStreamDataHandler
+    void onStreamDataComplete(uint16            streamID,
+                              const BW::string& rDescription,
+                              BinaryIStream&    rData);
 
-	// EntityManager interface
-	void tick( double timeNow, double timeLast );
+    // Overrides from BWEntitiesListener
+    virtual void onEntityEnter(BWEntity* pEntity) /* override */ {}
+    virtual void onEntityLeave(BWEntity* pEntity) /* override */ {}
+    virtual void onEntitiesReset();
 
-	void addPendingEntity( EntityPtr pEntity );
-	void clearPendingEntities();
+    // EntityManager interface
+    void tick(double timeNow, double timeLast);
 
-	PyObject * entityIsDestroyedExceptionType();
+    void addPendingEntity(EntityPtr pEntity);
+    void clearPendingEntities();
 
-	FilterEnvironment & filterEnvironment() { return filterEnvironment_; }
+    PyObject* entityIsDestroyedExceptionType();
 
-	// Replay related methods
-	SpaceID startReplayFromFile( const BW::string & fileName,
-		const BW::string & publicKey,
-		PyObjectPtr pReplayHandler,
-		int volatileInjectionPeriod );
+    FilterEnvironment& filterEnvironment() { return filterEnvironment_; }
 
-	SpaceID startReplayFromURL( const BW::string & url,
-		const BW::string & cacheFileName,
-		bool shouldKeepCache,
-		const BW::string & publicKey,
-		PyObjectPtr pReplayHandler,
-		int volatileInjectionPeriod );
+    // Replay related methods
+    SpaceID startReplayFromFile(const BW::string& fileName,
+                                const BW::string& publicKey,
+                                PyObjectPtr       pReplayHandler,
+                                int               volatileInjectionPeriod);
 
-	PyObjectPtr pPyReplayHandler() const { return pPyReplayHandler_; }
+    SpaceID startReplayFromURL(const BW::string& url,
+                               const BW::string& cacheFileName,
+                               bool              shouldKeepCache,
+                               const BW::string& publicKey,
+                               PyObjectPtr       pReplayHandler,
+                               int               volatileInjectionPeriod);
 
-	void replayURLRequestAborted();
-	void replayURLRequestFinished();
+    PyObjectPtr pPyReplayHandler() const { return pPyReplayHandler_; }
 
-	void callReplayCallback( bool shouldClear,
-		ConnectionControl::LogOnStage stage, 
-		const char * status, const BW::string & message = BW::string( "" ));
+    void replayURLRequestAborted();
+    void replayURLRequestFinished();
 
-	void callReplayHandler( bool shouldClear, const char * func, PyObject * args );
-	bool callReplayHandlerBoolRet( bool shouldClear, const char * func, 
-		PyObject * args );
+    void callReplayCallback(bool                          shouldClear,
+                            ConnectionControl::LogOnStage stage,
+                            const char*                   status,
+                            const BW::string& message = BW::string(""));
 
-private:
-	void setTimeInt( ClientSpacePtr pSpace, GameTime gameTime,
-		float initialTimeOfDay, float gameSecondsPerSecond );
+    void callReplayHandler(bool shouldClear, const char* func, PyObject* args);
+    bool callReplayHandlerBoolRet(bool        shouldClear,
+                                  const char* func,
+                                  PyObject*   args);
 
-	PyObjectPtr entityIsDestroyedExceptionType_;
+  private:
+    void setTimeInt(ClientSpacePtr pSpace,
+                    GameTime       gameTime,
+                    float          initialTimeOfDay,
+                    float          gameSecondsPerSecond);
 
-	EntitiesVector pendingEntities_;
+    PyObjectPtr entityIsDestroyedExceptionType_;
 
-	URL::Request * pURLRequest_;
-	ReplayURLHandlerPtr pReplayURLHandler_;
-	PyObjectPtr pPyReplayHandler_;
+    EntitiesVector pendingEntities_;
 
-	BWClientFilterEnvironment filterEnvironment_;
+    URL::Request*       pURLRequest_;
+    ReplayURLHandlerPtr pReplayURLHandler_;
+    PyObjectPtr         pPyReplayHandler_;
+
+    BWClientFilterEnvironment filterEnvironment_;
 };
 
 BW_END_NAMESPACE

@@ -7,23 +7,25 @@ BW_BEGIN_NAMESPACE
 // CShaderLoadingDialog dialog
 class CShaderLoadingDialog : public CDialog
 {
-public:
-	CShaderLoadingDialog();
-	virtual ~CShaderLoadingDialog();
+  public:
+    CShaderLoadingDialog();
+    virtual ~CShaderLoadingDialog();
 
-	void setRange( int num );
-	void step();
+    void setRange(int num);
+    void step();
 
-// Dialog Data
-	enum { IDD = IDD_SHADER_LOADING };
+    // Dialog Data
+    enum
+    {
+        IDD = IDD_SHADER_LOADING
+    };
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	BOOL OnInitDialog();
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
+    BOOL         OnInitDialog();
 
-	CProgressCtrl bar_;
+    CProgressCtrl bar_;
 
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 };
 BW_END_NAMESPACE
-

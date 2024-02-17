@@ -14,86 +14,83 @@
 
 BW_BEGIN_NAMESPACE
 
-DECLARE_WATCHER_DATA( "TextureConverter" )
-DECLARE_COPY_STACK_INFO( true )
+DECLARE_WATCHER_DATA("TextureConverter")
+DECLARE_COPY_STACK_INFO(true)
 DEFINE_CREATE_EDITOR_PROPERTY_STUB
 
-ConverterInfo textureConverterInfo;
+ConverterInfo     textureConverterInfo;
 ResourceCallbacks resourceCallbacks;
 
 PLUGIN_INIT_FUNC
 {
-	Compiler * compiler = dynamic_cast< Compiler * >( &pluginLoader );
-	if (compiler == NULL)
-	{
-		return false;
-	}
+    Compiler* compiler = dynamic_cast<Compiler*>(&pluginLoader);
+    if (compiler == NULL) {
+        return false;
+    }
 
-	// Initialise the file systems
-	const auto & paths = compiler->getResourcePaths();
-	bool bInitRes = BWResource::init( paths );
+    // Initialise the file systems
+    const auto& paths    = compiler->getResourcePaths();
+    bool        bInitRes = BWResource::init(paths);
 
-	if ( !AutoConfig::configureAllFrom( "resources.xml" ) )
-	{
-		// this sets up the config variable that points the texture conversion rules to the
-		//	texturedetails defined in the resources.xml that appears in the root of the filenames.
-		//	If the texture details cannot be initialised, it is bad for texture-convert, but not necesarily 
-		//	bad for other commands. So it doesnt reprot a failure here.
-		//		Possibly should differentiate between commands?
-		ERROR_MSG("Could not load auto-config strings from resource.xml\n" );
-		return false;
-	}
-	
-	// create a texture conversion tool that converts in other threads
-	//
-	//	this needs to happen in the plugin init as we are initialising moo,
-	//		which contains an init singleton that should only be initialised
-	//		once.
-	//
-	//	Also it is needless to init & deinit all these resources per texture
-	//	   converted
+    if (!AutoConfig::configureAllFrom("resources.xml")) {
+        // this sets up the config variable that points the texture conversion
+        // rules to the
+        //	texturedetails defined in the resources.xml that appears in the root
+        // of the filenames. 	If the texture details cannot be initialised, it
+        // is bad for texture-convert, but not necesarily 	bad for other
+        // commands. So it doesnt reprot a failure here. 		Possibly should
+        // differentiate between commands?
+        ERROR_MSG("Could not load auto-config strings from resource.xml\n");
+        return false;
+    }
 
-	TextureConverter::s_pTool = new Moo::ConvertTextureTool();
-	if (TextureConverter::s_pTool == NULL)
-	{
-		ERROR_MSG("Could not create convert texture tool\n" );
-		return false;
-	}
+    // create a texture conversion tool that converts in other threads
+    //
+    //	this needs to happen in the plugin init as we are initialising moo,
+    //		which contains an init singleton that should only be initialised
+    //		once.
+    //
+    //	Also it is needless to init & deinit all these resources per texture
+    //	   converted
 
-	bool bSuccessfulInit = TextureConverter::s_pTool->initResources();
-	if (bSuccessfulInit == false)
-	{
-		TextureConverter::s_pTool->resourcesFini();
-		// free up the class that did the actual conversion.
-		bw_safe_delete( TextureConverter::s_pTool );
+    TextureConverter::s_pTool = new Moo::ConvertTextureTool();
+    if (TextureConverter::s_pTool == NULL) {
+        ERROR_MSG("Could not create convert texture tool\n");
+        return false;
+    }
 
-		ERROR_MSG( "Could not initialise a new ConvertTextureTool.\n" );
-		return false;
-	}
+    bool bSuccessfulInit = TextureConverter::s_pTool->initResources();
+    if (bSuccessfulInit == false) {
+        TextureConverter::s_pTool->resourcesFini();
+        // free up the class that did the actual conversion.
+        bw_safe_delete(TextureConverter::s_pTool);
 
-	INIT_CONVERTER_INFO( textureConverterInfo, 
-						 TextureConverter, 
-						 ConverterInfo::DEFAULT_FLAGS );
+        ERROR_MSG("Could not initialise a new ConvertTextureTool.\n");
+        return false;
+    }
 
-	compiler->registerConverter( textureConverterInfo );
-	compiler->registerResourceCallbacks( resourceCallbacks );
+    INIT_CONVERTER_INFO(
+      textureConverterInfo, TextureConverter, ConverterInfo::DEFAULT_FLAGS);
 
-	return true;
+    compiler->registerConverter(textureConverterInfo);
+    compiler->registerResourceCallbacks(resourceCallbacks);
+
+    return true;
 }
 
 PLUGIN_FINI_FUNC
 {
-	TextureConverter::s_pTool->resourcesFini();
-	bw_safe_delete( TextureConverter::s_pTool );
-		
-	BWResource::fini();
+    TextureConverter::s_pTool->resourcesFini();
+    bw_safe_delete(TextureConverter::s_pTool);
 
-	// DataSectionCensus is created on first use, so delete at end of App
-	DataSectionCensus::fini();
+    BWResource::fini();
 
-	Watcher::fini();
+    // DataSectionCensus is created on first use, so delete at end of App
+    DataSectionCensus::fini();
 
-	return true;
+    Watcher::fini();
+
+    return true;
 }
 
 BW_END_NAMESPACE

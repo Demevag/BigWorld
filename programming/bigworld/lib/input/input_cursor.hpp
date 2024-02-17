@@ -4,25 +4,25 @@
 #include "input.hpp"
 #include "pyscript/pyobject_plus.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
- *	This abstract base class is an interface for 
+ *	This abstract base class is an interface for
  *  all cursor like input handlers.
  */
-class InputCursor : public PyObjectPlus, public InputHandler
+class InputCursor
+  : public PyObjectPlus
+  , public InputHandler
 {
-	Py_Header( InputCursor, PyObjectPlus )
+    Py_Header(InputCursor, PyObjectPlus)
 
-public:
-	virtual void focus( bool focus );
-	virtual void activate();
-	virtual void deactivate();
+      public : virtual void focus(bool focus);
+    virtual void activate();
+    virtual void deactivate();
 
-protected:
-	InputCursor( PyTypeObject * pType = &s_type_ );
-	virtual ~InputCursor() {}
+  protected:
+    InputCursor(PyTypeObject* pType = &s_type_);
+    virtual ~InputCursor() {}
 };
 
 BW_END_NAMESPACE

@@ -5,8 +5,7 @@
 #include "factory.ipp"
 #endif
 
-//DECLARE_DEBUG_COMPONENT2( "App", 0 )
-
+// DECLARE_DEBUG_COMPONENT2( "App", 0 )
 
 // -----------------------------------------------------------------------------
 // Section: Construction/Destruction
@@ -20,7 +19,6 @@ Factory<TYPE>::Factory()
 {
 }
 
-
 /**
  *	Destructor.
  */
@@ -29,44 +27,38 @@ Factory<TYPE>::~Factory()
 {
 }
 
-
 /**
  *	This method initialises the registered %%%s from the input data
  *	section.
  */
 template <class TYPE>
-bool Factory<TYPE>::init( DataSectionPtr pSection )
+bool Factory<TYPE>::init(DataSectionPtr pSection)
 {
-	bool succeeded = true;
+    bool succeeded = true;
 
-	if (pSection)
-	{
-		DataSectionPtr pBaseSections = pSection->openSection( "Bases" );
+    if (pSection) {
+        DataSectionPtr pBaseSections = pSection->openSection("Bases");
 
-		if (pBaseSections)
-		{
-			DataSection::iterator sectionIter = pSection->begin();
+        if (pBaseSections) {
+            DataSection::iterator sectionIter = pSection->begin();
 
-			while (sectionIter != pSection->end())
-			{
-				Creators::iterator creatorIter =
-					creators_.find( (*sectionIter)->sectionName().c_str() );
+            while (sectionIter != pSection->end()) {
+                Creators::iterator creatorIter =
+                  creators_.find((*sectionIter)->sectionName().c_str());
 
-				if (creatorIter != creators_.end())
-				{
-					succeeded &= creatorIter->second->init( *sectionIter );
-				}
+                if (creatorIter != creators_.end()) {
+                    succeeded &= creatorIter->second->init(*sectionIter);
+                }
 
-				sectionIter++;
-			}
-		}
+                sectionIter++;
+            }
+        }
 
-		pExtensions_ = pSection->openSection( "Extensions" );
-	}
+        pExtensions_ = pSection->openSection("Extensions");
+    }
 
-	return succeeded;
+    return succeeded;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: General
@@ -80,11 +72,10 @@ bool Factory<TYPE>::init( DataSectionPtr pSection )
  *	@param creator	The object responsible for creating the TYPE.
  */
 template <class TYPE>
-void Factory<TYPE>::add( const char * name, Creator<TYPE> & creator )
+void Factory<TYPE>::add(const char* name, Creator<TYPE>& creator)
 {
-	creators_[ name ] = &creator;
+    creators_[name] = &creator;
 }
-
 
 /**
  *	This method creates the TYPE associated with the input name.
@@ -95,34 +86,27 @@ void Factory<TYPE>::add( const char * name, Creator<TYPE> & creator )
  *	@return	The newly created TYPE or NULL if none was created.
  */
 template <class TYPE>
-TYPE * Factory<TYPE>::create( const char * name,
-	DataSectionPtr pSection ) const
+TYPE* Factory<TYPE>::create(const char* name, DataSectionPtr pSection) const
 {
-	Creators::const_iterator iter = creators_.find( name );
+    Creators::const_iterator iter = creators_.find(name);
 
-	if (iter == creators_.end())
-	{
-		if ((!pSection || pSection->countChildren() == 0) && pExtensions_)
-		{
-			pSection = pExtensions_->openSection( name );
-		}
+    if (iter == creators_.end()) {
+        if ((!pSection || pSection->countChildren() == 0) && pExtensions_) {
+            pSection = pExtensions_->openSection(name);
+        }
 
-		if (pSection)
-		{
-			iter = creators_.find( pSection->asString() );
-		}
-	}
+        if (pSection) {
+            iter = creators_.find(pSection->asString());
+        }
+    }
 
-	if (iter != creators_.end())
-	{
-		return iter->second->create( pSection );
-	}
+    if (iter != creators_.end()) {
+        return iter->second->create(pSection);
+    }
 
-	ERROR_MSG( "Factory::create: Unable to create %s\n",
-		name );
-	return NULL;
+    ERROR_MSG("Factory::create: Unable to create %s\n", name);
+    return NULL;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Streaming
@@ -134,10 +118,9 @@ TYPE * Factory<TYPE>::create( const char * name,
 template <class TYPE>
 std::ostream& operator<<(std::ostream& o, const Factory<TYPE>& t)
 {
-	o << "Factory\n";
-	return o;
+    o << "Factory\n";
+    return o;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Creator<TYPE>
@@ -151,11 +134,10 @@ std::ostream& operator<<(std::ostream& o, const Factory<TYPE>& t)
  *	@see Factory::init
  */
 template <class TYPE>
-bool Creator<TYPE>::init( DataSectionPtr pSection )
+bool Creator<TYPE>::init(DataSectionPtr pSection)
 {
-	return true;
+    return true;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: StandardCreator
@@ -165,23 +147,21 @@ bool Creator<TYPE>::init( DataSectionPtr pSection )
  *	Constructor. This method registers this creator with the input name.
  */
 template <class TYPE>
-StandardCreator<TYPE>::StandardCreator( const char * name, Factory<TYPE> & factory )
+StandardCreator<TYPE>::StandardCreator(const char* name, Factory<TYPE>& factory)
 {
-	factory.add( name, *this );
+    factory.add(name, *this);
 }
-
 
 /**
  *	This method initialises this creator.
  */
 template <class TYPE>
-bool StandardCreator<TYPE>::init( DataSectionPtr pSection )
+bool StandardCreator<TYPE>::init(DataSectionPtr pSection)
 {
-	pSection_ = pSection;
+    pSection_ = pSection;
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This is a helper method that is used by derived classes to implement the
@@ -189,19 +169,18 @@ bool StandardCreator<TYPE>::init( DataSectionPtr pSection )
  *	creator's section and then with the objects section.
  */
 template <class TYPE>
-TYPE * StandardCreator<TYPE>::createHelper( DataSectionPtr pSection,
-	TYPE * pNewObject )
+TYPE* StandardCreator<TYPE>::createHelper(DataSectionPtr pSection,
+                                          TYPE*          pNewObject)
 {
-	pNewObject->incRef();
+    pNewObject->incRef();
 
-	if (/*!pNewObject->init( pSection_ ) ||*/
-		!pNewObject->init( pSection ))
-	{
-		pNewObject->decRef();
-		pNewObject = NULL;
-	}
+    if (/*!pNewObject->init( pSection_ ) ||*/
+        !pNewObject->init(pSection)) {
+        pNewObject->decRef();
+        pNewObject = NULL;
+    }
 
-	return pNewObject;
+    return pNewObject;
 }
 
 // %%%_factory.cpp

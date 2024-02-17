@@ -12,13 +12,13 @@ BW_BEGIN_NAMESPACE
  */
 class XmlSpecialChars
 {
-public:
-	// Converts ampersand-based sequences into the actual characters.
-	static void reduce( char* buf );
+  public:
+    // Converts ampersand-based sequences into the actual characters.
+    static void reduce(char* buf);
 
-	// Converts the invalid characters to ampersand-based sequences.
-	// buf must have enough room for the expanded characters to fit.
-	static BW::string expand( const char* buf );
+    // Converts the invalid characters to ampersand-based sequences.
+    // buf must have enough room for the expanded characters to fit.
+    static BW::string expand(const char* buf);
 };
 
 BW_END_NAMESPACE

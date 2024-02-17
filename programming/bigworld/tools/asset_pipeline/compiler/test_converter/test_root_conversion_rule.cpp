@@ -5,36 +5,34 @@
 
 BW_BEGIN_NAMESPACE
 
-bool TestRootConversionRule::createRootTask( const BW::StringRef & sourceFile,
-										     ConversionTask & task )
+bool TestRootConversionRule::createRootTask(const BW::StringRef& sourceFile,
+                                            ConversionTask&      task)
 {
-	StringRef ext = BWResource::getExtension( sourceFile );
-	if (ext == "testrootasset")
-	{
-		task.converterId_ = TestConverter::getTypeId();
-		task.converterParams_ = "";
-		task.converterVersion_ = TestConverter::getVersion();
-		return true;
-	}
+    StringRef ext = BWResource::getExtension(sourceFile);
+    if (ext == "testrootasset") {
+        task.converterId_      = TestConverter::getTypeId();
+        task.converterParams_  = "";
+        task.converterVersion_ = TestConverter::getVersion();
+        return true;
+    }
 
-	return false;
+    return false;
 }
 
-bool TestRootConversionRule::getSourceFile( const BW::StringRef & file,
-											BW::string & sourcefile ) const
+bool TestRootConversionRule::getSourceFile(const BW::StringRef& file,
+                                           BW::string& sourcefile) const
 {
-	StringRef ext = BWResource::getExtension( file );
-	if (ext == "testcompiledasset")
-	{
-		BW::string fileName = BWResource::changeExtension( file, ".testrootasset" );
-		if ( BWResource::fileExists( fileName ) )
-		{
-			sourcefile = BWResource::resolveFilename( fileName );
-			return true;
-		}
-	}
+    StringRef ext = BWResource::getExtension(file);
+    if (ext == "testcompiledasset") {
+        BW::string fileName =
+          BWResource::changeExtension(file, ".testrootasset");
+        if (BWResource::fileExists(fileName)) {
+            sourcefile = BWResource::resolveFilename(fileName);
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
 
 BW_END_NAMESPACE

@@ -3,7 +3,6 @@
 
 #include "unique_id_mapping.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,12 +10,13 @@ BW_BEGIN_NAMESPACE
  */
 class UDORefMapping : public UniqueIDMapping
 {
-public:
-	UDORefMapping( const Namer & namer, const BW::string & propName,
-			DataSectionPtr pDefaultValue );
+  public:
+    UDORefMapping(const Namer&      namer,
+                  const BW::string& propName,
+                  DataSectionPtr    pDefaultValue);
 
-private:
-	static DataSectionPtr getGuidSection( DataSectionPtr pParentSection );
+  private:
+    static DataSectionPtr getGuidSection(DataSectionPtr pParentSection);
 };
 
 BW_END_NAMESPACE

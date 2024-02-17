@@ -16,50 +16,54 @@ BW_BEGIN_NAMESPACE
  */
 class CSTDMF_DLL UniqueID
 {
-private:
-	// NOTE: Structure must be compatible with Microsoft's GUID structure since
-	// we cast to GUID in one of functions.
-	uint a_;
-	uint b_;
-	uint c_;
-	uint d_;
-	
-	static UniqueID s_zero_;
+  private:
+    // NOTE: Structure must be compatible with Microsoft's GUID structure since
+    // we cast to GUID in one of functions.
+    uint a_;
+    uint b_;
+    uint c_;
+    uint d_;
 
-public:
-	UniqueID();
-	UniqueID( const BW::string & s );
-	UniqueID( uint a, uint b, uint c, uint d ) : 
-		a_( a ), b_( b ), c_( c ), d_( d )
-	{}
-	
-	uint getA() const	{ return a_; }
-	uint getB() const	{ return b_; }
-	uint getC() const	{ return c_; }
-	uint getD() const	{ return d_; }
+    static UniqueID s_zero_;
 
-	BW::string toString() const {return *this;}
-	operator BW::string() const;
+  public:
+    UniqueID();
+    UniqueID(const BW::string& s);
+    UniqueID(uint a, uint b, uint c, uint d)
+      : a_(a)
+      , b_(b)
+      , c_(c)
+      , d_(d)
+    {
+    }
 
-	bool operator==( const UniqueID& rhs ) const;
-	bool operator!=( const UniqueID& rhs ) const;
-	bool operator<( const UniqueID& rhs ) const;
+    uint getA() const { return a_; }
+    uint getB() const { return b_; }
+    uint getC() const { return c_; }
+    uint getD() const { return d_; }
 
-	/**
-	 * Ask windows to generade a GUID for us
-	 */
+    BW::string toString() const { return *this; }
+    operator BW::string() const;
+
+    bool operator==(const UniqueID& rhs) const;
+    bool operator!=(const UniqueID& rhs) const;
+    bool operator<(const UniqueID& rhs) const;
+
+    /**
+     * Ask windows to generade a GUID for us
+     */
 #ifdef _WIN32
-	static UniqueID generate();
+    static UniqueID generate();
 #endif
 
-	static const UniqueID& zero() { return s_zero_; }
+    static const UniqueID& zero() { return s_zero_; }
 
-    static bool isUniqueID( const BW::string& s );
+    static bool isUniqueID(const BW::string& s);
 
-private:
-    static bool fromString( const BW::string& s, uint* data );
+  private:
+    static bool fromString(const BW::string& s, uint* data);
 };
 
 BW_END_NAMESPACE
 
-#endif	//UNIQUE_ID_HPP
+#endif // UNIQUE_ID_HPP

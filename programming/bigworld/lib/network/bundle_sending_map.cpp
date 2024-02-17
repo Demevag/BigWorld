@@ -3,7 +3,7 @@
 #include "bundle_sending_map.hpp"
 #include "udp_channel.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Network", 0 )
+DECLARE_DEBUG_COMPONENT2("Network", 0)
 
 // -----------------------------------------------------------------------------
 // Section: BundleSendingMap
@@ -13,43 +13,38 @@ DECLARE_DEBUG_COMPONENT2( "Network", 0 )
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
+namespace Mercury {
 
-/**
- *  This method returns the bundle for the given address, mapping the
- *  channel in if necessary.
- */
-Bundle & BundleSendingMap::operator[]( const Address & addr )
-{
-	Channels::iterator iter = channels_.find( addr );
+    /**
+     *  This method returns the bundle for the given address, mapping the
+     *  channel in if necessary.
+     */
+    Bundle& BundleSendingMap::operator[](const Address& addr)
+    {
+        Channels::iterator iter = channels_.find(addr);
 
-	if (iter != channels_.end())
-	{
-		return iter->second->bundle();
-	}
-	else
-	{
-		UDPChannel * pChannel = networkInterface_.findChannel( addr, true );
-		channels_[ addr ] = pChannel;
-		return pChannel->bundle();
-	}
-}
+        if (iter != channels_.end()) {
+            return iter->second->bundle();
+        } else {
+            UDPChannel* pChannel = networkInterface_.findChannel(addr, true);
+            channels_[addr]      = pChannel;
+            return pChannel->bundle();
+        }
+    }
 
+    /**
+     *  This method sends all the pending bundles on channels in this map.
+     */
+    void BundleSendingMap::sendAll()
+    {
+        for (Channels::iterator iter = channels_.begin();
+             iter != channels_.end();
+             ++iter) {
+            iter->second->send();
+        }
 
-/**
- *  This method sends all the pending bundles on channels in this map.
- */
-void BundleSendingMap::sendAll()
-{
-	for (Channels::iterator iter = channels_.begin();
-		 iter != channels_.end(); ++iter)
-	{
-		iter->second->send();
-	}
-
-	channels_.clear();
-}
+        channels_.clear();
+    }
 
 } // namespace Mercury
 

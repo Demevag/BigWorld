@@ -15,366 +15,324 @@
 
 BW_BEGIN_NAMESPACE
 
-
 // ----------------------------------------------------------------------------
 // Section: UDPLoginRequestTransport
 // ----------------------------------------------------------------------------
-
 
 /**
  *	This class provides a UDP-based transport for login requests.
  */
 class UDPLoginRequestTransport : public LoginRequestTransport
 {
-public:
+  public:
+    /**
+     *	Constructor.
+     */
+    UDPLoginRequestTransport()
+      : LoginRequestTransport()
+    {
+    }
 
-	/**
-	 *	Constructor.
-	 */
-	UDPLoginRequestTransport() :
-			LoginRequestTransport()
-	{
-	}
+    /** Destructor. */
+    virtual ~UDPLoginRequestTransport() {}
 
+    // Overrides from LoginRequestTransport
 
-	/** Destructor. */
-	virtual ~UDPLoginRequestTransport() 
-	{
-	}
+    virtual void doConnect();
 
+    virtual void createChannel();
 
-	// Overrides from LoginRequestTransport
+    virtual void sendBundle(Mercury::DeferredBundle& bundle, bool isOffChannel);
 
-	virtual void doConnect();
-
-	virtual void createChannel();
-
-	virtual void sendBundle( Mercury::DeferredBundle & bundle,
-		bool isOffChannel );
-
-	/* Override from LoginRequestTransport. */
-	virtual void doFinish()
-	{
-	}
+    /* Override from LoginRequestTransport. */
+    virtual void doFinish() {}
 };
-
 
 /*
  *	Override from LoginRequestTransport.
  */
 void UDPLoginRequestTransport::doConnect()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// We can notify out to LoginRequest straight away.
-	pLoginRequest_->onTransportConnect();
+    // We can notify out to LoginRequest straight away.
+    pLoginRequest_->onTransportConnect();
 }
-
 
 /*
  *	Override from LoginRequestTransport.
  */
 void UDPLoginRequestTransport::createChannel()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	IF_NOT_MF_ASSERT_DEV( this->pChannel() == NULL )
-	{
-		WARNING_MSG( "UDPLoginRequestTransport::createChannel: "
-				"A channel %s already exists, re-using\n",
-			this->pChannel()->c_str() );
-		return;
-	}
+    IF_NOT_MF_ASSERT_DEV(this->pChannel() == NULL)
+    {
+        WARNING_MSG("UDPLoginRequestTransport::createChannel: "
+                    "A channel %s already exists, re-using\n",
+                    this->pChannel()->c_str());
+        return;
+    }
 
-	Mercury::UDPChannel * pChannel = new Mercury::UDPChannel(
-		pLoginRequest_->networkInterface(),
-		pLoginRequest_->address(),
-		Mercury::UDPChannel::EXTERNAL );
+    Mercury::UDPChannel* pChannel =
+      new Mercury::UDPChannel(pLoginRequest_->networkInterface(),
+                              pLoginRequest_->address(),
+                              Mercury::UDPChannel::EXTERNAL);
 
-	pChannel->isLocalRegular( false );
-	pChannel->isRemoteRegular( false );
+    pChannel->isLocalRegular(false);
+    pChannel->isRemoteRegular(false);
 
-	this->pChannel( pChannel );
+    this->pChannel(pChannel);
 }
-
 
 /*
  *	Override from LoginRequestTransport.
  */
 void UDPLoginRequestTransport::sendBundle(
-		Mercury::DeferredBundle & deferredBundle,
-		bool shouldSendOnChannel )
+  Mercury::DeferredBundle& deferredBundle,
+  bool                     shouldSendOnChannel)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	Mercury::NetworkInterface * pInterface =
-		&(pLoginRequest_->networkInterface());
+    Mercury::NetworkInterface* pInterface =
+      &(pLoginRequest_->networkInterface());
 
-	MF_ASSERT( pInterface != NULL );
+    MF_ASSERT(pInterface != NULL);
 
-	if (!shouldSendOnChannel)
-	{
-		Mercury::UDPBundle bundle;
+    if (!shouldSendOnChannel) {
+        Mercury::UDPBundle bundle;
 
-		deferredBundle.applyToBundle( bundle );
+        deferredBundle.applyToBundle(bundle);
 
-		pInterface->send( pLoginRequest_->address(), bundle );
-	}
-	else
-	{
-		if (this->pChannel() == NULL)
-		{
-			this->createChannel();
-		}
+        pInterface->send(pLoginRequest_->address(), bundle);
+    } else {
+        if (this->pChannel() == NULL) {
+            this->createChannel();
+        }
 
-		deferredBundle.applyToBundle( this->pChannel()->bundle() );
+        deferredBundle.applyToBundle(this->pChannel()->bundle());
 
-		this->pChannel()->send();
-	}
+        this->pChannel()->send();
+    }
 }
-
-
 
 // ----------------------------------------------------------------------------
 // Section: TCPLoginRequestTransport
 // ----------------------------------------------------------------------------
 
-
 /**
  *	This class provides a TCP-based transport for login requests.
  */
-class TCPLoginRequestTransport : public LoginRequestTransport,
-		private Mercury::TCPConnectionOpenerListener,
-		private Mercury::ChannelListener
+class TCPLoginRequestTransport
+  : public LoginRequestTransport
+  , private Mercury::TCPConnectionOpenerListener
+  , private Mercury::ChannelListener
 {
-public:
-	/**
-	 *	Constructor.
-	 */
-	TCPLoginRequestTransport() :
-			LoginRequestTransport(),
-			Mercury::TCPConnectionOpenerListener(),
-			pOpener_( NULL )
-	{
-	}
+  public:
+    /**
+     *	Constructor.
+     */
+    TCPLoginRequestTransport()
+      : LoginRequestTransport()
+      , Mercury::TCPConnectionOpenerListener()
+      , pOpener_(NULL)
+    {
+    }
 
-	/** Destructor. */
-	virtual ~TCPLoginRequestTransport()
-	{
-		this->finish();
-	}
+    /** Destructor. */
+    virtual ~TCPLoginRequestTransport() { this->finish(); }
 
-	// Overrides from LoginRequestTransport
-	virtual void createChannel();
+    // Overrides from LoginRequestTransport
+    virtual void createChannel();
 
-	virtual void sendBundle( Mercury::DeferredBundle & bundle,
-		bool isOffChannel );
+    virtual void sendBundle(Mercury::DeferredBundle& bundle, bool isOffChannel);
 
-protected:
-	virtual void doConnect();
+  protected:
+    virtual void doConnect();
 
-	virtual void doFinish();
+    virtual void doFinish();
 
-	// Overrides from Mercury::TCPConnectionOpenerListener
-	virtual void onTCPConnect( Mercury::TCPConnectionOpener & opener,
-		Mercury::TCPChannel * pChannel );
+    // Overrides from Mercury::TCPConnectionOpenerListener
+    virtual void onTCPConnect(Mercury::TCPConnectionOpener& opener,
+                              Mercury::TCPChannel*          pChannel);
 
-private:
-	virtual void onTCPConnectFailure( Mercury::TCPConnectionOpener & opener,
-		Mercury::Reason reason );
+  private:
+    virtual void onTCPConnectFailure(Mercury::TCPConnectionOpener& opener,
+                                     Mercury::Reason               reason);
 
-	// Member data
-	Mercury::TCPConnectionOpener * pOpener_;
+    // Member data
+    Mercury::TCPConnectionOpener* pOpener_;
 };
-
 
 /*
  *	Override from LoginRequestTransport.
  */
 void TCPLoginRequestTransport::createChannel()
 {
-	// Shouldn't be called here as we have set the channel before calling back
-	// on onTransportConnect.
-	MF_ASSERT( this->pChannel() != NULL );
+    // Shouldn't be called here as we have set the channel before calling back
+    // on onTransportConnect.
+    MF_ASSERT(this->pChannel() != NULL);
 
-	DEV_CRITICAL_MSG( "TCPLoginRequestTransport::createChannel: "
-			"Attempt #%u to %s %s: "
-			"Unexpectedly called; existing channel is %s\n",
-		pLoginRequest_->attemptNum(),
-		pLoginRequest_->appName(),
-		pLoginRequest_->address().c_str(),
-		this->pChannel() ? this->pChannel()->c_str() : "(none)" );
+    DEV_CRITICAL_MSG("TCPLoginRequestTransport::createChannel: "
+                     "Attempt #%u to %s %s: "
+                     "Unexpectedly called; existing channel is %s\n",
+                     pLoginRequest_->attemptNum(),
+                     pLoginRequest_->appName(),
+                     pLoginRequest_->address().c_str(),
+                     this->pChannel() ? this->pChannel()->c_str() : "(none)");
 }
-
 
 /*
  *	Override from Mercury::LoginRequestTransport.
  */
-void TCPLoginRequestTransport::sendBundle( Mercury::DeferredBundle & bundle,
-		bool /* isOffChannel: not supported in TCP */ )
+void TCPLoginRequestTransport::sendBundle(
+  Mercury::DeferredBundle& bundle,
+  bool /* isOffChannel: not supported in TCP */)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// We always send on-channel for TCP. 
-	Mercury::Channel * pChannel = this->pChannel();
+    // We always send on-channel for TCP.
+    Mercury::Channel* pChannel = this->pChannel();
 
-	MF_ASSERT( pChannel != NULL );
+    MF_ASSERT(pChannel != NULL);
 
-	bundle.applyToBundle( pChannel->bundle() );
-	pChannel->send();
+    bundle.applyToBundle(pChannel->bundle());
+    pChannel->send();
 }
-
 
 /*
  *	Override from LoginRequestTransport.
  */
 void TCPLoginRequestTransport::doConnect()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	IF_NOT_MF_ASSERT_DEV( pOpener_ == NULL )
-	{
-		// Only one connection request per LoginRequest object.
-		ERROR_MSG( "TCPLoginRequestTransport::doConnect: Attempt #%u to %s %s: "
-				"TCP connection already pending establishment\n",
-			pLoginRequest_->attemptNum(),
-			pLoginRequest_->appName(),
-			pLoginRequest_->address().c_str() );
-		return;
-	}
+    IF_NOT_MF_ASSERT_DEV(pOpener_ == NULL)
+    {
+        // Only one connection request per LoginRequest object.
+        ERROR_MSG("TCPLoginRequestTransport::doConnect: Attempt #%u to %s %s: "
+                  "TCP connection already pending establishment\n",
+                  pLoginRequest_->attemptNum(),
+                  pLoginRequest_->appName(),
+                  pLoginRequest_->address().c_str());
+        return;
+    }
 
-	pOpener_ = new Mercury::TCPConnectionOpener( *this,
-		pLoginRequest_->networkInterface(),
-		pLoginRequest_->address(),
-		/* pUserData */ NULL,
-		pLoginRequest_->timeLeft() );
+    pOpener_ =
+      new Mercury::TCPConnectionOpener(*this,
+                                       pLoginRequest_->networkInterface(),
+                                       pLoginRequest_->address(),
+                                       /* pUserData */ NULL,
+                                       pLoginRequest_->timeLeft());
 }
-
 
 /*
  *	Override from LoginRequestTransport.
  */
 void TCPLoginRequestTransport::doFinish()
 {
-	if (pOpener_ != NULL)
-	{
-		pOpener_->cancel();
-		bw_safe_delete( pOpener_ );
-	}
+    if (pOpener_ != NULL) {
+        pOpener_->cancel();
+        bw_safe_delete(pOpener_);
+    }
 }
-
 
 /*
  *	Override from Mercury::TCPConnectionOpenerListener.
  */
 void TCPLoginRequestTransport::onTCPConnect(
-		Mercury::TCPConnectionOpener & opener,
-		Mercury::TCPChannel * pChannel )
+  Mercury::TCPConnectionOpener& opener,
+  Mercury::TCPChannel*          pChannel)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	this->pChannel( pChannel );
-	
-	MF_ASSERT( pOpener_ == &opener );
+    this->pChannel(pChannel);
 
-	bw_safe_delete( pOpener_ );
+    MF_ASSERT(pOpener_ == &opener);
 
-	pLoginRequest_->onTransportConnect();
+    bw_safe_delete(pOpener_);
+
+    pLoginRequest_->onTransportConnect();
 }
-
 
 /*
  *	Override from Mercury::TCPConnectionOpenerListener.
  */
 void TCPLoginRequestTransport::onTCPConnectFailure(
-		Mercury::TCPConnectionOpener & opener,
-		Mercury::Reason reason )
+  Mercury::TCPConnectionOpener& opener,
+  Mercury::Reason               reason)
 {
-	pLoginRequest_->onTransportFailed( reason,
-		"Failed to make TCP connection" );
+    pLoginRequest_->onTransportFailed(reason, "Failed to make TCP connection");
 }
-
 
 // ----------------------------------------------------------------------------
 // Section: WebSocketsLoginRequestTransport
 // ----------------------------------------------------------------------------
-
 
 /**
  *	This class provides a WebSockets-based transport for login requests.
  */
 class WebSocketsLoginRequestTransport : public TCPLoginRequestTransport
 {
-public:
-	/**
-	 *	Constructor.
-	 */
-	WebSocketsLoginRequestTransport() :
-			TCPLoginRequestTransport()
-	{
-	}
+  public:
+    /**
+     *	Constructor.
+     */
+    WebSocketsLoginRequestTransport()
+      : TCPLoginRequestTransport()
+    {
+    }
 
+    /** Destructor. */
+    virtual ~WebSocketsLoginRequestTransport() {}
 
-	/** Destructor. */
-	virtual ~WebSocketsLoginRequestTransport()
-	{
-	}
-
-
-	// Overrides from TCPLoginRequestTransport.
-	virtual void onTCPConnect( Mercury::TCPConnectionOpener & opener,
-		Mercury::TCPChannel * pChannel );
+    // Overrides from TCPLoginRequestTransport.
+    virtual void onTCPConnect(Mercury::TCPConnectionOpener& opener,
+                              Mercury::TCPChannel*          pChannel);
 };
-
 
 /*
  *	Override from TCPLoginRequestTransport.
  */
 void WebSocketsLoginRequestTransport::onTCPConnect(
-		Mercury::TCPConnectionOpener & opener,
-		Mercury::TCPChannel * pChannel )
+  Mercury::TCPConnectionOpener& opener,
+  Mercury::TCPChannel*          pChannel)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// TODO: Have the host name passed through from ServerConnection.
-	BW::string host( pLoginRequest_->appName() );
+    // TODO: Have the host name passed through from ServerConnection.
+    BW::string host(pLoginRequest_->appName());
 
-	// TODO: Use this URI for something.
-	static const BW::string URI( "/" );
+    // TODO: Use this URI for something.
+    static const BW::string URI("/");
 
-	Mercury::NetworkStreamPtr pChannelStream(
-		new Mercury::TCPChannelStreamAdaptor( *pChannel ) );
+    Mercury::NetworkStreamPtr pChannelStream(
+      new Mercury::TCPChannelStreamAdaptor(*pChannel));
 
-	Mercury::StreamFilter * pFilter =
-		new Mercury::WebSocketStreamFilter( *pChannelStream, host, URI );
-	pChannel->pStreamFilter( pFilter );
+    Mercury::StreamFilter* pFilter =
+      new Mercury::WebSocketStreamFilter(*pChannelStream, host, URI);
+    pChannel->pStreamFilter(pFilter);
 
-	this->TCPLoginRequestTransport::onTCPConnect( opener, pChannel );
+    this->TCPLoginRequestTransport::onTCPConnect(opener, pChannel);
 }
-
 
 // ----------------------------------------------------------------------------
 // Section: LoginRequestTransport
 // ----------------------------------------------------------------------------
 
-
 /**
  *	Constructor.
  */
-LoginRequestTransport::LoginRequestTransport() :
-		ReferenceCount(),
-		pLoginRequest_()
+LoginRequestTransport::LoginRequestTransport()
+  : ReferenceCount()
+  , pLoginRequest_()
 {
 }
 
-
-/** 
+/**
  *	Destructor.
  */
-LoginRequestTransport::~LoginRequestTransport() 
-{
-}
-
+LoginRequestTransport::~LoginRequestTransport() {}
 
 /**
  *	This method creates a transport for the given ConnectionTransport value.
@@ -382,37 +340,35 @@ LoginRequestTransport::~LoginRequestTransport()
  *	@param transport 	The transport value.
  */
 LoginRequestTransportPtr LoginRequestTransport::createForTransport(
-		ConnectionTransport transport )
+  ConnectionTransport transport)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// UDP transport is stateless, no need to have multiple instances.
-	static LoginRequestTransportPtr pUDPTransport =
-		new UDPLoginRequestTransport();
+    // UDP transport is stateless, no need to have multiple instances.
+    static LoginRequestTransportPtr pUDPTransport =
+      new UDPLoginRequestTransport();
 
-	switch (transport)
-	{
-	case CONNECTION_TRANSPORT_UDP:
-		return pUDPTransport;
+    switch (transport) {
+        case CONNECTION_TRANSPORT_UDP:
+            return pUDPTransport;
 
-	case CONNECTION_TRANSPORT_TCP:
-		return new TCPLoginRequestTransport();
+        case CONNECTION_TRANSPORT_TCP:
+            return new TCPLoginRequestTransport();
 
-	case CONNECTION_TRANSPORT_WEBSOCKETS:
-#if defined( __EMSCRIPTEN__ )
-		// Emscripten already wraps TCP sockets as WebSockets.
-		return new TCPLoginRequestTransport();
-#else // !defined( __EMSCRIPTEN__ )
-		return new WebSocketsLoginRequestTransport();
+        case CONNECTION_TRANSPORT_WEBSOCKETS:
+#if defined(__EMSCRIPTEN__)
+            // Emscripten already wraps TCP sockets as WebSockets.
+            return new TCPLoginRequestTransport();
+#else  // !defined( __EMSCRIPTEN__ )
+            return new WebSocketsLoginRequestTransport();
 #endif // defined( __EMSCRIPTEN__ )
 
-	default:
-		return LoginRequestTransportPtr();
-	}
+        default:
+            return LoginRequestTransportPtr();
+    }
 
-	return pUDPTransport;
+    return pUDPTransport;
 }
-
 
 /**
  *	This method initialises this object and starts the connection process.
@@ -426,21 +382,20 @@ LoginRequestTransportPtr LoginRequestTransport::createForTransport(
  *	@see LoginRequest::onTransportConnect
  *	@see LoginRequest::onAttemptFailed
  */
-void LoginRequestTransport::init( LoginRequest & loginRequest )
+void LoginRequestTransport::init(LoginRequest& loginRequest)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (pLoginRequest_.hasObject())
-	{
-		this->finish();
-	}
+    if (pLoginRequest_.hasObject()) {
+        this->finish();
+    }
 
-	pLoginRequest_ = &loginRequest;
+    pLoginRequest_ = &loginRequest;
 
-	MF_ASSERT( loginRequest.address() != Mercury::Address::NONE );
-	MF_ASSERT( (&loginRequest.networkInterface()) != NULL );
+    MF_ASSERT(loginRequest.address() != Mercury::Address::NONE);
+    MF_ASSERT((&loginRequest.networkInterface()) != NULL);
 
-	this->doConnect();
+    this->doConnect();
 }
 
 /**
@@ -449,40 +404,35 @@ void LoginRequestTransport::init( LoginRequest & loginRequest )
  */
 void LoginRequestTransport::finish()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (!pLoginRequest_.hasObject())
-	{
-		// Already finished, or not initialised.
-		return;
-	}
+    if (!pLoginRequest_.hasObject()) {
+        // Already finished, or not initialised.
+        return;
+    }
 
-	this->doFinish();
+    this->doFinish();
 
-	pLoginRequest_ = NULL;
+    pLoginRequest_ = NULL;
 }
-
 
 /**
  *	This method gets the channel to be used by this transport.
  */
-Mercury::Channel * LoginRequestTransport::pChannel()
+Mercury::Channel* LoginRequestTransport::pChannel()
 {
-	return pLoginRequest_->pChannel();
+    return pLoginRequest_->pChannel();
 }
-
 
 /**
  *	This method sets the channel to be used by this transport.
  */
-void LoginRequestTransport::pChannel( Mercury::Channel * pChannel )
+void LoginRequestTransport::pChannel(Mercury::Channel* pChannel)
 {
-	// Our parent LoginRequest holds it and destroys it when done.
-	pLoginRequest_->pChannel( pChannel );
+    // Our parent LoginRequest holds it and destroys it when done.
+    pLoginRequest_->pChannel(pChannel);
 }
 
-
 BW_END_NAMESPACE
-
 
 // login_request_transport.cpp

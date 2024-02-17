@@ -10,27 +10,26 @@
 
 #include "cstdmf/bgtask_manager.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace MongoDB
-{
+namespace MongoDB {
 
-class AddServerStartTask : public MongoDBBackgroundTask
-{
-public:
-	AddServerStartTask( MessageLogger::UID uid, const BW::string & username,
-		uint64 serverStartTime );
+    class AddServerStartTask : public MongoDBBackgroundTask
+    {
+      public:
+        AddServerStartTask(MessageLogger::UID uid,
+                           const BW::string&  username,
+                           uint64             serverStartTime);
 
-protected:
-	void performBackgroundTask( TaskManager & mgr,
-		ConnectionThreadData & connectionData );
+      protected:
+        void performBackgroundTask(TaskManager&          mgr,
+                                   ConnectionThreadData& connectionData);
 
-private:
-	MessageLogger::UID uid_;
-	BW::string username_;
-	uint64 serverStartTime_;
-};
+      private:
+        MessageLogger::UID uid_;
+        BW::string         username_;
+        uint64             serverStartTime_;
+    };
 
 } // namespace MongoDB
 

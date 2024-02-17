@@ -8,25 +8,24 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace controls
-{
+namespace controls {
     //
     // This represents a position (in normalized time) and a colour.
     //
     struct CONTROLS_DLL ColorScheduleItem
-    {  
-        float                   normalisedTime_;    // time (0.0 to 1.0)
-        Vector4                 color_;             // colour at this time
+    {
+        float   normalisedTime_; // time (0.0 to 1.0)
+        Vector4 color_;          // colour at this time
 
         ColorScheduleItem();
 
-        bool operator<(ColorScheduleItem const &other) const;
+        bool operator<(ColorScheduleItem const& other) const;
 
-    protected:
+      protected:
         friend class ColorTimeline;
 
-        int                     heightPos_;
-        ColorStatic             *timeStatic_;
+        int          heightPos_;
+        ColorStatic* timeStatic_;
     };
 
     typedef BW::vector<ColorScheduleItem> ColorScheduleItems;
@@ -57,34 +56,30 @@ namespace controls
     {
         DECLARE_DYNAMIC(ColorTimeline)
 
-    public:
+      public:
         enum TimeScale
         {
-            TS_SECONDS,         // time is in seconds
-            TS_HOURS_MINS       // time is in hours.minutes format
+            TS_SECONDS,   // time is in seconds
+            TS_HOURS_MINS // time is in hours.minutes format
         };
 
         ColorTimeline();
 
-        /*virtual*/ ~ColorTimeline();        
+        /*virtual*/ ~ColorTimeline();
 
-        BOOL 
-        Create
-        (
-            DWORD               dwStyle, 
-            CRect               rcPos, 
-            CWnd                *parent, 
-            ColorScheduleItems  const &colorSchedule,
-            bool                showAlpha               = true,
-            TimeScale           timeScale               = TS_SECONDS,
-            bool                wrap                    = false
-        );        
+        BOOL Create(DWORD                     dwStyle,
+                    CRect                     rcPos,
+                    CWnd*                     parent,
+                    ColorScheduleItems const& colorSchedule,
+                    bool                      showAlpha = true,
+                    TimeScale                 timeScale = TS_SECONDS,
+                    bool                      wrap      = false);
 
-        ColorScheduleItems const &colourScheduleItems() const;
+        ColorScheduleItems const& colourScheduleItems() const;
 
         void clearSchedule();
 
-        void addScheduleItem(ColorScheduleItem const &item);
+        void addScheduleItem(ColorScheduleItem const& item);
 
         void totalScheduleTime(float time);
 
@@ -92,18 +87,14 @@ namespace controls
 
         bool itemSelected() const;
 
-        ColorScheduleItem *getColorScheduleItemSelected() const;
+        ColorScheduleItem* getColorScheduleItemSelected() const;
 
         void setColorScheduleItemSelected(float time);
 
         Vector4 getColorScheduleItemSelectedColor();
 
-        void 
-        setColorScheduleItemSelectedColor
-        (
-            Vector4             const &color, 
-            bool                redraw      = true
-        );
+        void setColorScheduleItemSelectedColor(Vector4 const& color,
+                                               bool           redraw = true);
 
         bool removeSelectedColor();
 
@@ -115,56 +106,48 @@ namespace controls
 
         void hideLineAtTime();
 
-    protected:
+      protected:
         /*virtual*/ void PostNcDestroy();
 
         afx_msg void OnPaint();
         afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-        afx_msg void OnMouseMove(UINT nFlags, CPoint point);        
+        afx_msg void OnMouseMove(UINT nFlags, CPoint point);
         afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
         afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-        afx_msg BOOL OnSetCursor(CWnd *wnd, UINT hittest, UINT message);
+        afx_msg BOOL OnSetCursor(CWnd* wnd, UINT hittest, UINT message);
 
         DECLARE_MESSAGE_MAP()
 
-        void 
-        drawColorMark
-        (
-            CDC                 &pDC, 
-            ColorScheduleItem   const &item,
-            CRect               const &clientRect
-        );
+        void drawColorMark(CDC&                     pDC,
+                           ColorScheduleItem const& item,
+                           CRect const&             clientRect);
 
         void UpdateParent(UINT message);
 
         BW::wstring timeToString(float time) const;
 
-        void CalcColorRect(CRect &clrRect) const;
+        void CalcColorRect(CRect& clrRect) const;
 
-        void CalcAlphaRect(CRect &alphaRect) const;
+        void CalcAlphaRect(CRect& alphaRect) const;
 
-        void 
-        CalcMarkRect
-        (
-            ColorScheduleItem   const &item,
-            CRect               const &clientRect,
-            CRect               &markRect 
-        ) const;
+        void CalcMarkRect(ColorScheduleItem const& item,
+                          CRect const&             clientRect,
+                          CRect&                   markRect) const;
 
-    private:
-        ColorScheduleItems              colorSchedule_;
-        int                             colorGradientHeight_;
-        ColorScheduleItems::iterator    colorScheduleIterSelected_;
-        CPoint                          mousePosition_;
-        float                           unitHeightTimeIncrement_;
-        float                           totalScheduleTime_;
-        bool                            addColorAtLButton_;
-        bool                            showAlpha_;
-        TimeScale                       timeScale_;
-        bool                            wrap_;
-        float                           lineAtTime_;
-        bool                            dragging_;
-        int                             startPos_;
+      private:
+        ColorScheduleItems           colorSchedule_;
+        int                          colorGradientHeight_;
+        ColorScheduleItems::iterator colorScheduleIterSelected_;
+        CPoint                       mousePosition_;
+        float                        unitHeightTimeIncrement_;
+        float                        totalScheduleTime_;
+        bool                         addColorAtLButton_;
+        bool                         showAlpha_;
+        TimeScale                    timeScale_;
+        bool                         wrap_;
+        float                        lineAtTime_;
+        bool                         dragging_;
+        int                          startPos_;
     };
 }
 

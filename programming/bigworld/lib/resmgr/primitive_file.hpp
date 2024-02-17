@@ -27,12 +27,12 @@ typedef SmartPointer<PrimitiveFile> PrimitiveFilePtr;
  */
 class PrimitiveFile : public ReferenceCount
 {
-public:
-	~PrimitiveFile();
+  public:
+    ~PrimitiveFile();
 
-	static DataSectionPtr get( const BW::string & resourceID );
+    static DataSectionPtr get(const BW::string& resourceID);
 
-#if 0	 // ifdef'd out since functionality moved to BinSection
+#if 0 // ifdef'd out since functionality moved to BinSection
 	BinaryPtr readBinary( const BW::string & name );
 
 	BinaryPtr updateBinary( const BW::string & name,
@@ -69,14 +69,13 @@ private:
 #endif
 };
 
-
 // utility functions until primitive references have transitioned
 
-void splitOldPrimitiveName( const BW::string & resourceID,
-	BW::string & file, BW::string & part);
+void splitOldPrimitiveName(const BW::string& resourceID,
+                           BW::string&       file,
+                           BW::string&       part);
 
-BinaryPtr fetchOldPrimitivePart( BW::string & file, BW::string & part );
-
+BinaryPtr fetchOldPrimitivePart(BW::string& file, BW::string& part);
 
 #ifdef CODE_INLINE
 #include "primitive_file.ipp"

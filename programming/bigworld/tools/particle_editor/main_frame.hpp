@@ -11,81 +11,86 @@
 
 BW_BEGIN_NAMESPACE
 
-class MainFrame : public BaseMainFrame, public IMainFrame
-{	
-protected: 
-	MainFrame();
+class MainFrame
+  : public BaseMainFrame
+  , public IMainFrame
+{
+  protected:
+    MainFrame();
 
-	DECLARE_DYNCREATE(MainFrame)
+    DECLARE_DYNCREATE(MainFrame)
 
-public:
+  public:
     virtual ~MainFrame();
 
-	static MainFrame *instance() { return s_instance; }
+    static MainFrame* instance() { return s_instance; }
 
-	bool resizing() { return resizing_; }
+    bool resizing() { return resizing_; }
 
-	bool SelectParticleSystem(BW::string const &name);
+    bool SelectParticleSystem(BW::string const& name);
 
-	bool IsMetaParticleSystem();
+    bool IsMetaParticleSystem();
 
-	MetaParticleSystemPtr GetMetaParticleSystem();
+    MetaParticleSystemPtr GetMetaParticleSystem();
 
-	bool IsCurrentParticleSystem();
+    bool IsCurrentParticleSystem();
 
-	ParticleSystemPtr GetCurrentParticleSystem();
+    ParticleSystemPtr GetCurrentParticleSystem();
 
-	void ChangeToActionPropertyWindow(int index, ParticleSystemActionPtr action);
+    void ChangeToActionPropertyWindow(int                     index,
+                                      ParticleSystemActionPtr action);
 
-	void SetPerformancePaneText(CString text);
+    void SetPerformancePaneText(CString text);
 
-	void CopyFromDataSection(size_t kind, DataSectionPtr pDS);
+    void CopyFromDataSection(size_t kind, DataSectionPtr pDS);
 
-	void RefreshGUI(size_t actionKind);
+    void RefreshGUI(size_t actionKind);
 
-	void 
-    PotentiallyDirty
-    (
-        bool                    option,
-        UndoRedoOp::ActionKind  actionKind          = UndoRedoOp::AK_PARAMETER,
-        BW::string             const &changeDesc   = "?",
-        bool                    waitForLButtonUp    = false,
-        bool                    addBarrier			= true
-    );
+    void PotentiallyDirty(
+      bool                   option,
+      UndoRedoOp::ActionKind actionKind       = UndoRedoOp::AK_PARAMETER,
+      BW::string const&      changeDesc       = "?",
+      bool                   waitForLButtonUp = false,
+      bool                   addBarrier       = true);
 
-	void SaveUndoState( int actionKind, const BW::string& changeDesc, bool addBarrier = true );
+    void SaveUndoState(int               actionKind,
+                       const BW::string& changeDesc,
+                       bool              addBarrier = true);
 
-	void OnBatchedUndoOperationEnd();
+    void OnBatchedUndoOperationEnd();
 
-	POINT CurrentCursorPosition() const;
+    POINT CurrentCursorPosition() const;
 
-	Vector3 GetWorldRay(int x, int y) const;
+    Vector3 GetWorldRay(int x, int y) const;
 
     BOOL CursorOverGraphicsWnd() const;
 
-	CString ParticlesDirectory() { return particleDirectory_; }
+    CString ParticlesDirectory() { return particleDirectory_; }
 
-	void ParticlesDirectory(CString directory);
+    void ParticlesDirectory(CString directory);
 
-	void InitialiseMetaSystemRegister();
+    void InitialiseMetaSystemRegister();
 
-	Moo::Colour BgColour() { return bgColour_; }
+    Moo::Colour BgColour() { return bgColour_; }
 
-	void BgColour(Moo::Colour c);
+    void BgColour(Moo::Colour c);
 
-	void UpdateBackgroundColor();
+    void UpdateBackgroundColor();
 
-	void ForceActionPropertiesUpdate();
+    void ForceActionPropertiesUpdate();
 
-	void ForceActionPropertiesUpdateSkip() { skipForceActionPorpertiesUpdate_ = true; }
+    void ForceActionPropertiesUpdateSkip()
+    {
+        skipForceActionPorpertiesUpdate_ = true;
+    }
 
-	bool PotentiallyDirty() { return potentiallyDirty_; }
+    bool PotentiallyDirty() { return potentiallyDirty_; }
 
     void UpdateGUI();
 
-    ActionSelection *GetActionSelection() const;
+    ActionSelection* GetActionSelection() const;
 
-    PsaProperties   *GetPsaProperties() const;
+    PsaProperties* GetPsaProperties() const;
 
     void DereferenceColorDialogThread();
 
@@ -93,35 +98,35 @@ public:
 
     int PromptSave(UINT type, bool clearUndoStack = false);
 
-    void SetDocumentTitle(BW::string const &title);
-    
+    void SetDocumentTitle(BW::string const& title);
+
     void UpdateTitle();
 
-    /*virtual*/ CDocument *GetActiveDocument();
+    /*virtual*/ CDocument* GetActiveDocument();
 
-	void OnButtonViewFree();
+    void OnButtonViewFree();
 
-	void OnButtonViewX();
+    void OnButtonViewX();
 
-	void OnButtonViewY();
+    void OnButtonViewY();
 
-	void OnButtonViewZ();  
+    void OnButtonViewZ();
 
-	void OnButtonViewOrbit();
+    void OnButtonViewOrbit();
 
-	void OnUndo();
+    void OnUndo();
 
     bool CanUndo() const;
 
-	void OnRedo();
+    void OnRedo();
 
     bool CanRedo() const;
 
-	void OnBackgroundColor();	
+    void OnBackgroundColor();
 
-	bool showingBackgroundColor() { return colorDialogThread_ != NULL; }
+    bool showingBackgroundColor() { return colorDialogThread_ != NULL; }
 
-    CStatusBar &getStatusBar() { return wndStatusBar_; }
+    CStatusBar& getStatusBar() { return wndStatusBar_; }
 
     void appendOneShotPS();
 
@@ -129,56 +134,51 @@ public:
 
     size_t numberAppendPS() const;
 
-    MetaParticleSystem &getAppendedPS(size_t idx);
+    MetaParticleSystem& getAppendedPS(size_t idx);
 
     void cleanupAppendPS();
 
-	void setMessageText( const wchar_t * pText );
-	void setStatusText( UINT id, const wchar_t * text );
-	bool cursorOverGraphicsWnd() const { return false; }
-	void updateGUI( bool force = false ) {}
-	Vector2 currentCursorPosition() const { return Vector2::ZERO; }
-	Vector3 getWorldRay(int x, int y) const { return Vector3::ZERO; }
+    void    setMessageText(const wchar_t* pText);
+    void    setStatusText(UINT id, const wchar_t* text);
+    bool    cursorOverGraphicsWnd() const { return false; }
+    void    updateGUI(bool force = false) {}
+    Vector2 currentCursorPosition() const { return Vector2::ZERO; }
+    Vector3 getWorldRay(int x, int y) const { return Vector3::ZERO; }
 
-	void grabFocus() { SetFocus(); }
+    void grabFocus() { SetFocus(); }
 
-private:
+  private:
+    /*virtual*/ BOOL PreCreateWindow(CREATESTRUCT& cs);
 
-	/*virtual*/ BOOL PreCreateWindow(CREATESTRUCT& cs);
+    bool Initialised() const { return initialised_; }
 
-	bool Initialised() const { return initialised_; }	
+    /*virtual*/ LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 
-	/*virtual*/ LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
 
-	afx_msg void OnSize(UINT nType, int cx, int cy);
+    afx_msg LRESULT OnEnterSizeMove(WPARAM, LPARAM);
 
-	afx_msg LRESULT OnEnterSizeMove (WPARAM, LPARAM);
-	
-	afx_msg LRESULT OnExitSizeMove (WPARAM, LPARAM);
+    afx_msg LRESULT OnExitSizeMove(WPARAM, LPARAM);
 
-	virtual BOOL 
-    Create
-    (
-        LPCTSTR                 lpszClassName, 
-        LPCTSTR                 lpszWindowName, 
-        DWORD                   dwStyle         = WS_OVERLAPPEDWINDOW, 
-        RECT                    const &rect     = rectDefault, 
-        CWnd                    *pParentWnd     = NULL, 
-        LPCTSTR                 lpszMenuName    = NULL, 
-        DWORD                   dwExStyle       = 0, 
-        CCreateContext          *pContext       = NULL
-    );
+    virtual BOOL Create(LPCTSTR         lpszClassName,
+                        LPCTSTR         lpszWindowName,
+                        DWORD           dwStyle      = WS_OVERLAPPEDWINDOW,
+                        RECT const&     rect         = rectDefault,
+                        CWnd*           pParentWnd   = NULL,
+                        LPCTSTR         lpszMenuName = NULL,
+                        DWORD           dwExStyle    = 0,
+                        CCreateContext* pContext     = NULL);
 
-	afx_msg void OnClose();
+    afx_msg void OnClose();
 
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnDestroy();
+    afx_msg int  OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnDestroy();
 
     afx_msg void OnGUIManagerCommand(UINT nID);
 
-    afx_msg void OnGUIManagerCommandUpdate(CCmdUI *cmdUI);
+    afx_msg void OnGUIManagerCommandUpdate(CCmdUI* cmdUI);
 
-	afx_msg void OnUpdatePerformancePane(CCmdUI * pCmdUI);
+    afx_msg void OnUpdatePerformancePane(CCmdUI* pCmdUI);
 
     afx_msg void OnPlay();
 
@@ -186,26 +186,26 @@ private:
 
     afx_msg void OnPause();
 
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 
-private:
-	static MainFrame            *s_instance;
-	CCreateContext	            context_;
-	bool                        potentiallyDirty_;
-	BW::string                 pendingLBtnUpDesc_;
-	int                         pendingLbtnUpKind_;	
-	bool                        undoing_;
-	CString                     particleDirectory_;
-	bool                        skipForceActionPorpertiesUpdate_;
-	CStatusBar                  wndStatusBar_;
-	CString                     performancePaneString_;
-	bool                        initialised_;
-	ColorPickerDialogThread     *colorDialogThread_;
-	bool						deferredGuiUpdate_;
-	Moo::Colour                 bgColour_;
-    BW::string                 title_;
-    PsaProperties               *psaDlg_;
-	bool                        resizing_;
+  private:
+    static MainFrame*        s_instance;
+    CCreateContext           context_;
+    bool                     potentiallyDirty_;
+    BW::string               pendingLBtnUpDesc_;
+    int                      pendingLbtnUpKind_;
+    bool                     undoing_;
+    CString                  particleDirectory_;
+    bool                     skipForceActionPorpertiesUpdate_;
+    CStatusBar               wndStatusBar_;
+    CString                  performancePaneString_;
+    bool                     initialised_;
+    ColorPickerDialogThread* colorDialogThread_;
+    bool                     deferredGuiUpdate_;
+    Moo::Colour              bgColour_;
+    BW::string               title_;
+    PsaProperties*           psaDlg_;
+    bool                     resizing_;
 };
 
 BW_END_NAMESPACE

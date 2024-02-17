@@ -5,34 +5,36 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace OfflineProcessor
-{
+namespace OfflineProcessor {
 
-/**
- * BSP upgrade command. Loads and saves bsp data upgrading it to the latest format
- * Supports the following files:
- * *.primitives
- * *.bsp2
- *
- * This command supports batch processing. User can pass a folder name and use -recusive option
- */
-class CommandUpgradeBSP : public BatchCommand
-{
-public:
-	CommandUpgradeBSP( const CommandLine& commandLine );
-	virtual ~CommandUpgradeBSP();
+    /**
+     * BSP upgrade command. Loads and saves bsp data upgrading it to the latest
+     * format Supports the following files:
+     * *.primitives
+     * *.bsp2
+     *
+     * This command supports batch processing. User can pass a folder name and
+     * use -recusive option
+     */
+    class CommandUpgradeBSP : public BatchCommand
+    {
+      public:
+        CommandUpgradeBSP(const CommandLine& commandLine);
+        virtual ~CommandUpgradeBSP();
 
-	virtual const char*		strCommand() const { return "upgrade-bsp"; };
+        virtual const char* strCommand() const { return "upgrade-bsp"; };
 
-	virtual void	showDetailedHelp() const;
-	virtual void	showShortHelp() const;
+        virtual void showDetailedHelp() const;
+        virtual void showShortHelp() const;
 
-	virtual FileProcessResult	processFile( const BW::string& fileName, const BW::string& outFileName = "" );
+        virtual FileProcessResult processFile(
+          const BW::string& fileName,
+          const BW::string& outFileName = "");
 
-private:
-	bool	doFormatUpgradeBSPInPrimitives( const BW::string& primName );
-	bool	doFormatUpgradeStandaloneBSPFile( const BW::string& bspName );
-};
+      private:
+        bool doFormatUpgradeBSPInPrimitives(const BW::string& primName);
+        bool doFormatUpgradeStandaloneBSPFile(const BW::string& bspName);
+    };
 
 } // namespace OfflineProcessor
 

@@ -6,7 +6,6 @@
 #include "chunk_item.hpp"
 #include <memory>
 
-
 BW_BEGIN_NAMESPACE
 
 class BSPTree;
@@ -16,34 +15,37 @@ class BSPTree;
  */
 class BaseChunkTree : public ChunkItem
 {
-public:
-	BaseChunkTree();
-	~BaseChunkTree();
+  public:
+    BaseChunkTree();
+    ~BaseChunkTree();
 
-	virtual void toss( Chunk * pChunk );
+    virtual void toss(Chunk* pChunk);
 
-	const Matrix & transform() const { return this->transform_; }
-	virtual void setTransform( const Matrix & transform );
+    const Matrix& transform() const { return this->transform_; }
+    virtual void  setTransform(const Matrix& transform);
 
-	virtual bool localBB( BoundingBox & bbRet ) const { bbRet = boundingBox_; return true; }
+    virtual bool localBB(BoundingBox& bbRet) const
+    {
+        bbRet = boundingBox_;
+        return true;
+    }
 
-protected:
-	const BSPTree * bspTree() const;
-	void setBSPTree( const BSPTree * bspTree );
+  protected:
+    const BSPTree* bspTree() const;
+    void           setBSPTree(const BSPTree* bspTree);
 
-	const BoundingBox & boundingBox() const { return this->boundingBox_; }
-	void setBoundingBox( const BoundingBox & bbox );
+    const BoundingBox& boundingBox() const { return this->boundingBox_; }
+    void               setBoundingBox(const BoundingBox& bbox);
 
-private:
-	Matrix transform_;
-	const BSPTree * bspTree_;
-	BoundingBox     boundingBox_;
+  private:
+    Matrix         transform_;
+    const BSPTree* bspTree_;
+    BoundingBox    boundingBox_;
 
-private:
-
-	// Disallow copy
-	BaseChunkTree( const BaseChunkTree & );
-	const BaseChunkTree & operator = ( const BaseChunkTree & );
+  private:
+    // Disallow copy
+    BaseChunkTree(const BaseChunkTree&);
+    const BaseChunkTree& operator=(const BaseChunkTree&);
 };
 
 BW_END_NAMESPACE

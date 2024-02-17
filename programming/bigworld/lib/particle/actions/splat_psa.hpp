@@ -3,52 +3,50 @@
 
 #include "particle_system_action.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
- * This class calls the given callback class when a particle collides with the collision scene.
+ * This class calls the given callback class when a particle collides with the
+ * collision scene.
  */
 class SplatPSA : public ParticleSystemAction
 {
-public:
-	SplatPSA();
+  public:
+    SplatPSA();
 
     ParticleSystemActionPtr clone() const;
 
-	///	@name Overrides to the Particle System Action Interface.
-	//@{
-	virtual void execute( ParticleSystem & particleSystem, float dTime );
-	virtual void lateExecute( ParticleSystem &particleSystem, float dTime );
-	virtual int typeID() const;
-	virtual const BW::string & nameID() const;
+    ///	@name Overrides to the Particle System Action Interface.
+    //@{
+    virtual void execute(ParticleSystem& particleSystem, float dTime);
+    virtual void lateExecute(ParticleSystem& particleSystem, float dTime);
+    virtual int  typeID() const;
+    virtual const BW::string& nameID() const;
 
-	virtual size_t sizeInBytes() const { return sizeof(SplatPSA); }
-	//@}
+    virtual size_t sizeInBytes() const { return sizeof(SplatPSA); }
+    //@}
 
-	///	@name Accessors to SplatPSA properties.
-	//@{
-	SmartPointer<PyObject>	callback() const;
-	void callback( SmartPointer<PyObject> c );
-	//@}
+    ///	@name Accessors to SplatPSA properties.
+    //@{
+    SmartPointer<PyObject> callback() const;
+    void                   callback(SmartPointer<PyObject> c);
+    //@}
 
-	static const BW::string nameID_;
+    static const BW::string nameID_;
 
-protected:
-	virtual void loadInternal( DataSectionPtr pSect );
-	virtual void saveInternal( DataSectionPtr pSect ) const;
+  protected:
+    virtual void loadInternal(DataSectionPtr pSect);
+    virtual void saveInternal(DataSectionPtr pSect) const;
 
-private:
-
-	///	@name Auxiliary Variables for the SplatPSA.
-	//@{
-	static int typeID_;			///< TypeID of the SplatPSA.
-	SmartPointer<PyObject> callback_;
-	//@}
+  private:
+    ///	@name Auxiliary Variables for the SplatPSA.
+    //@{
+    static int             typeID_; ///< TypeID of the SplatPSA.
+    SmartPointer<PyObject> callback_;
+    //@}
 };
 
 typedef SmartPointer<SplatPSA> SplatPSAPtr;
-
 
 /*~ class Pixie.PySplatPSA
  *
@@ -65,30 +63,28 @@ typedef SmartPointer<SplatPSA> SplatPSAPtr;
  */
 class PySplatPSA : public PyParticleSystemAction
 {
-	Py_Header( PySplatPSA, PyParticleSystemAction )
-public:
-	PySplatPSA( SplatPSAPtr pAction, PyTypeObject *pType = &s_type_ );
+    Py_Header(PySplatPSA, PyParticleSystemAction) public
+      : PySplatPSA(SplatPSAPtr pAction, PyTypeObject* pType = &s_type_);
 
-	int typeID( void ) const;
+    int typeID(void) const;
 
-	///	@name Accessors to PySplatPSA properties.
-	//@{
-	SmartPointer<PyObject>	callback() const;
-	void callback( SmartPointer<PyObject> c );
-	//@}
+    ///	@name Accessors to PySplatPSA properties.
+    //@{
+    SmartPointer<PyObject> callback() const;
+    void                   callback(SmartPointer<PyObject> c);
+    //@}
 
-	///	@name Python Interface to the PySplatPSA.
-	//@{
-	PY_FACTORY_DECLARE()
+    ///	@name Python Interface to the PySplatPSA.
+    //@{
+    PY_FACTORY_DECLARE()
 
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( SmartPointer<PyObject>, callback, callback )
-	//@}
-private:
-	SplatPSAPtr pAction_;
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(SmartPointer<PyObject>, callback, callback)
+    //@}
+  private:
+    SplatPSAPtr pAction_;
 };
 
-PY_SCRIPT_CONVERTERS_DECLARE( PySplatPSA )
-
+PY_SCRIPT_CONVERTERS_DECLARE(PySplatPSA)
 
 #ifdef CODE_INLINE
 #include "splat_psa.ipp"

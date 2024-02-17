@@ -12,7 +12,7 @@ BW_BEGIN_NAMESPACE
  *	older version of BigWorld, and will use the AssetProcessor to
  *	insert the appropriate chunkSize record.
  */
-const float DEFAULT_GRID_RESOLUTION = 100.f;
+const float  DEFAULT_GRID_RESOLUTION = 100.f;
 extern float g_defaultGridResolution; // exposed to binary-only server code
 
 BW_END_NAMESPACE

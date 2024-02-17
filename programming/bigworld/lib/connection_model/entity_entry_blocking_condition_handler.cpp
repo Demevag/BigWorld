@@ -14,27 +14,24 @@ BW_BEGIN_NAMESPACE
  *	Constructor
  */
 EntityEntryBlockingConditionHandler::EntityEntryBlockingConditionHandler(
-	EntityEntryBlockingConditionImpl * pImpl ) :
-	pImpl_( pImpl ),
-	hasTriggered_( false )
+  EntityEntryBlockingConditionImpl* pImpl)
+  : pImpl_(pImpl)
+  , hasTriggered_(false)
 {
-	pImpl_->setHandler( this );
+    pImpl_->setHandler(this);
 }
-
 
 /**
  *	Destructor
  */
 EntityEntryBlockingConditionHandler::~EntityEntryBlockingConditionHandler()
 {
-	// If we are destroyed before our condition is cleared, treat it as an
-	// abort call.
-	if (!hasTriggered_)
-	{
-		this->abort();
-	}
+    // If we are destroyed before our condition is cleared, treat it as an
+    // abort call.
+    if (!hasTriggered_) {
+        this->abort();
+    }
 }
-
 
 /**
  *	This method is called to tell by our owner to notify us that it no longer
@@ -42,12 +39,11 @@ EntityEntryBlockingConditionHandler::~EntityEntryBlockingConditionHandler()
  */
 void EntityEntryBlockingConditionHandler::abort()
 {
-	hasTriggered_ = true;
-	pImpl_->setHandler( NULL );
-	pImpl_ = NULL;
-	this->onAborted();
+    hasTriggered_ = true;
+    pImpl_->setHandler(NULL);
+    pImpl_ = NULL;
+    this->onAborted();
 }
-
 
 /**
  *	This method is called by our EntityEntryBlockingConditionImpl to notify us
@@ -55,10 +51,10 @@ void EntityEntryBlockingConditionHandler::abort()
  */
 void EntityEntryBlockingConditionHandler::onBlockingConditionCleared()
 {
-	hasTriggered_ = true;
-	pImpl_->setHandler( NULL );
-	pImpl_ = NULL;
-	this->onConditionCleared();
+    hasTriggered_ = true;
+    pImpl_->setHandler(NULL);
+    pImpl_ = NULL;
+    this->onConditionCleared();
 }
 
 BW_END_NAMESPACE

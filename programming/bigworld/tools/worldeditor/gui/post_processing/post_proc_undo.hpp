@@ -11,44 +11,42 @@ BW_BEGIN_NAMESPACE
  */
 class PostProcUndo
 {
-public:
-	static bool undoRedoDone();
-	static void undoRedoDone( bool val );
+  public:
+    static bool undoRedoDone();
+    static void undoRedoDone(bool val);
 };
-
 
 /**
  *	Chain-level undo-redo
  */
 class ChainUndoOp : public UndoRedo::Operation
 {
-public:
-	ChainUndoOp();
+  public:
+    ChainUndoOp();
 
-	virtual void undo();
+    virtual void undo();
 
-	virtual bool iseq( const UndoRedo::Operation & oth ) const;
+    virtual bool iseq(const UndoRedo::Operation& oth) const;
 
-private:
-	BW::vector< PyObjectPtr > savedChain_;
+  private:
+    BW::vector<PyObjectPtr> savedChain_;
 };
-
 
 /**
  *	Effect-level phases list undo-redo
  */
 class PhasesUndoOp : public UndoRedo::Operation
 {
-public:
-	PhasesUndoOp( PostProcessing::EffectPtr effect );
+  public:
+    PhasesUndoOp(PostProcessing::EffectPtr effect);
 
-	virtual void undo();
+    virtual void undo();
 
-	virtual bool iseq( const UndoRedo::Operation & oth ) const;
+    virtual bool iseq(const UndoRedo::Operation& oth) const;
 
-private:
-	PostProcessing::EffectPtr effect_;
-	BW::vector< PyObjectPtr > savedPhases_;
+  private:
+    PostProcessing::EffectPtr effect_;
+    BW::vector<PyObjectPtr>   savedPhases_;
 };
 
 BW_END_NAMESPACE

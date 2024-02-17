@@ -3,7 +3,6 @@
 
 #include "base_camera.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -12,15 +11,17 @@ BW_BEGIN_NAMESPACE
  */
 struct CameraBlend
 {
-	explicit CameraBlend( BaseCameraPtr pCam ) :
-		pCam_( pCam ), prop_( 0.f ) { }
+    explicit CameraBlend(BaseCameraPtr pCam)
+      : pCam_(pCam)
+      , prop_(0.f)
+    {
+    }
 
-	BaseCameraPtr	pCam_;
-	float			prop_;
+    BaseCameraPtr pCam_;
+    float         prop_;
 };
 
 typedef BW::vector<CameraBlend> CameraBlends;
-
 
 /**
  *	This is a vector of selected cameras, with routines to move a
@@ -28,22 +29,20 @@ typedef BW::vector<CameraBlend> CameraBlends;
  */
 class CameraBlender : public BaseCamera
 {
-public:
-	CameraBlender( float maxAge = 0.5f );
+  public:
+    CameraBlender(float maxAge = 0.5f);
 
-	void add( BaseCameraPtr pCam );
-	void select( int index );
+    void add(BaseCameraPtr pCam);
+    void select(int index);
 
-	virtual void update( float dTime );
+    virtual void update(float dTime);
 
-	CameraBlends & elts() { return elts_; }
+    CameraBlends& elts() { return elts_; }
 
-private:
-	CameraBlends	elts_;
-	float			maxAge_;
+  private:
+    CameraBlends elts_;
+    float        maxAge_;
 };
-
-
 
 BW_END_NAMESPACE
 

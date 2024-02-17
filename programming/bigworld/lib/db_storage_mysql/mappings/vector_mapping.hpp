@@ -10,80 +10,76 @@
 
 #include "resmgr/datasection.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 template <class Vec, int DIM>
 class VectorMapping : public PropertyMapping
 {
-public:
-	VectorMapping( const Namer & namer, const BW::string & propName,
-				DataSectionPtr pDefaultValue ) :
-		PropertyMapping( propName ),
-		colNameTemplate_( namer.buildColumnName( "vm_%i", propName ) ),
-		defaultValue_()
-	{
-		if (pDefaultValue)
-			defaultValue_ = pDefaultValue->as<Vec>();
-	}
+  public:
+    VectorMapping(const Namer&      namer,
+                  const BW::string& propName,
+                  DataSectionPtr    pDefaultValue)
+      : PropertyMapping(propName)
+      , colNameTemplate_(namer.buildColumnName("vm_%i", propName))
+      , defaultValue_()
+    {
+        if (pDefaultValue)
+            defaultValue_ = pDefaultValue->as<Vec>();
+    }
 
-	virtual void fromStreamToDatabase( StreamToQueryHelper & helper,
-			BinaryIStream & strm,
-			QueryRunner & queryRunner ) const
-	{
-		Vec v;
-		strm >> v;
+    virtual void fromStreamToDatabase(StreamToQueryHelper& helper,
+                                      BinaryIStream&       strm,
+                                      QueryRunner&         queryRunner) const
+    {
+        Vec v;
+        strm >> v;
 
-		for (int i = 0; i < DIM; ++i)
-		{
-			queryRunner.pushArg( v[i] );
-		}
-	}
+        for (int i = 0; i < DIM; ++i) {
+            queryRunner.pushArg(v[i]);
+        }
+    }
 
-	virtual void fromDatabaseToStream( ResultToStreamHelper & helper,
-				ResultStream & results,
-				BinaryOStream & strm ) const
-	{
-		Vec v;
+    virtual void fromDatabaseToStream(ResultToStreamHelper& helper,
+                                      ResultStream&         results,
+                                      BinaryOStream&        strm) const
+    {
+        Vec v;
 
-		for (int i = 0; i < DIM; ++i)
-		{
-			results >> v[i];
-		}
+        for (int i = 0; i < DIM; ++i) {
+            results >> v[i];
+        }
 
-		strm << v;
-	}
+        strm << v;
+    }
 
-	virtual void defaultToStream( BinaryOStream & strm ) const
-	{
-		strm << defaultValue_;
-	}
+    virtual void defaultToStream(BinaryOStream& strm) const
+    {
+        strm << defaultValue_;
+    }
 
-	virtual bool visitParentColumns( ColumnVisitor & visitor )
-	{
-		char buffer[ 512 ];
+    virtual bool visitParentColumns(ColumnVisitor& visitor)
+    {
+        char buffer[512];
 
-		for (int i=0; i < DIM; i++)
-		{
-			bw_snprintf( buffer, sizeof(buffer), colNameTemplate_.c_str(), i );
+        for (int i = 0; i < DIM; i++) {
+            bw_snprintf(buffer, sizeof(buffer), colNameTemplate_.c_str(), i);
 
-			BW::string colName( buffer );
-			ColumnType colType( MYSQL_TYPE_FLOAT , false, 0,
-					StringConv::toStr( defaultValue_[i] ) );
-			ColumnDescription column( colName, colType );
+            BW::string colName(buffer);
+            ColumnType colType(
+              MYSQL_TYPE_FLOAT, false, 0, StringConv::toStr(defaultValue_[i]));
+            ColumnDescription column(colName, colType);
 
-			if (!visitor.onVisitColumn( column ))
-			{
-				return false;
-			}
-		}
+            if (!visitor.onVisitColumn(column)) {
+                return false;
+            }
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-private:
-	BW::string colNameTemplate_;
-	Vec defaultValue_;
+  private:
+    BW::string colNameTemplate_;
+    Vec        defaultValue_;
 };
 
 BW_END_NAMESPACE

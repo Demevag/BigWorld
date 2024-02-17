@@ -9,7 +9,6 @@
 
 DECLARE_DEBUG_COMPONENT(0)
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -20,28 +19,28 @@ BW_BEGIN_NAMESPACE
  */
 
 /**
- *	@var BaseAccelerationController::Facing BaseAccelerationController::FACING_NONE
+ *	@var BaseAccelerationController::Facing
+ *BaseAccelerationController::FACING_NONE
  *
  *	This value means that the movement controller will not modify the direction
  *	of the entity.
  */
 
 /**
- *	@var BaseAccelerationController::Facing BaseAccelerationController::FACING_VELOCITY
+ *	@var BaseAccelerationController::Facing
+ *BaseAccelerationController::FACING_VELOCITY
  *
  *	This value means that the entity will be rotated along the z and x axis to
  *	face in the direction it is heading.
  */
 
 /**
- *	@var BaseAccelerationController::Facing BaseAccelerationController::FACING_ACCELERATION
+ *	@var BaseAccelerationController::Facing
+ *BaseAccelerationController::FACING_ACCELERATION
  *
  *	This value means that the entity will be rotated along the z and x axis to
  *	face in the direction it is accelerating.
  */
-
-
-
 
 /**
  *	@property	float BaseAccelerationController::acceleration_
@@ -63,9 +62,6 @@ BW_BEGIN_NAMESPACE
  *	The direction in which to face the entity while it is being moved.
  */
 
-
-
-
 //-----------------------------------------------------------------------------
 // Section: BaseAccelerationController
 //-----------------------------------------------------------------------------
@@ -78,85 +74,72 @@ BW_BEGIN_NAMESPACE
  *  @param facing			Enumerated value indicating which direction to
  *                          face while accelerating.
  */
-BaseAccelerationController::BaseAccelerationController(	
-													float acceleration,
-													float maxSpeed,
-													Facing facing) :
-	acceleration_( acceleration ),
-	maxSpeed_( maxSpeed ),
-	facing_( facing ),
-	currVelocity_( 0.f, 0.f, 0.f ),
-	pVehicle_( NULL )
+BaseAccelerationController::BaseAccelerationController(float  acceleration,
+                                                       float  maxSpeed,
+                                                       Facing facing)
+  : acceleration_(acceleration)
+  , maxSpeed_(maxSpeed)
+  , facing_(facing)
+  , currVelocity_(0.f, 0.f, 0.f)
+  , pVehicle_(NULL)
 {
-
 }
-
 
 /**
  *	This method overrides the Controller method.
  */
-void BaseAccelerationController::startReal( bool /*isInitialStart*/ )
+void BaseAccelerationController::startReal(bool /*isInitialStart*/)
 {
-	MF_ASSERT( entity().isReal() );
-	CellApp::instance().registerForUpdate( this );
+    MF_ASSERT(entity().isReal());
+    CellApp::instance().registerForUpdate(this);
 
-	pVehicle_ = this->entity().pVehicle();
-	if (pVehicle_)
-	{
-		//restart to sample position
-		positionSample_ = this->entity().localPosition();
-		positionSampleTime_ = CellApp::instance().time();
-	}
+    pVehicle_ = this->entity().pVehicle();
+    if (pVehicle_) {
+        // restart to sample position
+        positionSample_     = this->entity().localPosition();
+        positionSampleTime_ = CellApp::instance().time();
+    }
 }
-
 
 /**
  *	This method overrides the Controller method.
  */
-void BaseAccelerationController::stopReal( bool /*isFinalStop*/ )
+void BaseAccelerationController::stopReal(bool /*isFinalStop*/)
 {
-	MF_VERIFY( CellApp::instance().deregisterForUpdate( this ) );
+    MF_VERIFY(CellApp::instance().deregisterForUpdate(this));
 }
-
 
 /**
  *	Private method to calculate the current velocity in local coordinate.
  */
 void BaseAccelerationController::refreshCurrentVelocity()
 {
-	Entity * pVehicle = this->entity().pVehicle();
-	bool changedVehicle = (pVehicle_ != pVehicle);
+    Entity* pVehicle       = this->entity().pVehicle();
+    bool    changedVehicle = (pVehicle_ != pVehicle);
 
-	if (changedVehicle)
-		pVehicle_ = pVehicle;
+    if (changedVehicle)
+        pVehicle_ = pVehicle;
 
-	if (!pVehicle)
-	{
-		currVelocity_ = this->entity().pReal()->velocity();
-	}
-	else if (!changedVehicle)
-	{
+    if (!pVehicle) {
+        currVelocity_ = this->entity().pReal()->velocity();
+    } else if (!changedVehicle) {
 
-		GameTime now = CellApp::instance().time();
-		uint32 dur = now - positionSampleTime_;
-		if (dur > 1)
-		{   
-			Vector3 position = this->entity().localPosition();
-			float tinv = float(CellAppConfig::updateHertz()) / float(dur);
-			currVelocity_ = ( position - positionSample_) * tinv;
+        GameTime now = CellApp::instance().time();
+        uint32   dur = now - positionSampleTime_;
+        if (dur > 1) {
+            Vector3 position = this->entity().localPosition();
+            float   tinv     = float(CellAppConfig::updateHertz()) / float(dur);
+            currVelocity_    = (position - positionSample_) * tinv;
 
-			positionSample_ = position; 
-			positionSampleTime_ = now;
-		}   
-	}
-	else
-	{
+            positionSample_     = position;
+            positionSampleTime_ = now;
+        }
+    } else {
 
-		positionSample_ = this->entity().localPosition();
-		positionSampleTime_ = CellApp::instance().time();
-		currVelocity_ = Vector3( 0.f, 0.f, 0.f );
-	}   
-
+        positionSample_     = this->entity().localPosition();
+        positionSampleTime_ = CellApp::instance().time();
+        currVelocity_       = Vector3(0.f, 0.f, 0.f);
+    }
 }
 
 /**
@@ -167,129 +150,97 @@ void BaseAccelerationController::refreshCurrentVelocity()
  *	@param stopAtDestination	Should velocity be zero upon reaching the
  *								destination.
  */
-bool BaseAccelerationController::move(	const Position3D & destination,
-										bool stopAtDestination )
+bool BaseAccelerationController::move(const Position3D& destination,
+                                      bool              stopAtDestination)
 {
-	MF_ASSERT( this->entity().pReal() );
+    MF_ASSERT(this->entity().pReal());
 
-	this->refreshCurrentVelocity();
+    this->refreshCurrentVelocity();
 
-	Position3D position = this->entity().localPosition();
+    Position3D position = this->entity().localPosition();
 
+    Direction3D   direction       = this->entity().localDirection();
+    const Vector3 currentVelocity = this->currVelocity();
 
-	Direction3D direction = this->entity().localDirection();
-	const Vector3 currentVelocity = this->currVelocity();
+    Vector3 desiredVelocity = calculateDesiredVelocity(
+      position, destination, acceleration_, maxSpeed_, stopAtDestination);
 
+    if (desiredVelocity.length() > maxSpeed_) {
+        desiredVelocity.normalise();
+        desiredVelocity *= maxSpeed_;
+    }
 
-	Vector3 desiredVelocity = calculateDesiredVelocity(	position,
-														destination,
-														acceleration_, 
-														maxSpeed_,
-														stopAtDestination);
+    const Vector3 accelerationVector =
+      calculateAccelerationVector(currentVelocity, desiredVelocity);
 
-	if (desiredVelocity.length() > maxSpeed_)
-	{
-		desiredVelocity.normalise();
-		desiredVelocity *= maxSpeed_;
-	}
+    const Vector3 destinationVector(destination - position);
+    const Vector3 velocityDifference = currentVelocity - desiredVelocity;
+    const float   accelerationPerTick =
+      acceleration_ / CellAppConfig::updateHertz();
 
-	const Vector3 accelerationVector = calculateAccelerationVector(	
-															currentVelocity,
-															desiredVelocity);
+    Vector3 newVelocity;
 
-	const Vector3 destinationVector( destination - position );
-	const Vector3 velocityDifference = currentVelocity - desiredVelocity;
-	const float accelerationPerTick = acceleration_ /
-										CellAppConfig::updateHertz();
+    if (velocityDifference.length() > accelerationPerTick) {
+        newVelocity =
+          currentVelocity + (accelerationVector * accelerationPerTick);
+    } else {
+        newVelocity = desiredVelocity;
+    }
 
+    // If we are real close, then finish up.
+    const float stepDistance =
+      newVelocity.length() / CellAppConfig::updateHertz();
+    if (stepDistance > destinationVector.length()) {
+        position = destination;
+    } else {
+        position += newVelocity / CellAppConfig::updateHertz();
+    }
 
-	Vector3 newVelocity;
+    // Make sure we are facing the right direction.
+    if (facing_ != FACING_NONE) {
+        Vector3 facingVector(0, 0, 0);
 
-	if (velocityDifference.length() > accelerationPerTick)
-	{
-		newVelocity = currentVelocity + 
-						(accelerationVector * accelerationPerTick);
-	}
-	else
-	{
-		newVelocity = desiredVelocity;
-	}
+        if (facing_ == FACING_VELOCITY && newVelocity.lengthSquared() > 0.0f) {
+            facingVector = newVelocity.unitVector();
+        } else if (facing_ == FACING_ACCELERATION) {
+            // Avoid facing in odd angles when our current velocity is almost
+            // perfect.
+            if (velocityDifference.length() > accelerationPerTick) {
+                facingVector = accelerationVector;
+            } else {
+                facingVector = newVelocity.unitVector();
+            }
+        }
 
-	// If we are real close, then finish up.
-	const float stepDistance =	newVelocity.length() /
-								CellAppConfig::updateHertz();
-	if (stepDistance > destinationVector.length())
-	{
-		position = destination;
-	}
-	else
-	{
-		position += newVelocity / CellAppConfig::updateHertz();
-	}
+        if (!isZero(facingVector.x) || !isZero(facingVector.z)) {
+            direction.yaw = facingVector.yaw();
+        }
 
+        if (!isZero(facingVector.y)) {
+            direction.pitch = facingVector.pitch();
+        }
+    }
 
-	// Make sure we are facing the right direction.
-	if (facing_ != FACING_NONE)
-	{
-		Vector3 facingVector(0, 0, 0);
+    // Keep ourselves alive until we have finished cleaning up,
+    // with an extra reference count from a smart pointer.
+    ControllerPtr pController = this;
 
-		if (facing_ == FACING_VELOCITY &&
-			newVelocity.lengthSquared() > 0.0f)
-		{
-			facingVector = newVelocity.unitVector();
-		}
-		else if (facing_ == FACING_ACCELERATION)
-		{
-			// Avoid facing in odd angles when our current velocity is almost
-			// perfect.
-			if (velocityDifference.length() > accelerationPerTick)
-			{
-				facingVector = accelerationVector;
-			}
-			else
-			{
-				facingVector = newVelocity.unitVector();
-			}
-		}
+    // No longer on the ground...
+    // Might want to make this changeable from script
+    // for entities that want to be on the ground.
+    this->entity().isOnGround(false);
+    this->entity().setPositionAndDirection(position, direction);
 
+    if (!this->isAttached())
+        return false;
 
-		if (!isZero( facingVector.x ) || !isZero( facingVector.z ))
-		{
-			direction.yaw = facingVector.yaw();
-		}
-
-		if (!isZero( facingVector.y ))
-		{
-			direction.pitch = facingVector.pitch();
-		}
-	}
-
-
-	// Keep ourselves alive until we have finished cleaning up,
-	// with an extra reference count from a smart pointer.
-	ControllerPtr pController = this;
-
-	// No longer on the ground...
-	// Might want to make this changeable from script
-	// for entities that want to be on the ground.
-	this->entity().isOnGround( false );
-	this->entity().setPositionAndDirection( position, direction );
-
-	if (!this->isAttached())
-		return false;
-
-
-	if (stopAtDestination)
-	{
-		return	almostEqual(position, destination) &&
-				almostZero(currentVelocity.lengthSquared());
-	}
-	else
-	{
-		return almostEqual(position, destination);
-	}
+    if (stopAtDestination) {
+        return almostEqual(position, destination) &&
+               almostZero(currentVelocity.lengthSquared());
+    } else {
+        return almostEqual(position, destination);
+    }
 }
-
 
 /**
  *	This function calculates the desired velocity to reach a given destination.
@@ -306,34 +257,29 @@ bool BaseAccelerationController::move(	const Position3D & destination,
  *	@return		The estimated desirable speed of the entity in order for it to
  *				reach its destination.
  */
-Vector3 BaseAccelerationController::calculateDesiredVelocity(	
-											const Position3D & currentPosition,
-											const Position3D & desiredPosition,
-											float acceleration, 
-											float maxSpeed,
-											bool stopAtDestination )
+Vector3 BaseAccelerationController::calculateDesiredVelocity(
+  const Position3D& currentPosition,
+  const Position3D& desiredPosition,
+  float             acceleration,
+  float             maxSpeed,
+  bool              stopAtDestination)
 {
-	Vector3 destinationVector( desiredPosition - currentPosition );
-	Vector3 desiredVelocity( destinationVector.unitVector() );
+    Vector3 destinationVector(desiredPosition - currentPosition);
+    Vector3 desiredVelocity(destinationVector.unitVector());
 
-	if (stopAtDestination)
-	{
-		// This is the speed that would be reached by an object that
-		// accelerated from zero over the distance from the destination. 
-		float speedAtDistance = sqrtf(	2.0f *
-										destinationVector.length() *
-										acceleration);
+    if (stopAtDestination) {
+        // This is the speed that would be reached by an object that
+        // accelerated from zero over the distance from the destination.
+        float speedAtDistance =
+          sqrtf(2.0f * destinationVector.length() * acceleration);
 
-		desiredVelocity *=  std::min(maxSpeed, speedAtDistance);
-	}
-	else
-	{
-		desiredVelocity *= maxSpeed;
-	}
+        desiredVelocity *= std::min(maxSpeed, speedAtDistance);
+    } else {
+        desiredVelocity *= maxSpeed;
+    }
 
-	return desiredVelocity;
+    return desiredVelocity;
 }
-
 
 /**
  *	This function calculates the direction in which acceleration should be
@@ -347,38 +293,32 @@ Vector3 BaseAccelerationController::calculateDesiredVelocity(
  *				to reach the desired velocity.
  */
 Vector3 BaseAccelerationController::calculateAccelerationVector(
-											const Vector3 & currentVelocity,
-											const Vector3 & desiredVelocity )
+  const Vector3& currentVelocity,
+  const Vector3& desiredVelocity)
 {
-	if (almostEqual( currentVelocity, desiredVelocity ))
-	{
-		return desiredVelocity.unitVector();
-	}
+    if (almostEqual(currentVelocity, desiredVelocity)) {
+        return desiredVelocity.unitVector();
+    }
 
-	if (almostZero( desiredVelocity.lengthSquared() ))
-	{
-		return -currentVelocity.unitVector();
-	}
+    if (almostZero(desiredVelocity.lengthSquared())) {
+        return -currentVelocity.unitVector();
+    }
 
-	Vector3 accelerationVector;
-	if (currentVelocity.lengthSquared() > 0.0f)
-	{
-		Vector3 unitCurrentVelocity( currentVelocity.unitVector() );
+    Vector3 accelerationVector;
+    if (currentVelocity.lengthSquared() > 0.0f) {
+        Vector3 unitCurrentVelocity(currentVelocity.unitVector());
 
-		Vector3 velocityDifference = desiredVelocity - currentVelocity;
+        Vector3 velocityDifference = desiredVelocity - currentVelocity;
 
-		accelerationVector.projectOnto( velocityDifference, desiredVelocity );
+        accelerationVector.projectOnto(velocityDifference, desiredVelocity);
 
-		accelerationVector += 2.0f * (velocityDifference - accelerationVector);
-	}
-	else
-	{
-		accelerationVector = desiredVelocity;
-	}
+        accelerationVector += 2.0f * (velocityDifference - accelerationVector);
+    } else {
+        accelerationVector = desiredVelocity;
+    }
 
-	return accelerationVector.unitVector();
+    return accelerationVector.unitVector();
 }
-
 
 /**
  *	This method writes our state to a stream.
@@ -387,10 +327,9 @@ Vector3 BaseAccelerationController::calculateAccelerationVector(
  */
 void BaseAccelerationController::writeRealToStream(BinaryOStream& stream)
 {
-	this->Controller::writeRealToStream(stream);
-	stream << acceleration_ << maxSpeed_ << facing_ << currVelocity_;
+    this->Controller::writeRealToStream(stream);
+    stream << acceleration_ << maxSpeed_ << facing_ << currVelocity_;
 }
-
 
 /**
  *	This method reads our state from a stream.
@@ -399,11 +338,11 @@ void BaseAccelerationController::writeRealToStream(BinaryOStream& stream)
  *
  *	@return				true if successful, false otherwise
  */
-bool BaseAccelerationController::readRealFromStream( BinaryIStream & stream )
+bool BaseAccelerationController::readRealFromStream(BinaryIStream& stream)
 {
-	this->Controller::readRealFromStream( stream );
-	stream >> acceleration_ >> maxSpeed_ >> facing_ >> currVelocity_;
-	return true;
+    this->Controller::readRealFromStream(stream);
+    stream >> acceleration_ >> maxSpeed_ >> facing_ >> currVelocity_;
+    return true;
 }
 
 BW_END_NAMESPACE

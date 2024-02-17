@@ -4,79 +4,72 @@
 
 #include "pyscript/script.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-TEST_F( PyScriptUnitTestHarness, Script_intConversion )
+TEST_F(PyScriptUnitTestHarness, Script_intConversion)
 {
-	int values[] = { -8000000, -1, 0, 10, 0x7fffffff };
+    int values[] = { -8000000, -1, 0, 10, 0x7fffffff };
 
-	for (size_t i = 0; i < sizeof( values )/sizeof( values[0] ); ++i)
-	{
-		int value = values[i];
-		PyObject * pObject  = Script::getData( value );
-			CHECK( pObject != NULL );
+    for (size_t i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
+        int       value   = values[i];
+        PyObject* pObject = Script::getData(value);
+        CHECK(pObject != NULL);
 
-			int newValue;
-			int result = Script::setData( pObject, newValue );
-			CHECK_EQUAL( 0, result );
-			Py_DECREF( pObject );
+        int newValue;
+        int result = Script::setData(pObject, newValue);
+        CHECK_EQUAL(0, result);
+        Py_DECREF(pObject);
 
-			CHECK_EQUAL( value, newValue );
-		}
+        CHECK_EQUAL(value, newValue);
+    }
 }
-
 
 template <class TYPE>
-bool testLong( const char * asHexString, TYPE & result )
+bool testLong(const char* asHexString, TYPE& result)
 {
-	PyObject * pValue = PyLong_FromString( (char *)asHexString, NULL, 16 );
+    PyObject* pValue = PyLong_FromString((char*)asHexString, NULL, 16);
 
-	if (pValue == NULL)
-	{
-		PyErr_Clear();
-		return false;
-	}
+    if (pValue == NULL) {
+        PyErr_Clear();
+        return false;
+    }
 
-	int status = Script::setData( pValue, result );
-	Py_DECREF( pValue );
+    int status = Script::setData(pValue, result);
+    Py_DECREF(pValue);
 
-	if (status == -1)
-	{
-		PyErr_Clear();
-		return false;
-	}
+    if (status == -1) {
+        PyErr_Clear();
+        return false;
+    }
 
-	return (status == 0);
+    return (status == 0);
 }
 
-
-TEST_F( PyScriptUnitTestHarness, Script_intOverflow )
+TEST_F(PyScriptUnitTestHarness, Script_intOverflow)
 {
-	// Currently still support the deprecated conversion from uint32
-	const bool SUPPORTS_DEPRECATED = false;
-	int intValue;
+    // Currently still support the deprecated conversion from uint32
+    const bool SUPPORTS_DEPRECATED = false;
+    int        intValue;
 
-	CHECK_EQUAL( SUPPORTS_DEPRECATED, testLong( "80000000", intValue ) );
+    CHECK_EQUAL(SUPPORTS_DEPRECATED, testLong("80000000", intValue));
 
-	CHECK_EQUAL( true,  testLong( "7fffffff", intValue ) );
-	CHECK_EQUAL( false, testLong( "100000000", intValue ) );
+    CHECK_EQUAL(true, testLong("7fffffff", intValue));
+    CHECK_EQUAL(false, testLong("100000000", intValue));
 
-	CHECK_EQUAL( true, testLong( "-1", intValue ) );
-	CHECK_EQUAL( true, testLong( "-80000000", intValue ) );
-	CHECK_EQUAL( false, testLong( "-80000001", intValue ) );
+    CHECK_EQUAL(true, testLong("-1", intValue));
+    CHECK_EQUAL(true, testLong("-80000000", intValue));
+    CHECK_EQUAL(false, testLong("-80000001", intValue));
 
-	uint32 uintValue;
+    uint32 uintValue;
 
-	CHECK_EQUAL( true,  testLong( "80000000", uintValue ) );
-	CHECK_EQUAL( true,  testLong( "7fffffff", uintValue ) );
-	CHECK_EQUAL( false, testLong( "100000000", uintValue ) );
+    CHECK_EQUAL(true, testLong("80000000", uintValue));
+    CHECK_EQUAL(true, testLong("7fffffff", uintValue));
+    CHECK_EQUAL(false, testLong("100000000", uintValue));
 
-	CHECK_EQUAL( SUPPORTS_DEPRECATED, testLong( "-1", uintValue ) );
-	CHECK_EQUAL( SUPPORTS_DEPRECATED, testLong( "-80000000", uintValue ) );
-	CHECK_EQUAL( false, testLong( "-80000001", uintValue ) );
+    CHECK_EQUAL(SUPPORTS_DEPRECATED, testLong("-1", uintValue));
+    CHECK_EQUAL(SUPPORTS_DEPRECATED, testLong("-80000000", uintValue));
+    CHECK_EQUAL(false, testLong("-80000001", uintValue));
 }
-
 
 #if 0
 /**
@@ -236,71 +229,67 @@ BW_END_NAMESPACE
 
 BW_BEGIN_NAMESPACE
 
-namespace
-{
+namespace {
 
-template <class TYPE>
-class Visitor : public IntegerRangeCheckerVisitor
-{
-private:
-	virtual bool visit( PyObject * pObject ) const
-	{
-		TYPE value;
-		bool isOkay = (Script::setData( pObject, value ) == 0);
-		if (!isOkay)
-		{
-			PyErr_Clear();
-		}
+    template <class TYPE>
+    class Visitor : public IntegerRangeCheckerVisitor
+    {
+      private:
+        virtual bool visit(PyObject* pObject) const
+        {
+            TYPE value;
+            bool isOkay = (Script::setData(pObject, value) == 0);
+            if (!isOkay) {
+                PyErr_Clear();
+            }
 
-		return isOkay;
-	};
-};
+            return isOkay;
+        };
+    };
 
 } // anonymous namespace
 
-
-TEST_F( PyScriptUnitTestHarness, EntityDef_findRange )
+TEST_F(PyScriptUnitTestHarness, EntityDef_findRange)
 {
-	IntegerRangeChecker checker;
-	size_t start = 0;
-	size_t end = 0;
+    IntegerRangeChecker checker;
+    size_t              start = 0;
+    size_t              end   = 0;
 
-	// Signed integers
+    // Signed integers
 
-	CHECK( checker.findSameRange( Visitor<int8>(), start, end ) );
-	CHECK_EQUAL( IntegerRangeCheckerResult<int8>::start(), start );
-	CHECK_EQUAL( IntegerRangeCheckerResult<int8>::end(), end );
+    CHECK(checker.findSameRange(Visitor<int8>(), start, end));
+    CHECK_EQUAL(IntegerRangeCheckerResult<int8>::start(), start);
+    CHECK_EQUAL(IntegerRangeCheckerResult<int8>::end(), end);
 
-	CHECK( checker.findSameRange( Visitor<int16>(), start, end ) );
-	CHECK_EQUAL( IntegerRangeCheckerResult<int16>::start(), start );
-	CHECK_EQUAL( IntegerRangeCheckerResult<int16>::end(), end );
+    CHECK(checker.findSameRange(Visitor<int16>(), start, end));
+    CHECK_EQUAL(IntegerRangeCheckerResult<int16>::start(), start);
+    CHECK_EQUAL(IntegerRangeCheckerResult<int16>::end(), end);
 
-	CHECK( checker.findSameRange( Visitor<int32>(), start, end ) );
-	CHECK_EQUAL( IntegerRangeCheckerResult<int32>::start(), start );
-	CHECK_EQUAL( IntegerRangeCheckerResult<int32>::end(), end );
+    CHECK(checker.findSameRange(Visitor<int32>(), start, end));
+    CHECK_EQUAL(IntegerRangeCheckerResult<int32>::start(), start);
+    CHECK_EQUAL(IntegerRangeCheckerResult<int32>::end(), end);
 
-	CHECK( checker.findSameRange( Visitor<int64>(), start, end ) );
-	CHECK_EQUAL( IntegerRangeCheckerResult<int64>::start(), start );
-	CHECK_EQUAL( IntegerRangeCheckerResult<int64>::end(), end );
+    CHECK(checker.findSameRange(Visitor<int64>(), start, end));
+    CHECK_EQUAL(IntegerRangeCheckerResult<int64>::start(), start);
+    CHECK_EQUAL(IntegerRangeCheckerResult<int64>::end(), end);
 
-	// Unsigned integers
+    // Unsigned integers
 
-	CHECK( checker.findSameRange( Visitor<uint8>(), start, end ) );
-	CHECK_EQUAL( IntegerRangeCheckerResult<uint8>::start(), start );
-	CHECK_EQUAL( IntegerRangeCheckerResult<uint8>::end(), end );
+    CHECK(checker.findSameRange(Visitor<uint8>(), start, end));
+    CHECK_EQUAL(IntegerRangeCheckerResult<uint8>::start(), start);
+    CHECK_EQUAL(IntegerRangeCheckerResult<uint8>::end(), end);
 
-	CHECK( checker.findSameRange( Visitor<uint16>(), start, end ) );
-	CHECK_EQUAL( IntegerRangeCheckerResult<uint16>::start(), start );
-	CHECK_EQUAL( IntegerRangeCheckerResult<uint16>::end(), end );
+    CHECK(checker.findSameRange(Visitor<uint16>(), start, end));
+    CHECK_EQUAL(IntegerRangeCheckerResult<uint16>::start(), start);
+    CHECK_EQUAL(IntegerRangeCheckerResult<uint16>::end(), end);
 
-	CHECK( checker.findSameRange( Visitor<uint32>(), start, end ) );
-	CHECK_EQUAL( IntegerRangeCheckerResult<uint32>::start(), start );
-	CHECK_EQUAL( IntegerRangeCheckerResult<uint32>::end(), end );
+    CHECK(checker.findSameRange(Visitor<uint32>(), start, end));
+    CHECK_EQUAL(IntegerRangeCheckerResult<uint32>::start(), start);
+    CHECK_EQUAL(IntegerRangeCheckerResult<uint32>::end(), end);
 
-	CHECK( checker.findSameRange( Visitor<uint64>(), start, end ) );
-	CHECK_EQUAL( IntegerRangeCheckerResult<uint64>::start(), start );
-	CHECK_EQUAL( IntegerRangeCheckerResult<uint64>::end(), end );
-
+    CHECK(checker.findSameRange(Visitor<uint64>(), start, end));
+    CHECK_EQUAL(IntegerRangeCheckerResult<uint64>::start(), start);
+    CHECK_EQUAL(IntegerRangeCheckerResult<uint64>::end(), end);
 }
 
 BW_END_NAMESPACE

@@ -10,93 +10,89 @@
 
 BW_BEGIN_NAMESPACE
 
-	class BinaryBlock;
-	typedef SmartPointer<BinaryBlock> BinaryPtr;
+class BinaryBlock;
+typedef SmartPointer<BinaryBlock> BinaryPtr;
 
 BW_END_NAMESPACE
 
-namespace BW {
-namespace CompiledSpace {
+namespace BW { namespace CompiledSpace {
 
-class BinaryFormatWriter
-{
-public:
-	class Stream
-	{
-	public:
+    class BinaryFormatWriter
+    {
+      public:
+        class Stream
+        {
+          public:
+            void writeRaw(const void* pBuff, size_t size);
 
-		void writeRaw( const void* pBuff, size_t size );
+            void write(const uint32& value);
+            void write(const DynamicLooseOctree& tree);
 
-		void write( const uint32& value );
-		void write( const DynamicLooseOctree & tree );
+            template <class T>
+            void write(const T& t);
 
+            template <class E>
+            void write(const BW::vector<E>& v);
 
-		template <class T>
-		void write( const T & t );
+            uint64 size() const;
+            void*  data();
 
-		template <class E> 
-		void write( const BW::vector<E> & v );
+          private:
+            BW::string data_;
+        };
 
-		uint64 size() const;
-		void* data();
+      public:
+        BinaryFormatWriter();
+        ~BinaryFormatWriter();
 
-	private:
-		BW::string data_;
-	};
+        size_t  numSections() const;
+        Stream* appendSection(const FourCC& magic, uint32 version);
 
-public:
-	BinaryFormatWriter();
-	~BinaryFormatWriter();
+        void clear();
 
-	size_t numSections() const;
-	Stream* appendSection( const FourCC& magic, uint32 version );
+        bool write(const char* filename);
 
-	void clear();
+      private:
+        struct Section
+        {
+            FourCC magic_;
+            uint32 version_;
+            Stream stream_;
+        };
 
-	bool write( const char* filename );
+      private:
+        BW::vector<Section> sections_;
+    };
 
-private:
-	struct Section
-	{
-		FourCC magic_;
-		uint32 version_;
-		Stream stream_;
-	};
+    /////////
+    template <class T>
+    void BinaryFormatWriter::Stream::write(const T& t)
+    {
+        BW_STATIC_ASSERT(std::is_standard_layout<T>::value,
+                         Must_Be_Standard_Layout);
+        this->write((uint32)sizeof(T));
+        this->writeRaw((void*)&t, sizeof(T));
+    }
 
-private:
-	BW::vector<Section> sections_;
-};
+    template <class T>
+    void BinaryFormatWriter::Stream::write(const BW::vector<T>& v)
+    {
+        BW_STATIC_ASSERT(std::is_standard_layout<T>::value,
+                         Must_Be_Standard_Layout);
+        MF_ASSERT(data_.size() <= std::numeric_limits<uint32>::max());
 
+        this->write((uint32)sizeof(T));
 
-/////////
-template <class T>
-void BinaryFormatWriter::Stream::write( const T & t )
-{
-	BW_STATIC_ASSERT( std::is_standard_layout<T>::value, Must_Be_Standard_Layout );
-	this->write( (uint32)sizeof(T) );
-	this->writeRaw( (void*)&t, sizeof(T) );
-}
+        uint32 count = (uint32)v.size();
+        this->write(count);
 
-template <class T> 
-void BinaryFormatWriter::Stream::write( const BW::vector<T> & v )
-{
-	BW_STATIC_ASSERT( std::is_standard_layout<T>::value, Must_Be_Standard_Layout );
-	MF_ASSERT( data_.size() <= std::numeric_limits<uint32>::max() );
-
-	this->write( (uint32)sizeof(T) );
-
-	uint32 count = (uint32)v.size();
-	this->write( count );
-
-	if (count > 0)
-	{
-		size_t dataLen = count * sizeof(T);
-		data_.append( (char*) &v.front(), dataLen );
-	}
-}
+        if (count > 0) {
+            size_t dataLen = count * sizeof(T);
+            data_.append((char*)&v.front(), dataLen);
+        }
+    }
 
 } // namespace CompiledSpace
 } // namespace BW
-
 
 #endif // COMPILED_SPACE_BINARY_HPP

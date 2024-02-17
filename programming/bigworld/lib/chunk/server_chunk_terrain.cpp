@@ -22,21 +22,18 @@
 #include "physics2/hulltree.hpp"
 #include "resmgr/datasection.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Chunk", 0 )
-
+DECLARE_DEBUG_COMPONENT2("Chunk", 0)
 
 BW_BEGIN_NAMESPACE
 
-namespace Terrain
-{
-	class BaseTerrainBlock;
-	typedef SmartPointer< BaseTerrainBlock > BaseTerrainBlockPtr;
+namespace Terrain {
+    class BaseTerrainBlock;
+    typedef SmartPointer<BaseTerrainBlock> BaseTerrainBlockPtr;
 }
 
 #ifndef CODE_INLINE
 #include "server_chunk_terrain.ipp"
 #endif
-
 
 int ChunkTerrain_token;
 
@@ -47,89 +44,79 @@ int ChunkTerrain_token;
 /**
  *	Constructor.
  */
-ServerChunkTerrain::ServerChunkTerrain() :
-	ChunkItem( WANTS_DRAW ),
-	bb_( Vector3::zero(), Vector3::zero() )
+ServerChunkTerrain::ServerChunkTerrain()
+  : ChunkItem(WANTS_DRAW)
+  , bb_(Vector3::zero(), Vector3::zero())
 {
 }
-
 
 /**
  *	Destructor.
  */
-ServerChunkTerrain::~ServerChunkTerrain()
-{
-}
+ServerChunkTerrain::~ServerChunkTerrain() {}
 
 /**
  *	This method loads this terrain block.
  */
-bool ServerChunkTerrain::load( DataSectionPtr pSection, Chunk * pChunk )
+bool ServerChunkTerrain::load(DataSectionPtr pSection, Chunk* pChunk)
 {
-	BW::string res = pSection->readString( "resource" );
+    BW::string res = pSection->readString("resource");
 
-	// Allocate the terrainblock.
-	pCacheEntry_ = Terrain::TerrainBlockCache::instance().findOrLoad(
-			pChunk->mapping()->path() + res, pChunk->space()->terrainSettings() );
-	if (!pCacheEntry_)
-	{
-		ERROR_MSG( "Could not load terrain block '%s'\n", res.c_str() );
-		return false;
-	}
+    // Allocate the terrainblock.
+    pCacheEntry_ = Terrain::TerrainBlockCache::instance().findOrLoad(
+      pChunk->mapping()->path() + res, pChunk->space()->terrainSettings());
+    if (!pCacheEntry_) {
+        ERROR_MSG("Could not load terrain block '%s'\n", res.c_str());
+        return false;
+    }
 
-	this->calculateBB();
+    this->calculateBB();
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method calculates the block's bounding box, and sets into bb_.
  */
 void ServerChunkTerrain::calculateBB()
 {
-	// TODO: Share with the implementation in chunk_terrain.cpp
-	MF_ASSERT( pCacheEntry_ && pCacheEntry_->pBlock() );
+    // TODO: Share with the implementation in chunk_terrain.cpp
+    MF_ASSERT(pCacheEntry_ && pCacheEntry_->pBlock());
 
-	bb_ = pCacheEntry_->pBlock()->boundingBox();
+    bb_ = pCacheEntry_->pBlock()->boundingBox();
 
-	// regenerate the collision scene since our bb is different now
-	if (pChunk_ != NULL)
-	{
-		BoundingBox localBB = pChunk_->localBB();
-		if( addYBounds( localBB ) )
-		{
-			pChunk_->localBB( localBB );
-			localBB.transformBy( pChunk_->transform() );
-			pChunk_->boundingBox( localBB );
-		}
-		//this->toss( pChunk_ );
-		// too slow for now
-	}
+    // regenerate the collision scene since our bb is different now
+    if (pChunk_ != NULL) {
+        BoundingBox localBB = pChunk_->localBB();
+        if (addYBounds(localBB)) {
+            pChunk_->localBB(localBB);
+            localBB.transformBy(pChunk_->transform());
+            pChunk_->boundingBox(localBB);
+        }
+        // this->toss( pChunk_ );
+        //  too slow for now
+    }
 }
-
 
 /**
  *	Called when we are put in or taken out of a chunk
  */
-void ServerChunkTerrain::toss( Chunk * pChunk )
+void ServerChunkTerrain::toss(Chunk* pChunk)
 {
-	if (pChunk_ != NULL)
-	{
-		ServerChunkTerrainCache::instance( *pChunk_ ).pTerrain( NULL );
-	}
+    if (pChunk_ != NULL) {
+        ServerChunkTerrainCache::instance(*pChunk_).pTerrain(NULL);
+    }
 
-	this->ChunkItem::toss( pChunk );
+    this->ChunkItem::toss(pChunk);
 
-	if (pChunk_ != NULL)
-	{
-		ServerChunkTerrainCache::instance( *pChunk ).pTerrain( this );
-	}
+    if (pChunk_ != NULL) {
+        ServerChunkTerrainCache::instance(*pChunk).pTerrain(this);
+    }
 }
 
 #undef IMPLEMENT_CHUNK_ITEM_ARGS
 #define IMPLEMENT_CHUNK_ITEM_ARGS (pSection, pChunk)
-IMPLEMENT_CHUNK_ITEM( ServerChunkTerrain, terrain, 0 )
+IMPLEMENT_CHUNK_ITEM(ServerChunkTerrain, terrain, 0)
 
 BW_END_NAMESPACE
 
@@ -137,24 +124,20 @@ BW_END_NAMESPACE
 
 BW_BEGIN_NAMESPACE
 
-
 /**
  *	Constructor
  */
-ServerChunkTerrainCache::ServerChunkTerrainCache( Chunk & chunk ) :
-	pChunk_( &chunk ),
-	pTerrain_( NULL ),
-	pObstacle_( NULL )
+ServerChunkTerrainCache::ServerChunkTerrainCache(Chunk& chunk)
+  : pChunk_(&chunk)
+  , pTerrain_(NULL)
+  , pObstacle_(NULL)
 {
 }
 
 /**
  *	Destructor
  */
-ServerChunkTerrainCache::~ServerChunkTerrainCache()
-{
-}
-
+ServerChunkTerrainCache::~ServerChunkTerrainCache() {}
 
 /**
  *	This method is called when our chunk is focussed. We add ourselves to the
@@ -162,80 +145,78 @@ ServerChunkTerrainCache::~ServerChunkTerrainCache()
  */
 int ServerChunkTerrainCache::focus()
 {
-	if (!pTerrain_ || !pObstacle_) return 0;
+    if (!pTerrain_ || !pObstacle_)
+        return 0;
 
-	const Vector3 & mb = pObstacle_->bb_.minBounds();
-	const Vector3 & Mb = pObstacle_->bb_.maxBounds();
+    const Vector3& mb = pObstacle_->bb_.minBounds();
+    const Vector3& Mb = pObstacle_->bb_.maxBounds();
 
-/*
-	// figure out the border
-	HullBorder	border;
-	for (int i = 0; i < 6; i++)
-	{
-		// calculate the normal and d of this plane of the bb
-		int ax = i >> 1;
+    /*
+        // figure out the border
+        HullBorder	border;
+        for (int i = 0; i < 6; i++)
+        {
+            // calculate the normal and d of this plane of the bb
+            int ax = i >> 1;
 
-		Vector3 normal( 0, 0, 0 );
-		normal[ ax ] = (i&1) ? -1.f : 1.f;;
+            Vector3 normal( 0, 0, 0 );
+            normal[ ax ] = (i&1) ? -1.f : 1.f;;
 
-		float d = (i&1) ? -Mb[ ax ] : mb[ ax ];
+            float d = (i&1) ? -Mb[ ax ] : mb[ ax ];
 
-		// now apply the transform to the plane
-		Vector3 ndtr = pObstacle_->transform_.applyPoint( normal * d );
-		Vector3 ntr = pObstacle_->transform_.applyVector( normal );
-		border.push_back( PlaneEq( ntr, ntr.dotProduct( ndtr ) ) );
-	}
-*/
+            // now apply the transform to the plane
+            Vector3 ndtr = pObstacle_->transform_.applyPoint( normal * d );
+            Vector3 ntr = pObstacle_->transform_.applyVector( normal );
+            border.push_back( PlaneEq( ntr, ntr.dotProduct( ndtr ) ) );
+        }
+    */
 
-	// we assume that we'll be in only one column
-	Vector3 midPt = pObstacle_->transform_.applyPoint( (mb + Mb) / 2.f );
+    // we assume that we'll be in only one column
+    Vector3 midPt = pObstacle_->transform_.applyPoint((mb + Mb) / 2.f);
 
-	ChunkSpace::Column * pCol = pChunk_->space()->column( midPt );
-	MF_ASSERT( pCol );
+    ChunkSpace::Column* pCol = pChunk_->space()->column(midPt);
+    MF_ASSERT(pCol);
 
-	// ok, just add the obstacle then
-	pCol->addObstacle( *pObstacle_ );
+    // ok, just add the obstacle then
+    pCol->addObstacle(*pObstacle_);
 
-	//dprintf( "ServerChunkTerrainCache::focus: "
-	//	"Adding hull of terrain (%f,%f,%f)-(%f,%f,%f)\n",
-	//	mb[0],mb[1],mb[2], Mb[0],Mb[1],Mb[2] );
+    // dprintf( "ServerChunkTerrainCache::focus: "
+    //	"Adding hull of terrain (%f,%f,%f)-(%f,%f,%f)\n",
+    //	mb[0],mb[1],mb[2], Mb[0],Mb[1],Mb[2] );
 
-	// which counts for just one
-	return 1;
+    // which counts for just one
+    return 1;
 }
-
 
 /**
  *	This method sets the terrain pointer
  */
-void ServerChunkTerrainCache::pTerrain( ServerChunkTerrain * pT )
+void ServerChunkTerrainCache::pTerrain(ServerChunkTerrain* pT)
 {
-	if (pT != pTerrain_)
-	{
-		if (pObstacle_)
-		{
-			// flag column as stale first
-			const Vector3 & mb = pObstacle_->bb_.minBounds();
-			const Vector3 & Mb = pObstacle_->bb_.maxBounds();
-			Vector3 midPt = pObstacle_->transform_.applyPoint( (mb + Mb) / 2.f );
-			ChunkSpace::Column * pCol = pChunk_->space()->column( midPt, false );
-			if (pCol != NULL) pCol->stale();
+    if (pT != pTerrain_) {
+        if (pObstacle_) {
+            // flag column as stale first
+            const Vector3& mb = pObstacle_->bb_.minBounds();
+            const Vector3& Mb = pObstacle_->bb_.maxBounds();
+            Vector3 midPt = pObstacle_->transform_.applyPoint((mb + Mb) / 2.f);
+            ChunkSpace::Column* pCol = pChunk_->space()->column(midPt, false);
+            if (pCol != NULL)
+                pCol->stale();
 
-			pObstacle_ = NULL;
-		}
+            pObstacle_ = NULL;
+        }
 
-		pTerrain_ = pT;
+        pTerrain_ = pT;
 
-		if (pTerrain_ != NULL)
-		{
-			pObstacle_ = new ChunkTerrainObstacle( *pTerrain_->block(),
-				pChunk_->transform(), &pTerrain_->bb_, pT );
+        if (pTerrain_ != NULL) {
+            pObstacle_ = new ChunkTerrainObstacle(
+              *pTerrain_->block(), pChunk_->transform(), &pTerrain_->bb_, pT);
 
-			if (pChunk_->focussed()) this->focus();
-		}
-	}
+            if (pChunk_->focussed())
+                this->focus();
+        }
+    }
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Static initialisers
@@ -244,8 +225,6 @@ void ServerChunkTerrainCache::pTerrain( ServerChunkTerrain * pT )
 /// Static cache instance accessor initialiser
 ChunkCache::Instance<ServerChunkTerrainCache> ServerChunkTerrainCache::instance;
 
-
-
 // -----------------------------------------------------------------------------
 // Section: TerrainFinder
 // -----------------------------------------------------------------------------
@@ -253,7 +232,7 @@ ChunkCache::Instance<ServerChunkTerrainCache> ServerChunkTerrainCache::instance;
 #ifndef MF_SERVER
 #include "chunk_manager.hpp"
 #else
-ChunkSpace * g_pMainSpace = NULL;
+ChunkSpace* g_pMainSpace = NULL;
 #endif
 
 /**
@@ -263,50 +242,46 @@ ChunkSpace * g_pMainSpace = NULL;
  */
 class TerrainFinderInstance : public Terrain::TerrainFinder
 {
-public:
-	TerrainFinderInstance()
-	{
-		Terrain::BaseTerrainBlock::setTerrainFinder( *this );
-	}
+  public:
+    TerrainFinderInstance()
+    {
+        Terrain::BaseTerrainBlock::setTerrainFinder(*this);
+    }
 
-	virtual Terrain::TerrainFinder::Details findOutsideBlock( const Vector3 & pos )
-	{
-		Terrain::TerrainFinder::Details details;
+    virtual Terrain::TerrainFinder::Details findOutsideBlock(const Vector3& pos)
+    {
+        Terrain::TerrainFinder::Details details;
 
 #ifdef MF_SERVER
-		ChunkSpace * pSpace = g_pMainSpace;
+        ChunkSpace* pSpace = g_pMainSpace;
 #else
-		// TODO: At the moment, assuming space 0.
-		ChunkSpace * pSpace = ChunkManager::instance().pMainSpace();
+        // TODO: At the moment, assuming space 0.
+        ChunkSpace* pSpace = ChunkManager::instance().pMainSpace();
 #endif
 
-		//find the chunk
-		if (pSpace != NULL)
-		{
-			ChunkSpace::Column* pColumn = pSpace->column( pos, false );
+        // find the chunk
+        if (pSpace != NULL) {
+            ChunkSpace::Column* pColumn = pSpace->column(pos, false);
 
-			if ( pColumn != NULL )
-			{
-				Chunk * pChunk = pColumn->pOutsideChunk();
+            if (pColumn != NULL) {
+                Chunk* pChunk = pColumn->pOutsideChunk();
 
-				if (pChunk != NULL)
-				{
-					//find the terrain block
-					ServerChunkTerrain * pChunkTerrain =
-						ServerChunkTerrainCache::instance( *pChunk ).pTerrain();
+                if (pChunk != NULL) {
+                    // find the terrain block
+                    ServerChunkTerrain* pChunkTerrain =
+                      ServerChunkTerrainCache::instance(*pChunk).pTerrain();
 
-					if (pChunkTerrain != NULL)
-					{
-						details.pBlock_ = pChunkTerrain->block().getObject();
-						details.pInvMatrix_ = &pChunk->transformInverse();
-						details.pMatrix_ = &pChunk->transform();
-					}
-				}
-			}
-		}
+                    if (pChunkTerrain != NULL) {
+                        details.pBlock_ = pChunkTerrain->block().getObject();
+                        details.pInvMatrix_ = &pChunk->transformInverse();
+                        details.pMatrix_    = &pChunk->transform();
+                    }
+                }
+            }
+        }
 
-		return details;
-	}
+        return details;
+    }
 };
 
 static TerrainFinderInstance s_terrainFinder;

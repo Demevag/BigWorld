@@ -7,13 +7,9 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
+namespace Mercury { namespace AddressResolver {
 
-namespace AddressResolver
-{
-
-bool resolve( const BW::string & hostName, BW::string & out );
+    bool resolve(const BW::string& hostName, BW::string& out);
 
 } // end namespace AddressResolver
 
@@ -22,4 +18,3 @@ bool resolve( const BW::string & hostName, BW::string & out );
 BW_END_NAMESPACE
 
 #endif // ADDRESS_RESOLVER_HPP
-

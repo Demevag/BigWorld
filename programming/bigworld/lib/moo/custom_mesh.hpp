@@ -17,58 +17,56 @@ BW_BEGIN_NAMESPACE
  *	int fvf() method.
  */
 template <class T>
-class CustomMesh : public VectorNoDestructor< T >
+class CustomMesh : public VectorNoDestructor<T>
 {
-public:
-	explicit CustomMesh( D3DPRIMITIVETYPE primitiveType = D3DPT_TRIANGLELIST );
-	~CustomMesh();
+  public:
+    explicit CustomMesh(D3DPRIMITIVETYPE primitiveType = D3DPT_TRIANGLELIST);
+    ~CustomMesh();
 
-	D3DPRIMITIVETYPE	primitiveType() const	{ return primitiveType_; }
+    D3DPRIMITIVETYPE primitiveType() const { return primitiveType_; }
 
-	int			vertexFormat() const { return T::fvf(); }
-	int			nVerts() const
-	{
-		size_t nVerts = size();
-		MF_ASSERT( nVerts <= INT_MAX );
-		return ( int )nVerts;
-	}
+    int vertexFormat() const { return T::fvf(); }
+    int nVerts() const
+    {
+        size_t nVerts = size();
+        MF_ASSERT(nVerts <= INT_MAX);
+        return (int)nVerts;
+    }
 
-	HRESULT		draw();
-	HRESULT		drawEffect( Moo::VertexDeclaration* decl = NULL );
-	HRESULT		drawRange( uint32 from, uint32 to );
+    HRESULT draw();
+    HRESULT drawEffect(Moo::VertexDeclaration* decl = NULL);
+    HRESULT drawRange(uint32 from, uint32 to);
 
-private:
-	CustomMesh( const CustomMesh& );
-	CustomMesh& operator=( const CustomMesh& );
+  private:
+    CustomMesh(const CustomMesh&);
+    CustomMesh& operator=(const CustomMesh&);
 
-	D3DPRIMITIVETYPE primitiveType_;
+    D3DPRIMITIVETYPE primitiveType_;
 };
-
 
 class StaticMesh
 {
-public:
+  public:
+    StaticMesh();
 
-	StaticMesh();
+    template <typename VertexType>
+    VertexType* lock(D3DPRIMITIVETYPE primitiveType, uint32 numVertices);
 
-	template < typename VertexType >
-	VertexType * lock( D3DPRIMITIVETYPE primitiveType, uint32 numVertices );
+    void unlock();
 
-	void unlock();
+    void release();
 
-	void release();
+    HRESULT drawEffect(Moo::VertexDeclaration* decl = NULL);
 
-	HRESULT drawEffect( Moo::VertexDeclaration * decl = NULL );
+  private:
+    StaticMesh(const StaticMesh&);
+    StaticMesh& operator=(const StaticMesh&);
 
-private:
-	StaticMesh( const StaticMesh& );
-	StaticMesh& operator=( const StaticMesh& );
-
-	D3DPRIMITIVETYPE primitiveType_;
-	uint32 fvf_;
-	uint32 numVertices_;
-	uint32 stride_;
-	Moo::VertexBuffer vertexBuffer_;
+    D3DPRIMITIVETYPE  primitiveType_;
+    uint32            fvf_;
+    uint32            numVertices_;
+    uint32            stride_;
+    Moo::VertexBuffer vertexBuffer_;
 };
 
 #include "custom_mesh.ipp"

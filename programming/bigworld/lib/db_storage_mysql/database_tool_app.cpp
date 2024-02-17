@@ -20,65 +20,61 @@
 #include "server/bwconfig.hpp"
 #include "server/bwservice.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "DBEngine", 0 )
+DECLARE_DEBUG_COMPONENT2("DBEngine", 0)
 
 BW_BEGIN_NAMESPACE
 
 namespace // (anonymous)
 {
 
-class DatabaseToolAppSignalHandler : public SignalHandler
-{
-public:
-	DatabaseToolAppSignalHandler( DatabaseToolApp & databaseToolApp ):
-			databaseToolApp_( databaseToolApp )
-	{}
+    class DatabaseToolAppSignalHandler : public SignalHandler
+    {
+      public:
+        DatabaseToolAppSignalHandler(DatabaseToolApp& databaseToolApp)
+          : databaseToolApp_(databaseToolApp)
+        {
+        }
 
-	virtual ~DatabaseToolAppSignalHandler()
-	{}
+        virtual ~DatabaseToolAppSignalHandler() {}
 
-	virtual void handleSignal( int sigNum )
-	{
-		databaseToolApp_.onSignalled( sigNum );
-	}
+        virtual void handleSignal(int sigNum)
+        {
+            databaseToolApp_.onSignalled(sigNum);
+        }
 
-private:
-	DatabaseToolApp & databaseToolApp_;
-};
+      private:
+        DatabaseToolApp& databaseToolApp_;
+    };
 
 } // end namespace (anonymous)
-
 
 /**
  *	Constructor.
  */
-DatabaseToolApp::DatabaseToolApp():
-			eventDispatcher_(),
-			pSignalHandler_( new DatabaseToolAppSignalHandler( *this ) ),
-			pWatcherNub_( 0 ),
-			pLoggerMessageForwarder_( 0 ),
-			pLockedConn_(),
-			entityDefs_()
+DatabaseToolApp::DatabaseToolApp()
+  : eventDispatcher_()
+  , pSignalHandler_(new DatabaseToolAppSignalHandler(*this))
+  , pWatcherNub_(0)
+  , pLoggerMessageForwarder_(0)
+  , pLockedConn_()
+  , entityDefs_()
 {
-	new SignalProcessor( eventDispatcher_ );
+    new SignalProcessor(eventDispatcher_);
 }
-
 
 /**
  *	Destructor.
  */
 DatabaseToolApp::~DatabaseToolApp()
 {
-	eventDispatcher_.prepareForShutdown();
+    eventDispatcher_.prepareForShutdown();
 
-	if (!Script::isFinalised())
-	{
-		Script::fini();
-	}
+    if (!Script::isFinalised()) {
+        Script::fini();
+    }
 
-	delete SignalProcessor::pInstance();
+    delete SignalProcessor::pInstance();
 }
-
 
 /**
  *	Default initialisation method.
@@ -93,36 +89,33 @@ DatabaseToolApp::~DatabaseToolApp()
  *
  *	@returns true on successful initialisation, false otherwise.
  */
-bool DatabaseToolApp::init( const char * appName, const char * scriptName,
-		bool isVerbose, bool shouldLock,
-		const DBConfig::ConnectionInfo & connectionInfo 
-			/*=DBConfig::connectionInfo()*/ )
+bool DatabaseToolApp::init(const char*                     appName,
+                           const char*                     scriptName,
+                           bool                            isVerbose,
+                           bool                            shouldLock,
+                           const DBConfig::ConnectionInfo& connectionInfo
+                           /*=DBConfig::connectionInfo()*/)
 {
-	if (!this->initLogger( appName, BWConfig::get( "loggerID", "" ), 
-			isVerbose ))
-	{
-		ERROR_MSG( "Failed to initialise logger\n" );
-		return false;
-	}
+    if (!this->initLogger(appName, BWConfig::get("loggerID", ""), isVerbose)) {
+        ERROR_MSG("Failed to initialise logger\n");
+        return false;
+    }
 
-	return this->initScript( scriptName ) &&
-		this->initEntityDefs() &&
-		this->connect( connectionInfo, shouldLock );
+    return this->initScript(scriptName) && this->initEntityDefs() &&
+           this->connect(connectionInfo, shouldLock);
 }
-
 
 /**
  * Create a new MySqlLockedConnection instance.
- * 
+ *
  * @param connectionInfo
  * @return new created MySqlLockedConnection instance.
  */
-MySqlLockedConnection * DatabaseToolApp::createMysqlConnection (
-	const DBConfig::ConnectionInfo & connectionInfo ) const
+MySqlLockedConnection* DatabaseToolApp::createMysqlConnection(
+  const DBConfig::ConnectionInfo& connectionInfo) const
 {
-	return new MySqlLockedConnection( connectionInfo );
+    return new MySqlLockedConnection(connectionInfo);
 }
-
 
 /**
  *	Connect to the database server.
@@ -133,128 +126,117 @@ MySqlLockedConnection * DatabaseToolApp::createMysqlConnection (
  *
  *	@returns true if successfully connected, false otherwise.
  */
-bool DatabaseToolApp::connect( const DBConfig::ConnectionInfo & connectionInfo, 
-		bool shouldLock )
+bool DatabaseToolApp::connect(const DBConfig::ConnectionInfo& connectionInfo,
+                              bool                            shouldLock)
 {
-	pLockedConn_.reset( this->createMysqlConnection( connectionInfo ) );
+    pLockedConn_.reset(this->createMysqlConnection(connectionInfo));
 
-	if (!pLockedConn_->connect( shouldLock ))
-	{
-		ERROR_MSG( "Failed to establish a locked connection to the database. "
-				"Stop other processes connected to the database.\n" );
-		return false;
-	}
-	return true;
+    if (!pLockedConn_->connect(shouldLock)) {
+        ERROR_MSG("Failed to establish a locked connection to the database. "
+                  "Stop other processes connected to the database.\n");
+        return false;
+    }
+    return true;
 }
-
 
 /**
  *	Optional method to initialise the logger, subclasses can call this in their
  *	initialisation.
  */
-bool DatabaseToolApp::initLogger( const char * appName, 
-		const BW::string & loggerID, bool isVerbose )
+bool DatabaseToolApp::initLogger(const char*       appName,
+                                 const BW::string& loggerID,
+                                 bool              isVerbose)
 {
-	// Get the internal IP
-	uint32 internalIP;
-	if (!Mercury::MachineDaemon::queryForInternalInterface( internalIP ))
-	{
-		ERROR_MSG( "DatabaseToolApp::initLogger: "
-				"failed to query for internal interface\n" );
-		return false;
-	}
+    // Get the internal IP
+    uint32 internalIP;
+    if (!Mercury::MachineDaemon::queryForInternalInterface(internalIP)) {
+        ERROR_MSG("DatabaseToolApp::initLogger: "
+                  "failed to query for internal interface\n");
+        return false;
+    }
 
-	// Set up the watcher nub and message forwarder manually
-	pWatcherNub_.reset( new WatcherNub() );
+    // Set up the watcher nub and message forwarder manually
+    pWatcherNub_.reset(new WatcherNub());
 
-	if (!pWatcherNub_->init( inet_ntoa( (struct in_addr &)internalIP ), 0 ))
-	{
-		pWatcherNub_.reset( NULL );
-		return false;
-	}
+    if (!pWatcherNub_->init(inet_ntoa((struct in_addr&)internalIP), 0)) {
+        pWatcherNub_.reset(NULL);
+        return false;
+    }
 
-	pLoggerMessageForwarder_.reset( 
-		new LoggerMessageForwarder( appName, pWatcherNub_->udpSocket(), 
-			eventDispatcher_, loggerID,
-			/*enabled=*/true, /*spamFilterThreshold=*/0 ) );
+    pLoggerMessageForwarder_.reset(
+      new LoggerMessageForwarder(appName,
+                                 pWatcherNub_->udpSocket(),
+                                 eventDispatcher_,
+                                 loggerID,
+                                 /*enabled=*/true,
+                                 /*spamFilterThreshold=*/0));
 
-	DebugFilter::shouldWriteToConsole( true );
+    DebugFilter::shouldWriteToConsole(true);
 
-	if (!isVerbose)
-	{
-		DebugFilter::instance().filterThreshold( MESSAGE_PRIORITY_INFO );
-	}
-	else
-	{
-		DebugFilter::instance().filterThreshold( MESSAGE_PRIORITY_TRACE );
-	}
+    if (!isVerbose) {
+        DebugFilter::instance().filterThreshold(MESSAGE_PRIORITY_INFO);
+    } else {
+        DebugFilter::instance().filterThreshold(MESSAGE_PRIORITY_TRACE);
+    }
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method initialises the Python script.
  */
-bool DatabaseToolApp::initScript( const char * componentName )
+bool DatabaseToolApp::initScript(const char* componentName)
 {
-	PyImportPaths paths;
-	paths.addResPath( EntityDef::Constants::databasePath() );
-	paths.addResPath( EntityDef::Constants::serverCommonPath() );
+    PyImportPaths paths;
+    paths.addResPath(EntityDef::Constants::databasePath());
+    paths.addResPath(EntityDef::Constants::serverCommonPath());
 
-	if (!Script::init( paths, componentName ))
-	{
-		ERROR_MSG( "DatabaseToolApp::initScript: "
-				"Failed to init script system\n" );
-		return false;
-	}
+    if (!Script::init(paths, componentName)) {
+        ERROR_MSG("DatabaseToolApp::initScript: "
+                  "Failed to init script system\n");
+        return false;
+    }
 
-	return true;
+    return true;
 }
-
 
 /**
  *	Read in the entity definitions.
  */
 bool DatabaseToolApp::initEntityDefs()
 {
-	DataSectionPtr pSection =
-		BWResource::openSection( EntityDef::Constants::entitiesFile() );
+    DataSectionPtr pSection =
+      BWResource::openSection(EntityDef::Constants::entitiesFile());
 
-	if (!pSection)
-	{
-		ERROR_MSG( "DatabaseToolApp::initEntityDefs: Failed to open "
-				"<res>/%s\n", EntityDef::Constants::entitiesFile() );
-		return false;
-	}
+    if (!pSection) {
+        ERROR_MSG("DatabaseToolApp::initEntityDefs: Failed to open "
+                  "<res>/%s\n",
+                  EntityDef::Constants::entitiesFile());
+        return false;
+    }
 
-	if (!entityDefs_.init( pSection ))
-	{
-		ERROR_MSG( "DatabaseToolApp::initEntityDefs: "
-				"failed to read in entity definitions\n" );
-		return false;
-	}
+    if (!entityDefs_.init(pSection)) {
+        ERROR_MSG("DatabaseToolApp::initEntityDefs: "
+                  "failed to read in entity definitions\n");
+        return false;
+    }
 
-	return true;
+    return true;
 }
-
 
 /**
  *	Enable handling of the given signal. The virtual method onSignalled() will
  *	be called on detection of that signal.
  */
-void DatabaseToolApp::enableSignalHandler( int sigNum, bool enable )
+void DatabaseToolApp::enableSignalHandler(int sigNum, bool enable)
 {
-	if (enable)
-	{
-		SignalProcessor::instance().addSignalHandler( sigNum, 
-			pSignalHandler_.get() );
-	}
-	else
-	{
-		SignalProcessor::instance().clearSignalHandler( sigNum, 
-			pSignalHandler_.get() );
-	}
+    if (enable) {
+        SignalProcessor::instance().addSignalHandler(sigNum,
+                                                     pSignalHandler_.get());
+    } else {
+        SignalProcessor::instance().clearSignalHandler(sigNum,
+                                                       pSignalHandler_.get());
+    }
 }
 
 BW_END_NAMESPACE

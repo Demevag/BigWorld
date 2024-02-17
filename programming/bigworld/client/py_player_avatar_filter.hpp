@@ -4,7 +4,6 @@
 #include "player_avatar_filter.hpp"
 #include "py_filter.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /*~ class BigWorld.PlayerAvatarFilter
@@ -23,25 +22,25 @@ BW_BEGIN_NAMESPACE
  */
 class PyPlayerAvatarFilter : public PyFilter
 {
-	Py_Header( PyPlayerAvatarFilter, PyFilter );
+    Py_Header(PyPlayerAvatarFilter, PyFilter);
 
-public:
-	PyPlayerAvatarFilter( PyTypeObject * pType = &s_type_ );
-	virtual ~PyPlayerAvatarFilter() {}
+  public:
+    PyPlayerAvatarFilter(PyTypeObject* pType = &s_type_);
+    virtual ~PyPlayerAvatarFilter() {}
 
-	// Python Interface
-	PY_AUTO_CONSTRUCTOR_FACTORY_DECLARE( PyPlayerAvatarFilter, END );
+    // Python Interface
+    PY_AUTO_CONSTRUCTOR_FACTORY_DECLARE(PyPlayerAvatarFilter, END);
 
-	// Implementation of PyFilter
-	virtual PlayerAvatarFilter * pAttachedFilter();
-	virtual const PlayerAvatarFilter * pAttachedFilter() const;
+    // Implementation of PyFilter
+    virtual PlayerAvatarFilter*       pAttachedFilter();
+    virtual const PlayerAvatarFilter* pAttachedFilter() const;
 
-protected:
-	// Implementation of PyFilter
-	virtual PlayerAvatarFilter * getNewFilter();
+  protected:
+    // Implementation of PyFilter
+    virtual PlayerAvatarFilter* getNewFilter();
 };
 
-PY_SCRIPT_CONVERTERS_DECLARE( PyPlayerAvatarFilter );
+PY_SCRIPT_CONVERTERS_DECLARE(PyPlayerAvatarFilter);
 
 BW_END_NAMESPACE
 

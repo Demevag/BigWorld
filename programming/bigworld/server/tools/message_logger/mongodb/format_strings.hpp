@@ -10,35 +10,34 @@
 
 #include "mongo/client/dbclient.h"
 
-
 BW_BEGIN_NAMESPACE
 
-typedef uint32 FormatStringID;
-typedef BW::map< BW::string, FormatStringID > FmtStrIDMap;
+typedef uint32                              FormatStringID;
+typedef BW::map<BW::string, FormatStringID> FmtStrIDMap;
 
 class FormatStringsMongoDB : public FormatStrings
 {
-public:
-	FormatStringsMongoDB( TaskManager & mongoDBTaskMgr,
-		mongo::DBClientConnection & conn, const BW::string & collName );
+  public:
+    FormatStringsMongoDB(TaskManager&               mongoDBTaskMgr,
+                         mongo::DBClientConnection& conn,
+                         const BW::string&          collName);
 
-	bool canAppendToDB() { return true; };
-	bool writeFormatStringToDB( LogStringInterpolator *pHandler );
-	bool init();
-	
-	FormatStringID getIdOfFmtString( const BW::string & fmtString );
+    bool canAppendToDB() { return true; };
+    bool writeFormatStringToDB(LogStringInterpolator* pHandler);
+    bool init();
 
-private:
-	FormatStringID getNextAvailableID();
+    FormatStringID getIdOfFmtString(const BW::string& fmtString);
 
-	TaskManager & mongoDBTaskMgr_;
-	mongo::DBClientConnection & conn_;
-	BW::string namespace_;
+  private:
+    FormatStringID getNextAvailableID();
 
-	FormatStringID currMaxID_;
-	FmtStrIDMap fmtStrIDMap_;
+    TaskManager&               mongoDBTaskMgr_;
+    mongo::DBClientConnection& conn_;
+    BW::string                 namespace_;
+
+    FormatStringID currMaxID_;
+    FmtStrIDMap    fmtStrIDMap_;
 };
-
 
 BW_END_NAMESPACE
 

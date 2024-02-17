@@ -5,4 +5,3 @@
 #include "unit_test_lib/unit_test.hpp"
 
 #endif // DBAPP_MGR_UNIT_TEST_PCH_HPP
-

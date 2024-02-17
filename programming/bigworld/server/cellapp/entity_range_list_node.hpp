@@ -3,7 +3,6 @@
 
 #include "range_list_node.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class Entity;
@@ -15,33 +14,33 @@ class Entity;
  */
 class EntityRangeListNode : public RangeListNode
 {
-public:
-	EntityRangeListNode( Entity * entity );
+  public:
+    EntityRangeListNode(Entity* entity);
 
-	float x() const;
-	float z() const;
+    float x() const;
+    float z() const;
 
-	BW::string debugString() const;
-	Entity * getEntity() const;
+    BW::string debugString() const;
+    Entity*    getEntity() const;
 
-	void remove();
+    void remove();
 
-	void isAoITrigger( bool isAoITrigger );
+    void isAoITrigger(bool isAoITrigger);
 
-	static Entity * getEntity( RangeListNode * pNode )
-	{
-		MF_ASSERT( pNode->isEntity() );
-		return static_cast< EntityRangeListNode * >( pNode )->getEntity();
-	}
+    static Entity* getEntity(RangeListNode* pNode)
+    {
+        MF_ASSERT(pNode->isEntity());
+        return static_cast<EntityRangeListNode*>(pNode)->getEntity();
+    }
 
-	static const Entity * getEntity( const RangeListNode * pNode )
-	{
-		MF_ASSERT( pNode->isEntity() );
-		return static_cast< const EntityRangeListNode * >( pNode )->getEntity();
-	}
+    static const Entity* getEntity(const RangeListNode* pNode)
+    {
+        MF_ASSERT(pNode->isEntity());
+        return static_cast<const EntityRangeListNode*>(pNode)->getEntity();
+    }
 
-protected:
-	Entity * pEntity_;
+  protected:
+    Entity* pEntity_;
 };
 
 BW_END_NAMESPACE

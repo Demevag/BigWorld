@@ -7,30 +7,29 @@
 
 #include <time.h>
 
-
 BW_BEGIN_NAMESPACE
 
-#pragma pack( push, 1 )
+#pragma pack(push, 1)
 class LogTime
 {
-public:
-	typedef int64 Seconds;
-	typedef uint16 Milliseconds;
+  public:
+    typedef int64  Seconds;
+    typedef uint16 Milliseconds;
 
-	LogTime();
-	LogTime( double ftime );
+    LogTime();
+    LogTime(double ftime);
 
-	bool operator>( const LogTime &other ) const;
-	bool operator>=( const LogTime &other ) const;
-	bool operator<( const LogTime &other ) const;
-	bool operator<=( const LogTime &other ) const;
+    bool operator>(const LogTime& other) const;
+    bool operator>=(const LogTime& other) const;
+    bool operator<(const LogTime& other) const;
+    bool operator<=(const LogTime& other) const;
 
-	double asDouble() const;
+    double asDouble() const;
 
-	Seconds secs_;
-	Milliseconds msecs_;
+    Seconds      secs_;
+    Milliseconds msecs_;
 };
-#pragma pack( pop )
+#pragma pack(pop)
 
 BW_END_NAMESPACE
 

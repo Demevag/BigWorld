@@ -3,7 +3,6 @@
 
 #include "server/server_app_option.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,15 +10,15 @@ BW_BEGIN_NAMESPACE
  */
 class LoginConditionsConfig
 {
-public:
-	static ServerAppOption< float > avgLoad;
-	static ServerAppOption< float > avgOverloadTolerancePeriod;
-	static ServerAppOption< uint64 > avgOverloadTolerancePeriodInStamps;
-	static ServerAppOption< float > maxLoad;
-	static ServerAppOption< float > maxOverloadTolerancePeriod;
-	static ServerAppOption< uint64 > maxOverloadTolerancePeriodInStamps;
+  public:
+    static ServerAppOption<float>  avgLoad;
+    static ServerAppOption<float>  avgOverloadTolerancePeriod;
+    static ServerAppOption<uint64> avgOverloadTolerancePeriodInStamps;
+    static ServerAppOption<float>  maxLoad;
+    static ServerAppOption<float>  maxOverloadTolerancePeriod;
+    static ServerAppOption<uint64> maxOverloadTolerancePeriodInStamps;
 
-	static bool postInit();
+    static bool postInit();
 };
 
 #endif // CA_LOGIN_CONDITIONS_CONFIG_HPP

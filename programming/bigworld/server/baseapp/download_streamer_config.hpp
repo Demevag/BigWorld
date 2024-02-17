@@ -3,7 +3,6 @@
 
 #include "server/server_app_option.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,20 +10,20 @@ BW_BEGIN_NAMESPACE
  */
 class DownloadStreamerConfig
 {
-public:
-	static ServerAppOption< int > bitsPerSecondTotal;
-	static ServerAppOption< int > bitsPerSecondPerClient;
-	static ServerAppOption< int > rampUpRate;
-	static ServerAppOption< int > backlogLimit;
+  public:
+    static ServerAppOption<int> bitsPerSecondTotal;
+    static ServerAppOption<int> bitsPerSecondPerClient;
+    static ServerAppOption<int> rampUpRate;
+    static ServerAppOption<int> backlogLimit;
 
-	static ServerAppOption< int > bytesPerTickTotal;
-	static ServerAppOption< int > bytesPerTickPerClient;
-	static ServerAppOption< int > rampUpRateBytesPerTick;
+    static ServerAppOption<int> bytesPerTickTotal;
+    static ServerAppOption<int> bytesPerTickPerClient;
+    static ServerAppOption<int> rampUpRateBytesPerTick;
 
-	static bool postInit();
+    static bool postInit();
 
-private:
-	DownloadStreamerConfig();
+  private:
+    DownloadStreamerConfig();
 };
 
 BW_END_NAMESPACE

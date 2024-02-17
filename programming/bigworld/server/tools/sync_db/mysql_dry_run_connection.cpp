@@ -8,14 +8,14 @@ BW_BEGIN_NAMESPACE
  * Constructor.
  */
 MySqlDryRunConnection::MySqlDryRunConnection(
-		const DBConfig::ConnectionInfo & connectionInfo ) :
-	MySqlLockedConnection( connectionInfo )
+  const DBConfig::ConnectionInfo& connectionInfo)
+  : MySqlLockedConnection(connectionInfo)
 {
 }
 
-MySql * MySqlDryRunConnection::createMysqlWrapper() const
+MySql* MySqlDryRunConnection::createMysqlWrapper() const
 {
-	return new MySqlDryRunWrapper( connectionInfo_ );
+    return new MySqlDryRunWrapper(connectionInfo_);
 }
 
 BW_END_NAMESPACE

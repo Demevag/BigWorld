@@ -6,36 +6,32 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace controls
-{
-	class CONTROLS_DLL CComboBoxAutoComplete : public CComboBox
-	{
-		DECLARE_DYNAMIC(CComboBoxAutoComplete)
+namespace controls {
+    class CONTROLS_DLL CComboBoxAutoComplete : public CComboBox
+    {
+        DECLARE_DYNAMIC(CComboBoxAutoComplete)
 
-	public:
-		CComboBoxAutoComplete();
+      public:
+        CComboBoxAutoComplete();
 
-		/*virtual*/ ~CComboBoxAutoComplete();
+        /*virtual*/ ~CComboBoxAutoComplete();
 
-		void restrictToListBoxItems(bool option);
+        void restrictToListBoxItems(bool option);
 
-	private:
-		virtual BOOL PreTranslateMessage(MSG* pMsg);
+      private:
+        virtual BOOL PreTranslateMessage(MSG* pMsg);
 
-		afx_msg void OnCbnEditupdate();
-		
-		DECLARE_MESSAGE_MAP()
+        afx_msg void OnCbnEditupdate();
 
-	private:
-		CString         previousText_;
-		int             previousCurSel_;
-		bool            restrictToListBoxItems_;
-	};
+        DECLARE_MESSAGE_MAP()
+
+      private:
+        CString previousText_;
+        int     previousCurSel_;
+        bool    restrictToListBoxItems_;
+    };
 }
 
 BW_END_NAMESPACE
 
 #endif // CCOMBOBOX_AUTO_COMPLETE_HPP
-
-
-

@@ -4,14 +4,12 @@
 BW_BEGIN_NAMESPACE
 
 // Forward declaration
-namespace Mercury
-{
-class EventDispatcher;
-} // namespace Mercury 
+namespace Mercury {
+    class EventDispatcher;
+} // namespace Mercury
 
-namespace Script
-{
-	void initExceptionHook( Mercury::EventDispatcher * pEventDispatcher );
+namespace Script {
+    void initExceptionHook(Mercury::EventDispatcher* pEventDispatcher);
 } // namespace Script
 
 BW_END_NAMESPACE

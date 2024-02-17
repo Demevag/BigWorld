@@ -7,8 +7,7 @@
 
 #include "resmgr/xml_section.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "App", 0 )
-
+DECLARE_DEBUG_COMPONENT2("App", 0)
 
 BW_BEGIN_NAMESPACE
 
@@ -19,43 +18,37 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor.
  */
-AppConfig::AppConfig() :
-	pRoot_( NULL )
+AppConfig::AppConfig()
+  : pRoot_(NULL)
 {
 }
-
 
 /**
  *	Destructor.
  */
-AppConfig::~AppConfig()
-{
-}
-
+AppConfig::~AppConfig() {}
 
 /**
  *	Init method
  */
-bool AppConfig::init( DataSectionPtr configSection )
+bool AppConfig::init(DataSectionPtr configSection)
 {
-	BW_GUARD;
-	if (!configSection.exists() || configSection->countChildren() == 0) 
-	{
-		return false;
-	}
+    BW_GUARD;
+    if (!configSection.exists() || configSection->countChildren() == 0) {
+        return false;
+    }
 
-	pRoot_ = configSection;
-	return true;
+    pRoot_ = configSection;
+    return true;
 }
-
 
 /**
  *	Instance accessor
  */
-AppConfig & AppConfig::instance()
+AppConfig& AppConfig::instance()
 {
-	static AppConfig	inst;
-	return inst;
+    static AppConfig inst;
+    return inst;
 }
 
 BW_END_NAMESPACE

@@ -9,7 +9,6 @@
 
 #include "network/basictypes.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BinaryIStream;
@@ -21,89 +20,80 @@ class BinaryOStream;
  */
 class DBAppsGateway
 {
-public:
-	typedef DBHashSchemes::DBAppIDBuckets< DBAppGateway >::HashScheme 
-		HashScheme;
+  public:
+    typedef DBHashSchemes::DBAppIDBuckets<DBAppGateway>::HashScheme HashScheme;
 
+    class IUpdateVisitor
+    {
+      public:
+        /** Destructor. */
+        virtual ~IUpdateVisitor() {}
 
-	class IUpdateVisitor
-	{
-	public:
-		
-		/** Destructor. */
-		virtual ~IUpdateVisitor() {}
+        /**
+         *	This method is called when a new DBApp has been added in the update.
+         *
+         *	@param gateway 		The gateway class.
+         *	@param descriptor 	The descriptor for the DBApp that was added.
+         *	@param isAlpha 		True if this DBApp is the new alpha DBApp,
+         *						false otherwise.
+         */
+        virtual void onDBAppAdded(DBAppsGateway&      gateway,
+                                  const DBAppGateway& descriptor,
+                                  bool                isAlpha)
+        {
+        }
 
+        /**
+         *	This method is called when a DBApp has been removed in the update.
+         *
+         *	@param gateway 		The gateway class.
+         *	@param descriptor 	The descriptor for the DBApp that was removed.
+         *	@param wasAlpha 	True if this DBApp was the former alpha
+         *						DBApp, false otherwise.
+         */
+        virtual void onDBAppRemoved(DBAppsGateway&      gateway,
+                                    const DBAppGateway& descriptor,
+                                    bool                wasAlpha)
+        {
+        }
+    };
 
-		/**
-		 *	This method is called when a new DBApp has been added in the update.
-		 *
-		 *	@param gateway 		The gateway class.
-		 *	@param descriptor 	The descriptor for the DBApp that was added.
-		 *	@param isAlpha 		True if this DBApp is the new alpha DBApp,
-		 *						false otherwise.
-		 */
-		virtual void onDBAppAdded( DBAppsGateway & gateway,
-				const DBAppGateway & descriptor,
-				bool isAlpha )
-		{}
+    DBAppsGateway();
 
+    void addDBApp(const DBAppGateway& descriptor);
+    bool removeDBApp(DBAppID appID);
 
-		/**
-		 *	This method is called when a DBApp has been removed in the update.
-		 *
-		 *	@param gateway 		The gateway class.
-		 *	@param descriptor 	The descriptor for the DBApp that was removed.
-		 *	@param wasAlpha 	True if this DBApp was the former alpha
-		 *						DBApp, false otherwise.
-		 */
-		virtual void onDBAppRemoved( DBAppsGateway & gateway,
-				const DBAppGateway & descriptor,
-				bool wasAlpha )
-		{}
+    bool updateFromStream(BinaryIStream& data, IUpdateVisitor* pVisitor = NULL);
 
-	};
+    /** This method returns true if there are no DBApps available. */
+    bool empty() const { return hashScheme_.empty(); }
 
-	DBAppsGateway();
+    /** This method returns the number of DBApps in the collection. */
+    size_t size() const { return hashScheme_.size(); }
 
-	void addDBApp( const DBAppGateway & descriptor );
-	bool removeDBApp( DBAppID appID );
+    const DBAppGateway& getDBApp(DatabaseID dbID = 0) const;
 
-	bool updateFromStream( BinaryIStream & data,
-			IUpdateVisitor * pVisitor = NULL );
+    /** Convenience accessor for operator[] to call getDBApp(). */
+    const DBAppGateway& operator[](DatabaseID dbID) const
+    {
+        return this->getDBApp(dbID);
+    }
 
-	/** This method returns true if there are no DBApps available. */
-	bool empty() const { return hashScheme_.empty(); }
+    const DBAppGateway& alpha() const;
 
-	/** This method returns the number of DBApps in the collection. */
-	size_t size() const { return hashScheme_.size(); }
+    static WatcherPtr pWatcher();
 
-	const DBAppGateway & getDBApp( DatabaseID dbID = 0 ) const;
+  private:
+    HashScheme hashScheme_;
 
-	/** Convenience accessor for operator[] to call getDBApp(). */
-	const DBAppGateway & operator[]( DatabaseID dbID ) const
-	{
-		return this->getDBApp( dbID );
-	}
-
-	const DBAppGateway & alpha() const;
-
-	static WatcherPtr pWatcher();
-
-private:
-
-	HashScheme 	hashScheme_;
-
-	friend BinaryOStream & operator<<( BinaryOStream & os,
-		const DBAppsGateway & gateway );
-	friend BinaryIStream & operator>>( BinaryIStream & is,
-		DBAppsGateway & gateway );
+    friend BinaryOStream& operator<<(BinaryOStream&       os,
+                                     const DBAppsGateway& gateway);
+    friend BinaryIStream& operator>>(BinaryIStream& is, DBAppsGateway& gateway);
 };
 
-
-BinaryOStream & operator<<( BinaryOStream & os, const DBAppsGateway & gateway );
-BinaryIStream & operator>>( BinaryIStream & is, DBAppsGateway & gateway );
+BinaryOStream& operator<<(BinaryOStream& os, const DBAppsGateway& gateway);
+BinaryIStream& operator>>(BinaryIStream& is, DBAppsGateway& gateway);
 
 BW_END_NAMESPACE
 
-
-#endif  // DBAPPS_GATEWAY_HPP
+#endif // DBAPPS_GATEWAY_HPP

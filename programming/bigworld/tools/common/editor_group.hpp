@@ -11,53 +11,54 @@ BW_BEGIN_NAMESPACE
 
 class EditorGroup
 {
-public:
-	EditorGroup( const BW::string& name );
-	~EditorGroup();
+  public:
+    EditorGroup(const BW::string& name);
+    ~EditorGroup();
 
-	const BW::string& name() const { return name_; }
-	void name( const BW::string& n );
-	BW::string fullName() const;
-	EditorGroup* parent() const { return parent_; }
+    const BW::string& name() const { return name_; }
+    void              name(const BW::string& n);
+    BW::string        fullName() const;
+    EditorGroup*      parent() const { return parent_; }
 
-	const BW::vector<EditorGroup*>& children() const { return children_; }
-	const BW::vector<ChunkItem*>& items() const { return items_; }
+    const BW::vector<EditorGroup*>& children() const { return children_; }
+    const BW::vector<ChunkItem*>&   items() const { return items_; }
 
-	void enterGroup( ChunkItem* item );
-	void leaveGroup( ChunkItem* item );
+    void enterGroup(ChunkItem* item);
+    void leaveGroup(ChunkItem* item);
 
-	void treeItemHandle( uint32 hItem ) { treeItemHandle_ = hItem; }
-	uint32 treeItemHandle() const { return treeItemHandle_; }
+    void   treeItemHandle(uint32 hItem) { treeItemHandle_ = hItem; }
+    uint32 treeItemHandle() const { return treeItemHandle_; }
 
-	/**
-	 *	Return the child group with the given name, slashes aren't allowed
-	 */
-	EditorGroup* findOrCreateChild( const BW::string& name );
+    /**
+     *	Return the child group with the given name, slashes aren't allowed
+     */
+    EditorGroup* findOrCreateChild(const BW::string& name);
 
-	/** Remove the given group from us, and delete it for good measure */
-	void removeChildGroup( EditorGroup* group );
+    /** Remove the given group from us, and delete it for good measure */
+    void removeChildGroup(EditorGroup* group);
 
-	/**
-	 *	Return the group with the given name, in the form of a/b/c
-	 */
-	static EditorGroup* findOrCreateGroup( const BW::string& fullName );
+    /**
+     *	Return the group with the given name, in the form of a/b/c
+     */
+    static EditorGroup* findOrCreateGroup(const BW::string& fullName);
 
-	static EditorGroup* rootGroup() { return &s_rootGroup_; }
-private:
-	BW::string name_;
-	EditorGroup* parent_;
-	BW::vector<ChunkItem*> items_;
-	BW::vector<EditorGroup*> children_;
+    static EditorGroup* rootGroup() { return &s_rootGroup_; }
 
-	uint32 treeItemHandle_;
+  private:
+    BW::string               name_;
+    EditorGroup*             parent_;
+    BW::vector<ChunkItem*>   items_;
+    BW::vector<EditorGroup*> children_;
 
-	/** Call when the parent or name of this group has changed */
-	void pathChanged();
+    uint32 treeItemHandle_;
 
-	/** Recursively move all our items to the given group */
-	void moveChunkItemsTo( EditorGroup* group );
+    /** Call when the parent or name of this group has changed */
+    void pathChanged();
 
-	static EditorGroup s_rootGroup_;
+    /** Recursively move all our items to the given group */
+    void moveChunkItemsTo(EditorGroup* group);
+
+    static EditorGroup s_rootGroup_;
 };
 
 BW_END_NAMESPACE

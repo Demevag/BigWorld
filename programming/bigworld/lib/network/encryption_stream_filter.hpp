@@ -7,56 +7,47 @@
 
 #include "cstdmf/memory_stream.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
+namespace Mercury {
 
-namespace Mercury
-{
+    /**
+     *	This class implements a stream filter that encrypts/decrypts traffic
+     *	passing through it.
+     */
+    class EncryptionStreamFilter : public StreamFilter
+    {
+      public:
+        static StreamFilterPtr create(NetworkStream& stream,
+                                      BlockCipherPtr pCipher);
 
+        // Overrides from StreamFilter
 
-/**
- *	This class implements a stream filter that encrypts/decrypts traffic
- *	passing through it.
- */
-class EncryptionStreamFilter : public StreamFilter
-{
-public:
-	static StreamFilterPtr create( NetworkStream & stream,
-		BlockCipherPtr pCipher );
+        virtual bool writeFrom(BinaryIStream& input, bool shouldCork);
+        virtual int  readInto(BinaryOStream& output);
 
-	// Overrides from StreamFilter
+        virtual BW::string streamToString() const;
 
-	virtual bool writeFrom( BinaryIStream & input, bool shouldCork );
-	virtual int readInto( BinaryOStream & output );
+      private:
+        EncryptionStreamFilter(NetworkStream& stream, BlockCipherPtr cipher);
 
-	virtual BW::string streamToString() const;
+        virtual ~EncryptionStreamFilter();
 
-private:
+        // Disable copy constructor and copy-by-assignment
+        EncryptionStreamFilter(const EncryptionStreamFilter&);
+        EncryptionStreamFilter& operator=(const EncryptionStreamFilter&);
 
-	EncryptionStreamFilter( NetworkStream & stream,
-			BlockCipherPtr cipher );
+        void decryptBlock(const uint8* block, BinaryOStream& output);
+        void updateExpectedReceiveFrameLength(const uint8* block);
 
-	virtual ~EncryptionStreamFilter();
-
-	// Disable copy constructor and copy-by-assignment
-	EncryptionStreamFilter( const EncryptionStreamFilter & );
-	EncryptionStreamFilter & operator=( const EncryptionStreamFilter & );
-
-	void decryptBlock( const uint8 * block, BinaryOStream & output );
-	void updateExpectedReceiveFrameLength( const uint8 * block );
-
-
-	BlockCipherPtr 		pBlockCipher_;
-	MemoryOStream 		receiveBuffer_;
-	size_t 				expectedReceiveFrameLength_;
-	uint8 * 			previousReceivedBlock_;
-	uint8 * 			previousSentBlock_;
-};
-
+        BlockCipherPtr pBlockCipher_;
+        MemoryOStream  receiveBuffer_;
+        size_t         expectedReceiveFrameLength_;
+        uint8*         previousReceivedBlock_;
+        uint8*         previousSentBlock_;
+    };
 
 } // end namespace Mercury
-
 
 BW_END_NAMESPACE
 

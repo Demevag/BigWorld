@@ -9,10 +9,9 @@
 #include "gizmo/general_properties.hpp"
 #include "resmgr/string_provider.hpp"
 #include "../../tools/common/material_properties.hpp"
-#endif //EDITOR_ENABLED
+#endif // EDITOR_ENABLED
 
-DECLARE_DEBUG_COMPONENT2( "PostProcessing", 0 )
-
+DECLARE_DEBUG_COMPONENT2("PostProcessing", 0)
 
 BW_BEGIN_NAMESPACE
 
@@ -20,455 +19,428 @@ BW_BEGIN_NAMESPACE
 #include "py_filter_quad.ipp"
 #endif
 
-namespace PostProcessing
-{
+namespace PostProcessing {
 
-// Python statics
-PY_TYPEOBJECT( PyFilterQuad )
+    // Python statics
+    PY_TYPEOBJECT(PyFilterQuad)
 
-PY_BEGIN_METHODS( PyFilterQuad )	
-PY_END_METHODS()
+    PY_BEGIN_METHODS(PyFilterQuad)
+    PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( PyFilterQuad )
-	/*~ attribute PyFilterQuad.samples
-	 *	@components{ client, tools }
-	 *	Sample coordinates for sampling the source texture.  The samples are
-	 *	all divided by the dimensions of the source texture.  This allows you
-	 *	to specify the samples in texels, and this class will automatically
-	 *	convert them into uv coordinates.  The source texture defaults to
-	 *	the variable named "inputTexture" but can be changed in the shader
-	 *	via the "filterQuadTexture" global string property.
-	 *	Each sample is a Vector3, or tuple, (u offset, v offset, weight).
-	 *	@type List of Vector3s.
-	 */
-	PY_ATTRIBUTE( samples )
-PY_END_ATTRIBUTES()
+    PY_BEGIN_ATTRIBUTES(PyFilterQuad)
+    /*~ attribute PyFilterQuad.samples
+     *	@components{ client, tools }
+     *	Sample coordinates for sampling the source texture.  The samples are
+     *	all divided by the dimensions of the source texture.  This allows you
+     *	to specify the samples in texels, and this class will automatically
+     *	convert them into uv coordinates.  The source texture defaults to
+     *	the variable named "inputTexture" but can be changed in the shader
+     *	via the "filterQuadTexture" global string property.
+     *	Each sample is a Vector3, or tuple, (u offset, v offset, weight).
+     *	@type List of Vector3s.
+     */
+    PY_ATTRIBUTE(samples)
+    PY_END_ATTRIBUTES()
 
-/*~ class PostProcessing.PyFilterQuad
- *	@components{ client, tools }
- *	A PyFilterQuad can be used by a PyPhase object, and provides the geometry
- *	for the phase.  The FilterQuad performs n-taps on the source material's
- *	textures, in groups of 4.  If you specify more than 4 taps, then the filter
- *	quad will draw using n/4 passes.  For these operations, you should make
- *	sure the material you use is additive, so the results can accumulate.
- */
-/*~ function PostProcessing.FilterQuad
- *	@components{ client, tools }
- *	Factory function to create and return a PostProcessing PyFilterQuad object.
- *	@return A new PostProcessing PyFilterQuad object.
- */
-PY_FACTORY_NAMED( PyFilterQuad, "FilterQuad", _PostProcessing )
+    /*~ class PostProcessing.PyFilterQuad
+     *	@components{ client, tools }
+     *	A PyFilterQuad can be used by a PyPhase object, and provides the
+     *geometry for the phase.  The FilterQuad performs n-taps on the source
+     *material's textures, in groups of 4.  If you specify more than 4 taps,
+     *then the filter quad will draw using n/4 passes.  For these operations,
+     *you should make sure the material you use is additive, so the results can
+     *accumulate.
+     */
+    /*~ function PostProcessing.FilterQuad
+     *	@components{ client, tools }
+     *	Factory function to create and return a PostProcessing PyFilterQuad
+     *object.
+     *	@return A new PostProcessing PyFilterQuad object.
+     */
+    PY_FACTORY_NAMED(PyFilterQuad, "FilterQuad", _PostProcessing)
 
-IMPLEMENT_FILTER_QUAD( PyFilterQuad, PyFilterQuad )
+    IMPLEMENT_FILTER_QUAD(PyFilterQuad, PyFilterQuad)
 
-
-PyFilterQuad::PyFilterQuad( PyTypeObject *pType ) :
-	FilterQuad( pType ),
-	samplesHolder_( samples_, this, true ),
-	pDecl4tap_(),
-	pDecl8tap_()
+    PyFilterQuad::PyFilterQuad(PyTypeObject* pType)
+      : FilterQuad(pType)
+      , samplesHolder_(samples_, this, true)
+      , pDecl4tap_()
+      , pDecl8tap_()
 #ifdef EDITOR_ENABLED
-	, pCallback_( NULL )
+      , pCallback_(NULL)
 #endif // EDITOR_ENABLED
-{
-}
+    {
+    }
 
+    PyFilterQuad::~PyFilterQuad() {}
 
-PyFilterQuad::~PyFilterQuad()
-{
-}
+    /**
+     *	This method adds a single vertex to the filter quad.
+     *	@param	v		XYZNUV2 source vertex
+     *	@param	rSample	pointer to tap offsets for the vertex
+     *	@param	tapSize	number of uv coordinate taps.
+     */
+    void PyFilterQuad::addVert(Moo::VertexXYZNUV2& v,
+                               FilterSample*       rSample,
+                               size_t              tapSize,
+                               const Vector2&      srcDim)
+    {
+        Moo::FourTapVertex curr;
+        curr.pos_ = v.pos_;
+        for (size_t t = 0; t < tapSize; t++) {
+            FilterSample& fs = rSample[t];
+            curr.uv_[t][0]   = v.uv2_[0] + (fs[0] / srcDim[0]);
+            curr.uv_[t][1]   = v.uv2_[1] + (fs[1] / srcDim[1]);
+            curr.uv_[t][2]   = fs[2];
+        }
 
+        Matrix view = Moo::rc().invView();
+        view.translation(Vector3(0, 0, 0));
+        curr.viewNormal_ =
+          Moo::rc().camera().nearPlanePoint(curr.pos_.x, curr.pos_.y);
+        curr.viewNormal_.normalise();
+        curr.worldNormal_ = view.applyVector(curr.viewNormal_);
 
-/**
- *	This method adds a single vertex to the filter quad.
- *	@param	v		XYZNUV2 source vertex
- *	@param	rSample	pointer to tap offsets for the vertex
- *	@param	tapSize	number of uv coordinate taps.
- */
-void PyFilterQuad::addVert( Moo::VertexXYZNUV2& v, FilterSample* rSample, size_t tapSize, const Vector2& srcDim )
-{
-	Moo::FourTapVertex curr;
-	curr.pos_ = v.pos_;
-	for (size_t t=0; t<tapSize; t++)
-	{
-		FilterSample& fs = rSample[t];
-		curr.uv_[t][0] = v.uv2_[0] + (fs[0]/srcDim[0]);
-		curr.uv_[t][1] = v.uv2_[1] + (fs[1]/srcDim[1]);
-		curr.uv_[t][2] = fs[2];
-	}
+        verts4tap_.push_back(curr);
+    }
 
-	Matrix view = Moo::rc().invView();
-	view.translation(Vector3(0,0,0));
-	curr.viewNormal_ = Moo::rc().camera().nearPlanePoint( curr.pos_.x, curr.pos_.y );
-	curr.viewNormal_.normalise();		
-	curr.worldNormal_ = view.applyVector( curr.viewNormal_ );
+    /**
+     *	This method is called when the material has been set, and
+     *	draw is about to be called.  For PyFilterQuad, we build
+     *	our mesh and ascertain which texture map is used to derive
+     *	the filter tap coordinates.
+     */
+    void PyFilterQuad::preDraw(Moo::EffectMaterialPtr pMat)
+    {
+        pDecl4tap_ = Moo::VertexDeclaration::get("xyzuvw4");
+        pDecl8tap_ = Moo::VertexDeclaration::get("xyzuvw8");
 
-	verts4tap_.push_back(curr);
-}
+        float   w = 1.f;
+        float   h = 1.f;
+        Vector3 fixup(-0.5f / Moo::rc().halfScreenWidth(),
+                      0.5f / Moo::rc().halfScreenHeight(),
+                      0.f);
 
+        Moo::VertexXYZNUV2 v[4];
 
-/**
- *	This method is called when the material has been set, and
- *	draw is about to be called.  For PyFilterQuad, we build
- *	our mesh and ascertain which texture map is used to derive
- *	the filter tap coordinates.
- */
-void PyFilterQuad::preDraw( Moo::EffectMaterialPtr pMat )
-{
-	pDecl4tap_ = Moo::VertexDeclaration::get( "xyzuvw4" );
-	pDecl8tap_ = Moo::VertexDeclaration::get( "xyzuvw8" );
+        v[0].pos_.set(-1.f, -1.f, 0.1f);
+        v[0].uv_.set(0.f, 0.f);
+        v[0].uv2_.set(0.f, h);
 
-	float w = 1.f;
-	float h = 1.f;
-	Vector3 fixup( -0.5f / Moo::rc().halfScreenWidth(), 0.5f / Moo::rc().halfScreenHeight(), 0.f );
+        v[1].pos_.set(-1.f, 1.f, 0.1f);
+        v[1].uv_.set(0.f, 1.f);
+        v[1].uv2_.set(0.f, 0.f);
 
-	Moo::VertexXYZNUV2 v[4];
+        v[2].pos_.set(1.f, 1.f, 0.1f);
+        v[2].uv_.set(1.f, 1.f);
+        v[2].uv2_.set(w, 0.f);
 
-	v[0].pos_.set(-1.f,-1.f,0.1f);
-	v[0].uv_.set(0.f,0.f);
-	v[0].uv2_.set(0.f,h);
+        v[3].pos_.set(1.f, -1.f, 0.1f);
+        v[3].uv_.set(1.f, 0.f);
+        v[3].uv2_.set(w, h);
 
-	v[1].pos_.set(-1.f,1.f,0.1f);
-	v[1].uv_.set(0.f,1.f);
-	v[1].uv2_.set(0.f,0.f);	
+        for (uint32 i = 0; i < 4; i++) {
+            v[i].pos_ = v[i].pos_ + fixup;
+        }
 
-	v[2].pos_.set(1.f,1.f,0.1f);
-	v[2].uv_.set(1.f,1.f);
-	v[2].uv2_.set(w,0.f);	
+        // Check the source dimensions for filter taps.
+        // We assume the .fx file has its main texture named 'inputTexture',
+        // however those wishing to break this convention can specify a
+        // string global variable "filterQuadTexture" that names the
+        // texture variable to be used.
+        //
+        // This allows us to specify a filter tap in pixels rather than uvs.
+        Vector2     srcDim(1.f, 1.f);
+        const char* pPropName = "inputTexture";
+        D3DXHANDLE  handle    = pMat->pEffect()->pEffect()->GetParameterByName(
+          NULL, "filterQuadTexture");
+        if (handle) {
+            pMat->pEffect()->pEffect()->GetString(handle, &pPropName);
+        }
 
-	v[3].pos_.set(1.f,-1.f,0.1f);
-	v[3].uv_.set(1.f,0.f);
-	v[3].uv2_.set(w,h);
+        Moo::ConstEffectPropertyPtr pTexProp = pMat->getProperty(pPropName);
+        if (pTexProp) {
+            BW::string srcTextureName;
+            pTexProp->getResourceID(srcTextureName);
+            Moo::BaseTexturePtr pTex = Moo::TextureManager::instance()->get(
+              srcTextureName, true, false, false);
+            if (pTex) {
+                srcDim.x = (float)pTex->width();
+                srcDim.y = (float)pTex->height();
+            }
+        }
 
-	for (uint32 i=0; i<4; i++)
-	{
-		v[i].pos_ = v[i].pos_ + fixup;
-	}
+        // Now we have our 4 vertices that give us a full-screen quad,
+        // create uvs from the provided filter kernel.
+        verts4tap_.clear();
+        uint32 tapSize = 4;
 
-	// Check the source dimensions for filter taps.
-	// We assume the .fx file has its main texture named 'inputTexture',
-	// however those wishing to break this convention can specify a
-	// string global variable "filterQuadTexture" that names the
-	// texture variable to be used.
-	//
-	// This allows us to specify a filter tap in pixels rather than uvs.
-	Vector2 srcDim(1.f,1.f);
-	const char * pPropName = "inputTexture";
-	D3DXHANDLE handle = pMat->pEffect()->pEffect()->GetParameterByName( NULL, "filterQuadTexture" );
-	if ( handle )
-	{
-		pMat->pEffect()->pEffect()->GetString( handle, &pPropName );
-	}
+        for (size_t s = 0; s < samples_.size(); s += tapSize) {
+            this->addVert(v[0], &samples_[s], tapSize, srcDim);
+            this->addVert(v[1], &samples_[s], tapSize, srcDim);
+            this->addVert(v[2], &samples_[s], tapSize, srcDim);
+            this->addVert(v[0], &samples_[s], tapSize, srcDim);
+            this->addVert(v[2], &samples_[s], tapSize, srcDim);
+            this->addVert(v[3], &samples_[s], tapSize, srcDim);
+        }
+    };
 
-	Moo::ConstEffectPropertyPtr pTexProp = pMat->getProperty(pPropName);
-	if ( pTexProp )
-	{
-		BW::string srcTextureName;
-		pTexProp->getResourceID(srcTextureName);
-		Moo::BaseTexturePtr pTex = Moo::TextureManager::instance()->get(
-			srcTextureName, true, false, false );
-		if ( pTex )
-		{
-			srcDim.x = (float)pTex->width();
-			srcDim.y = (float)pTex->height();
-		}
-	}
+    /**
+     *	This method draws the filter quad using the current device state.
+     */
+    void PyFilterQuad::draw()
+    {
+        verts4tap_.drawEffect(pDecl4tap_);
+    }
 
-	//Now we have our 4 vertices that give us a full-screen quad,
-	//create uvs from the provided filter kernel.
-	verts4tap_.clear();
-	uint32 tapSize = 4;
+    bool PyFilterQuad::save(DataSectionPtr pDS)
+    {
+        DataSectionPtr                pSect = pDS->newSection("PyFilterQuad");
+        BW::vector<Vector3>::iterator it    = samples_.begin();
+        for (; it != samples_.end(); it++) {
+            Vector3        val      = *it;
+            DataSectionPtr pTapSect = pSect->newSection("filterTap");
+            pTapSect->setVector3(val);
+        }
+        return true;
+    }
 
-	for (size_t s=0; s<samples_.size(); s+=tapSize)
-	{
-		this->addVert( v[0], &samples_[s], tapSize, srcDim );
-		this->addVert( v[1], &samples_[s], tapSize, srcDim );
-		this->addVert( v[2], &samples_[s], tapSize, srcDim );
-		this->addVert( v[0], &samples_[s], tapSize, srcDim );
-		this->addVert( v[2], &samples_[s], tapSize, srcDim );
-		this->addVert( v[3], &samples_[s], tapSize, srcDim );
-	}
-};
-
-
-/**
- *	This method draws the filter quad using the current device state.
- */
-void PyFilterQuad::draw()
-{
-	verts4tap_.drawEffect( pDecl4tap_ );
-}
-
-
-bool PyFilterQuad::save( DataSectionPtr pDS )
-{
-	DataSectionPtr pSect = pDS->newSection( "PyFilterQuad" );
-	BW::vector<Vector3>::iterator it = samples_.begin();
-	for ( ; it != samples_.end(); it++ )
-	{
-		Vector3 val = *it;
-		DataSectionPtr pTapSect = pSect->newSection( "filterTap" );
-		pTapSect->setVector3(val);
-	}
-	return true;
-}
-
-
-bool PyFilterQuad::load( DataSectionPtr pSect )
-{
-	BW::vector<DataSectionPtr> samples;
-	pSect->openSections( "filterTap", samples );
-	BW::vector<DataSectionPtr>::iterator it = samples.begin();
-	samples_.clear();
-	for ( ; it != samples.end(); it++ )
-	{
-		DataSectionPtr pChildSect = *it;
-		samples_.push_back( pChildSect->asVector3() );
-	}
-	return true;
-}
-
-
+    bool PyFilterQuad::load(DataSectionPtr pSect)
+    {
+        BW::vector<DataSectionPtr> samples;
+        pSect->openSections("filterTap", samples);
+        BW::vector<DataSectionPtr>::iterator it = samples.begin();
+        samples_.clear();
+        for (; it != samples.end(); it++) {
+            DataSectionPtr pChildSect = *it;
+            samples_.push_back(pChildSect->asVector3());
+        }
+        return true;
+    }
 
 #ifdef EDITOR_ENABLED
 
-namespace
-{
+    namespace {
 
+        /**
+         *	This class is used for undoing sample editing
+         */
+        class SampleUndo : public UndoRedo::Operation
+        {
+          public:
+            SampleUndo(PyFilterQuad& filterQuad)
+              : filterQuad_(filterQuad)
+              , samples_(filterQuad.getSamples())
+              , UndoRedo::Operation((size_t)(typeid(PyFilterQuad).name()))
+            {
+            }
 
-/**
- *	This class is used for undoing sample editing
- */
-class SampleUndo : public UndoRedo::Operation
-{
-public:
-	SampleUndo( PyFilterQuad & filterQuad )
-		: filterQuad_( filterQuad ), samples_( filterQuad.getSamples() ),
-		UndoRedo::Operation( (size_t)(typeid(PyFilterQuad).name()) )
-	{
-	}
+          private:
+            PyFilterQuad&         filterQuad_;
+            PyFilterQuad::Samples samples_;
 
-private:
-	PyFilterQuad & filterQuad_;
-	PyFilterQuad::Samples samples_;
+            virtual void undo()
+            {
+                UndoRedo::instance().add(new SampleUndo(filterQuad_));
 
-	virtual void undo()
-	{
-		UndoRedo::instance().add( new SampleUndo( filterQuad_ ) );
+                PropertyModifyGuard propertyModifyGuard;
 
-		PropertyModifyGuard propertyModifyGuard;
+                filterQuad_.setSamples(samples_);
+            }
 
-		filterQuad_.setSamples( samples_ );
-	}
+            virtual bool iseq(const UndoRedo::Operation& oth) const
+            {
+                return false;
+            }
+        };
 
-	virtual bool iseq( const UndoRedo::Operation & oth ) const
-	{		
-		return false;
-	}
-};
+        /**
+         *	This class is used for the editing of one sample of a filter quad.
+         */
+        class SampleProxy : public Vector3Proxy
+        {
+          public:
+            SampleProxy(Vector3& value, PyFilterQuad& filterQuad)
+              : value_(value)
+              , transient_(value)
+              , filterQuad_(filterQuad)
+            {
+            }
 
+            virtual Vector3 get() const { return transient_; }
 
-/**
- *	This class is used for the editing of one sample of a filter quad.
- */
-class SampleProxy : public Vector3Proxy
-{
-public:
-	SampleProxy( Vector3 & value, PyFilterQuad & filterQuad ) :
-		value_( value ), transient_( value ), filterQuad_( filterQuad )
-	{
-	}
+            virtual void set(Vector3 value, bool transient, bool addBarrier)
+            {
+                transient_ = value;
 
-	virtual Vector3 get() const
-	{
-		return transient_;
-	}
+                if (!transient) {
+                    UndoRedo::instance().add(new SampleUndo(filterQuad_));
 
-	virtual void set( Vector3 value, bool transient, bool addBarrier )
-	{
-		transient_ = value;
+                    if (addBarrier) {
+                        UndoRedo::instance().barrier(
+                          LocaliseUTF8(L"WORLDEDITOR/GUI/PAGE_POST_PROCESSING/"
+                                       L"PY_FILTERQUAD/MODIFY_FILTERQUAD"),
+                          false);
+                    }
 
-		if (!transient)
-		{
-			UndoRedo::instance().add( new SampleUndo( filterQuad_ ) );
+                    value_ = value;
+                    filterQuad_.onSampleChanged();
+                }
+            }
 
-			if (addBarrier)
-			{
-				UndoRedo::instance().barrier(
-					LocaliseUTF8( L"WORLDEDITOR/GUI/PAGE_POST_PROCESSING/PY_FILTERQUAD/MODIFY_FILTERQUAD" ),
-					false );
-			}
+          private:
+            Vector3&      value_;
+            Vector3       transient_;
+            PyFilterQuad& filterQuad_;
+        };
 
-			value_ = value;
-			filterQuad_.onSampleChanged();
-		}
-	}
+        /**
+         *	This class is used for managing the samples array of a filter quad.
+         */
+        class SamplesArrayProxy : public ArrayProxy
+        {
+          public:
+            SamplesArrayProxy(PyFilterQuad& filterQuad)
+              : filterQuad_(filterQuad)
+            {
+            }
 
-private:
-	Vector3 & value_;
-	Vector3 transient_;
-	PyFilterQuad & filterQuad_;
-};
+            virtual void elect(GeneralProperty* parent)
+            {
+                PyFilterQuad::Samples& samples = filterQuad_.getSamples();
 
+                static const int MAX_PROPNAME = 256;
+                char             propName[MAX_PROPNAME];
+                int              idx = 1;
+                for (PyFilterQuad::Samples::iterator it = samples.begin();
+                     it != samples.end();
+                     ++it) {
+                    bw_snprintf(propName, MAX_PROPNAME, "sample%03d", idx++);
+                    properties_.push_back(new Vector3Property(
+                      Name(propName), new SampleProxy(*it, filterQuad_)));
+                    properties_.back()->setGroup(parent->name()[0]
+                                                   ? parent->getGroup().str() +
+                                                       parent->name().c_str()
+                                                   : parent->getGroup());
+                    properties_.back()->elect();
+                }
+            }
 
-/**
- *	This class is used for managing the samples array of a filter quad.
- */
-class SamplesArrayProxy : public ArrayProxy
-{
-public:
-	SamplesArrayProxy( PyFilterQuad& filterQuad ) :
-		filterQuad_( filterQuad )
-	{
-	}
+            virtual void expel(GeneralProperty* parent)
+            {
+                for (Properties::iterator iter = properties_.begin();
+                     iter != properties_.end();
+                     ++iter) {
+                    (*iter)->expel();
+                    (*iter)->deleteSelf();
+                }
 
-	virtual void elect( GeneralProperty * parent )
-	{
-		PyFilterQuad::Samples & samples = filterQuad_.getSamples();
+                properties_.clear();
+            }
 
-		static const int MAX_PROPNAME = 256;
-		char propName[ MAX_PROPNAME ];
-		int idx = 1;
-		for (PyFilterQuad::Samples::iterator it = samples.begin();
-			it != samples.end(); ++it)
-		{
-			bw_snprintf( propName, MAX_PROPNAME, "sample%03d", idx++ );
-			properties_.push_back(
-				new Vector3Property( Name( propName ),
-					new SampleProxy( *it, filterQuad_ ) ) );
-			properties_.back()->setGroup(
-				parent->name()[0] ? parent->getGroup().str() + parent->name().c_str() :
-				parent->getGroup() );
-			properties_.back()->elect();
-		}
-	}
+            virtual void select(GeneralProperty*) {}
 
-	virtual void expel( GeneralProperty* parent )
-	{
-		for (Properties::iterator iter = properties_.begin();
-			iter != properties_.end(); ++iter)
-		{
-			(*iter)->expel();
-			(*iter)->deleteSelf();
-		}
+            virtual bool addItem()
+            {
+                PropertyModifyGuard    propertyModifyGuard;
+                PyFilterQuad::Samples& samples = filterQuad_.getSamples();
 
-		properties_.clear();
-	}
+                UndoRedo::instance().add(new SampleUndo(filterQuad_));
 
-	virtual void select( GeneralProperty* )
-	{
-	}
+                UndoRedo::instance().barrier(
+                  LocaliseUTF8(L"WORLDEDITOR/GUI/PAGE_POST_PROCESSING/"
+                               L"PY_FILTERQUAD/MODIFY_FILTERQUAD"),
+                  false);
 
-	virtual bool addItem()
-	{
-		PropertyModifyGuard propertyModifyGuard;
-		PyFilterQuad::Samples & samples = filterQuad_.getSamples();
+                if (samples.empty()) {
+                    samples.push_back(Vector3(0.f, 0.f, 0.0f));
+                } else {
+                    samples.push_back(*samples.rbegin());
+                }
 
-		UndoRedo::instance().add( new SampleUndo( filterQuad_ ) );
+                filterQuad_.onSampleChanged();
 
-		UndoRedo::instance().barrier(
-			LocaliseUTF8( L"WORLDEDITOR/GUI/PAGE_POST_PROCESSING/PY_FILTERQUAD/MODIFY_FILTERQUAD" ),
-			false );
+                return true;
+            }
 
-		if (samples.empty())
-		{
-			samples.push_back( Vector3( 0.f, 0.f, 0.0f ) );
-		}
-		else
-		{
-			samples.push_back( *samples.rbegin() );
-		}
+            virtual void delItem(int index)
+            {
+                PropertyModifyGuard    propertyModifyGuard;
+                PyFilterQuad::Samples& samples = filterQuad_.getSamples();
 
-		filterQuad_.onSampleChanged();
+                if (index >= 0 && index < (int)samples.size()) {
+                    UndoRedo::instance().add(new SampleUndo(filterQuad_));
+                    UndoRedo::instance().barrier(
+                      LocaliseUTF8(L"WORLDEDITOR/GUI/PAGE_POST_PROCESSING/"
+                                   L"PY_FILTERQUAD/MODIFY_FILTERQUAD"),
+                      false);
+                    samples.erase(samples.begin() + index);
+                    filterQuad_.onSampleChanged();
+                }
+            }
 
-		return true;
-	}
+            virtual bool delItems()
+            {
+                PropertyModifyGuard    propertyModifyGuard;
+                PyFilterQuad::Samples& samples = filterQuad_.getSamples();
 
-	virtual void delItem( int index )
-	{
-		PropertyModifyGuard propertyModifyGuard;
-		PyFilterQuad::Samples & samples = filterQuad_.getSamples();
+                if (!samples.empty()) {
+                    UndoRedo::instance().add(new SampleUndo(filterQuad_));
+                    UndoRedo::instance().barrier(
+                      LocaliseUTF8(L"WORLDEDITOR/GUI/PAGE_POST_PROCESSING/"
+                                   L"PY_FILTERQUAD/MODIFY_FILTERQUAD"),
+                      false);
+                    samples.clear();
+                    filterQuad_.onSampleChanged();
+                }
 
-		if (index >= 0 && index < (int)samples.size())
-		{
-			UndoRedo::instance().add( new SampleUndo( filterQuad_ ) );
-			UndoRedo::instance().barrier(
-				LocaliseUTF8( L"WORLDEDITOR/GUI/PAGE_POST_PROCESSING/PY_FILTERQUAD/MODIFY_FILTERQUAD" ),
-				false );
-			samples.erase( samples.begin() + index );
-			filterQuad_.onSampleChanged();
-		}
-	}
+                return true;
+            }
 
-	virtual bool delItems()
-	{
-		PropertyModifyGuard propertyModifyGuard;
-		PyFilterQuad::Samples & samples = filterQuad_.getSamples();
+          private:
+            typedef BW::vector<GeneralProperty*> Properties;
+            Properties                           properties_;
+            PyFilterQuad&                        filterQuad_;
+        };
 
-		if (!samples.empty())
-		{
-			UndoRedo::instance().add( new SampleUndo( filterQuad_ ) );
-			UndoRedo::instance().barrier(
-				LocaliseUTF8( L"WORLDEDITOR/GUI/PAGE_POST_PROCESSING/PY_FILTERQUAD/MODIFY_FILTERQUAD" ),
-				false );
-			samples.clear();
-			filterQuad_.onSampleChanged();
-		}
+    } // anonymous namespace
 
-		return true;
-	}
+    void PyFilterQuad::edEdit(GeneralEditor*       editor,
+                              FilterChangeCallback pCallback)
+    {
+        pCallback_ = pCallback;
 
-private:
-	typedef BW::vector< GeneralProperty * > Properties;
-	Properties properties_;
-	PyFilterQuad & filterQuad_;
-};
+        STATIC_LOCALISE_NAME(s_samples, "samples");
 
+        editor->addProperty(
+          new ArrayProperty(s_samples, new SamplesArrayProxy(*this)));
+    }
 
-} // anonymous namespace
+    PyFilterQuad::Samples& PyFilterQuad::getSamples()
+    {
+        return samples_;
+    }
 
+    void PyFilterQuad::setSamples(const Samples& samples)
+    {
+        samples_ = samples;
 
-void PyFilterQuad::edEdit( GeneralEditor * editor, FilterChangeCallback pCallback )
-{
-	pCallback_ = pCallback;
+        onSampleChanged();
+    }
 
-	STATIC_LOCALISE_NAME( s_samples, "samples" );
-
-	editor->addProperty( new ArrayProperty( s_samples,
-							new SamplesArrayProxy( *this ) ) );
-
-}
-
-
-PyFilterQuad::Samples & PyFilterQuad::getSamples()
-{
-	return samples_;
-}
-
-
-void PyFilterQuad::setSamples( const Samples & samples )
-{
-	samples_ = samples;
-
-	onSampleChanged();
-}
-
-
-void PyFilterQuad::onSampleChanged()
-{
-	if (pCallback_)
-	{
-		(*pCallback_)( true );
-	}
-}
-
+    void PyFilterQuad::onSampleChanged()
+    {
+        if (pCallback_) {
+            (*pCallback_)(true);
+        }
+    }
 
 #endif // EDITOR_ENABLED
 
-PyObject* PyFilterQuad::pyNew(PyObject* args)
-{
-	return new PyFilterQuad;
-}
+    PyObject* PyFilterQuad::pyNew(PyObject* args)
+    {
+        return new PyFilterQuad;
+    }
 
 }
 

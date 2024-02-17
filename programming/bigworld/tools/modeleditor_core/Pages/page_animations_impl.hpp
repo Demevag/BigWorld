@@ -10,123 +10,122 @@ BW_BEGIN_NAMESPACE
 
 class PageAnimations;
 
-struct PageAnimationsImpl: public SafeReferenceCount
+struct PageAnimationsImpl : public SafeReferenceCount
 {
-	explicit PageAnimationsImpl( PageAnimations * pPage ) :
-		animSubscriber_( NULL ),
-		compAnimSubscriber_( NULL ),
-		ready( false ),
-		inited( false ),
-		updating( false ),
-		selectClicked( false ),
-		updateCount( -1 ),
-		reentryFilter( 0 ),
-		wasPlaying( false ),
-		lastLockedParents( -1 ),
-		lastFrameNum( 0 ),
-		lastItem( NULL ),
-		nodeItem( NULL ),
-		compChanged( false  ),
-		animChanged( false )
-	{
-		first.autoSelect( true );
-		last.autoSelect( true );
+    explicit PageAnimationsImpl(PageAnimations* pPage)
+      : animSubscriber_(NULL)
+      , compAnimSubscriber_(NULL)
+      , ready(false)
+      , inited(false)
+      , updating(false)
+      , selectClicked(false)
+      , updateCount(-1)
+      , reentryFilter(0)
+      , wasPlaying(false)
+      , lastLockedParents(-1)
+      , lastFrameNum(0)
+      , lastItem(NULL)
+      , nodeItem(NULL)
+      , compChanged(false)
+      , animChanged(false)
+    {
+        first.autoSelect(true);
+        last.autoSelect(true);
 
-		frameRate.SetNumericType( controls::EditNumeric::ENT_INTEGER );
-		frameRate.SetMinimum( 1 );
-		frameRate.SetMaximum( 120 );
-		frameRate.SetAllowNegative( false );
+        frameRate.SetNumericType(controls::EditNumeric::ENT_INTEGER);
+        frameRate.SetMinimum(1);
+        frameRate.SetMaximum(120);
+        frameRate.SetAllowNegative(false);
 
-		frameNum.SetNumericType( controls::EditNumeric::ENT_INTEGER );
-		frameNum.SetMinimum( 0 );
-		frameNum.SetMaximum( 100 );
-		frameNum.SetAllowNegative( false );
+        frameNum.SetNumericType(controls::EditNumeric::ENT_INTEGER);
+        frameNum.SetMinimum(0);
+        frameNum.SetMaximum(100);
+        frameNum.SetAllowNegative(false);
 
-		blend.SetNumericType( controls::EditNumeric::ENT_FLOAT );
-		blend.SetMinimum( 0.f );
-		blend.SetMaximum( 999.f );
-		blend.SetAllowNegative( false );
+        blend.SetNumericType(controls::EditNumeric::ENT_FLOAT);
+        blend.SetMinimum(0.f);
+        blend.SetMaximum(999.f);
+        blend.SetAllowNegative(false);
 
-		s_currPage = pPage;
-	}
+        s_currPage = pPage;
+    }
 
-	static PageAnimations* s_currPage;
+    static PageAnimations* s_currPage;
 
-	GUI::SubscriberPtr animSubscriber_;
-	GUI::SubscriberPtr compAnimSubscriber_;
+    GUI::SubscriberPtr animSubscriber_;
+    GUI::SubscriberPtr compAnimSubscriber_;
 
-	bool ready;
-	bool inited;
-	bool updating;
-	bool selectClicked;
-	int updateCount;
+    bool ready;
+    bool inited;
+    bool updating;
+    bool selectClicked;
+    int  updateCount;
 
-	int reentryFilter;
+    int reentryFilter;
 
-	bool wasPlaying;
+    bool wasPlaying;
 
-	int lastLockedParents;
+    int lastLockedParents;
 
-	BW::string modelName;
-	BW::string fileName;
-	BW::string lastAnim;
+    BW::string modelName;
+    BW::string fileName;
+    BW::string lastAnim;
 
-	int lastFrameNum;
-	
-	HTREEITEM lastItem;
+    int lastFrameNum;
 
-	HTREEITEM nodeItem;
-	BW::string nodeName;
+    HTREEITEM lastItem;
 
-	CToolBarCtrl toolbar;
-	controls::EditCommit name;
-	CEdit source;
-	CButton change_anim;
-	controls::EditNumeric frameRate;
-	
-	controls::EditCommit first;
-	controls::EditCommit last;
-	controls::EditNumeric frameNum;
-	controls::Slider frameNumSlider;
+    HTREEITEM  nodeItem;
+    BW::string nodeName;
 
-	controls::Slider frameRateSlider;
-	CButton frameRateSave;
+    CToolBarCtrl          toolbar;
+    controls::EditCommit  name;
+    CEdit                 source;
+    CButton               change_anim;
+    controls::EditNumeric frameRate;
 
-	CWnd nodeBox;
-	CTreeCtrl nodeTree;
-	CStatic blendText;
-	controls::EditNumeric blend;
-	controls::Slider blendSlider;
-	CButton blendRemove;
+    controls::EditCommit  first;
+    controls::EditCommit  last;
+    controls::EditNumeric frameNum;
+    controls::Slider      frameNumSlider;
 
-	CWnd compBox;
-	controls::Slider compPosSldr;
-	controls::Slider compRotSldr;
-	controls::Slider compScaleSldr;
+    controls::Slider frameRateSlider;
+    CButton          frameRateSave;
 
-	controls::ImageButton compPosMinus;
-	controls::ImageButton compRotMinus;
-	controls::ImageButton compScaleMinus;
+    CWnd                  nodeBox;
+    CTreeCtrl             nodeTree;
+    CStatic               blendText;
+    controls::EditNumeric blend;
+    controls::Slider      blendSlider;
+    CButton               blendRemove;
 
-	controls::ImageButton compPosPlus;
-	controls::ImageButton compRotPlus;
-	controls::ImageButton compScalePlus;
+    CWnd             compBox;
+    controls::Slider compPosSldr;
+    controls::Slider compRotSldr;
+    controls::Slider compScaleSldr;
 
-	CStatic compPos;
-	CStatic compRot;
-	CStatic compScale;
+    controls::ImageButton compPosMinus;
+    controls::ImageButton compRotMinus;
+    controls::ImageButton compScaleMinus;
 
-	CStatic compPosText;
-	CStatic compRotText;
-	CStatic compScaleText;
+    controls::ImageButton compPosPlus;
+    controls::ImageButton compRotPlus;
+    controls::ImageButton compScalePlus;
 
-	CStatic compTotal;
+    CStatic compPos;
+    CStatic compRot;
+    CStatic compScale;
 
-	CToolBarCtrl compToolbar;
+    CStatic compPosText;
+    CStatic compRotText;
+    CStatic compScaleText;
 
-	bool compChanged;
-	bool animChanged;
+    CStatic compTotal;
+
+    CToolBarCtrl compToolbar;
+
+    bool compChanged;
+    bool animChanged;
 };
 
 BW_END_NAMESPACE
-

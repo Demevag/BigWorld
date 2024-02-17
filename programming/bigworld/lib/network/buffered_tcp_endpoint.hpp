@@ -8,40 +8,37 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
-class EventDispatcher;
+namespace Mercury {
+    class EventDispatcher;
 }
 
-class BufferedTcpEndpoint: public Mercury::InputNotificationHandler
+class BufferedTcpEndpoint : public Mercury::InputNotificationHandler
 {
-public:
-	BufferedTcpEndpoint( Mercury::EventDispatcher & dispatcher,
-				Endpoint & endpoint );
+  public:
+    BufferedTcpEndpoint(Mercury::EventDispatcher& dispatcher,
+                        Endpoint&                 endpoint);
 
-	virtual ~BufferedTcpEndpoint();
+    virtual ~BufferedTcpEndpoint();
 
-	int send( void * data, int32 size ) const;
+    int send(void* data, int32 size) const;
 
-	virtual int handleInputNotification( int fd );
+    virtual int handleInputNotification(int fd);
 
-public:
-	const Endpoint & getEndpoint() const { return endpoint_; }
+  public:
+    const Endpoint& getEndpoint() const { return endpoint_; }
 
-private:
-	void appendToBufferedStream( const char * data, int size ) const;
-	int sendContent( const char *content, int size ) const;
-	int flushBufferedStream() const;
+  private:
+    void appendToBufferedStream(const char* data, int size) const;
+    int  sendContent(const char* content, int size) const;
+    int  flushBufferedStream() const;
 
-	Mercury::EventDispatcher & dispatcher_;
-	
-	mutable MemoryOStream bufferedStream_;
+    Mercury::EventDispatcher& dispatcher_;
 
-	const Endpoint & endpoint_;
+    mutable MemoryOStream bufferedStream_;
+
+    const Endpoint& endpoint_;
 };
 
-
 BW_END_NAMESPACE
-
 
 #endif // BUFFERED_TCP_ENDPOINT_HPP

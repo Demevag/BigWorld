@@ -7,60 +7,56 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
-	class EventDispatcher;
+namespace Mercury {
+    class EventDispatcher;
 } // end namespace Mercury
-
 
 /**
  *	Class to run sync_db.
  */
 class TableSynchroniser
 {
-public:
-	/**
-	 *	Constructor.
-	 */
-	TableSynchroniser():
-		pid_( -1 ),
-		running_( false ),
-		status_( 0 )
-	{}
+  public:
+    /**
+     *	Constructor.
+     */
+    TableSynchroniser()
+      : pid_(-1)
+      , running_(false)
+      , status_(0)
+    {
+    }
 
-	~TableSynchroniser();
+    ~TableSynchroniser();
 
-	bool run( Mercury::EventDispatcher & dispatcher );
+    bool run(Mercury::EventDispatcher& dispatcher);
 
-	void onProcessExited( int status );
+    void onProcessExited(int status);
 
-	void abort();
+    void abort();
 
-	bool isFinished() const
-		{ return pid_ != -1 && running_ == false; }
+    bool isFinished() const { return pid_ != -1 && running_ == false; }
 
-	bool wasSuccessful() const
-	{ 
-		return this->didExit() && 
-			this->exitCode() == 0; 
-	}
+    bool wasSuccessful() const
+    {
+        return this->didExit() && this->exitCode() == 0;
+    }
 
-	bool didExit() const;
-	int exitCode() const;
+    bool didExit() const;
+    int  exitCode() const;
 
-	bool wasSignalled() const;
-	int signal() const;
+    bool wasSignalled() const;
+    int  signal() const;
 
-private:
-	void execSyncDB( const BW::string & syncdbPath );
+  private:
+    void execSyncDB(const BW::string& syncdbPath);
 
-	pid_t pid_;
+    pid_t pid_;
 
-	bool running_;
-	int status_;
+    bool running_;
+    int  status_;
 };
 
 BW_END_NAMESPACE

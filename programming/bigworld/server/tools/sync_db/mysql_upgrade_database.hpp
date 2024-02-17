@@ -3,33 +3,32 @@
 
 #include "cstdmf/stdmf.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class MySqlSynchronise;
 
 class MySqlUpgradeDatabase
 {
-public:
-	MySqlUpgradeDatabase( MySqlSynchronise & synchronise );
+  public:
+    MySqlUpgradeDatabase(MySqlSynchronise& synchronise);
 
-	bool run( uint32 version );
+    bool run(uint32 version);
 
-private:
-	bool upgradeDatabaseLogOnMapping2();
-	bool upgradeDatabaseShouldAutoLoad();
-	bool upgradeDatabaseLogOnMapping();
-	bool upgradeDatabaseBinaryStrings();
-	void upgradeDatabase1_9NonNull();
-	void upgradeDatabase1_9Snapshot();
-	void upgradeDatabase1_8();
+  private:
+    bool upgradeDatabaseLogOnMapping2();
+    bool upgradeDatabaseShouldAutoLoad();
+    bool upgradeDatabaseLogOnMapping();
+    bool upgradeDatabaseBinaryStrings();
+    void upgradeDatabase1_9NonNull();
+    void upgradeDatabase1_9Snapshot();
+    void upgradeDatabase1_8();
 
-	void upgradeVersionNumber( const uint32 newVersion );
-	bool convertRecordNameToDBID( int bwEntityTypeID, int dbEntityTypeID );
+    void upgradeVersionNumber(const uint32 newVersion);
+    bool convertRecordNameToDBID(int bwEntityTypeID, int dbEntityTypeID);
 
-// Member data
+    // Member data
 
-	MySqlSynchronise & synchronise_;
+    MySqlSynchronise& synchronise_;
 };
 
 BW_END_NAMESPACE

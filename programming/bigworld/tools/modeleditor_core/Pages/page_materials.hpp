@@ -13,152 +13,169 @@ BW_BEGIN_NAMESPACE
 
 class UalItemInfo;
 
-typedef std::pair < BW::string , BW::string > StringPair;
+typedef std::pair<BW::string, BW::string> StringPair;
 
-namespace Moo
-{
-	class Visual;
-	typedef SmartPointer< class Visual > VisualPtr;
-	class EffectMaterial;
+namespace Moo {
+    class Visual;
+    typedef SmartPointer<class Visual> VisualPtr;
+    class EffectMaterial;
 }
 
 // PageMaterials
 
 class PageMaterials
-	: public PropertyTable
-	, public MaterialPropertiesUser
-	, public GuiTabContent
+  : public PropertyTable
+  , public MaterialPropertiesUser
+  , public GuiTabContent
 {
-	IMPLEMENT_BASIC_CONTENT( 
-		Localise(L"MODELEDITOR/PAGES/PAGE_MATERIALS/SHORT_NAME"), 
-		Localise(L"MODELEDITOR/PAGES/PAGE_MATERIALS/LONG_NAME"), 
-		285, 800, NULL )
+    IMPLEMENT_BASIC_CONTENT(
+      Localise(L"MODELEDITOR/PAGES/PAGE_MATERIALS/SHORT_NAME"),
+      Localise(L"MODELEDITOR/PAGES/PAGE_MATERIALS/LONG_NAME"),
+      285,
+      800,
+      NULL)
 
-	DECLARE_AUTO_TOOLTIP( PageMaterials, PropertyTable )
+    DECLARE_AUTO_TOOLTIP(PageMaterials, PropertyTable)
 
-public:
-	PageMaterials();
-	virtual ~PageMaterials();
+  public:
+    PageMaterials();
+    virtual ~PageMaterials();
 
-	static PageMaterials* currPage();
-	
-	//These are exposed to python as:
-	void tintNew();			// newTint()
-	void mfmLoad();			// loadMFM()
-	void mfmSave();			// saveMFM()
-	void tintDelete();		// deleteTint()
+    static PageMaterials* currPage();
 
-	bool canTintDelete();	// canDeleteTint()
+    // These are exposed to python as:
+    void tintNew();    // newTint()
+    void mfmLoad();    // loadMFM()
+    void mfmSave();    // saveMFM()
+    void tintDelete(); // deleteTint()
 
+    bool canTintDelete(); // canDeleteTint()
 
-// Dialog Data
-	enum { IDD = IDD_MATERIALS }; 
+    // Dialog Data
+    enum
+    {
+        IDD = IDD_MATERIALS
+    };
 
-protected:
-	
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 
-	DECLARE_MESSAGE_MAP()
-	
-	virtual BOOL OnInitDialog();
+    DECLARE_MESSAGE_MAP()
 
-	afx_msg LRESULT OnUpdateControls(WPARAM wParam, LPARAM lParam);
-	void OnUpdateMaterialPreview();
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+    virtual BOOL OnInitDialog();
 
-private:
-	
-	SmartPointer< struct PageMaterialsImpl > pImpl_;
-	
-	void OnGUIManagerCommand(UINT nID);
-	void OnGUIManagerCommandUpdate(CCmdUI * cmdUI);
-	afx_msg LRESULT OnShowTooltip(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnHideTooltip(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnUpdateControls(WPARAM wParam, LPARAM lParam);
+    void            OnUpdateMaterialPreview();
+    afx_msg int     OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void    OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 
-	void OnSize( UINT nType, int cx, int cy );
-	
-	afx_msg LRESULT OnChangePropertyItem(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnDblClkPropertyItem(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnRightClkPropertyItem(WPARAM wParam, LPARAM lParam);
+  private:
+    SmartPointer<struct PageMaterialsImpl> pImpl_;
 
-	bool clearCurrMaterial();
-		
-	void drawMaterialsList();
+    void            OnGUIManagerCommand(UINT nID);
+    void            OnGUIManagerCommandUpdate(CCmdUI* cmdUI);
+    afx_msg LRESULT OnShowTooltip(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnHideTooltip(WPARAM wParam, LPARAM lParam);
 
-	void redrawList( CComboBox& list, const BW::string& name, bool sel );
+    void OnSize(UINT nType, int cx, int cy);
 
-public:
+    afx_msg LRESULT OnChangePropertyItem(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnDblClkPropertyItem(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnRightClkPropertyItem(WPARAM wParam, LPARAM lParam);
 
-	afx_msg void OnTvnItemexpandingMaterialsTree(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnTvnSelchangedMaterialsTree(NMHDR *pNMHDR, LRESULT *pResult);
+    bool clearCurrMaterial();
 
-	afx_msg void OnEnChangeMaterialsMaterial();
-	afx_msg void OnEnKillfocusMaterialsMaterial();
+    void drawMaterialsList();
 
-	afx_msg void OnEnChangeMaterialsMatter();
-	afx_msg void OnEnKillfocusMaterialsMatter();
+    void redrawList(CComboBox& list, const BW::string& name, bool sel);
 
-	afx_msg void OnEnChangeMaterialsTint();
-	afx_msg void OnEnKillfocusMaterialsTint();
+  public:
+    afx_msg void OnTvnItemexpandingMaterialsTree(NMHDR*   pNMHDR,
+                                                 LRESULT* pResult);
+    afx_msg void OnTvnSelchangedMaterialsTree(NMHDR* pNMHDR, LRESULT* pResult);
 
-	afx_msg void OnCbnSelchangeMaterialsFxList();
-	afx_msg void OnBnClickedMaterialsFxSel();
+    afx_msg void OnEnChangeMaterialsMaterial();
+    afx_msg void OnEnKillfocusMaterialsMaterial();
 
-	bool changeShader( const BW::wstring& fxFile );
-	bool changeShaderDrop( UalItemInfo* ii );
+    afx_msg void OnEnChangeMaterialsMatter();
+    afx_msg void OnEnKillfocusMaterialsMatter();
 
-	bool changeMFM( const BW::wstring& mfmFile );
-	bool changeMFMDrop( UalItemInfo* ii );
+    afx_msg void OnEnChangeMaterialsTint();
+    afx_msg void OnEnKillfocusMaterialsTint();
 
-	RectInt dropTest( UalItemInfo* ii );
-	bool doDrop( UalItemInfo* ii );
-	
-	afx_msg void OnCbnSelchangeMaterialsPreviewList();
-	afx_msg void OnBnClickedMaterialsPreview();
+    afx_msg void OnCbnSelchangeMaterialsFxList();
+    afx_msg void OnBnClickedMaterialsFxSel();
 
-	bool previewMode();
-	Moo::VisualPtr previewObject();
+    bool changeShader(const BW::wstring& fxFile);
+    bool changeShaderDrop(UalItemInfo* ii);
 
-	void restoreView();
+    bool changeMFM(const BW::wstring& mfmFile);
+    bool changeMFMDrop(UalItemInfo* ii);
 
-	Moo::ComplexEffectMaterialPtr currMaterial();
+    RectInt dropTest(UalItemInfo* ii);
+    bool    doDrop(UalItemInfo* ii);
 
-	const BW::wstring & materialName() const;
-	const BW::wstring & matterName() const;
-	const BW::wstring & tintName() const;
+    afx_msg void OnCbnSelchangeMaterialsPreviewList();
+    afx_msg void OnBnClickedMaterialsPreview();
 
-	// MaterialPropertiesUser interface
-	void proxySetCallback();
+    bool           previewMode();
+    Moo::VisualPtr previewObject();
 
-	BW::string textureFeed( const BW::string& descName ) const;
+    void restoreView();
 
-	BW::string defaultTextureDir() const;
+    Moo::ComplexEffectMaterialPtr currMaterial();
 
-	BW::string exposedToScriptName( const BW::string& descName ) const;	
+    const BW::wstring& materialName() const;
+    const BW::wstring& matterName() const;
+    const BW::wstring& tintName() const;
 
-	StringProxyPtr textureProxy( BaseMaterialProxyPtr proxy,
-		MaterialPropertiesUser::GetFnTex getFn, MaterialPropertiesUser::SetFnTex setFn, const BW::string& uiName, const BW::string& descName ) const;
+    // MaterialPropertiesUser interface
+    void proxySetCallback();
 
-	BoolProxyPtr boolProxy( BaseMaterialProxyPtr proxy,
-		MaterialPropertiesUser::GetFnBool getFn, MaterialPropertiesUser::SetFnBool setFn, const BW::string& uiName, const BW::string& descName ) const;
-	
-	IntProxyPtr enumProxy( BaseMaterialProxyPtr proxy,
-		MaterialPropertiesUser::GetFnEnum getFn, MaterialPropertiesUser::SetFnEnum setFn, const BW::string& uiName, const BW::string& descName ) const;
+    BW::string textureFeed(const BW::string& descName) const;
 
-	IntProxyPtr intProxy( BaseMaterialProxyPtr proxy,
-		MaterialPropertiesUser::GetFnInt getFn, MaterialPropertiesUser::SetFnInt setFn, MaterialPropertiesUser::RangeFnInt rangeFn, const BW::string& uiName,
-		const BW::string& descName ) const;
+    BW::string defaultTextureDir() const;
 
-	FloatProxyPtr floatProxy( BaseMaterialProxyPtr proxy,
-		MaterialPropertiesUser::GetFnFloat getFn, MaterialPropertiesUser::SetFnFloat setFn, MaterialPropertiesUser::RangeFnFloat rangeFn, const BW::string& uiName,
-		const BW::string& descName ) const;
+    BW::string exposedToScriptName(const BW::string& descName) const;
 
-	Vector4ProxyPtr vector4Proxy( BaseMaterialProxyPtr proxy,
-		MaterialPropertiesUser::GetFnVec4 getFn, MaterialPropertiesUser::SetFnVec4 setFn, const BW::string& uiName, const BW::string& descName ) const;
+    StringProxyPtr textureProxy(BaseMaterialProxyPtr             proxy,
+                                MaterialPropertiesUser::GetFnTex getFn,
+                                MaterialPropertiesUser::SetFnTex setFn,
+                                const BW::string&                uiName,
+                                const BW::string& descName) const;
 
+    BoolProxyPtr boolProxy(BaseMaterialProxyPtr              proxy,
+                           MaterialPropertiesUser::GetFnBool getFn,
+                           MaterialPropertiesUser::SetFnBool setFn,
+                           const BW::string&                 uiName,
+                           const BW::string&                 descName) const;
+
+    IntProxyPtr enumProxy(BaseMaterialProxyPtr              proxy,
+                          MaterialPropertiesUser::GetFnEnum getFn,
+                          MaterialPropertiesUser::SetFnEnum setFn,
+                          const BW::string&                 uiName,
+                          const BW::string&                 descName) const;
+
+    IntProxyPtr intProxy(BaseMaterialProxyPtr               proxy,
+                         MaterialPropertiesUser::GetFnInt   getFn,
+                         MaterialPropertiesUser::SetFnInt   setFn,
+                         MaterialPropertiesUser::RangeFnInt rangeFn,
+                         const BW::string&                  uiName,
+                         const BW::string&                  descName) const;
+
+    FloatProxyPtr floatProxy(BaseMaterialProxyPtr                 proxy,
+                             MaterialPropertiesUser::GetFnFloat   getFn,
+                             MaterialPropertiesUser::SetFnFloat   setFn,
+                             MaterialPropertiesUser::RangeFnFloat rangeFn,
+                             const BW::string&                    uiName,
+                             const BW::string& descName) const;
+
+    Vector4ProxyPtr vector4Proxy(BaseMaterialProxyPtr              proxy,
+                                 MaterialPropertiesUser::GetFnVec4 getFn,
+                                 MaterialPropertiesUser::SetFnVec4 setFn,
+                                 const BW::string&                 uiName,
+                                 const BW::string& descName) const;
 };
 
-IMPLEMENT_BASIC_CONTENT_FACTORY( PageMaterials )
+IMPLEMENT_BASIC_CONTENT_FACTORY(PageMaterials)
 BW_END_NAMESPACE
-

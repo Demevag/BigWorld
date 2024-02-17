@@ -9,18 +9,18 @@ BW_BEGIN_NAMESPACE
 
 class ScriptUnitTestHarness : public BaseResMgrUnitTestHarness
 {
-public:
-	ScriptUnitTestHarness() : BaseResMgrUnitTestHarness( "script" ) 
-	{
-		PyImportPaths importPaths;
-		importPaths.addNonResPath( "." );
-		importPaths.addResPath( "." );
-		
-		if (!Script::init( importPaths ))
-		{
-			BWUnitTest::unitTestError( "Could not initialise Script module" );
-		}
-	}
+  public:
+    ScriptUnitTestHarness()
+      : BaseResMgrUnitTestHarness("script")
+    {
+        PyImportPaths importPaths;
+        importPaths.addNonResPath(".");
+        importPaths.addResPath(".");
+
+        if (!Script::init(importPaths)) {
+            BWUnitTest::unitTestError("Could not initialise Script module");
+        }
+    }
 };
 
 BW_END_NAMESPACE

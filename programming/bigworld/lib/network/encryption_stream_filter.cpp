@@ -5,240 +5,214 @@
 
 #include "network/symmetric_block_cipher.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
+namespace Mercury {
 
-namespace Mercury
-{
+    /**
+     *	Factory method.
+     *
+     *	@param stream 	The network steram to filter for.
+     *	@param pCipher 	The block cipher to use for encryption.
+     */
+    /* static */ StreamFilterPtr EncryptionStreamFilter::create(
+      NetworkStream& stream,
+      BlockCipherPtr pCipher)
+    {
+        return new EncryptionStreamFilter(stream, pCipher);
+    }
 
-/**
- *	Factory method.
- *
- *	@param stream 	The network steram to filter for.
- *	@param pCipher 	The block cipher to use for encryption.
- */
-/* static */ StreamFilterPtr EncryptionStreamFilter::create(
-		NetworkStream & stream, BlockCipherPtr pCipher )
-{
-	return new EncryptionStreamFilter( stream, pCipher );
-}
+    /**
+     *	Constructor.
+     *
+     *	@param stream 	The underlying network stream.
+     *	@param pCipher 	The block cipher to use for encryption.
+     */
+    EncryptionStreamFilter::EncryptionStreamFilter(NetworkStream& stream,
+                                                   BlockCipherPtr pCipher)
+      : StreamFilter(stream)
+      , pBlockCipher_(pCipher)
+      , receiveBuffer_()
+      , expectedReceiveFrameLength_(0)
+      , previousReceivedBlock_(new uint8[pBlockCipher_->blockSize()]())
+      , previousSentBlock_(new uint8[pBlockCipher_->blockSize()]())
+    {
+    }
 
+    /**
+     *	Destructor.
+     */
+    EncryptionStreamFilter::~EncryptionStreamFilter()
+    {
+        bw_safe_delete_array(previousReceivedBlock_);
+        bw_safe_delete_array(previousSentBlock_);
+    }
 
-/**
- *	Constructor.
- *
- *	@param stream 	The underlying network stream.
- *	@param pCipher 	The block cipher to use for encryption.
- */
-EncryptionStreamFilter::EncryptionStreamFilter( NetworkStream & stream,
-			BlockCipherPtr pCipher ) :
-		StreamFilter( stream ),
-		pBlockCipher_( pCipher ),
-		receiveBuffer_(),
-		expectedReceiveFrameLength_( 0 ),
-		previousReceivedBlock_( new uint8[ pBlockCipher_->blockSize() ]() ),
-		previousSentBlock_( new uint8[ pBlockCipher_->blockSize() ]() )
-{
-}
+    /*
+     *	Override from StreamFilter.
+     */
+    bool EncryptionStreamFilter::writeFrom(BinaryIStream& input,
+                                           bool           shouldCork)
+    {
+        const size_t BLOCK_SIZE = pBlockCipher_->blockSize();
 
+        uint8* bufferForPaddedBlocks =
+          reinterpret_cast<uint8*>(alloca(BLOCK_SIZE));
+        uint8* out   = reinterpret_cast<uint8*>(alloca(BLOCK_SIZE));
+        uint8* xored = reinterpret_cast<uint8*>(alloca(BLOCK_SIZE));
 
-/**
- *	Destructor.
- */
-EncryptionStreamFilter::~EncryptionStreamFilter()
-{
-	bw_safe_delete_array( previousReceivedBlock_ );
-	bw_safe_delete_array( previousSentBlock_ );
-}
+        size_t remainingLength = 0;
 
+        while ((remainingLength =
+                  static_cast<size_t>(input.remainingLength())) > 0) {
+            const uint8* clear = NULL;
 
-/*
- *	Override from StreamFilter.
- */
-bool EncryptionStreamFilter::writeFrom( BinaryIStream & input, bool shouldCork )
-{
-	const size_t BLOCK_SIZE = pBlockCipher_->blockSize();
+            // We should cork the send if the entire input is to be corked, or
+            // if we are the last block to be sent.
+            bool shouldCorkBlock =
+              (shouldCork || (remainingLength > BLOCK_SIZE));
 
-	uint8 * bufferForPaddedBlocks =
-		reinterpret_cast<uint8*>(alloca( BLOCK_SIZE ));
-	uint8 * out = reinterpret_cast<uint8*>(alloca( BLOCK_SIZE ));
-	uint8 * xored = reinterpret_cast<uint8*>(alloca( BLOCK_SIZE ));
+            if (remainingLength >= BLOCK_SIZE) {
+                clear = reinterpret_cast<const uint8*>(
+                  input.retrieve(static_cast<int>(BLOCK_SIZE)));
+            } else {
+                memcpy(bufferForPaddedBlocks,
+                       input.retrieve(static_cast<int>(remainingLength)),
+                       remainingLength);
+                memset(bufferForPaddedBlocks + remainingLength,
+                       '\0',
+                       BLOCK_SIZE - remainingLength);
+                clear = bufferForPaddedBlocks;
+            }
 
-	size_t remainingLength = 0;
+            pBlockCipher_->combineBlocks(previousSentBlock_, clear, xored);
 
-	while ((remainingLength = static_cast<size_t>(input.remainingLength())) > 0)
-	{
-		const uint8 * clear = NULL;
+            pBlockCipher_->encryptBlock(xored, out);
 
-		// We should cork the send if the entire input is to be corked, or if
-		// we are the last block to be sent.
-		bool shouldCorkBlock = (shouldCork || (remainingLength > BLOCK_SIZE));
+            memcpy(previousSentBlock_, clear, BLOCK_SIZE);
 
-		if (remainingLength >= BLOCK_SIZE )
-		{
-			clear = reinterpret_cast< const uint8 * >(
-				input.retrieve( static_cast<int>(BLOCK_SIZE) ) );
-		}
-		else
-		{
-			memcpy( bufferForPaddedBlocks, 
-				input.retrieve( static_cast<int>(remainingLength) ), 
-				remainingLength );
-			memset( bufferForPaddedBlocks + remainingLength, '\0', 
-				BLOCK_SIZE - remainingLength );
-			clear = bufferForPaddedBlocks;
-		}
+            MemoryIStream outStream(out, static_cast<int>(BLOCK_SIZE));
 
-		pBlockCipher_->combineBlocks( previousSentBlock_, clear, xored );
+            if (!this->stream().writeFrom(outStream, shouldCorkBlock)) {
+                return false;
+            }
+        }
 
-		pBlockCipher_->encryptBlock( xored, out );
+        return true;
+    }
 
-		memcpy( previousSentBlock_, clear, BLOCK_SIZE );
+    /*
+     *	Override from StreamFilter.
+     */
+    int EncryptionStreamFilter::readInto(BinaryOStream& output)
+    {
+        int numBytesRead = this->stream().readInto(receiveBuffer_);
 
-		MemoryIStream outStream( out, static_cast<int>(BLOCK_SIZE) );
+        if (numBytesRead <= 0) {
+            return numBytesRead;
+        }
 
-		if (!this->stream().writeFrom( outStream, shouldCorkBlock ))
-		{
-			return false;
-		}
-	}
+        const size_t BLOCK_SIZE = pBlockCipher_->blockSize();
 
-	return true;
-}
+        while (static_cast<size_t>(receiveBuffer_.remainingLength()) >=
+               BLOCK_SIZE) {
+            const uint8* block =
+              reinterpret_cast<const uint8*>(receiveBuffer_.retrieve(
+                static_cast<int>(pBlockCipher_->blockSize())));
+            this->decryptBlock(block, output);
+        }
 
+        if (receiveBuffer_.remainingLength() == 0) {
+            receiveBuffer_.reset();
+        }
 
-/*
- *	Override from StreamFilter.
- */
-int EncryptionStreamFilter::readInto( BinaryOStream & output )
-{
-	int numBytesRead = this->stream().readInto( receiveBuffer_ );
+        return true;
+    }
 
-	if (numBytesRead <= 0)
-	{
-		return numBytesRead;
-	}
+    /**
+     *	This method updates the expected receive frame length from the given
+     *	decrypted data block.
+     */
+    void EncryptionStreamFilter::updateExpectedReceiveFrameLength(
+      const uint8* block)
+    {
+        uint16 smallFrameLength =
+          BW_NTOHS(*reinterpret_cast<const uint16*>(block));
 
-	const size_t BLOCK_SIZE = pBlockCipher_->blockSize();
+        if (smallFrameLength == 0xFFFF) {
+            uint32 largeFrameLength = BW_NTOHL(
+              *reinterpret_cast<const uint32*>(block + sizeof(uint16)));
+            largeFrameLength += sizeof(uint16) + sizeof(uint32);
 
-	while (static_cast<size_t>(receiveBuffer_.remainingLength()) >= BLOCK_SIZE)
-	{
-		const uint8 * block =
-			reinterpret_cast< const uint8 * >( 
-				receiveBuffer_.retrieve( 
-					static_cast< int >( pBlockCipher_->blockSize() ) ) );
-		this->decryptBlock( block, output );
-	}
+            expectedReceiveFrameLength_ = largeFrameLength;
+        } else {
+            smallFrameLength += sizeof(uint16);
+            expectedReceiveFrameLength_ = smallFrameLength;
+        }
+    }
 
-	if (receiveBuffer_.remainingLength() == 0)
-	{
-		receiveBuffer_.reset();
-	}
+    /**
+     *	This method decrypts a block into the output buffer and processes it for
+     *	length data if necessary (so it can discard any padding from the 64-bit
+     *	encryption block boundary).
+     *
+     *	@param block 	The ciphertext BlowFish block.
+     *	@param output 	The output buffer.
+     *
+     */
+    void EncryptionStreamFilter::decryptBlock(const uint8*   block,
+                                              BinaryOStream& output)
+    {
+        const size_t BLOCK_SIZE = pBlockCipher_->blockSize();
+        size_t       dataSize   = BLOCK_SIZE;
 
-	return true;
-}
+        uint8* pOut      = NULL;
+        uint8* tempBlock = reinterpret_cast<uint8*>(alloca(BLOCK_SIZE));
+        memset(tempBlock, '\0', BLOCK_SIZE);
 
+        if ((expectedReceiveFrameLength_ != 0) &&
+            (expectedReceiveFrameLength_ < dataSize)) {
+            dataSize = expectedReceiveFrameLength_;
+            pOut     = tempBlock;
+        } else if (expectedReceiveFrameLength_ == 0) {
+            // We don't know how long this frame could be yet. Assume more than
+            // BLOCK_SIZE for now, but decrypt to tempBlock in case it is less
+            // than BLOCK_SIZE and has padding to be discarded.
+            pOut = tempBlock;
+        } else {
+            pOut = reinterpret_cast<uint8*>(
+              output.reserve(static_cast<int>(dataSize)));
+        }
 
-/**
- *	This method updates the expected receive frame length from the given
- *	decrypted data block.
- */
-void EncryptionStreamFilter::updateExpectedReceiveFrameLength( 
-		const uint8 * block )
-{
-	uint16 smallFrameLength = BW_NTOHS( 
-			*reinterpret_cast< const uint16 * >( block ) );
+        pBlockCipher_->decryptBlock(block, pOut);
 
-	if (smallFrameLength == 0xFFFF)
-	{
-		uint32 largeFrameLength = BW_NTOHL(
-			*reinterpret_cast< const uint32 * >( 
-				block + sizeof( uint16 ) ) );
-		largeFrameLength += sizeof( uint16 ) + sizeof( uint32 );
+        pBlockCipher_->combineBlocks(previousReceivedBlock_, pOut, pOut);
 
-		expectedReceiveFrameLength_ = largeFrameLength;
-	}
-	else
-	{
-		smallFrameLength += sizeof( uint16 );
-		expectedReceiveFrameLength_ = smallFrameLength;
-	}
-}
+        memcpy(previousReceivedBlock_, pOut, BLOCK_SIZE);
 
+        if (expectedReceiveFrameLength_ == 0) {
+            this->updateExpectedReceiveFrameLength(pOut);
+            dataSize = std::min(expectedReceiveFrameLength_, dataSize);
+        }
 
-/**
- *	This method decrypts a block into the output buffer and processes it for
- *	length data if necessary (so it can discard any padding from the 64-bit
- *	encryption block boundary).
- *
- *	@param block 	The ciphertext BlowFish block.
- *	@param output 	The output buffer.
- *
- */
-void EncryptionStreamFilter::decryptBlock( const uint8 * block,
-		BinaryOStream & output )
-{
-	const size_t BLOCK_SIZE = pBlockCipher_->blockSize();
-	size_t dataSize = BLOCK_SIZE;
+        // Discard any data past the dataSize, it should just be padding.
+        if (pOut == tempBlock) {
+            memcpy(output.reserve(static_cast<int>(dataSize)), pOut, dataSize);
+        }
 
-	uint8 * pOut = NULL;
-	uint8 * tempBlock = reinterpret_cast<uint8*>(alloca( BLOCK_SIZE ));
-	memset( tempBlock, '\0', BLOCK_SIZE );
+        expectedReceiveFrameLength_ -= dataSize;
+    }
 
-	if ((expectedReceiveFrameLength_ != 0) && 
-			(expectedReceiveFrameLength_ < dataSize))
-	{
-		dataSize = expectedReceiveFrameLength_;
-		pOut = tempBlock;
-	}
-	else if (expectedReceiveFrameLength_ == 0)
-	{
-		// We don't know how long this frame could be yet. Assume more than
-		// BLOCK_SIZE for now, but decrypt to tempBlock in case it is less than
-		// BLOCK_SIZE and has padding to be discarded.
-		pOut = tempBlock;
-	}
-	else
-	{
-		pOut = reinterpret_cast< uint8 * >( output.reserve( 
-			static_cast<int>(dataSize) ) );
-	}
-
-	pBlockCipher_->decryptBlock( block, pOut );
-
-	pBlockCipher_->combineBlocks( previousReceivedBlock_, pOut, pOut );
-
-	memcpy( previousReceivedBlock_, pOut, BLOCK_SIZE );
-
-	if (expectedReceiveFrameLength_ == 0)
-	{
-		this->updateExpectedReceiveFrameLength( pOut );
-		dataSize = std::min( expectedReceiveFrameLength_, dataSize );
-	}
-
-	// Discard any data past the dataSize, it should just be padding.
-	if (pOut == tempBlock)
-	{
-		memcpy( output.reserve( static_cast<int>(dataSize) ), pOut, dataSize );
-	}
-
-	expectedReceiveFrameLength_ -= dataSize;
-}
-
-
-/*
- *	Override from StreamFilter
- */
-BW::string EncryptionStreamFilter::streamToString() const
-{
-	return "enc+" + this->stream().streamToString();
-}
-
+    /*
+     *	Override from StreamFilter
+     */
+    BW::string EncryptionStreamFilter::streamToString() const
+    {
+        return "enc+" + this->stream().streamToString();
+    }
 
 } // end namespace Mercury
 
 BW_END_NAMESPACE
-
 
 // encryption_stream_filter.cpp

@@ -8,7 +8,6 @@
 #include <utility>
 #include "cstdmf/bw_vector.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class Cell;
@@ -16,7 +15,7 @@ class CellAppChannel;
 class CellInfo;
 class Entity;
 
-typedef SmartPointer< Entity > EntityPtr;
+typedef SmartPointer<Entity> EntityPtr;
 
 /**
  *	This class is responsible for offloading entities in a cell to their most
@@ -26,35 +25,33 @@ typedef SmartPointer< Entity > EntityPtr;
  */
 class OffloadChecker
 {
-public:
-	OffloadChecker( Cell & cell );
-	~OffloadChecker();
+  public:
+    OffloadChecker(Cell& cell);
+    ~OffloadChecker();
 
-	void run();
+    void run();
 
-	void addToOffloads( EntityPtr pEntity, 
-		CellAppChannel * pOffloadDestination );
+    void addToOffloads(EntityPtr pEntity, CellAppChannel* pOffloadDestination);
 
-	bool canDeleteMoreGhosts() const;
+    bool canDeleteMoreGhosts() const;
 
-	/**
-	 *	This method increments the count for deleted ghosts.
-	 */
-	void addDeletedGhost()
-		{ ++numGhostsDeleted_; }
+    /**
+     *	This method increments the count for deleted ghosts.
+     */
+    void addDeletedGhost() { ++numGhostsDeleted_; }
 
-private:
-	typedef std::pair< EntityPtr, CellAppChannel * > OffloadEntry;
-	typedef BW::vector< OffloadEntry > OffloadList;
+  private:
+    typedef std::pair<EntityPtr, CellAppChannel*> OffloadEntry;
+    typedef BW::vector<OffloadEntry>              OffloadList;
 
-	void sendOffloads();
+    void sendOffloads();
 
-	void sendOffload( OffloadList::const_iterator iOffload );
+    void sendOffload(OffloadList::const_iterator iOffload);
 
-	// Member data
-	Cell & 			cell_;
-	OffloadList 	offloadList_;
-	uint 			numGhostsDeleted_;
+    // Member data
+    Cell&       cell_;
+    OffloadList offloadList_;
+    uint        numGhostsDeleted_;
 };
 
 BW_END_NAMESPACE

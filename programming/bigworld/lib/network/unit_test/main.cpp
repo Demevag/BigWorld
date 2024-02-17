@@ -8,34 +8,33 @@
 
 BW_USE_NAMESPACE
 
-
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
-	BW_SYSTEMSTAGE_MAIN();
+    BW_SYSTEMSTAGE_MAIN();
 
-	new CStdMf;
+    new CStdMf;
 
-	initNetwork();
+    initNetwork();
 
-	BW::Allocator::setReportOnExit( false );
+    BW::Allocator::setReportOnExit(false);
 
-	// Initialise stampsPerSecond and timing method
-	stampsPerSecond();
+    // Initialise stampsPerSecond and timing method
+    stampsPerSecond();
 
-	// Turn off output for network testing to avoid the spam generated.
-	// DebugFilter::instance().filterThreshold( MESSAGE_PRIORITY_ERROR );
-	DebugFilter::instance().shouldWriteTimePrefix( true );
+    // Turn off output for network testing to avoid the spam generated.
+    // DebugFilter::instance().filterThreshold( MESSAGE_PRIORITY_ERROR );
+    DebugFilter::instance().shouldWriteTimePrefix(true);
 
-	int ret = BWUnitTest::runTest( "network", argc, argv );
+    int ret = BWUnitTest::runTest("network", argc, argv);
 
-	BW::Allocator::setReportOnExit( true );
-	BW::Allocator::setCrashOnLeak( true );
+    BW::Allocator::setReportOnExit(true);
+    BW::Allocator::setCrashOnLeak(true);
 
-	finiNetwork();
+    finiNetwork();
 
-	delete CStdMf::pInstance();
+    delete CStdMf::pInstance();
 
-	return ret;
+    return ret;
 }
 
 // main.cpp

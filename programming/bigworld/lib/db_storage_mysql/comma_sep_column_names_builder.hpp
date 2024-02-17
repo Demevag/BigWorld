@@ -7,7 +7,6 @@
 
 #include <sstream>
 
-
 BW_BEGIN_NAMESPACE
 
 class PropertyMapping;
@@ -18,28 +17,30 @@ class PropertyMapping;
  */
 class CommaSepColNamesBuilder : public ColumnVisitor
 {
-public:
-	// Constructor for a single PropertyMapping
-	CommaSepColNamesBuilder( PropertyMapping & property );
+  public:
+    // Constructor for a single PropertyMapping
+    CommaSepColNamesBuilder(PropertyMapping& property);
 
-	// Constructor for many PropertyMappings
-	CommaSepColNamesBuilder( const PropertyMappings & properties );
+    // Constructor for many PropertyMappings
+    CommaSepColNamesBuilder(const PropertyMappings& properties);
 
-	// Constructor for a TableProvider
-	CommaSepColNamesBuilder( TableProvider & table, bool visitIDCol );
+    // Constructor for a TableProvider
+    CommaSepColNamesBuilder(TableProvider& table, bool visitIDCol);
 
-	BW::string getResult() const	{ return commaSepColumnNames_.str(); }
-	int 		getCount() const	{ return count_; }
+    BW::string getResult() const { return commaSepColumnNames_.str(); }
+    int        getCount() const { return count_; }
 
-	// ColumnVisitor override
-	bool onVisitColumn( const ColumnDescription & column );
+    // ColumnVisitor override
+    bool onVisitColumn(const ColumnDescription& column);
 
-protected:
-	BW::stringstream	commaSepColumnNames_;
-	int 				count_;
+  protected:
+    BW::stringstream commaSepColumnNames_;
+    int              count_;
 
-	CommaSepColNamesBuilder() : count_( 0 ) {}
-
+    CommaSepColNamesBuilder()
+      : count_(0)
+    {
+    }
 };
 
 /**
@@ -48,19 +49,19 @@ protected:
  */
 class CommaSepColNamesBuilderWithSuffix : public CommaSepColNamesBuilder
 {
-public:
-	// Constructor for many PropertyMappings
-	CommaSepColNamesBuilderWithSuffix( const PropertyMappings & properties,
-			const BW::string & suffix = BW::string() );
+  public:
+    // Constructor for many PropertyMappings
+    CommaSepColNamesBuilderWithSuffix(const PropertyMappings& properties,
+                                      const BW::string& suffix = BW::string());
 
-	// Constructor for a single PropertyMapping
-	CommaSepColNamesBuilderWithSuffix( PropertyMapping & property,
-			const BW::string & suffix = BW::string() );
+    // Constructor for a single PropertyMapping
+    CommaSepColNamesBuilderWithSuffix(PropertyMapping&  property,
+                                      const BW::string& suffix = BW::string());
 
-	bool onVisitColumn( const ColumnDescription & column );
+    bool onVisitColumn(const ColumnDescription& column);
 
-private:
-	BW::string suffix_;
+  private:
+    BW::string suffix_;
 };
 
 BW_END_NAMESPACE

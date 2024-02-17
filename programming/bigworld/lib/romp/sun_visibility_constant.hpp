@@ -6,11 +6,12 @@
 
 BW_BEGIN_NAMESPACE
 
-class SunVisibilityConstantSupport: public Moo::DeviceCallback
+class SunVisibilityConstantSupport : public Moo::DeviceCallback
 {
     LensEffect m_sunVisibilityTestEffect;
-    bool m_added;
-public:
+    bool       m_added;
+
+  public:
     SunVisibilityConstantSupport();
 
     void load();

@@ -3,20 +3,18 @@
 
 #include "cstdmf/bw_vector.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class GirthGridList;
 
 struct GirthGrid
 {
-	float				girth;
-	GirthGridList * 	grid;
+    float          girth;
+    GirthGridList* grid;
 };
 
-typedef BW::vector< GirthGrid > GirthGrids;
+typedef BW::vector<GirthGrid> GirthGrids;
 
 BW_END_NAMESPACE
 
 #endif // GIRTH_GRIDS
-

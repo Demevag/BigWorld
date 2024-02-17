@@ -2,27 +2,25 @@
 
 #include "wrapper.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
  *	Constructor.
  */
-MySqlEscapedString::MySqlEscapedString( MySql & connection,
-		const BW::string& string ) :
-	escapedString_( new char[ string.length() * 2 + 1 ] )
+MySqlEscapedString::MySqlEscapedString(MySql&            connection,
+                                       const BW::string& string)
+  : escapedString_(new char[string.length() * 2 + 1])
 {
-	mysql_real_escape_string( connection.get(), escapedString_,
-			string.data(), string.length() );
+    mysql_real_escape_string(
+      connection.get(), escapedString_, string.data(), string.length());
 }
-
 
 /**
  *	Destructor.
  */
 MySqlEscapedString::~MySqlEscapedString()
 {
-	delete [] escapedString_;
+    delete[] escapedString_;
 }
 
 BW_END_NAMESPACE

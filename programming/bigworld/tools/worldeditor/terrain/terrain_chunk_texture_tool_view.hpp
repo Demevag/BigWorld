@@ -1,7 +1,6 @@
 #ifndef TERRAIN_CHUNK_TEXTURE_TOOL_VIEW_HPP
 #define TERRAIN_CHUNK_TEXTURE_TOOL_VIEW_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "gizmo/tool.hpp"
@@ -17,25 +16,25 @@ BW_BEGIN_NAMESPACE
  **/
 class TerrainChunkTextureToolView : public TextureToolView
 {
-	Py_Header( TerrainChunkTextureToolView, TextureToolView )
+    Py_Header(TerrainChunkTextureToolView, TextureToolView)
 
-public:
-	explicit TerrainChunkTextureToolView(
-		const BW::string &		resourceID	= "resources/maps/gizmo/square.dds",
-		PyTypeObject *			pType		= &s_type_ );
+      public
+      : explicit TerrainChunkTextureToolView(
+          const BW::string& resourceID = "resources/maps/gizmo/square.dds",
+          PyTypeObject*     pType      = &s_type_);
 
-	virtual void render( Moo::DrawContext& drawContext, const Tool & tool );
+    virtual void render(Moo::DrawContext& drawContext, const Tool& tool);
 
-	void numPerChunk( float num );
+    void numPerChunk(float num);
 
-	PY_RW_ATTRIBUTE_DECLARE( numPerChunk_, numPerChunk )
+    PY_RW_ATTRIBUTE_DECLARE(numPerChunk_, numPerChunk)
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-private:
-	VIEW_FACTORY_DECLARE( TerrainChunkTextureToolView() )
+  private:
+    VIEW_FACTORY_DECLARE(TerrainChunkTextureToolView())
 
-	float numPerChunk_;
+    float numPerChunk_;
 };
 
 BW_END_NAMESPACE

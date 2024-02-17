@@ -6,19 +6,18 @@
 
 #include "cstdmf/bw_map.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BaseApp;
 
-typedef shared_ptr< BaseApp > BaseAppPtr;
-typedef BW::map< Mercury::Address, BaseAppPtr > BaseApps;
+typedef shared_ptr<BaseApp>                   BaseAppPtr;
+typedef BW::map<Mercury::Address, BaseAppPtr> BaseApps;
 
 enum AdjustBackupLocationsOp
 {
-	ADJUST_BACKUP_LOCATIONS_OP_ADD,
-	ADJUST_BACKUP_LOCATIONS_OP_RETIRE,
-	ADJUST_BACKUP_LOCATIONS_OP_CRASH
+    ADJUST_BACKUP_LOCATIONS_OP_ADD,
+    ADJUST_BACKUP_LOCATIONS_OP_RETIRE,
+    ADJUST_BACKUP_LOCATIONS_OP_CRASH
 };
 
 BW_END_NAMESPACE

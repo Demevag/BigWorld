@@ -9,14 +9,14 @@ class AssetClient;
 
 class AssetLock
 {
-public:
-	AssetLock();
-	~AssetLock();
+  public:
+    AssetLock();
+    ~AssetLock();
 
-	static void setAssetClient( AssetClient * pAssetClient );
+    static void setAssetClient(AssetClient* pAssetClient);
 
-private:
-	static AssetClient * s_pAssetClient_;
+  private:
+    static AssetClient* s_pAssetClient_;
 };
 
 BW_END_NAMESPACE

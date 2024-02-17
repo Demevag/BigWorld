@@ -5,10 +5,9 @@ BW_BEGIN_NAMESPACE
 
 class Updatables;
 
-namespace ScriptFrequentTasks
-{
+namespace ScriptFrequentTasks {
 
-void init( Updatables * pUpdatables );
+    void init(Updatables* pUpdatables);
 
 } // namespace ScriptFrequentTasks
 

@@ -1,4 +1,4 @@
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 #pragma once
 #endif
 
@@ -7,7 +7,6 @@
 
 #include "math/vector4.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -15,16 +14,14 @@ BW_BEGIN_NAMESPACE
  */
 class DyeProperty
 {
-public:
-	int				index_;
-	intptr			controls_;
-	int				mask_;
-	int				future_;
-	Vector4			default_;
+  public:
+    int     index_;
+    intptr  controls_;
+    int     mask_;
+    int     future_;
+    Vector4 default_;
 };
 
 BW_END_NAMESPACE
 
-
 #endif // DYE_PROPERTY_HPP
-

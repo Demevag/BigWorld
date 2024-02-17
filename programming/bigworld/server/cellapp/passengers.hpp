@@ -11,38 +11,37 @@ BW_BEGIN_NAMESPACE
  */
 class Passengers : public EntityExtra
 {
-public:
-	Passengers( Entity & e );
-	~Passengers();
+  public:
+    Passengers(Entity& e);
+    ~Passengers();
 
-	bool add( Entity & entity );
-	bool remove( Entity & entity );
+    bool add(Entity& entity);
+    bool remove(Entity& entity);
 
-	void updateInternalsForNewPosition( const Vector3 & oldPosition );
+    void updateInternalsForNewPosition(const Vector3& oldPosition);
 
-	const Matrix & transform() const	{ return transform_; }
+    const Matrix& transform() const { return transform_; }
 
-	//input global pos/dir, output local pos/dir on the vehicle space
-	void transformToVehiclePos( Position3D& pos );
-	void transformToVehicleDir( Direction3D& dir );
+    // input global pos/dir, output local pos/dir on the vehicle space
+    void transformToVehiclePos(Position3D& pos);
+    void transformToVehicleDir(Direction3D& dir);
 
-	static const Instance<Passengers> instance;
+    static const Instance<Passengers> instance;
 
-private:
-	Passengers( const Passengers& );
-	Passengers& operator=( const Passengers& );
+  private:
+    Passengers(const Passengers&);
+    Passengers& operator=(const Passengers&);
 
-	void adjustTransform();
+    void adjustTransform();
 
-	typedef BW::vector< Entity * > Container;
+    typedef BW::vector<Entity*> Container;
 
-	bool inDestructor_;
+    bool inDestructor_;
 
-	Container passengers_;
-	Matrix transform_;
+    Container passengers_;
+    Matrix    transform_;
 };
 
 BW_END_NAMESPACE
-
 
 #endif // PASSENGERS_HPP

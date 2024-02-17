@@ -8,7 +8,6 @@
 
 #include "math/vector3.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class ChunkSpace;
@@ -21,55 +20,52 @@ typedef SmartPointer<ChunkWaypointSet> ChunkWaypointSetPtr;
  */
 class NavLoc
 {
-public:
-	NavLoc();
+  public:
+    NavLoc();
 
-	NavLoc( ChunkSpace * pSpace, const Vector3 & point, float girth );
+    NavLoc(ChunkSpace* pSpace, const Vector3& point, float girth);
 
-	NavLoc( Chunk * pChunk, const Vector3 & point, float girth );
+    NavLoc(Chunk* pChunk, const Vector3& point, float girth);
 
-	NavLoc( const NavLoc & guess, const Vector3 & point );
+    NavLoc(const NavLoc& guess, const Vector3& point);
 
-	~NavLoc();
+    ~NavLoc();
 
-	bool valid() const	
-		{ return pSet_ && pSet_->chunk(); }
+    bool valid() const { return pSet_ && pSet_->chunk(); }
 
-	ChunkWaypointSetPtr pSet() const			
-		{ return pSet_; }
+    ChunkWaypointSetPtr pSet() const { return pSet_; }
 
-	WaypointIndex	waypoint() const	
-		{ return waypoint_; }
+    WaypointIndex waypoint() const { return waypoint_; }
 
-	Vector3	point() const	
-		{ return point_; }
+    Vector3 point() const { return point_; }
 
-	float gridSize() const
-		{ return gridSize_; }
+    float gridSize() const { return gridSize_; }
 
-	bool isWithinWP() const;
+    bool isWithinWP() const;
 
-	void clip();
+    void clip();
 
-	void makeMaxHeight( Vector3 & point ) const;
+    void makeMaxHeight(Vector3& point) const;
 
-	void clip( Vector3 & point ) const;
+    void clip(Vector3& point) const;
 
-	BW::string desc() const;
+    BW::string desc() const;
 
-	bool waypointsEqual( const NavLoc & other ) const
-		{ return pSet_ == other.pSet_ && waypoint_ == other.waypoint_; }
+    bool waypointsEqual(const NavLoc& other) const
+    {
+        return pSet_ == other.pSet_ && waypoint_ == other.waypoint_;
+    }
 
-	bool containsProjection( const Vector3 & point ) const;
+    bool containsProjection(const Vector3& point) const;
 
-private:
-	ChunkWaypointSetPtr	pSet_;
-	WaypointIndex		waypoint_;
-	Vector3				point_;
-	float				gridSize_;
+  private:
+    ChunkWaypointSetPtr pSet_;
+    WaypointIndex       waypoint_;
+    Vector3             point_;
+    float               gridSize_;
 
-	friend class ChunkWaypointState;
-	friend class Navigator;
+    friend class ChunkWaypointState;
+    friend class Navigator;
 };
 
 BW_END_NAMESPACE

@@ -8,7 +8,6 @@
 #include <iostream>
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -18,31 +17,31 @@ BW_BEGIN_NAMESPACE
  */
 class ResourceStatistics : public ResourceUsageConsole::Handler
 {
-public:
-	~ResourceStatistics() {}
-	static ResourceStatistics & instance();
+  public:
+    ~ResourceStatistics() {}
+    static ResourceStatistics& instance();
 
-	void cycleGranularity();
+    void cycleGranularity();
 
-private:
-	ResourceStatistics();
-	ResourceStatistics( const ResourceStatistics& );
-	ResourceStatistics& operator=( const ResourceStatistics& );
+  private:
+    ResourceStatistics();
+    ResourceStatistics(const ResourceStatistics&);
+    ResourceStatistics& operator=(const ResourceStatistics&);
 
-	void displayResourceStatistics( XConsole & console );
+    void displayResourceStatistics(XConsole& console);
 
-	void dumpToCSV(XConsole & console);
+    void dumpToCSV(XConsole& console);
 
-	void printGranularity(XConsole & console, uint hanging);
-	void printUsageStatistics(XConsole & console);
+    void printGranularity(XConsole& console, uint hanging);
+    void printUsageStatistics(XConsole& console);
 
-	void printResourceTypeBreakdown(XConsole & console);
+    void printResourceTypeBreakdown(XConsole& console);
 
-	// Member variables
-private:
-	static ResourceStatistics			s_instance_;
-	ResourceCounters::GranularityMode	granularityMode_;
-	BW::string							lastFileWritten_;
+    // Member variables
+  private:
+    static ResourceStatistics         s_instance_;
+    ResourceCounters::GranularityMode granularityMode_;
+    BW::string                        lastFileWritten_;
 };
 
 BW_END_NAMESPACE

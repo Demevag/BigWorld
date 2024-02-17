@@ -5,14 +5,12 @@
 
 #include "cstdmf/timestamp.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class DBAppMgrConfig : public ServerAppConfig
 {
-public:
-
-	static bool postInit();
+  public:
+    static bool postInit();
 };
 
 BW_END_NAMESPACE

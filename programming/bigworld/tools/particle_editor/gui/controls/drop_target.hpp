@@ -14,7 +14,7 @@ BW_BEGIN_NAMESPACE
 //
 class IDropTargetObj
 {
-public:
+  public:
     //
     // Destructor.
     //
@@ -29,17 +29,12 @@ public:
     // @param point         The mouse cursor location.
     // @returns             DROPEFFECT_NONE etc.
     //
-    virtual 
-    DROPEFFECT
-    OnDragEnter
-    (
-        CWnd                *window,
-        COleDataObject      *dataObject,
-        DWORD               keyState,
-        CPoint              point
-    ) 
+    virtual DROPEFFECT OnDragEnter(CWnd*           window,
+                                   COleDataObject* dataObject,
+                                   DWORD           keyState,
+                                   CPoint          point)
     {
-        return DROPEFFECT_NONE; 
+        return DROPEFFECT_NONE;
     }
 
     //
@@ -47,7 +42,7 @@ public:
     //
     // @param window        The window dragged out of.
     //
-    virtual void OnDragLeave(CWnd *window) {}
+    virtual void OnDragLeave(CWnd* window) {}
 
     //
     // Called when the user drags over a window.
@@ -58,17 +53,12 @@ public:
     // @param point         The mouse cursor location.
     // @returns             DROPEFFECT_NONE etc.
     //
-    virtual 
-    DROPEFFECT
-    OnDragOver
-    (
-        CWnd                *window,
-        COleDataObject      *dataObject,
-        DWORD               keyState,
-        CPoint              point
-    ) 
+    virtual DROPEFFECT OnDragOver(CWnd*           window,
+                                  COleDataObject* dataObject,
+                                  DWORD           keyState,
+                                  CPoint          point)
     {
-        return DROPEFFECT_NONE; 
+        return DROPEFFECT_NONE;
     }
 
     //
@@ -79,14 +69,7 @@ public:
     // @param point         The mouse cursor location.
     // @returns             DROPEFFECT_NONE etc.
     //
-    virtual 
-    DROPEFFECT 
-    OnDragScroll
-    (
-        CWnd                *window, 
-        DWORD               keyState, 
-        CPoint              point
-    )
+    virtual DROPEFFECT OnDragScroll(CWnd* window, DWORD keyState, CPoint point)
     {
         return DROPEFFECT_NONE;
     }
@@ -100,15 +83,10 @@ public:
     // @param point         The mouse cursor location.
     // @returns             TRUE if successful, FALSE if failed.
     //
-    virtual
-    BOOL
-    OnDrop
-    (
-        CWnd                *window,
-        COleDataObject      *dataObject,
-        DROPEFFECT          dropEffect,
-        CPoint              point
-    )
+    virtual BOOL OnDrop(CWnd*           window,
+                        COleDataObject* dataObject,
+                        DROPEFFECT      dropEffect,
+                        CPoint          point)
     {
         return FALSE;
     }
@@ -121,7 +99,7 @@ public:
 //
 class DropTarget : public COleDropTarget
 {
-public:
+  public:
     //
     // Default constructor.
     //
@@ -133,7 +111,7 @@ public:
     // @param target        The drop target that does the actual handling.
     // @param window        The window for dragging and dropping.
     //
-    void Register(IDropTargetObj *target, CWnd *window);
+    void Register(IDropTargetObj* target, CWnd* window);
 
     //
     // Called when the user drags into a window.
@@ -144,22 +122,19 @@ public:
     // @param point         The mouse cursor location.
     // @returns             DROPEFFECT_NONE etc.
     //
-    /*virtual*/ 
+    /*virtual*/
     DROPEFFECT
-    OnDragEnter
-    (
-        CWnd                *window,
-        COleDataObject      *dataObject,
-        DWORD               keyState,
-        CPoint              point
-    );
+    OnDragEnter(CWnd*           window,
+                COleDataObject* dataObject,
+                DWORD           keyState,
+                CPoint          point);
 
     //
     // Called when the user drags out of a window.
     //
     // @param window        The window dragged out of.
     //
-    /*virtual*/ void OnDragLeave(CWnd *window);
+    /*virtual*/ void OnDragLeave(CWnd* window);
 
     //
     // Called when the user drags over a window.
@@ -170,15 +145,12 @@ public:
     // @param point         The mouse cursor location.
     // @returns             DROPEFFECT_NONE etc.
     //
-    /*virtual*/ 
+    /*virtual*/
     DROPEFFECT
-    OnDragOver
-    (
-        CWnd                *window,
-        COleDataObject      *dataObject,
-        DWORD               keyState,
-        CPoint              point
-    );
+    OnDragOver(CWnd*           window,
+               COleDataObject* dataObject,
+               DWORD           keyState,
+               CPoint          point);
 
     //
     // Called to determine whether the drag is over a scrolling region.
@@ -188,14 +160,9 @@ public:
     // @param point         The mouse cursor location.
     // @returns             DROPEFFECT_NONE etc.
     //
-    /*virtual*/ 
-    DROPEFFECT 
-    OnDragScroll
-    (
-        CWnd                *window, 
-        DWORD               keyState, 
-        CPoint              point
-    );
+    /*virtual*/
+    DROPEFFECT
+    OnDragScroll(CWnd* window, DWORD keyState, CPoint point);
 
     //
     // Called when a drop occurs.
@@ -207,31 +174,27 @@ public:
     // @returns             TRUE if successful, FALSE if failed.
     //
     /*virtual*/
-    BOOL
-    OnDrop
-    (
-        CWnd                *window,
-        COleDataObject      *dataObject,
-        DROPEFFECT          dropEffect,
-        CPoint              point
-    );  
+    BOOL OnDrop(CWnd*           window,
+                COleDataObject* dataObject,
+                DROPEFFECT      dropEffect,
+                CPoint          point);
 
     //
     // Given the COleDataObject try and convert it to a string.
-    // 
+    //
     // @param dataObject    The dataObject.
-    // @returns             The text of the dataObject (if in the format 
+    // @returns             The text of the dataObject (if in the format
     //                      CF_UNICODE).  The result is not defined otherwise.
     //
-    static BW::wstring GetText(COleDataObject *dataObject);
+    static BW::wstring GetText(COleDataObject* dataObject);
 
-private:
+  private:
     // Not permitted:
-    DropTarget(DropTarget const &);
-    DropTarget &operator=(DropTarget const &);
+    DropTarget(DropTarget const&);
+    DropTarget& operator=(DropTarget const&);
 
-private:
-    IDropTargetObj          *m_dropTarget;
+  private:
+    IDropTargetObj* m_dropTarget;
 };
 
 BW_END_NAMESPACE

@@ -5,18 +5,17 @@
 
 #include <iomanip>
 
-DECLARE_DEBUG_COMPONENT2( "Math", 0 )
-
+DECLARE_DEBUG_COMPONENT2("Math", 0)
 
 BW_BEGIN_NAMESPACE
 
 #ifndef CODE_INLINE
-    #include "vector2.ipp"
+#include "vector2.ipp"
 #endif
 
-const Vector2 Vector2::ZERO( 0.f, 0.f );
-const Vector2 Vector2::I( 1.f, 0.f );
-const Vector2 Vector2::J( 0.f, 1.f );
+const Vector2 Vector2::ZERO(0.f, 0.f);
+const Vector2 Vector2::I(1.f, 0.f);
+const Vector2 Vector2::J(0.f, 1.f);
 
 /**
  *	This function returns a description of the vector
@@ -24,10 +23,10 @@ const Vector2 Vector2::J( 0.f, 1.f );
  */
 BW::string Vector2::desc() const
 {
-	char buf[128];
-	bw_snprintf( buf, sizeof(buf), "(%g, %g)", x, y );
+    char buf[128];
+    bw_snprintf(buf, sizeof(buf), "(%g, %g)", x, y);
 
-	return buf;
+    return buf;
 }
 
 /**
@@ -35,17 +34,17 @@ BW::string Vector2::desc() const
  *
  *	@relates Vector2
  */
-std::ostream& operator <<( std::ostream& o, const Vector2& t )
+std::ostream& operator<<(std::ostream& o, const Vector2& t)
 {
-	const int fieldWidth = 8;
+    const int fieldWidth = 8;
 
-	o.put('(');
-	o.width( fieldWidth );
-	o << t[0];
-	o.put(',');
-	o.width( fieldWidth );
-	o << t[1];
-	o.put(')');
+    o.put('(');
+    o.width(fieldWidth);
+    o << t[0];
+    o.put(',');
+    o.width(fieldWidth);
+    o << t[1];
+    o.put(')');
 
     return o;
 }
@@ -55,9 +54,9 @@ std::ostream& operator <<( std::ostream& o, const Vector2& t )
  *
  *	@relates Vector2
  */
-std::istream& operator >>( std::istream& i, Vector2& t )
+std::istream& operator>>(std::istream& i, Vector2& t)
 {
-	char dummy;
+    char dummy;
     i >> dummy >> t[0] >> dummy >> t[1] >> dummy;
 
     return i;

@@ -3,7 +3,6 @@
 
 #include "particle_system_action.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -14,71 +13,69 @@ BW_BEGIN_NAMESPACE
  */
 class JitterPSA : public ParticleSystemAction
 {
-public:
-	///	@name Constructor(s) and Destructor.
-	//@{
-	JitterPSA( VectorGenerator *pPositionSrc = NULL,
-		VectorGenerator *pVelocitySrc = NULL );
-	~JitterPSA();
-	//@}
+  public:
+    ///	@name Constructor(s) and Destructor.
+    //@{
+    JitterPSA(VectorGenerator* pPositionSrc = NULL,
+              VectorGenerator* pVelocitySrc = NULL);
+    ~JitterPSA();
+    //@}
 
     ParticleSystemActionPtr clone() const;
 
-	///	@name Accessors to JitterPSA properties.
-	//@{
-	bool affectPosition( void ) const;
-	void affectPosition( bool flag );
+    ///	@name Accessors to JitterPSA properties.
+    //@{
+    bool affectPosition(void) const;
+    void affectPosition(bool flag);
 
-	bool affectVelocity( void ) const;
-	void affectVelocity( bool flag );
-	//@}
+    bool affectVelocity(void) const;
+    void affectVelocity(bool flag);
+    //@}
 
-	///	@name Methods for JitterPSA.
-	//@{
-	void setPositionSource( VectorGenerator *pPositionSrc );
-	VectorGenerator * getPositionSource() { return pPositionSrc_; }
-	void setVelocitySource( VectorGenerator *pVelocitySrc );
-	VectorGenerator * getVelocitySource() { return pVelocitySrc_; }
-	//@}
+    ///	@name Methods for JitterPSA.
+    //@{
+    void             setPositionSource(VectorGenerator* pPositionSrc);
+    VectorGenerator* getPositionSource() { return pPositionSrc_; }
+    void             setVelocitySource(VectorGenerator* pVelocitySrc);
+    VectorGenerator* getVelocitySource() { return pVelocitySrc_; }
+    //@}
 
-	///	@name Overrides to the Particle System Action Interface.
-	//@{
-	virtual void execute( ParticleSystem & particleSystem, float dTime );
-	virtual void lateExecute( ParticleSystem &particleSystem, float dTime );
-	virtual int typeID() const;
-	virtual const BW::string & nameID() const;
+    ///	@name Overrides to the Particle System Action Interface.
+    //@{
+    virtual void execute(ParticleSystem& particleSystem, float dTime);
+    virtual void lateExecute(ParticleSystem& particleSystem, float dTime);
+    virtual int  typeID() const;
+    virtual const BW::string& nameID() const;
 
-	virtual size_t sizeInBytes() const;
-	//@}
+    virtual size_t sizeInBytes() const;
+    //@}
 
-	static const BW::string nameID_;
+    static const BW::string nameID_;
 
-protected:
-	virtual void loadInternal( DataSectionPtr pSect );
-	virtual void saveInternal( DataSectionPtr pSect ) const;
+  protected:
+    virtual void loadInternal(DataSectionPtr pSect);
+    virtual void saveInternal(DataSectionPtr pSect) const;
 
-private:
+  private:
+    template <typename Serialiser>
+    void serialise(const Serialiser&) const;
 
-	template < typename Serialiser >
-	void serialise( const Serialiser & ) const;
+    ///	@name Properties of the JitterPSA.
+    //@{
+    bool affectPosition_; ///< Flag for jittering particle position.
+    bool affectVelocity_; ///< Flag for jittering particle velocity.
 
-	///	@name Properties of the JitterPSA.
-	//@{
-	bool affectPosition_;	///< Flag for jittering particle position.
-	bool affectVelocity_;	///< Flag for jittering particle velocity.
+    VectorGenerator* pPositionSrc_; ///< Jitter Generator for position.
+    VectorGenerator* pVelocitySrc_; ///< Jitter Generator for velocity.
+    //@}
 
-	VectorGenerator * pPositionSrc_;	///< Jitter Generator for position.
-	VectorGenerator * pVelocitySrc_;	///< Jitter Generator for velocity.
-	//@}
-
-	///	@name Auxiliary Variables for the JitterPSA.
-	//@{
-	static int typeID_;			///< TypeID of the JitterPSA.
-	//@}
+    ///	@name Auxiliary Variables for the JitterPSA.
+    //@{
+    static int typeID_; ///< TypeID of the JitterPSA.
+                        //@}
 };
 
 typedef SmartPointer<JitterPSA> JitterPSAPtr;
-
 
 /*~ class Pixie.PyJitterPSA
  *
@@ -96,36 +93,35 @@ typedef SmartPointer<JitterPSA> JitterPSAPtr;
  */
 class PyJitterPSA : public PyParticleSystemAction
 {
-	Py_Header( PyJitterPSA, PyParticleSystemAction )
-public:
-	PyJitterPSA( JitterPSAPtr pAction, PyTypeObject *pType = &s_type_ );
+    Py_Header(PyJitterPSA, PyParticleSystemAction) public
+      : PyJitterPSA(JitterPSAPtr pAction, PyTypeObject* pType = &s_type_);
 
-	int typeID( void ) const;
+    int typeID(void) const;
 
-	///	@name Accessors to PyJitterPSA properties.
-	//@{
-	bool affectPosition( void ) const;
-	void affectPosition( bool flag );
+    ///	@name Accessors to PyJitterPSA properties.
+    //@{
+    bool affectPosition(void) const;
+    void affectPosition(bool flag);
 
-	bool affectVelocity( void ) const;
-	void affectVelocity( bool flag );
-	//@}
+    bool affectVelocity(void) const;
+    void affectVelocity(bool flag);
+    //@}
 
-	///	@name Python Interface to the PyJitterPSA.
-	//@{
-	PY_FACTORY_DECLARE()
+    ///	@name Python Interface to the PyJitterPSA.
+    //@{
+    PY_FACTORY_DECLARE()
 
-	PY_METHOD_DECLARE( py_setPositionSource )
-	PY_METHOD_DECLARE( py_setVelocitySource )
+    PY_METHOD_DECLARE(py_setPositionSource)
+    PY_METHOD_DECLARE(py_setVelocitySource)
 
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( bool, affectPosition, affectPosition )
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( bool, affectVelocity, affectVelocity )
-	//@}
-private:
-	JitterPSAPtr pAction_;
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(bool, affectPosition, affectPosition)
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(bool, affectVelocity, affectVelocity)
+    //@}
+  private:
+    JitterPSAPtr pAction_;
 };
 
-PY_SCRIPT_CONVERTERS_DECLARE( PyJitterPSA )
+PY_SCRIPT_CONVERTERS_DECLARE(PyJitterPSA)
 
 #ifdef CODE_INLINE
 #include "jitter_psa.ipp"

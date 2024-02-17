@@ -14,7 +14,7 @@
 BW_BEGIN_NAMESPACE
 
 class ClientApp;
-typedef WeakPyPtr< ClientApp > ClientAppWPtr;
+typedef WeakPyPtr<ClientApp> ClientAppWPtr;
 
 /*~ class BigWorld.Entity
  *  @components{ bots }
@@ -29,57 +29,54 @@ typedef WeakPyPtr< ClientApp > ClientAppWPtr;
  */
 class PyEntity : public PyObjectPlus
 {
-	Py_Header( PyEntity, PyObjectPlus )
+    Py_Header(PyEntity, PyObjectPlus)
 
-public:
-	PyEntity( Entity & entity );
-	~PyEntity();
+      public : PyEntity(Entity& entity);
+    ~PyEntity();
 
-	EntityPtr pEntity() const	{ return pEntity_; }
+    EntityPtr pEntity() const { return pEntity_; }
 
-	EntityID entityID() const;
-	bool isDestroyed() const;
-	ClientApp * pClientApp() const;
+    EntityID   entityID() const;
+    bool       isDestroyed() const;
+    ClientApp* pClientApp() const;
 
-	void onEntityDestroyed();
+    void onEntityDestroyed();
 
-	/* Forwarded initialisation streams from Entity */
-	bool initCellEntityFromStream( BinaryIStream & data );
-	bool initBasePlayerFromStream( BinaryIStream & data );
-	bool initCellPlayerFromStream( BinaryIStream & stream );
+    /* Forwarded initialisation streams from Entity */
+    bool initCellEntityFromStream(BinaryIStream& data);
+    bool initBasePlayerFromStream(BinaryIStream& data);
+    bool initCellPlayerFromStream(BinaryIStream& stream);
 
-	/* Python Methods */
-	PY_METHOD_DECLARE( py_addTimer )
-	PY_METHOD_DECLARE( py_delTimer )
+    /* Python Methods */
+    PY_METHOD_DECLARE(py_addTimer)
+    PY_METHOD_DECLARE(py_delTimer)
 
-	/* Python Attributes */
-	PY_RO_ATTRIBUTE_DECLARE( entityID(), id );
-	PY_RO_ATTRIBUTE_DECLARE( isDestroyed(), isDestroyed );
-	PY_RO_ATTRIBUTE_DECLARE( pEntity_ && pEntity_->isInWorld(), isInWorld );
-	PY_DEFERRED_ATTRIBUTE_DECLARE( position );
-	PY_DEFERRED_ATTRIBUTE_DECLARE( yaw );
-	PY_DEFERRED_ATTRIBUTE_DECLARE( pitch );
-	PY_DEFERRED_ATTRIBUTE_DECLARE( roll );
-	PY_DEFERRED_ATTRIBUTE_DECLARE( cell );
-	PY_DEFERRED_ATTRIBUTE_DECLARE( base );
-	PY_RO_ATTRIBUTE_DECLARE( pClientApp(), clientApp );
+    /* Python Attributes */
+    PY_RO_ATTRIBUTE_DECLARE(entityID(), id);
+    PY_RO_ATTRIBUTE_DECLARE(isDestroyed(), isDestroyed);
+    PY_RO_ATTRIBUTE_DECLARE(pEntity_ && pEntity_->isInWorld(), isInWorld);
+    PY_DEFERRED_ATTRIBUTE_DECLARE(position);
+    PY_DEFERRED_ATTRIBUTE_DECLARE(yaw);
+    PY_DEFERRED_ATTRIBUTE_DECLARE(pitch);
+    PY_DEFERRED_ATTRIBUTE_DECLARE(roll);
+    PY_DEFERRED_ATTRIBUTE_DECLARE(cell);
+    PY_DEFERRED_ATTRIBUTE_DECLARE(base);
+    PY_RO_ATTRIBUTE_DECLARE(pClientApp(), clientApp);
 
+  private:
+    bool pySetAttribute(const ScriptString& attrObj, const ScriptObject& value);
 
-private:
-	bool pySetAttribute( const ScriptString & attrObj,
-		const ScriptObject & value );
+    EntityPtr             pEntity_;
+    EntityID              entityID_;
+    mutable ClientAppWPtr wpClientApp_;
 
-	EntityPtr pEntity_;
-	EntityID entityID_;
-	mutable ClientAppWPtr wpClientApp_;
+    ScriptObject cell_;
+    ScriptObject base_;
 
-	ScriptObject cell_;
-	ScriptObject base_;
-
-	PyTimer pyTimer_;
+    PyTimer pyTimer_;
 };
 
-typedef ScriptObjectPtr< PyEntity > PyEntityPtr;
+typedef ScriptObjectPtr<PyEntity> PyEntityPtr;
 
 BW_END_NAMESPACE
 

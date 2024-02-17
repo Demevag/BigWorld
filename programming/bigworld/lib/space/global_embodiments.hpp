@@ -12,12 +12,11 @@ BW_BEGIN_NAMESPACE
  */
 class GlobalEmbodiments
 {
-public:
-	static void tick( float dTime );
-	static void fini();	
+  public:
+    static void tick(float dTime);
+    static void fini();
 };
 
 BW_END_NAMESPACE
-
 
 #endif // GLOBAL_EMBODIMENTS_HPP

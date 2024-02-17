@@ -17,19 +17,20 @@
 
 BW_BEGIN_NAMESPACE
 
-#define BW_SCOPED_BOOL( target ) ScopedBool scopedBool_##target( target )
+#define BW_SCOPED_BOOL(target) ScopedBool scopedBool_##target(target)
 
 /**
- *  This class provides the means for setting a flag when a scope is entered/exited.
+ *  This class provides the means for setting a flag when a scope is
+ * entered/exited.
  */
 class ScopedBool
 {
-public:
-	ScopedBool( bool & target );
-	~ScopedBool();
+  public:
+    ScopedBool(bool& target);
+    ~ScopedBool();
 
-private:
-	bool & target_;
+  private:
+    bool& target_;
 };
 
 #include "scoped_bool.ipp"

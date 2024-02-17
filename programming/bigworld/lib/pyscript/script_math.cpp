@@ -13,14 +13,13 @@
 #include "math/vector3.hpp"
 #include "math/vector4.hpp"
 
-#if defined( _WIN32 )
+#if defined(_WIN32)
 #include "math/blend_transform.hpp"
 #endif
 
 #include "cstdmf/debug.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Script", 0 )
-
+DECLARE_DEBUG_COMPONENT2("Script", 0)
 
 BW_BEGIN_NAMESPACE
 
@@ -31,25 +30,21 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor
  */
-MatrixProvider::MatrixProvider( bool autoTick, PyTypeObject * pType ) :
-	PyObjectPlus( pType ),
-	autoTick_( autoTick )
+MatrixProvider::MatrixProvider(bool autoTick, PyTypeObject* pType)
+  : PyObjectPlus(pType)
+  , autoTick_(autoTick)
 {
-	if (autoTick_)
-	{
-		ProviderStore::add( this );
-	}
+    if (autoTick_) {
+        ProviderStore::add(this);
+    }
 }
-
 
 MatrixProvider::~MatrixProvider()
 {
-	if (autoTick_)
-	{
-		ProviderStore::del( this );
-	}
+    if (autoTick_) {
+        ProviderStore::del(this);
+    }
 }
-
 
 /*~ class Math.MatrixProvider
  *	@components{ all }
@@ -80,22 +75,21 @@ MatrixProvider::~MatrixProvider()
  *	matrix can then be interrogated using all the Matrix methods and
  *	functions.  Updating matrix	will not update matrixProvider, however.
  */
-PY_TYPEOBJECT( MatrixProvider )
+PY_TYPEOBJECT(MatrixProvider)
 
-PY_BEGIN_METHODS( MatrixProvider )
+PY_BEGIN_METHODS(MatrixProvider)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( MatrixProvider )
+PY_BEGIN_ATTRIBUTES(MatrixProvider)
 PY_END_ATTRIBUTES()
 
-PY_SCRIPT_CONVERTERS( MatrixProvider )
+PY_SCRIPT_CONVERTERS(MatrixProvider)
 
 typedef SmartPointer<MatrixProvider> MatrixProviderPtr;
 
 // -----------------------------------------------------------------------------
 // Section: PyMatrix
 // -----------------------------------------------------------------------------
-
 
 /*~ class Math.Matrix
  *	@components{ all }
@@ -104,595 +98,609 @@ typedef SmartPointer<MatrixProvider> MatrixProviderPtr;
  *
  *	A Matrix can be created using the Math.Matrix() function.
  */
-PY_TYPEOBJECT_WITH_CALL( PyMatrix )
+PY_TYPEOBJECT_WITH_CALL(PyMatrix)
 
-PY_BEGIN_METHODS( PyMatrix )
+PY_BEGIN_METHODS(PyMatrix)
 
-	/*~ function Matrix.set
-	 *	@components{ all }
- 	 *
-	 *	This method sets the matrix to be the same as the supplied matrix.  It
-	 *	has the same effect as assignment.
-	 *
-	 *	For example:
-	 *	@{
-	 *	m1.set( m2 ) # sets matrix m1 equal to matrix m2.
-	 *	@}
-	 *
-	 *
-	 *	@param	m	the matrix to set this matrix equal to.
-	 */
-	PY_METHOD_WITH_DOC( set, "This method sets the matrix from a MatrixProvider." )
+/*~ function Matrix.set
+ *	@components{ all }
+ *
+ *	This method sets the matrix to be the same as the supplied matrix.  It
+ *	has the same effect as assignment.
+ *
+ *	For example:
+ *	@{
+ *	m1.set( m2 ) # sets matrix m1 equal to matrix m2.
+ *	@}
+ *
+ *
+ *	@param	m	the matrix to set this matrix equal to.
+ */
+PY_METHOD_WITH_DOC(set, "This method sets the matrix from a MatrixProvider.")
 
-	/*~ function Matrix.setZero
-	 *	@components{ all }
-	 *
-	 *	This method sets the matrix to the zero matrix (with all elements equal
-	 *	to zero).
-	 *
-	 *	For example:
-	 *	@{
-	 *	# sets the matrix mat to be the zero matrix.
-	 *	mat.setZero()
-	 *	@}
-	 *
-	 */
-	PY_METHOD_WITH_DOC( setZero, "This method sets the matrix to all zeroes." )
+/*~ function Matrix.setZero
+ *	@components{ all }
+ *
+ *	This method sets the matrix to the zero matrix (with all elements equal
+ *	to zero).
+ *
+ *	For example:
+ *	@{
+ *	# sets the matrix mat to be the zero matrix.
+ *	mat.setZero()
+ *	@}
+ *
+ */
+PY_METHOD_WITH_DOC(setZero, "This method sets the matrix to all zeroes.")
 
-	/*~ function Matrix.setIdentity
-	 *	@components{ all }
-	 *
-	 *	This method sets the matrix to the identity matrix (with 1s down the
-	 *	main diagonal, and zeros elsewhere).
-	 *
-	 *	The important property of the identity matrix is that if it is
-	 *	multiplied by another matrix, the product is that other matrix.
-	 *
-	 *	For example:
-	 *	@{
-	 *	>>> matI.setIdentity() # sets the matrix mat to be the identity matrix.
-	 *	>>> matNew = matOther.preMultiply( matI )
-	 *	>>>	matNew == matOther
-	 *	1
-	 *	@}
-	 *	The example shows setting a matrix to the identity matrix and then
-	 *	multiplying it by another matrix, which results in the same matrix
-	 *	as before.
-	 *
-	 */
-	PY_METHOD_WITH_DOC( setIdentity, 
-		"This method sets the matrix to the identity matrix." )
+/*~ function Matrix.setIdentity
+ *	@components{ all }
+ *
+ *	This method sets the matrix to the identity matrix (with 1s down the
+ *	main diagonal, and zeros elsewhere).
+ *
+ *	The important property of the identity matrix is that if it is
+ *	multiplied by another matrix, the product is that other matrix.
+ *
+ *	For example:
+ *	@{
+ *	>>> matI.setIdentity() # sets the matrix mat to be the identity matrix.
+ *	>>> matNew = matOther.preMultiply( matI )
+ *	>>>	matNew == matOther
+ *	1
+ *	@}
+ *	The example shows setting a matrix to the identity matrix and then
+ *	multiplying it by another matrix, which results in the same matrix
+ *	as before.
+ *
+ */
+PY_METHOD_WITH_DOC(setIdentity,
+                   "This method sets the matrix to the identity matrix.")
 
-	/*~ function Matrix.setScale
-	 *	@components{ all }
-	 *
-	 *	This method sets the matrix to be a scale matrix, with the specified
-	 *	Vector3 scaling along the x, y and z axes.
-	 *
-	 *	For example:
-	 *	@{
-	 *	# set the matrix mat to scale 2 times along the x-axis, 3 times along
-	 *	# the y-axis and 4 times along the z-axis.
-	 *	mat.setScale( (2, 3, 4) )
-	 *	@}
-	 *
-	 *	@param	scales	A Vector3, with the each component being the scale
-	 *					along the corresponding axis.
-	 */
-	PY_METHOD_WITH_DOC( setScale,
-		"This method sets the matrix to a scaling matrix." )
+/*~ function Matrix.setScale
+ *	@components{ all }
+ *
+ *	This method sets the matrix to be a scale matrix, with the specified
+ *	Vector3 scaling along the x, y and z axes.
+ *
+ *	For example:
+ *	@{
+ *	# set the matrix mat to scale 2 times along the x-axis, 3 times along
+ *	# the y-axis and 4 times along the z-axis.
+ *	mat.setScale( (2, 3, 4) )
+ *	@}
+ *
+ *	@param	scales	A Vector3, with the each component being the scale
+ *					along the corresponding axis.
+ */
+PY_METHOD_WITH_DOC(setScale, "This method sets the matrix to a scaling matrix.")
 
-	/*~ function Matrix.setTranslate
-	 *	@components{ all }
-	 *
-	 *	This method sets the matrix to be a translation matrix, with the
-	 *	specified Vector3 being the translations along the x, y and z axes.
-	 *
-	 *	For example:
-	 *	@{
-	 *	# set the matrix to translate by 4 along the x-axis, 5 along the y-axis
-	 *	# and 6 along the z-axis.
-	 *	mat.setTranslate( (4, 5, 6) )
-	 *	@}
-	 *
-	 *	@param	translations	A Vector3, with each component being the translation
-	 *							along the corresponding axis.
-	 */
-	PY_METHOD_WITH_DOC( setTranslate,
-		"This method sets the matrix to a translation matrix." )
+/*~ function Matrix.setTranslate
+ *	@components{ all }
+ *
+ *	This method sets the matrix to be a translation matrix, with the
+ *	specified Vector3 being the translations along the x, y and z axes.
+ *
+ *	For example:
+ *	@{
+ *	# set the matrix to translate by 4 along the x-axis, 5 along the y-axis
+ *	# and 6 along the z-axis.
+ *	mat.setTranslate( (4, 5, 6) )
+ *	@}
+ *
+ *	@param	translations	A Vector3, with each component being the translation
+ *							along the corresponding axis.
+ */
+PY_METHOD_WITH_DOC(setTranslate,
+                   "This method sets the matrix to a translation matrix.")
 
-	/*~ function Matrix.setRotateX
-	 *	@components{ all }
-	 *
-	 *	This method sets the matrix to rotate around the x-axis by the
-	 *	specified amount.  Zero rotation is specified along the z-axis, with
-	 *	positive rotation being clockwise.
-	 *
-	 *	The translation and rotations around the y and z axes are cleared.
-	 *
-	 *	For example:
-	 *	@{
-	 *	# sets the matrix to rotate by 1.0 radians clockwise about the x-axis.
-	 *	mat.setRotateX( 1.0 )
-	 *	@}
-	 *
-	 *
-	 *	@param	rot		The size of the rotation.
-	 */
-	PY_METHOD_WITH_DOC( setRotateX, 
-		"This method sets the matrix to a rotation matrix around the X axis." )
+/*~ function Matrix.setRotateX
+ *	@components{ all }
+ *
+ *	This method sets the matrix to rotate around the x-axis by the
+ *	specified amount.  Zero rotation is specified along the z-axis, with
+ *	positive rotation being clockwise.
+ *
+ *	The translation and rotations around the y and z axes are cleared.
+ *
+ *	For example:
+ *	@{
+ *	# sets the matrix to rotate by 1.0 radians clockwise about the x-axis.
+ *	mat.setRotateX( 1.0 )
+ *	@}
+ *
+ *
+ *	@param	rot		The size of the rotation.
+ */
+PY_METHOD_WITH_DOC(
+  setRotateX,
+  "This method sets the matrix to a rotation matrix around the X axis.")
 
-	/*~ function Matrix.setRotateY
-	 *	@components{ all }
-	 *
-	 *	This method sets the matrix to rotate around the y-axis by the
-	 *	specified amount.  Zero rotation is specified along the z-axis, with
-	 *	positive rotation being anti-clockwise.
-	 *
-	 *	The translation and rotations around the x and z axes are cleared.
-	 *
-	 *	For example:
-	 *	@{
-	 *	# sets the matrix to rotate by 1.0 radians anti-clockwise about the y-axis.
-	 *	mat.setRotateY( 1.0 )
-	 *	@}
-	 *
-	 *	@param	rot		The size of the rotation.
-	 */
-	PY_METHOD_WITH_DOC( setRotateY,
-		"This method sets the matrix to a rotation matrix around the Y axis." )
+/*~ function Matrix.setRotateY
+ *	@components{ all }
+ *
+ *	This method sets the matrix to rotate around the y-axis by the
+ *	specified amount.  Zero rotation is specified along the z-axis, with
+ *	positive rotation being anti-clockwise.
+ *
+ *	The translation and rotations around the x and z axes are cleared.
+ *
+ *	For example:
+ *	@{
+ *	# sets the matrix to rotate by 1.0 radians anti-clockwise about the y-axis.
+ *	mat.setRotateY( 1.0 )
+ *	@}
+ *
+ *	@param	rot		The size of the rotation.
+ */
+PY_METHOD_WITH_DOC(
+  setRotateY,
+  "This method sets the matrix to a rotation matrix around the Y axis.")
 
-	/*~ function Matrix.setRotateZ
-	 *	@components{ all }
-	 *
-	 *	This method sets the matrix to rotate around the z-axis by the
-	 *	specified amount.  Zero rotation is specified along the x-axis, with
-	 *	positive rotation being clockwise.
-	 *
-	 *	The translation and rotations around the x and y axes are cleared.
-	 *
-	 *	For example:
-	 *	@{
-	 *	# sets the matrix to rotate by 1.0 radians clockwise about the z-axis.
-	 *	mat.setRotateZ( 1.0 )
-	 *	@}
-	 *
-	 *	@param	rot		The size of the rotation.
-	 */
-	PY_METHOD_WITH_DOC( setRotateZ,
-		"This method sets the matrix to a rotation matrix around the Z axis." )
+/*~ function Matrix.setRotateZ
+ *	@components{ all }
+ *
+ *	This method sets the matrix to rotate around the z-axis by the
+ *	specified amount.  Zero rotation is specified along the x-axis, with
+ *	positive rotation being clockwise.
+ *
+ *	The translation and rotations around the x and y axes are cleared.
+ *
+ *	For example:
+ *	@{
+ *	# sets the matrix to rotate by 1.0 radians clockwise about the z-axis.
+ *	mat.setRotateZ( 1.0 )
+ *	@}
+ *
+ *	@param	rot		The size of the rotation.
+ */
+PY_METHOD_WITH_DOC(
+  setRotateZ,
+  "This method sets the matrix to a rotation matrix around the Z axis.")
 
-	/*~ function Matrix.setRotateYPR
-	 *	@components{ all }
-	 *
-	 *	This method sets the rotation about all three axes with one function
-	 *	call.  It takes a Vector3, the components of which specify the yaw
-	 *	(rotation about y, with 0 along the z-axis, increasing anti-clockwise),
-	 *	pitch ( rotation about x, with 0 along the z-axis, increasing
-	 *	clockwise), and roll (rotation about z, with 0 along the x-axis,
-	 *	increasing clockwise).
-	 *
-	 *	The translation is cleared.
-	 *
-	 *	For example:
-	 *	@{
-	 *	mat.setRotateYPR( (1.0, 2.0, 3.0) )
-	 *	@}
-	 *	sets the matrix to have yaw 1.0, pitch of 2.0 and roll of 3.0,
-	 *	applied in that order.
-	 *
-	 *	@param	ypr	a Vector3 specifying the yaw, pitch and roll.
-	 */
-	PY_METHOD_WITH_DOC( setRotateYPR, "This method sets the matrix to a "
-		"rotation matrix given yaw, pitch and roll." )
+/*~ function Matrix.setRotateYPR
+ *	@components{ all }
+ *
+ *	This method sets the rotation about all three axes with one function
+ *	call.  It takes a Vector3, the components of which specify the yaw
+ *	(rotation about y, with 0 along the z-axis, increasing anti-clockwise),
+ *	pitch ( rotation about x, with 0 along the z-axis, increasing
+ *	clockwise), and roll (rotation about z, with 0 along the x-axis,
+ *	increasing clockwise).
+ *
+ *	The translation is cleared.
+ *
+ *	For example:
+ *	@{
+ *	mat.setRotateYPR( (1.0, 2.0, 3.0) )
+ *	@}
+ *	sets the matrix to have yaw 1.0, pitch of 2.0 and roll of 3.0,
+ *	applied in that order.
+ *
+ *	@param	ypr	a Vector3 specifying the yaw, pitch and roll.
+ */
+PY_METHOD_WITH_DOC(setRotateYPR,
+                   "This method sets the matrix to a "
+                   "rotation matrix given yaw, pitch and roll.")
 
-	/*~ function Matrix.preMultiply
-	 *	@components{ all }
-	 *
-	 *	This method pre multiplies this matrix by the specified matrix.
-	 *	Pre-multiplication means that the specified matrix is on the left of the
-	 *	multiplication operator.  In transformation terms, the specified matrix
-	 *	is applied BEFORE this matrix.
-	 *
-	 *	For example:
-	 *	@{
-	 *	>>> tr = Math.Matrix()
-	 *	>>> tr.setTranslate( (1,0,0) )
-	 *	>>>	ro = Math.Matrix()
-	 *	>>> ro.setRotateY( 3.14159 / 2 )
-	 *	>>> out = Math.Matrix()
-	 *	>>>	out.set(ro)
-	 *	>>> out.preMultiply(tr)
-	 *	>>>	out.translation
-	 *	(0.000, 1.000, 0.000)
-	 *	>>>	out.yaw
-	 *	-1.5707
-	 *	@}
-	 *	This example shows that pre-multiplying the rotation by the translation
-	 *	applies the translation first, and then the rotation.  This results in
-	 *	the transformed position being rotated, resulting in it being in a
-	 *	different position.  Compare this to the results in the example on
-	 *	post-multiplication.
-	 *
-	 *	@param	pre	a Matrix which is the matrix to pre-multiply by.
-	 *
-	 */
-	PY_METHOD_WITH_DOC( preMultiply, 
-		"This method multiplies the existing matrix by the passed in one." )
+/*~ function Matrix.preMultiply
+ *	@components{ all }
+ *
+ *	This method pre multiplies this matrix by the specified matrix.
+ *	Pre-multiplication means that the specified matrix is on the left of the
+ *	multiplication operator.  In transformation terms, the specified matrix
+ *	is applied BEFORE this matrix.
+ *
+ *	For example:
+ *	@{
+ *	>>> tr = Math.Matrix()
+ *	>>> tr.setTranslate( (1,0,0) )
+ *	>>>	ro = Math.Matrix()
+ *	>>> ro.setRotateY( 3.14159 / 2 )
+ *	>>> out = Math.Matrix()
+ *	>>>	out.set(ro)
+ *	>>> out.preMultiply(tr)
+ *	>>>	out.translation
+ *	(0.000, 1.000, 0.000)
+ *	>>>	out.yaw
+ *	-1.5707
+ *	@}
+ *	This example shows that pre-multiplying the rotation by the translation
+ *	applies the translation first, and then the rotation.  This results in
+ *	the transformed position being rotated, resulting in it being in a
+ *	different position.  Compare this to the results in the example on
+ *	post-multiplication.
+ *
+ *	@param	pre	a Matrix which is the matrix to pre-multiply by.
+ *
+ */
+PY_METHOD_WITH_DOC(
+  preMultiply,
+  "This method multiplies the existing matrix by the passed in one.")
 
-	/*~ function Matrix.postMultiply
-	 *	@components{ all }
-	 *
-	 *	This method post multiplies this matrix by the specified matrix.
-	 *	Post-multiplication means that the specified matrix is on the right of the
-	 *	multiplication operator.  In transformation terms, the specified matrix
-	 *	is applied AFTER this matrix.
-	 *
-	 *	For example:
-	 *	@{
-	 *	>>> tr = Math.Matrix()
-	 *	>>> tr.setTranslate( (1,0,0) )
-	 *	>>> ro = Math.Matrix()
-	 *	>>> ro.setRotateY( 3.14159 / 2 )
-	 *	>>> out = Math.Matrix()
-	 *	>>> out.set(ro)
-	 *	>>> out.postMultiply(tr)
-	 *	>>> out.translation
-	 *	(1.000, 0.000, 0.000)
-	 *	>>> out.yaw
-	 *	-1.5707
-	 *	@}
-	 *	This example shows that post-multiplying the rotation by the translation
-	 *	applies the translation second, after rotation.  This results in
-	 *	the initial frame being rotated, and then translated, resulting in
-	 *	an unaltered translation.  Compare this to the result from
-	 *	pre-multiplication.
-	 *
-	 *	@param	pre	A Matrix which is the matrix to post-multiply by.
-	 *
-	 */
-	PY_METHOD_WITH_DOC( postMultiply, 
-		"This method multiplies the passed in matrix by the existing one." )
+/*~ function Matrix.postMultiply
+ *	@components{ all }
+ *
+ *	This method post multiplies this matrix by the specified matrix.
+ *	Post-multiplication means that the specified matrix is on the right of the
+ *	multiplication operator.  In transformation terms, the specified matrix
+ *	is applied AFTER this matrix.
+ *
+ *	For example:
+ *	@{
+ *	>>> tr = Math.Matrix()
+ *	>>> tr.setTranslate( (1,0,0) )
+ *	>>> ro = Math.Matrix()
+ *	>>> ro.setRotateY( 3.14159 / 2 )
+ *	>>> out = Math.Matrix()
+ *	>>> out.set(ro)
+ *	>>> out.postMultiply(tr)
+ *	>>> out.translation
+ *	(1.000, 0.000, 0.000)
+ *	>>> out.yaw
+ *	-1.5707
+ *	@}
+ *	This example shows that post-multiplying the rotation by the translation
+ *	applies the translation second, after rotation.  This results in
+ *	the initial frame being rotated, and then translated, resulting in
+ *	an unaltered translation.  Compare this to the result from
+ *	pre-multiplication.
+ *
+ *	@param	pre	A Matrix which is the matrix to post-multiply by.
+ *
+ */
+PY_METHOD_WITH_DOC(
+  postMultiply,
+  "This method multiplies the passed in matrix by the existing one.")
 
-	/*~ function Matrix.invert
-	 *	@components{ all }
-	 *
-	 *	This method inverts the matrix. Inverting a matrix is only defined if
-	 *	the determinant is non-zero.  If this method is called on a matrix with
-	 *	zero determinant, then the matrix is set to the identity matrix.
-	 *
-	 *	In terms of transformations, inverting a matrix "undoes" its transform.
-	 *
-	 *	For example:
-	 *	@{
-	 *	>>> m = Math.Matrix()
-	 *	>>> m.setTranslate( (1.0, 2.0, 3.0 ) )
-	 *	>>> m.invert()
-	 *	>>> m.tranlation
-	 *	(-1.000, -2.000, -3.000)
-	 *	>>> m1 = Math.Matrix()
-	 *	>>> m1.setRotateY( 1.0 )
-	 *	>>> m1.invert()
-	 *	>>> m1.yaw
-	 *	-1.0000
-	 *	@}
-	 *	The example shows how inverting the matrix "undoes" the translation for
-	 *	m, and the rotation for m1.  The same holds for composite transformations.
-	 */
-	PY_METHOD_WITH_DOC( invert, 
-		"This method sets the matrix to the inverse of itself." )
+/*~ function Matrix.invert
+ *	@components{ all }
+ *
+ *	This method inverts the matrix. Inverting a matrix is only defined if
+ *	the determinant is non-zero.  If this method is called on a matrix with
+ *	zero determinant, then the matrix is set to the identity matrix.
+ *
+ *	In terms of transformations, inverting a matrix "undoes" its transform.
+ *
+ *	For example:
+ *	@{
+ *	>>> m = Math.Matrix()
+ *	>>> m.setTranslate( (1.0, 2.0, 3.0 ) )
+ *	>>> m.invert()
+ *	>>> m.tranlation
+ *	(-1.000, -2.000, -3.000)
+ *	>>> m1 = Math.Matrix()
+ *	>>> m1.setRotateY( 1.0 )
+ *	>>> m1.invert()
+ *	>>> m1.yaw
+ *	-1.0000
+ *	@}
+ *	The example shows how inverting the matrix "undoes" the translation for
+ *	m, and the rotation for m1.  The same holds for composite transformations.
+ */
+PY_METHOD_WITH_DOC(invert,
+                   "This method sets the matrix to the inverse of itself.")
 
-	/*~ function Matrix.lookAt
-	 *	@components{ all }
-	 *
-	 *	This method sets the matrix up to transform by a specified position,
-	 *	looking in a given direction with the z-axis and with the specified
-	 *	vertical.
-	 *
-	 *	For example:
-	 *	@{
-	 *	modelMat = Math.Matrix()
-	 *	modelMat.setTranslate( (0,0,0) )
-	 *	cameraMat = Math.Matrix()
-	 *	pos = Math.Vector3( 0, 0, -10 )
-	 *	cameraMat.lookAt( pos, modelMat.applyToOrigin() - pos, (0,1,0) )
-	 *	@}
-	 *	This example sets up the camera matrix to be positioned at (0,0,-10)
-	 *	and to be looking at the model which is placed at the origin. The
-	 *	cameras up direction will be the same as the worlds.
-	 *
-	 *	@param	pos		The position to set the matrix translation to.
-	 *	@param	direction	The direction to orient the "look at" matrix.
-	 *	@param	up		The vertical axis for the camera.
-	 */
-	PY_METHOD_WITH_DOC( lookAt, "This method sets the matrix to a look-at "
-		"matrix, useful as a view matrix." )
+/*~ function Matrix.lookAt
+ *	@components{ all }
+ *
+ *	This method sets the matrix up to transform by a specified position,
+ *	looking in a given direction with the z-axis and with the specified
+ *	vertical.
+ *
+ *	For example:
+ *	@{
+ *	modelMat = Math.Matrix()
+ *	modelMat.setTranslate( (0,0,0) )
+ *	cameraMat = Math.Matrix()
+ *	pos = Math.Vector3( 0, 0, -10 )
+ *	cameraMat.lookAt( pos, modelMat.applyToOrigin() - pos, (0,1,0) )
+ *	@}
+ *	This example sets up the camera matrix to be positioned at (0,0,-10)
+ *	and to be looking at the model which is placed at the origin. The
+ *	cameras up direction will be the same as the worlds.
+ *
+ *	@param	pos		The position to set the matrix translation to.
+ *	@param	direction	The direction to orient the "look at" matrix.
+ *	@param	up		The vertical axis for the camera.
+ */
+PY_METHOD_WITH_DOC(lookAt,
+                   "This method sets the matrix to a look-at "
+                   "matrix, useful as a view matrix.")
 
-	/*~ function Matrix.setElement
-	 *	@components{ all }
-	 *
-	 *	This method sets the specified element of the matrix to the specified
-	 *	value.  The element is specified by the first two arguments, which are
-	 *	the row and the column respectively.
-	 *
-	 *	For example:
-	 *	@{
-	 *	>>> m = Math.Matrix()
-	 *	>>> m.setElement( 3, 0, 1.0 )
-	 *	>>> m.setElement( 3, 1, 2.0 )
-	 *	>>> m.setElement( 3, 2, 4.0 )
-	 *	>>> m.translation
-	 *	(1.0, 2.0, 4.0)
-	 *	@}
-	 *	The example sets the translation components of the matrix, element by
-	 *	element.
-	 *
-	 *	@param	row		An integer between 0 and 3.  This is the row that is
-	 *					being set.
-	 *	@param	col		An integer between 0 and 3.  This is the column that is
-	 *					being set.
-	 *	@param	val		A float. The value to set the element to.
-	 */
-	PY_METHOD_WITH_DOC( setElement, "This method sets the element at column, "
-		"row to the third parameter." )
+/*~ function Matrix.setElement
+ *	@components{ all }
+ *
+ *	This method sets the specified element of the matrix to the specified
+ *	value.  The element is specified by the first two arguments, which are
+ *	the row and the column respectively.
+ *
+ *	For example:
+ *	@{
+ *	>>> m = Math.Matrix()
+ *	>>> m.setElement( 3, 0, 1.0 )
+ *	>>> m.setElement( 3, 1, 2.0 )
+ *	>>> m.setElement( 3, 2, 4.0 )
+ *	>>> m.translation
+ *	(1.0, 2.0, 4.0)
+ *	@}
+ *	The example sets the translation components of the matrix, element by
+ *	element.
+ *
+ *	@param	row		An integer between 0 and 3.  This is the row that is
+ *					being set.
+ *	@param	col		An integer between 0 and 3.  This is the column that is
+ *					being set.
+ *	@param	val		A float. The value to set the element to.
+ */
+PY_METHOD_WITH_DOC(setElement,
+                   "This method sets the element at column, "
+                   "row to the third parameter.")
 
-	/*~ function Matrix.get
-	 *	@components{ all }
-	 *
-	 *	This method gets the value of a specified element of the matrix.
-	 *
-	 *	For example:
-	 *	@{
-	 *	>>> m = Math.Matrix()
-	 *	>>>	m.setTranslate( (1.0, 2.0, 3.0) )
-	 *	>>> m.get( 3, 0 )
-	 *	1.0
-	 *	>>>	m.get( 3, 1 )
-	 *	2.0
-	 *	>>>	m.get( 3, 2 )
-	 *	3.0
-	 *	@}
-	 *	The example sets a translation matrix, and then obtains the components
-	 *	one by one.
-	 *
-	 *	@param	row		An integer between 0 and 3.  This is the row that is
-	 *					being returned.
-	 *	@param	col		An integer between 0 and 3.  This is the column that is
-	 *					being returned.
-	 *
-	 *	@return			A float.  This is the value of the specified element.
-	 */
-	PY_METHOD_WITH_DOC( get, "This method returns the element at column, row." )
+/*~ function Matrix.get
+ *	@components{ all }
+ *
+ *	This method gets the value of a specified element of the matrix.
+ *
+ *	For example:
+ *	@{
+ *	>>> m = Math.Matrix()
+ *	>>>	m.setTranslate( (1.0, 2.0, 3.0) )
+ *	>>> m.get( 3, 0 )
+ *	1.0
+ *	>>>	m.get( 3, 1 )
+ *	2.0
+ *	>>>	m.get( 3, 2 )
+ *	3.0
+ *	@}
+ *	The example sets a translation matrix, and then obtains the components
+ *	one by one.
+ *
+ *	@param	row		An integer between 0 and 3.  This is the row that is
+ *					being returned.
+ *	@param	col		An integer between 0 and 3.  This is the column that is
+ *					being returned.
+ *
+ *	@return			A float.  This is the value of the specified element.
+ */
+PY_METHOD_WITH_DOC(get, "This method returns the element at column, row.")
 
-	/*~ function Matrix.applyPoint
-	 *	@components{ all }
-	 *
-	 *	This function applies the matrix to the specified point.  The point
-	 *	should be a Vector3, but will be treated as if it were a Vector4 with the
-	 *	fourth component being 1.0.
-	 *
-	 *	For example:
-	 *	@{
-	 *	>>>	m = Math.Matrix()
-	 *	>>>	m.setTranlate( (2,4,8) )
-	 *	>>> v = Math.Vector3( 1,2,3 )
-	 *	>>> m.applyPoint( v )
-	 *	(3.000, 6.000, 11.000)
-	 *	@}
-	 *	The example applies a translation matrix to the point (1,2,3)
-	 *
-	 *	@param	point	A Vector3 which is the point to be transformed.
-	 *
-	 *	@return			A Vector3 which is the transformed point.
-	 */
-	PY_METHOD_WITH_DOC( applyPoint,
-		"This method applies the matrix to the specified point.  The point "
-		"should be a Vector3, but will be treated as if it were a Vector4 "
-		"with the fourth component being 1.0." )
+/*~ function Matrix.applyPoint
+ *	@components{ all }
+ *
+ *	This function applies the matrix to the specified point.  The point
+ *	should be a Vector3, but will be treated as if it were a Vector4 with the
+ *	fourth component being 1.0.
+ *
+ *	For example:
+ *	@{
+ *	>>>	m = Math.Matrix()
+ *	>>>	m.setTranlate( (2,4,8) )
+ *	>>> v = Math.Vector3( 1,2,3 )
+ *	>>> m.applyPoint( v )
+ *	(3.000, 6.000, 11.000)
+ *	@}
+ *	The example applies a translation matrix to the point (1,2,3)
+ *
+ *	@param	point	A Vector3 which is the point to be transformed.
+ *
+ *	@return			A Vector3 which is the transformed point.
+ */
+PY_METHOD_WITH_DOC(
+  applyPoint,
+  "This method applies the matrix to the specified point.  The point "
+  "should be a Vector3, but will be treated as if it were a Vector4 "
+  "with the fourth component being 1.0.")
 
-	/*~ function Matrix.applyV4Point
-	 *	@components{ all }
-	 *
-	 *	This function applies the matrix to the specified point.  In this case
-	 *	a point is Vector4, with the 4th component being w.
-	 *
-	 *	For example:
-	 *	@{
-	 *	>>>	m = Math.Matrix()
-	 *	>>>	m.setTranlate( (2,4,8) )
-	 *	>>> v = Math.Vector4( 1,2,3,1 )
-	 *	>>> m.applyPoint( v )
-	 *	(3.000, 6.000, 11.000, 1.000)
-	 *	@}
-	 *	The example applies a translation matrix to the point (1,2,3,1)
-	 *
-	 *	@param	point	A Vector4 which is the point to be transformed.
-	 *
-	 *	@return			A Vector4 which is the transformed point.
-	 */
-	PY_METHOD_WITH_DOC( applyV4Point,
-		"This method transforms the passed in Vector4 by the matrix." )
+/*~ function Matrix.applyV4Point
+ *	@components{ all }
+ *
+ *	This function applies the matrix to the specified point.  In this case
+ *	a point is Vector4, with the 4th component being w.
+ *
+ *	For example:
+ *	@{
+ *	>>>	m = Math.Matrix()
+ *	>>>	m.setTranlate( (2,4,8) )
+ *	>>> v = Math.Vector4( 1,2,3,1 )
+ *	>>> m.applyPoint( v )
+ *	(3.000, 6.000, 11.000, 1.000)
+ *	@}
+ *	The example applies a translation matrix to the point (1,2,3,1)
+ *
+ *	@param	point	A Vector4 which is the point to be transformed.
+ *
+ *	@return			A Vector4 which is the transformed point.
+ */
+PY_METHOD_WITH_DOC(
+  applyV4Point,
+  "This method transforms the passed in Vector4 by the matrix.")
 
-	/*~ function Matrix.applyVector
-	 *	@components{ all }
-	 *
-	 *	This function applies the matrix to the specified vector.  The vector
-	 *	is a Vector3, and the last row of the matrix is ignored in the
-	 *	calculations.
-	 *
-	 *	For example:
-	 *	@{
-	 *	>>>	m = Math.Matrix()
-	 *	>>>	m.setTranlate( (2,4,8) )
-	 *	>>> v = Math.Vector3( 1,2,3 )
-	 *	>>> m.applyVector( v )
-	 *	(1.000, 2.000, 3.000)
-	 *	@}
-	 *	The example applies a translation matrix to the Vector3 (1,2,3)
-	 *
-	 *	@param	vec	A Vector3 which is the Vector3 to be transformed.
-	 *
-	 *	@return		A Vector3 which is the transformed Vector3.
-	 */
-	PY_METHOD_WITH_DOC( applyVector,
-		"This method applies the matrix to the specified vector.  The vector "
-		"is a Vector3, and the last row of the matrix is ignored in the "
-		"calculations." )
+/*~ function Matrix.applyVector
+ *	@components{ all }
+ *
+ *	This function applies the matrix to the specified vector.  The vector
+ *	is a Vector3, and the last row of the matrix is ignored in the
+ *	calculations.
+ *
+ *	For example:
+ *	@{
+ *	>>>	m = Math.Matrix()
+ *	>>>	m.setTranlate( (2,4,8) )
+ *	>>> v = Math.Vector3( 1,2,3 )
+ *	>>> m.applyVector( v )
+ *	(1.000, 2.000, 3.000)
+ *	@}
+ *	The example applies a translation matrix to the Vector3 (1,2,3)
+ *
+ *	@param	vec	A Vector3 which is the Vector3 to be transformed.
+ *
+ *	@return		A Vector3 which is the transformed Vector3.
+ */
+PY_METHOD_WITH_DOC(
+  applyVector,
+  "This method applies the matrix to the specified vector.  The vector "
+  "is a Vector3, and the last row of the matrix is ignored in the "
+  "calculations.")
 
-	/*~ function Matrix.applyToAxis
-	 *	@components{ all }
-	 *
-	 *	This function applies the matrix to the specified axis.  The axis is
-	 *	specified using an integer between 0 and 2, with 0 corresponding to the
-	 *	x-axis, 1 to the y-axis and 2 to the z-axis.
-	 *	Numbers above 2 have undefined results.
-	 *
-	 *	For example:
-	 *	@{
-	 *	>>>	m = Math.Matrix()
-	 *	>>> m.setRotateY( 3.1415 / 2 )
-	 *	>>>	m.applyToAxis( 2 )
-	 *	(1.00, 0.00, 0.00)
-	 *	@}
-	 *	This example rotates the z-axis through 90 degrees around the y-axis
-	 *	leaving it lined up with the old x-axis.
-	 *
-	 *	@param	axis	an Ingeger between 0 and 2, specifying the axis to transform
-	 *
-	 *	@return			a Vector3, which is the transformed axis.
-	 */
-	PY_METHOD_WITH_DOC( applyToAxis,
-		"This method returns the axis represented by column n in the matrix." )
+/*~ function Matrix.applyToAxis
+ *	@components{ all }
+ *
+ *	This function applies the matrix to the specified axis.  The axis is
+ *	specified using an integer between 0 and 2, with 0 corresponding to the
+ *	x-axis, 1 to the y-axis and 2 to the z-axis.
+ *	Numbers above 2 have undefined results.
+ *
+ *	For example:
+ *	@{
+ *	>>>	m = Math.Matrix()
+ *	>>> m.setRotateY( 3.1415 / 2 )
+ *	>>>	m.applyToAxis( 2 )
+ *	(1.00, 0.00, 0.00)
+ *	@}
+ *	This example rotates the z-axis through 90 degrees around the y-axis
+ *	leaving it lined up with the old x-axis.
+ *
+ *	@param	axis	an Ingeger between 0 and 2, specifying the axis to transform
+ *
+ *	@return			a Vector3, which is the transformed axis.
+ */
+PY_METHOD_WITH_DOC(
+  applyToAxis,
+  "This method returns the axis represented by column n in the matrix.")
 
-	/*~ function Matrix.applyToOrigin
-	 *	@components{ all }
-	 *
-	 *	This function applies the matrix to the origin.  This is exactly the same
-	 *	as calling the applyPoint function on the point (0,0,0), or the
-	 *	applyV4Point function on (0,0,0,1).  It is also the same as the
-	 *	translation attribute.
-	 *
-	 *	For example:
-	 *	@{
-	 *	>>>	m = Math.Matrix()
-	 *	>>> m.setTranlation( (1,2,3) )
-	 *	>>>	m.applyToOrigin()
-	 *	(1.00, 2.00, 3.00)
-	 *	@}
-	 *	This example applies a translation matrix to the origin.
-	 *
-	 *	@return			a Vector3 which is the transformed origin.
-	 */
-	PY_METHOD_WITH_DOC( applyToOrigin,
-		"This method returns the translation of the matrix." )
+/*~ function Matrix.applyToOrigin
+ *	@components{ all }
+ *
+ *	This function applies the matrix to the origin.  This is exactly the same
+ *	as calling the applyPoint function on the point (0,0,0), or the
+ *	applyV4Point function on (0,0,0,1).  It is also the same as the
+ *	translation attribute.
+ *
+ *	For example:
+ *	@{
+ *	>>>	m = Math.Matrix()
+ *	>>> m.setTranlation( (1,2,3) )
+ *	>>>	m.applyToOrigin()
+ *	(1.00, 2.00, 3.00)
+ *	@}
+ *	This example applies a translation matrix to the origin.
+ *
+ *	@return			a Vector3 which is the transformed origin.
+ */
+PY_METHOD_WITH_DOC(applyToOrigin,
+                   "This method returns the translation of the matrix.")
 
-	/*~ function Matrix.orthogonalProjection
-	 *	@components{ all }
-	 *
-	 *	This function sets the matrix to a left-handed orthogonal projection
-	 *	matrix.  It can be used for a projection matrix on a camera to give
-	 *	a non-perspective (orthogonal) view on the world.
-	 *
-	 *	@param width	a Float, the width of the viewport.
-	 *	@param height	a Float, the height of the viewport.
-	 *	@param near	a Float, the distance to the near clipping plane.
-	 *	@param far	a Float, the distance to the far clipping plane.
-	 */
-	PY_METHOD_WITH_DOC( orthogonalProjection,
-		"This method sets the matrix to an orthogonal projection matrix." )
+/*~ function Matrix.orthogonalProjection
+ *	@components{ all }
+ *
+ *	This function sets the matrix to a left-handed orthogonal projection
+ *	matrix.  It can be used for a projection matrix on a camera to give
+ *	a non-perspective (orthogonal) view on the world.
+ *
+ *	@param width	a Float, the width of the viewport.
+ *	@param height	a Float, the height of the viewport.
+ *	@param near	a Float, the distance to the near clipping plane.
+ *	@param far	a Float, the distance to the far clipping plane.
+ */
+PY_METHOD_WITH_DOC(
+  orthogonalProjection,
+  "This method sets the matrix to an orthogonal projection matrix.")
 
-	/*~ function Matrix.perspectiveProjection
-	 *	@components{ all }
-	 *
-	 *	This function sets the matrix to a left-handed perspective projection
-	 *	matrix. This can be used as the projection matrix on a camera to give
-	 *	a perspective view on the world.
-	 *
-	 *	@param	fov		A Float, the field of view.
-	 *	@param	aspect	A Float, the aspect ratio (ratio of the width to the height).
-	 *	@param near	A Float, the distance to the near clipping plane.
-	 *	@param far	A Float, the distance to the far clipping plane.
-	 */
-	PY_METHOD_WITH_DOC( perspectiveProjection,
-		"This method sets the matrix to a perspective projection matrix." )
+/*~ function Matrix.perspectiveProjection
+ *	@components{ all }
+ *
+ *	This function sets the matrix to a left-handed perspective projection
+ *	matrix. This can be used as the projection matrix on a camera to give
+ *	a perspective view on the world.
+ *
+ *	@param	fov		A Float, the field of view.
+ *	@param	aspect	A Float, the aspect ratio (ratio of the width to the
+ *height).
+ *	@param near	A Float, the distance to the near clipping plane.
+ *	@param far	A Float, the distance to the far clipping plane.
+ */
+PY_METHOD_WITH_DOC(
+  perspectiveProjection,
+  "This method sets the matrix to a perspective projection matrix.")
 
-	PY_METHOD( __getstate__ )
-	PY_METHOD( __setstate__ )
+PY_METHOD(__getstate__)
+PY_METHOD(__setstate__)
 
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( PyMatrix )
+PY_BEGIN_ATTRIBUTES(PyMatrix)
 
-	/*~ attribute Matrix.determinant
-	 *	@components{ all }
-	 *
-	 *	This attribute returns the determinant of the matrix.
-	 *
-	 *	The determinant of a matrix has many mathematical uses.  In the context
-	 *	of a 3d engine the most likely use is to compare it to zero.  If the
-	 *	determinant of a matrix is zero, then the matrix cannot be inverted.
-	 *
-	 *	@type	Read-Only Float
-	 */
-	PY_ATTRIBUTE( determinant )
+/*~ attribute Matrix.determinant
+ *	@components{ all }
+ *
+ *	This attribute returns the determinant of the matrix.
+ *
+ *	The determinant of a matrix has many mathematical uses.  In the context
+ *	of a 3d engine the most likely use is to compare it to zero.  If the
+ *	determinant of a matrix is zero, then the matrix cannot be inverted.
+ *
+ *	@type	Read-Only Float
+ */
+PY_ATTRIBUTE(determinant)
 
-	/*~ attribute Matrix.isMirrored
-	 *	@components{ all }
-	 *
-	 *	This attribute is non-zero(true) if the matrix is mirrored, and zero
-	 *	(false) if the matrix is non mirrored.  This is derived from the
-	 *	elements of the matrix.
-	 *
-	 *	If a matrix, when applied to a coordinate system, changes it from a
-	 *	left hand system to a right hand system, then the matrix is described
-	 *	as mirrored.
-	 *
-	 *	@type	Read-Only Integer (as boolean)
-	 */
-	PY_ATTRIBUTE( isMirrored )
+/*~ attribute Matrix.isMirrored
+ *	@components{ all }
+ *
+ *	This attribute is non-zero(true) if the matrix is mirrored, and zero
+ *	(false) if the matrix is non mirrored.  This is derived from the
+ *	elements of the matrix.
+ *
+ *	If a matrix, when applied to a coordinate system, changes it from a
+ *	left hand system to a right hand system, then the matrix is described
+ *	as mirrored.
+ *
+ *	@type	Read-Only Integer (as boolean)
+ */
+PY_ATTRIBUTE(isMirrored)
 
-	/*~ attribute Matrix.translation
-	 *	@components{ all }
-	 *
-	 *	This attribute is the translation component of the matrix.  Unlike the
-	 *	pitch, yaw and roll attributes, it is both read and write.
-	 *
-	 *	@type	Vector3
-	 */
-	PY_ATTRIBUTE( translation )
+/*~ attribute Matrix.translation
+ *	@components{ all }
+ *
+ *	This attribute is the translation component of the matrix.  Unlike the
+ *	pitch, yaw and roll attributes, it is both read and write.
+ *
+ *	@type	Vector3
+ */
+PY_ATTRIBUTE(translation)
 
-	/*~ attribute Matrix.yaw
-	 *	@components{ all }
-	 *
-	 *	This attribute is the rotation specified by the matrix around the
-	 *	y-axis.  Zero yaw is along the z-axis, with increase in yaw rotating
-	 *	anti-clockwise when looking along the y-axis.
-	 *
-	 *	@type	Read-Only Float
-	 */
-	PY_ATTRIBUTE( yaw )
+/*~ attribute Matrix.yaw
+ *	@components{ all }
+ *
+ *	This attribute is the rotation specified by the matrix around the
+ *	y-axis.  Zero yaw is along the z-axis, with increase in yaw rotating
+ *	anti-clockwise when looking along the y-axis.
+ *
+ *	@type	Read-Only Float
+ */
+PY_ATTRIBUTE(yaw)
 
-	/*~ attribute Matrix.pitch
-	 *	@components{ all }
-	 *
-	 *	This attribute is the rotation specified by the matrix around the
-	 *	x-axis.  Zero pitch is along the z-axis with increase in pitch
-	 *	rotating clockwise when looking along the x-axis.
-	 *
-	 *	@type	Read-Only Float
-	 */
-	PY_ATTRIBUTE( pitch )
+/*~ attribute Matrix.pitch
+ *	@components{ all }
+ *
+ *	This attribute is the rotation specified by the matrix around the
+ *	x-axis.  Zero pitch is along the z-axis with increase in pitch
+ *	rotating clockwise when looking along the x-axis.
+ *
+ *	@type	Read-Only Float
+ */
+PY_ATTRIBUTE(pitch)
 
-	/*~ attribute Matrix.roll
-	 *	@components{ all }
-	 *
-	 *	This attribute is the rotation specified by the matrix around the
-	 *	z-axis.  Zero pitch is along the x-axis with increase in roll
-	 *	rotating clockwise when looking along the z-axis.
-	 *
-	 *	@type	Read-Only Float
-	 */
-	PY_ATTRIBUTE( roll )
+/*~ attribute Matrix.roll
+ *	@components{ all }
+ *
+ *	This attribute is the rotation specified by the matrix around the
+ *	z-axis.  Zero pitch is along the x-axis with increase in roll
+ *	rotating clockwise when looking along the z-axis.
+ *
+ *	@type	Read-Only Float
+ */
+PY_ATTRIBUTE(roll)
 
 PY_END_ATTRIBUTES()
 
@@ -709,58 +717,56 @@ PY_END_ATTRIBUTES()
  *
  *	@return	a new Matrix
  */
-PY_FACTORY_NAMED( PyMatrix, "Matrix", Math )
+PY_FACTORY_NAMED(PyMatrix, "Matrix", Math)
 
 /**
  *	Pickling getstate method
  */
-PyObject * PyMatrix::py___getstate__( PyObject * args )
+PyObject* PyMatrix::py___getstate__(PyObject* args)
 {
-	BW::string state( (char*)static_cast<Matrix*>(this), sizeof(Matrix) );
-	return Script::getData( state );
+    BW::string state((char*)static_cast<Matrix*>(this), sizeof(Matrix));
+    return Script::getData(state);
 }
 
 /**
  *	Picking setstate method
  */
-PyObject * PyMatrix::py___setstate__( PyObject * args )
+PyObject* PyMatrix::py___setstate__(PyObject* args)
 {
-	if (PyTuple_Size( args ) != 1)
-	{
-		PyErr_SetString( PyExc_TypeError,
-			"Matrix.__setstate__ was given wrong args" );
-		return NULL;
-	}
-	PyObject * pyStr = PyTuple_GET_ITEM( args, 0 );
-	if (!PyString_Check( pyStr ) || PyString_Size( pyStr ) != sizeof(Matrix))
-	{
-		PyErr_SetString( PyExc_ValueError,
-			"Matrix.__setstate__ was given bad state" );
-		return NULL;
-	}
-	this->set( *(Matrix*)( PyString_AsString( pyStr ) ) );
-	Py_RETURN_NONE;
+    if (PyTuple_Size(args) != 1) {
+        PyErr_SetString(PyExc_TypeError,
+                        "Matrix.__setstate__ was given wrong args");
+        return NULL;
+    }
+    PyObject* pyStr = PyTuple_GET_ITEM(args, 0);
+    if (!PyString_Check(pyStr) || PyString_Size(pyStr) != sizeof(Matrix)) {
+        PyErr_SetString(PyExc_ValueError,
+                        "Matrix.__setstate__ was given bad state");
+        return NULL;
+    }
+    this->set(*(Matrix*)(PyString_AsString(pyStr)));
+    Py_RETURN_NONE;
 }
 
 /**
  *	Python factory method
  */
-PyObject * PyMatrix::pyNew( PyObject * args )
+PyObject* PyMatrix::pyNew(PyObject* args)
 {
-	PyObject * pympp = NULL;
-	if (!PyArg_ParseTuple( args, "|O", &pympp ) ||
-		(pympp != NULL && !MatrixProvider::Check( pympp )))
-	{
-		PyErr_SetString( PyExc_TypeError, "Math.Matrix(): "
-			"Expected an optional MatrixProvider" );
-		return NULL;
-	}
+    PyObject* pympp = NULL;
+    if (!PyArg_ParseTuple(args, "|O", &pympp) ||
+        (pympp != NULL && !MatrixProvider::Check(pympp))) {
+        PyErr_SetString(PyExc_TypeError,
+                        "Math.Matrix(): "
+                        "Expected an optional MatrixProvider");
+        return NULL;
+    }
 
-	PyMatrix * pm = new PyMatrix();
-	if (pympp != NULL) pm->set( static_cast<MatrixProvider*>( pympp ) );
-	return pm;
+    PyMatrix* pm = new PyMatrix();
+    if (pympp != NULL)
+        pm->set(static_cast<MatrixProvider*>(pympp));
+    return pm;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: MatrixProduct
@@ -775,25 +781,26 @@ PyObject * PyMatrix::pyNew( PyObject * args )
  */
 class MatrixProduct : public MatrixProvider
 {
-	Py_Header( MatrixProduct, MatrixProvider )
+    Py_Header(MatrixProduct, MatrixProvider)
 
-public:
-	MatrixProduct( PyTypeObject * pType = &s_type_ ) :
-		MatrixProvider( false, &s_type_ ) { }
+      public
+      : MatrixProduct(PyTypeObject* pType = &s_type_)
+      : MatrixProvider(false, &s_type_)
+    {
+    }
 
-	virtual void matrix( Matrix & m ) const;
+    virtual void matrix(Matrix& m) const;
 
-	PY_RW_ATTRIBUTE_DECLARE( a_, a )
-	PY_RW_ATTRIBUTE_DECLARE( b_, b )
+    PY_RW_ATTRIBUTE_DECLARE(a_, a)
+    PY_RW_ATTRIBUTE_DECLARE(b_, b)
 
-	static MatrixProduct * New()	{ return new MatrixProduct(); }
-	PY_AUTO_FACTORY_DECLARE( MatrixProduct, END )
+    static MatrixProduct* New() { return new MatrixProduct(); }
+    PY_AUTO_FACTORY_DECLARE(MatrixProduct, END)
 
-private:
-	MatrixProviderPtr	a_;
-	MatrixProviderPtr	b_;
+  private:
+    MatrixProviderPtr a_;
+    MatrixProviderPtr b_;
 };
-
 
 /*~ class Math.MatrixProduct
  *	@components{ all }
@@ -828,28 +835,28 @@ private:
  *  Where a and/or b are not assigned, they are treated as if they were the
  *  equal to the identity matrix.
  */
-PY_TYPEOBJECT( MatrixProduct )
+PY_TYPEOBJECT(MatrixProduct)
 
-PY_BEGIN_METHODS( MatrixProduct )
+PY_BEGIN_METHODS(MatrixProduct)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( MatrixProduct )
+PY_BEGIN_ATTRIBUTES(MatrixProduct)
 
-	/*~ attribute MatrixProduct.a
-	 *	@components{ all }
-	 *  This is the 'a' in the expression
-	 *  'a x b', the results of this being what is provided by the MatrixProduct.
-	 *  @type Read-Write MatrixProvider
-	 */
-	PY_ATTRIBUTE( a )
+/*~ attribute MatrixProduct.a
+ *	@components{ all }
+ *  This is the 'a' in the expression
+ *  'a x b', the results of this being what is provided by the MatrixProduct.
+ *  @type Read-Write MatrixProvider
+ */
+PY_ATTRIBUTE(a)
 
-	/*~ attribute MatrixProduct.b
-	 *	@components{ all }
-	 *  This is the 'b' in the expression
-	 *  'a x b', the results of this being what is provided by the MatrixProduct.
-	 *  @type Read-Write MatrixProvider
-	 */
-	PY_ATTRIBUTE( b )
+/*~ attribute MatrixProduct.b
+ *	@components{ all }
+ *  This is the 'b' in the expression
+ *  'a x b', the results of this being what is provided by the MatrixProduct.
+ *  @type Read-Write MatrixProvider
+ */
+PY_ATTRIBUTE(b)
 
 PY_END_ATTRIBUTES()
 
@@ -858,34 +865,27 @@ PY_END_ATTRIBUTES()
  *  Creates a new MatrixProduct object. This provides the result of the
  *  expression 'a x b', where a and b are it's MatrixProvider arguments.
  */
-PY_FACTORY( MatrixProduct, Math )
-
+PY_FACTORY(MatrixProduct, Math)
 
 /**
  *	MatrixProvider matrix method
  */
-void MatrixProduct::matrix( Matrix & m ) const
+void MatrixProduct::matrix(Matrix& m) const
 {
-	if (a_)
-	{
-		a_->matrix( m );
-		if (b_)
-		{
-			Matrix bm;
-			b_->matrix( bm );
-			m.postMultiply( bm );
-		}
-	}
-	else
-	{
-		if (b_)
-			b_->matrix( m );
-		else
-			m = Matrix::identity;
-	}
-
+    if (a_) {
+        a_->matrix(m);
+        if (b_) {
+            Matrix bm;
+            b_->matrix(bm);
+            m.postMultiply(bm);
+        }
+    } else {
+        if (b_)
+            b_->matrix(m);
+        else
+            m = Matrix::identity;
+    }
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: MatrixInverse
@@ -900,25 +900,28 @@ void MatrixProduct::matrix( Matrix & m ) const
  */
 class MatrixInverse : public MatrixProvider
 {
-	Py_Header( MatrixInverse, MatrixProvider )
+    Py_Header(MatrixInverse, MatrixProvider)
 
-public:
-	MatrixInverse( MatrixProviderPtr s, PyTypeObject * pType = &s_type_ ) :
-		MatrixProvider( false, &s_type_ ),
-		source_( s )
-	{ }
+      public
+      : MatrixInverse(MatrixProviderPtr s, PyTypeObject* pType = &s_type_)
+      : MatrixProvider(false, &s_type_)
+      , source_(s)
+    {
+    }
 
-	virtual void matrix( Matrix & m ) const;
+    virtual void matrix(Matrix& m) const;
 
-	PY_RW_ATTRIBUTE_DECLARE( source_, source )
+    PY_RW_ATTRIBUTE_DECLARE(source_, source)
 
-	static MatrixInverse * New( MatrixProviderPtr s )	{ return new MatrixInverse(s); }
-	PY_AUTO_FACTORY_DECLARE( MatrixInverse, ARG( MatrixProviderPtr, END) )
+    static MatrixInverse* New(MatrixProviderPtr s)
+    {
+        return new MatrixInverse(s);
+    }
+    PY_AUTO_FACTORY_DECLARE(MatrixInverse, ARG(MatrixProviderPtr, END))
 
-private:
-	MatrixProviderPtr	source_;
+  private:
+    MatrixProviderPtr source_;
 };
-
 
 /*~ class Math.MatrixInverse
  *	@components{ all }
@@ -951,19 +954,19 @@ private:
  *  Where the source attibute is not assigned, the result will be
  *  equal to the identity matrix.
  */
-PY_TYPEOBJECT( MatrixInverse )
+PY_TYPEOBJECT(MatrixInverse)
 
-PY_BEGIN_METHODS( MatrixInverse )
+PY_BEGIN_METHODS(MatrixInverse)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( MatrixInverse )
+PY_BEGIN_ATTRIBUTES(MatrixInverse)
 
-	/*~ attribute MatrixInverse.source
-	 *	@components{ all }
-	 *  This is the MatrixProvider that is to be inverted.
-	 *  @type Read-Write MatrixProvider
-	 */
-	PY_ATTRIBUTE( source )
+/*~ attribute MatrixInverse.source
+ *	@components{ all }
+ *  This is the MatrixProvider that is to be inverted.
+ *  @type Read-Write MatrixProvider
+ */
+PY_ATTRIBUTE(source)
 
 PY_END_ATTRIBUTES()
 
@@ -972,26 +975,20 @@ PY_END_ATTRIBUTES()
  *  Creates a new MatrixInverse object. This provides the inverse of the
  *  source argument.
  */
-PY_FACTORY( MatrixInverse, Math )
-
+PY_FACTORY(MatrixInverse, Math)
 
 /**
  *	MatrixProvider matrix method
  */
-void MatrixInverse::matrix( Matrix & m ) const
+void MatrixInverse::matrix(Matrix& m) const
 {
-	if (source_)
-	{
-		source_->matrix( m );
-		m.invert();
-	}
-	else
-	{
-		m = Matrix::identity;
-	}
-
+    if (source_) {
+        source_->matrix(m);
+        m.invert();
+    } else {
+        m = Matrix::identity;
+    }
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: MatrixAnimation
@@ -1004,69 +1001,67 @@ void MatrixInverse::matrix( Matrix & m ) const
  *	It is useful also simply as a proxy or script pointer to a matrix,
  *	as well as a volatile expression.
  */
-#if defined( _WIN32 )
+#if defined(_WIN32)
 class MatrixAnimation : public MatrixProvider
 {
-	Py_Header( MatrixAnimation, MatrixProvider )
+    Py_Header(MatrixAnimation, MatrixProvider)
 
-public:
-	MatrixAnimation( PyTypeObject * pType = &s_type_ );
+      public : MatrixAnimation(PyTypeObject* pType = &s_type_);
 
-	virtual void matrix( Matrix & m ) const;
-	virtual void tick( float dTime );
+    virtual void matrix(Matrix& m) const;
+    virtual void tick(float dTime);
 
-	PY_RW_ATTRIBUTE_DECLARE( time_, time )
-	PY_RW_ATTRIBUTE_DECLARE( keyframesHolder_, keyframes )
-	PY_RW_ATTRIBUTE_DECLARE( loop_, loop )
+    PY_RW_ATTRIBUTE_DECLARE(time_, time)
+    PY_RW_ATTRIBUTE_DECLARE(keyframesHolder_, keyframes)
+    PY_RW_ATTRIBUTE_DECLARE(loop_, loop)
 
-	static MatrixAnimation * New()	{ return new MatrixAnimation(); }
-	PY_AUTO_FACTORY_DECLARE( MatrixProduct, END )
+    static MatrixAnimation* New() { return new MatrixAnimation(); }
+    PY_AUTO_FACTORY_DECLARE(MatrixProduct, END)
 
-	typedef std::pair<float,MatrixProviderPtr> Keyframe;
-	typedef BW::vector< Keyframe> Keyframes;
+    typedef std::pair<float, MatrixProviderPtr> Keyframe;
+    typedef BW::vector<Keyframe>                Keyframes;
 
-private:
-	mutable float		time_;
-	Keyframes	keyframes_;
-	PySTLSequenceHolder<Keyframes>	keyframesHolder_;
-	bool		loop_;
+  private:
+    mutable float                  time_;
+    Keyframes                      keyframes_;
+    PySTLSequenceHolder<Keyframes> keyframesHolder_;
+    bool                           loop_;
 };
 
 // keyframe converters
-namespace Script
-{
-	int setData( PyObject * pObject, MatrixAnimation::Keyframe & rpVal,
-		const char * varName = "" )
-	{
-		MatrixAnimation::Keyframe t;
-		bool good = false;
-		if (PyTuple_Check( pObject ) && PyTuple_Size( pObject ) == 2)
-		{
-			int ret = 0;
-			ret |= Script::setData( PyTuple_GET_ITEM( pObject, 0 ), t.first );
-			ret |= Script::setData( PyTuple_GET_ITEM( pObject, 1 ), t.second );
-			good = (ret == 0) && t.second;
-		}
-		if (!good)
-		{
-			PyErr_Format( PyExc_TypeError, "%s must be set to "
-				"a tuple of a float and a MatrixProvider", varName );
-			return -1;
-		}
+namespace Script {
+    int setData(PyObject*                  pObject,
+                MatrixAnimation::Keyframe& rpVal,
+                const char*                varName = "")
+    {
+        MatrixAnimation::Keyframe t;
+        bool                      good = false;
+        if (PyTuple_Check(pObject) && PyTuple_Size(pObject) == 2) {
+            int ret = 0;
+            ret |= Script::setData(PyTuple_GET_ITEM(pObject, 0), t.first);
+            ret |= Script::setData(PyTuple_GET_ITEM(pObject, 1), t.second);
+            good = (ret == 0) && t.second;
+        }
+        if (!good) {
+            PyErr_Format(PyExc_TypeError,
+                         "%s must be set to "
+                         "a tuple of a float and a MatrixProvider",
+                         varName);
+            return -1;
+        }
 
-		rpVal = t;
-		return 0;
-	}
+        rpVal = t;
+        return 0;
+    }
 
-	PyObject * getData( const MatrixAnimation::Keyframe & pVal )
-	{
-		PyObject * pTuple = PyTuple_New( 2 );
-		PyTuple_SET_ITEM( pTuple, 0, Script::getData( pVal.first ) );
-		PyTuple_SET_ITEM( pTuple, 1, Script::getData( pVal.second ) );
-		return pTuple;
-	}
+    PyObject* getData(const MatrixAnimation::Keyframe& pVal)
+    {
+        PyObject* pTuple = PyTuple_New(2);
+        PyTuple_SET_ITEM(pTuple, 0, Script::getData(pVal.first));
+        PyTuple_SET_ITEM(pTuple, 1, Script::getData(pVal.second));
+        return pTuple;
+    }
 };
-
 
 /*~ class Math.MatrixAnimation
  *	@components{ client, tools }
@@ -1086,36 +1081,36 @@ namespace Script
  *
  *	A new MatrixAnimation is created using Math.MatrixAnimation function.
  */
-PY_TYPEOBJECT( MatrixAnimation )
+PY_TYPEOBJECT(MatrixAnimation)
 
-PY_BEGIN_METHODS( MatrixAnimation )
+PY_BEGIN_METHODS(MatrixAnimation)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( MatrixAnimation )
+PY_BEGIN_ATTRIBUTES(MatrixAnimation)
 
-	/*~ attribute MatrixAnimation.time
-	 *	@components{ client, tools }
-	 *  The time that has passed since the animation
-	 *  entered it's current cycle, in seconds.
-	 *  @type Read-Write float
-	 */
-	PY_ATTRIBUTE( time )
+/*~ attribute MatrixAnimation.time
+ *	@components{ client, tools }
+ *  The time that has passed since the animation
+ *  entered it's current cycle, in seconds.
+ *  @type Read-Write float
+ */
+PY_ATTRIBUTE(time)
 
-	/*~ attribute MatrixAnimation.keyframes
-	 *	@components{ client, tools }
-	 *  Each entry in this list contains a time to which the keyframe
-	 *  applies, in seconds, and a MatrixProvider which provides the
-	 *  keyframe value.
-	 *  @type Read-Write list of tuples containing a float and a Vector4Provider
-	 */
-	PY_ATTRIBUTE( keyframes )
+/*~ attribute MatrixAnimation.keyframes
+ *	@components{ client, tools }
+ *  Each entry in this list contains a time to which the keyframe
+ *  applies, in seconds, and a MatrixProvider which provides the
+ *  keyframe value.
+ *  @type Read-Write list of tuples containing a float and a Vector4Provider
+ */
+PY_ATTRIBUTE(keyframes)
 
-	/*~	attribute MatrixAnimation.loop
-	 *	@components{ client, tools }
-	 *	Animation sequence will loop if this is set to true.  Defaults to false.
-	 *	@type boolean
-	 */
-	PY_ATTRIBUTE( loop )
+/*~	attribute MatrixAnimation.loop
+ *	@components{ client, tools }
+ *	Animation sequence will loop if this is set to true.  Defaults to false.
+ *	@type boolean
+ */
+PY_ATTRIBUTE(loop)
 
 PY_END_ATTRIBUTES()
 
@@ -1126,222 +1121,195 @@ PY_END_ATTRIBUTES()
  *  a number of MatrixProvider objects.
  *  @return The new MatrixAnimation
  */
-PY_FACTORY( MatrixAnimation, Math )
+PY_FACTORY(MatrixAnimation, Math)
 
-#if defined( _MSC_VER )
-#pragma warning( push )
+#if defined(_MSC_VER)
+#pragma warning(push)
 // C4355: 'this' : used in base member initializer list
-#pragma warning( disable: 4355 )
+#pragma warning(disable : 4355)
 #endif // defined( _MSC_VER )
 
-MatrixAnimation::MatrixAnimation( PyTypeObject * pType ) :
-	MatrixProvider( true, &s_type_ ),
-	keyframesHolder_( keyframes_, this, true ),
-	time_( 0 ),
-	loop_( false )
+MatrixAnimation::MatrixAnimation(PyTypeObject* pType)
+  : MatrixProvider(true, &s_type_)
+  , keyframesHolder_(keyframes_, this, true)
+  , time_(0)
+  , loop_(false)
 {
-
 }
 
-#if defined( _MSC_VER )
-#pragma warning( pop )
+#if defined(_MSC_VER)
+#pragma warning(pop)
 #endif // defined( _MSC_VER )
 
 /**
  *	MatrixProvider matrix method
  */
-void MatrixAnimation::matrix( Matrix & m ) const
+void MatrixAnimation::matrix(Matrix& m) const
 {
-	if (!keyframes_.size())
-		// No animation for you!
-		return;
+    if (!keyframes_.size())
+        // No animation for you!
+        return;
 
-	// do loop if loop is enabled
-	if (loop_)
-	{
-		float lastTime = keyframes_.back().first;
-		if (time_ > lastTime || time_ < 0)
-		{
-			time_ = fmodf( time_, lastTime );
-			if (time_ < 0)
-				time_ += lastTime;
-		}
-	}
+    // do loop if loop is enabled
+    if (loop_) {
+        float lastTime = keyframes_.back().first;
+        if (time_ > lastTime || time_ < 0) {
+            time_ = fmodf(time_, lastTime);
+            if (time_ < 0)
+                time_ += lastTime;
+        }
+    }
 
-	// do linear search through keyframes to find the two time_ falls between.
-	Keyframes::const_iterator it = keyframes_.begin();
-	while( it != keyframes_.end() && it->first <= time_ )
-		++it;
+    // do linear search through keyframes to find the two time_ falls between.
+    Keyframes::const_iterator it = keyframes_.begin();
+    while (it != keyframes_.end() && it->first <= time_)
+        ++it;
 
-	Keyframes::const_iterator lit;
-	if  (it != keyframes_.begin())
-	{
-		lit = it;
-		--lit;
-	}
-	else
-	{
-		lit = it;
-		it = keyframes_.end();
-	}
+    Keyframes::const_iterator lit;
+    if (it != keyframes_.begin()) {
+        lit = it;
+        --lit;
+    } else {
+        lit = it;
+        it  = keyframes_.end();
+    }
 
-	if (it != keyframes_.end())
-	{
-		float t = (time_ - lit->first) / ( it->first - lit->first );
-		Matrix m1;
-		Matrix m2;
-		lit->second->matrix( m1 );
-		it->second->matrix( m2 );
+    if (it != keyframes_.end()) {
+        float  t = (time_ - lit->first) / (it->first - lit->first);
+        Matrix m1;
+        Matrix m2;
+        lit->second->matrix(m1);
+        it->second->matrix(m2);
 
-		BlendTransform bt( m1 );
-		bt.blend( t, BlendTransform( m2 ) );
-		bt.output(m);
-	}
-	else
-	{
-		lit->second->matrix( m );
-	}
-
+        BlendTransform bt(m1);
+        bt.blend(t, BlendTransform(m2));
+        bt.output(m);
+    } else {
+        lit->second->matrix(m);
+    }
 }
 
 /**
  *	MatrixProvider tick method
  */
-void MatrixAnimation::tick( float dTime )
+void MatrixAnimation::tick(float dTime)
 {
-	time_ += dTime;
+    time_ += dTime;
 }
 
-#endif  // MF_SERVER
+#endif // MF_SERVER
 
 // -----------------------------------------------------------------------------
 // Section: PyVector<V>
 // -----------------------------------------------------------------------------
 
 template <class V>
-bool PyVector<V>::safeSetVector( const V & v )
+bool PyVector<V>::safeSetVector(const V& v)
 {
-	if (isReadOnly_)
-	{
-		PyErr_SetString( PyExc_TypeError, "Vector is read-only" );
-		return false;
-	}
+    if (isReadOnly_) {
+        PyErr_SetString(PyExc_TypeError, "Vector is read-only");
+        return false;
+    }
 
-	if (!this->setVector( v ))
-	{
-		if (!PyErr_Occurred())
-			PyErr_SetString( PyExc_ValueError, "Vector set to invalid value" );
-		return false;
-	}
+    if (!this->setVector(v)) {
+        if (!PyErr_Occurred())
+            PyErr_SetString(PyExc_ValueError, "Vector set to invalid value");
+        return false;
+    }
 
-	return true;
+    return true;
 }
-
 
 template <class V>
-PyObject * PyVector<V>::_pyNew( PyTypeObject * pType,
-		PyObject * args, PyObject * kwargs )
+PyObject* PyVector<V>::_pyNew(PyTypeObject* pType,
+                              PyObject*     args,
+                              PyObject*     kwargs)
 {
-	MF_ASSERT( pType == &PyVector<V>::s_type_ );
+    MF_ASSERT(pType == &PyVector<V>::s_type_);
 
-	PyVector<V> * pObject = new PyVectorCopy<V>();
+    PyVector<V>* pObject = new PyVectorCopy<V>();
 
-	if (PyTuple_Size( args ) > 0)
-	{
-		PyObject * pResult =  pObject->py_set( args );
+    if (PyTuple_Size(args) > 0) {
+        PyObject* pResult = pObject->py_set(args);
 
-		if (pResult)
-		{
-			Py_DECREF( pResult );
-		}
-		else
-		{
-			return NULL;
-		}
-	}
+        if (pResult) {
+            Py_DECREF(pResult);
+        } else {
+            return NULL;
+        }
+    }
 
-	return pObject;
+    return pObject;
 }
 
-
-template <class V> const int PyVector<V>::NUMELTS = sizeof(V)/sizeof(float);
+template <class V>
+const int PyVector<V>::NUMELTS = sizeof(V) / sizeof(float);
 
 /// Static function to create a new PyVector
 template <class V>
-PyObject * PyVector<V>::pyNew( PyObject * args )
+PyObject* PyVector<V>::pyNew(PyObject* args)
 {
-	PyVector<V> * v = new PyVectorCopy<V>();
+    PyVector<V>* v = new PyVectorCopy<V>();
 
-	if (PyTuple_Size( args ) != 0)
-	{
-		PyObject * ret = v->py_set( args );
+    if (PyTuple_Size(args) != 0) {
+        PyObject* ret = v->py_set(args);
 
-		if (ret == NULL)
-		{
-			Py_DECREF( v );
-			return NULL;
-		}
-		else
-		{
-			Py_DECREF( ret );
-		}
-	}
-	/*
-	else
-	{
-		// Should set to 0
-	}
-	*/
+        if (ret == NULL) {
+            Py_DECREF(v);
+            return NULL;
+        } else {
+            Py_DECREF(ret);
+        }
+    }
+    /*
+    else
+    {
+        // Should set to 0
+    }
+    */
 
-	return v;
+    return v;
 }
-
 
 /**
  *	This allows scripts to get various properties of a PyVector
  */
 template <class V>
-ScriptObject PyVector<V>::pyGetAttribute( const ScriptString & attrObj )
+ScriptObject PyVector<V>::pyGetAttribute(const ScriptString& attrObj)
 {
-	const char * attr = attrObj.c_str();
-	const char * memNames = "xyzw";
+    const char* attr     = attrObj.c_str();
+    const char* memNames = "xyzw";
 
-	if (attr[0] != '\0' && attr[1] == '\0')
-	{
-		const char * pPos = strchr( memNames, attr[0] );
-		if (pPos && (pPos - attr < NUMELTS))
-		{
-			size_t index = pPos - memNames;
-			return ScriptObject::createFrom( this->getVector()[index] );
-		}
-	}
+    if (attr[0] != '\0' && attr[1] == '\0') {
+        const char* pPos = strchr(memNames, attr[0]);
+        if (pPos && (pPos - attr < NUMELTS)) {
+            size_t index = pPos - memNames;
+            return ScriptObject::createFrom(this->getVector()[index]);
+        }
+    }
 
-
-	return PyObjectPlus::pyGetAttribute( attrObj );
+    return PyObjectPlus::pyGetAttribute(attrObj);
 }
 
 /// Return it as a string
 template <class V>
-PyObject * PyVector<V>::pyStr()
+PyObject* PyVector<V>::pyStr()
 {
-	V v = this->getVector();
+    V v = this->getVector();
 
-	BW::ostringstream ostr;
-	ostr.imbue( Locale::standardC() );
-	ostr << '(';
-	for (int i=0; i < NUMELTS; i++)
-	{
-		if (i>0)
-		{
-			ostr << ", ";
-		}
-		ostr << v[i];
-	}
-	ostr << ')';
+    BW::ostringstream ostr;
+    ostr.imbue(Locale::standardC());
+    ostr << '(';
+    for (int i = 0; i < NUMELTS; i++) {
+        if (i > 0) {
+            ostr << ", ";
+        }
+        ostr << v[i];
+    }
+    ostr << ')';
 
-	return PyString_FromString( ostr.str().c_str() );
+    return PyString_FromString(ostr.str().c_str());
 }
-
 
 /*
 // TODO: We could just do the following and get all the functions out of the
@@ -1349,292 +1317,236 @@ PyObject * PyVector<V>::pyStr()
 template <class V>
 PyObject * PyVector_py_add( PyObject * a, PyObject * b )
 {
-	typedef PyVector<V> Vec;
-	MF_ASSERT( Vec::Check( a ) );
-	MF_ASSERT( Vec<V>::Check( b ) );
+    typedef PyVector<V> Vec;
+    MF_ASSERT( Vec::Check( a ) );
+    MF_ASSERT( Vec<V>::Check( b ) );
 
-	return new PyVector<V>(
-		static_cast< Vec * >( a )->getVector() +
-			static_cast< Vec * >( b )->getVector() );
+    return new PyVector<V>(
+        static_cast< Vec * >( a )->getVector() +
+            static_cast< Vec * >( b )->getVector() );
 }
 */
 
-
 /// Add
 template <class V>
-PyObject * PyVector<V>::_py_add( PyObject * a, PyObject * b )
+PyObject* PyVector<V>::_py_add(PyObject* a, PyObject* b)
 {
-	V aVec;
-	V bVec;
+    V aVec;
+    V bVec;
 
-	if (Script::setData( a, aVec ) == 0 &&
-			Script::setData( b, bVec ) == 0)
-	{
-		return Script::getData( aVec + bVec );
-	}
+    if (Script::setData(a, aVec) == 0 && Script::setData(b, bVec) == 0) {
+        return Script::getData(aVec + bVec);
+    }
 
-	PyErr_Clear();
-	Py_INCREF( Py_NotImplemented );
-	return Py_NotImplemented;
+    PyErr_Clear();
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
 }
-
 
 /// Subtract
 template <class V>
-PyObject * PyVector<V>::_py_subtract( PyObject * a, PyObject * b )
+PyObject* PyVector<V>::_py_subtract(PyObject* a, PyObject* b)
 {
-	V aVec;
-	V bVec;
+    V aVec;
+    V bVec;
 
-	if (Script::setData( a, aVec ) == 0 &&
-			Script::setData( b, bVec ) == 0)
-	{
-		return Script::getData( aVec - bVec );
-	}
+    if (Script::setData(a, aVec) == 0 && Script::setData(b, bVec) == 0) {
+        return Script::getData(aVec - bVec);
+    }
 
-	PyErr_Clear();
-	Py_INCREF( Py_NotImplemented );
-	return Py_NotImplemented;
+    PyErr_Clear();
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
 }
-
 
 /// Multiply
 template <class V>
-PyObject * PyVector<V>::_py_divide( PyObject * a, PyObject * b )
+PyObject* PyVector<V>::_py_divide(PyObject* a, PyObject* b)
 {
-	float f;
+    float f;
 
-	if (PyVector<V>::Check( a ) && Script::setData( b, f ) == 0)
-	{
-		return Script::getData( ((PyVector<V> *)a)->getVector() / f );
-	}
+    if (PyVector<V>::Check(a) && Script::setData(b, f) == 0) {
+        return Script::getData(((PyVector<V>*)a)->getVector() / f);
+    }
 
-	PyErr_Clear();
-	Py_INCREF( Py_NotImplemented );
-	return Py_NotImplemented;
+    PyErr_Clear();
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
 }
-
 
 /// Multiply
 template <class V>
-PyObject * PyVector<V>::_py_multiply( PyObject * a, PyObject * b )
+PyObject* PyVector<V>::_py_multiply(PyObject* a, PyObject* b)
 {
-	float f;
+    float f;
 
-	if (PyVector<V>::Check( a ))
-	{
-		if (Script::setData( b, f ) == 0)
-		{
-			return Script::getData( f * ((PyVector<V> *)a)->getVector() );
-		}
-	}
-	else if (PyVector<V>::Check( b ))
-	{
-		if (Script::setData( a, f ) == 0)
-		{
-			return Script::getData( f * ((PyVector<V> *)b)->getVector() );
-		}
-	}
+    if (PyVector<V>::Check(a)) {
+        if (Script::setData(b, f) == 0) {
+            return Script::getData(f * ((PyVector<V>*)a)->getVector());
+        }
+    } else if (PyVector<V>::Check(b)) {
+        if (Script::setData(a, f) == 0) {
+            return Script::getData(f * ((PyVector<V>*)b)->getVector());
+        }
+    }
 
-	PyErr_Clear();
-	Py_INCREF( Py_NotImplemented );
-	return Py_NotImplemented;
+    PyErr_Clear();
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
 }
 
 /// Multiply for Vector3
 template <>
-PyObject * PyVector<Vector3>::_py_multiply( PyObject * a,  PyObject * b )
+PyObject* PyVector<Vector3>::_py_multiply(PyObject* a, PyObject* b)
 {
-	float f;
+    float f;
 
-	if (PyVector<Vector3>::Check( a ))
-	{
-		if (PyVector<Vector3>::Check( b ))
-		{
-			return Script::getData(
-				((PyVector<Vector3>*)a)->getVector().crossProduct(
-					((PyVector<Vector3>*)b)->getVector() ) );
-		}
-		else if (Script::setData( b, f ) == 0)
-		{
-			return Script::getData( f * ((PyVector<Vector3> *)a)->getVector() );
-		}
-	}
-	else if (PyVector<Vector3>::Check( b ) &&
-		(Script::setData( a, f ) == 0))
-	{
-		return Script::getData( f * ((PyVector<Vector3> *)b)->getVector() );
-	}
+    if (PyVector<Vector3>::Check(a)) {
+        if (PyVector<Vector3>::Check(b)) {
+            return Script::getData(
+              ((PyVector<Vector3>*)a)
+                ->getVector()
+                .crossProduct(((PyVector<Vector3>*)b)->getVector()));
+        } else if (Script::setData(b, f) == 0) {
+            return Script::getData(f * ((PyVector<Vector3>*)a)->getVector());
+        }
+    } else if (PyVector<Vector3>::Check(b) && (Script::setData(a, f) == 0)) {
+        return Script::getData(f * ((PyVector<Vector3>*)b)->getVector());
+    }
 
-	PyErr_Clear();
+    PyErr_Clear();
 
-	Py_INCREF( Py_NotImplemented );
-	return Py_NotImplemented;
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
 }
-
-
 
 /// Negative
 template <class V>
-PyObject * PyVector<V>::py_negative()
+PyObject* PyVector<V>::py_negative()
 {
-	return Script::getData( this->getVector() * -1.f );
+    return Script::getData(this->getVector() * -1.f);
 }
-
 
 /// Positive
 template <class V>
-PyObject * PyVector<V>::py_positive()
+PyObject* PyVector<V>::py_positive()
 {
-	return Script::getData( this->getVector() );
+    return Script::getData(this->getVector());
 }
-
 
 /// Non Zero
 template <class V>
 int PyVector<V>::py_nonzero()
 {
-	return this->getVector().lengthSquared() > 0.f;
+    return this->getVector().lengthSquared() > 0.f;
 }
-
-
-
 
 /// In Place Add
 template <class V>
-PyObject * PyVector<V>::py_inplace_add( PyObject * b )
+PyObject* PyVector<V>::py_inplace_add(PyObject* b)
 {
-	V bVec;
+    V bVec;
 
-	if (Script::setData( b, bVec ) == 0)
-	{
-		if (this->safeSetVector( this->getVector() + bVec ))
-		{
-			Py_INCREF( this );
-			return this;
-		}
-		else
-		{
-			return NULL;
-		}
-	}
+    if (Script::setData(b, bVec) == 0) {
+        if (this->safeSetVector(this->getVector() + bVec)) {
+            Py_INCREF(this);
+            return this;
+        } else {
+            return NULL;
+        }
+    }
 
-	PyErr_Clear();
+    PyErr_Clear();
 
-	Py_INCREF( Py_NotImplemented );
-	return Py_NotImplemented;
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
 }
-
 
 /// In Place Subtract
 template <class V>
-PyObject * PyVector<V>::py_inplace_subtract( PyObject * b )
+PyObject* PyVector<V>::py_inplace_subtract(PyObject* b)
 {
-	V bVec;
+    V bVec;
 
-	if (Script::setData( b, bVec ) == 0)
-	{
-		if (this->safeSetVector( this->getVector() - bVec ))
-		{
-			Py_INCREF( this );
-			return this;
-		}
-		else
-		{
-			return NULL;
-		}
-	}
+    if (Script::setData(b, bVec) == 0) {
+        if (this->safeSetVector(this->getVector() - bVec)) {
+            Py_INCREF(this);
+            return this;
+        } else {
+            return NULL;
+        }
+    }
 
-	PyErr_Clear();
+    PyErr_Clear();
 
-	Py_INCREF( Py_NotImplemented );
-	return Py_NotImplemented;
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
 }
-
 
 /// In Place Multiply
 template <class V>
-PyObject * PyVector<V>::py_inplace_multiply( PyObject * b )
+PyObject* PyVector<V>::py_inplace_multiply(PyObject* b)
 {
-	float value;
-	if (Script::setData( b, value ) == 0)
-	{
-		if (this->safeSetVector( this->getVector() * value ) )
-		{
-			Py_INCREF( this );
-			return this;
-		}
-		else
-		{
-			return NULL;
-		}
-	}
+    float value;
+    if (Script::setData(b, value) == 0) {
+        if (this->safeSetVector(this->getVector() * value)) {
+            Py_INCREF(this);
+            return this;
+        } else {
+            return NULL;
+        }
+    }
 
-	PyErr_Clear();
-	Py_INCREF( Py_NotImplemented );
-	return Py_NotImplemented;
+    PyErr_Clear();
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
 }
 
 /// In Place Multiply for Vector3
 template <>
-PyObject * PyVector<Vector3>::py_inplace_multiply( PyObject * b )
+PyObject* PyVector<Vector3>::py_inplace_multiply(PyObject* b)
 {
-	if (PyVector<Vector3>::Check( b ))
-	{
-		if (!this->safeSetVector(
-				this->getVector().crossProduct(
-					((PyVector<Vector3>*)b)->getVector() ) ))
-		{
-			return NULL;
-		}
-	}
-	else
-	{
-		float value;
-		if (Script::setData( b, value ) == 0)
-		{
-			if (!this->safeSetVector( this->getVector() * value ) )
-			{
-				return NULL;
-			}
-		}
-		else
-		{
-			PyErr_Clear();
+    if (PyVector<Vector3>::Check(b)) {
+        if (!this->safeSetVector(this->getVector().crossProduct(
+              ((PyVector<Vector3>*)b)->getVector()))) {
+            return NULL;
+        }
+    } else {
+        float value;
+        if (Script::setData(b, value) == 0) {
+            if (!this->safeSetVector(this->getVector() * value)) {
+                return NULL;
+            }
+        } else {
+            PyErr_Clear();
 
-			Py_INCREF( Py_NotImplemented );
-			return Py_NotImplemented;
-		}
-	}
+            Py_INCREF(Py_NotImplemented);
+            return Py_NotImplemented;
+        }
+    }
 
-	Py_INCREF( this );
-	return this;
+    Py_INCREF(this);
+    return this;
 }
-
 
 /// In Place Divide
 template <class V>
-PyObject * PyVector<V>::py_inplace_divide( PyObject * b )
+PyObject* PyVector<V>::py_inplace_divide(PyObject* b)
 {
-	float value;
-	if (Script::setData( b, value ) == 0)
-	{
-		if (this->safeSetVector( this->getVector() / value ) )
-		{
-			Py_INCREF( this );
-			return this;
-		}
-		else
-		{
-			return NULL;
-		}
-	}
+    float value;
+    if (Script::setData(b, value) == 0) {
+        if (this->safeSetVector(this->getVector() / value)) {
+            Py_INCREF(this);
+            return this;
+        } else {
+            return NULL;
+        }
+    }
 
-	PyErr_Clear();
-	Py_INCREF( Py_NotImplemented );
-	return Py_NotImplemented;
+    PyErr_Clear();
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: as_sequence methods
@@ -1643,112 +1555,103 @@ PyObject * PyVector<V>::py_inplace_divide( PyObject * b )
 template <class V>
 Py_ssize_t PyVector<V>::py_sq_length()
 {
-	return NUMELTS;
+    return NUMELTS;
 }
 
-
 template <class V>
-PyObject * PyVector<V>::py_sq_item( Py_ssize_t index )
+PyObject* PyVector<V>::py_sq_item(Py_ssize_t index)
 {
-	if (index < 0 || NUMELTS <= index )
-	{
-		PyErr_SetString( PyExc_IndexError, "Vector index out of range" );
-		return NULL;
-	}
+    if (index < 0 || NUMELTS <= index) {
+        PyErr_SetString(PyExc_IndexError, "Vector index out of range");
+        return NULL;
+    }
 
-	return Script::getData( this->getVector()[ index ] );
+    return Script::getData(this->getVector()[index]);
 }
 
-
 template <class V>
-PyObject * PyVector<V>::py_sq_slice( Py_ssize_t startIndex,
-	Py_ssize_t endIndex )
+PyObject* PyVector<V>::py_sq_slice(Py_ssize_t startIndex, Py_ssize_t endIndex)
 {
-	if (startIndex < 0)
-		startIndex = 0;
+    if (startIndex < 0)
+        startIndex = 0;
 
-	if (endIndex > NUMELTS)
-		endIndex = NUMELTS;
+    if (endIndex > NUMELTS)
+        endIndex = NUMELTS;
 
-	if (endIndex < startIndex)
-		endIndex = startIndex;
+    if (endIndex < startIndex)
+        endIndex = startIndex;
 
-	PyObject * pResult = NULL;
+    PyObject* pResult = NULL;
 
-	Py_ssize_t length = endIndex - startIndex;
+    Py_ssize_t length = endIndex - startIndex;
 
-	if (length == NUMELTS)
-	{
-		pResult = this;
-		Py_INCREF( pResult );
-	}
-	else
-	switch (length)
-	{
-		case 0:
-			pResult = PyTuple_New( 0 );
-			break;
+    if (length == NUMELTS) {
+        pResult = this;
+        Py_INCREF(pResult);
+    } else
+        switch (length) {
+            case 0:
+                pResult = PyTuple_New(0);
+                break;
 
-		case 1:
-			pResult = PyTuple_New( 1 );
-			PyTuple_SET_ITEM( pResult, 0,
-					PyFloat_FromDouble( this->getVector()[startIndex] ) );
-			break;
+            case 1:
+                pResult = PyTuple_New(1);
+                PyTuple_SET_ITEM(
+                  pResult,
+                  0,
+                  PyFloat_FromDouble(this->getVector()[startIndex]));
+                break;
 
-		case 2:
-		{
-			Vector2 v;
-			for (Py_ssize_t i = startIndex; i < endIndex; i++)
-			{
-				v[i - startIndex] = this->getVector()[i];
-			}
-			pResult = Script::getData( v );
-			break;
-		}
+            case 2: {
+                Vector2 v;
+                for (Py_ssize_t i = startIndex; i < endIndex; i++) {
+                    v[i - startIndex] = this->getVector()[i];
+                }
+                pResult = Script::getData(v);
+                break;
+            }
 
-		case 3:
-		{
-			Vector3 v;
-			for (Py_ssize_t i = startIndex; i < endIndex; i++)
-			{
-				v[i - startIndex] = this->getVector()[i];
-			}
-			pResult = Script::getData( v );
-			break;
-		}
+            case 3: {
+                Vector3 v;
+                for (Py_ssize_t i = startIndex; i < endIndex; i++) {
+                    v[i - startIndex] = this->getVector()[i];
+                }
+                pResult = Script::getData(v);
+                break;
+            }
 
-		default:
-			// This should not happen.
-			PyErr_Format( PyExc_IndexError,
-					"Bad slice indexes [%" PRIzu ", %" PRIzu "] for Vector%d",
-					size_t(startIndex), size_t(endIndex), int(NUMELTS) );
-			break;
-	}
+            default:
+                // This should not happen.
+                PyErr_Format(PyExc_IndexError,
+                             "Bad slice indexes [%" PRIzu ", %" PRIzu
+                             "] for Vector%d",
+                             size_t(startIndex),
+                             size_t(endIndex),
+                             int(NUMELTS));
+                break;
+        }
 
-	return pResult;
+    return pResult;
 }
 
-
 template <class V>
-int PyVector<V>::py_sq_ass_item( Py_ssize_t index, PyObject * value )
+int PyVector<V>::py_sq_ass_item(Py_ssize_t index, PyObject* value)
 {
-	if (index < 0 || NUMELTS <= index )
-	{
-		PyErr_SetString( PyExc_IndexError,
-				"Vector assignment index out of range" );
-		return -1;
-	}
+    if (index < 0 || NUMELTS <= index) {
+        PyErr_SetString(PyExc_IndexError,
+                        "Vector assignment index out of range");
+        return -1;
+    }
 
-	V v = this->getVector();
-	int result = Script::setData( value, v[index], "Vector element" );
+    V   v      = this->getVector();
+    int result = Script::setData(value, v[index], "Vector element");
 
-	if (result == 0)
-	{
-		if (!this->safeSetVector( v ))
-			return -1;
-	}
+    if (result == 0) {
+        if (!this->safeSetVector(v))
+            return -1;
+    }
 
-	return result;
+    return result;
 }
 
 // -----------------------------------------------------------------------------
@@ -1757,757 +1660,687 @@ int PyVector<V>::py_sq_ass_item( Py_ssize_t index, PyObject * value )
 
 /// Set it
 template <class V>
-PyObject * PyVector<V>::py_set( PyObject * args )
+PyObject* PyVector<V>::py_set(PyObject* args)
 {
-	bool good = false;
-	V v;
+    bool good = false;
+    V    v;
 
-	if (PyTuple_Size(args) == 1)
-	{
-		PyObject * pItem = PyTuple_GetItem( args, 0 );
+    if (PyTuple_Size(args) == 1) {
+        PyObject* pItem = PyTuple_GetItem(args, 0);
 
-		if (PyTuple_Check( pItem ))
-		{
-			args = pItem;
-			Py_INCREF( args );
-		}
-		else if (PyList_Check( pItem ))
-		{
-			args = PyList_AsTuple( pItem );
-		}
-		else if (PyVector<V>::Check( pItem ))
-		{
-			v = ((PyVector<V>*)pItem)->getVector();
-			good = true;
-		}
-		else
-		{
-			float	f;
-			if (Script::setData( pItem, f ) == 0)
-			{
-				for (int i=0; i < NUMELTS; i++)
-				{
-					v[i] = f;
-				}
-				good = true;
-			}
-		}
-	}
-	else
-	{
-		Py_INCREF( args );
-	}
+        if (PyTuple_Check(pItem)) {
+            args = pItem;
+            Py_INCREF(args);
+        } else if (PyList_Check(pItem)) {
+            args = PyList_AsTuple(pItem);
+        } else if (PyVector<V>::Check(pItem)) {
+            v    = ((PyVector<V>*)pItem)->getVector();
+            good = true;
+        } else {
+            float f;
+            if (Script::setData(pItem, f) == 0) {
+                for (int i = 0; i < NUMELTS; i++) {
+                    v[i] = f;
+                }
+                good = true;
+            }
+        }
+    } else {
+        Py_INCREF(args);
+    }
 
-	// ok, try it as a tuple of NUMELTS then
-	if (!good)
-	{
-		good = (Script::setData( args, v ) == 0);
-		Py_DECREF( args );
-	}
+    // ok, try it as a tuple of NUMELTS then
+    if (!good) {
+        good = (Script::setData(args, v) == 0);
+        Py_DECREF(args);
+    }
 
-	if (!good)
-	{
-		PyErr_Format( PyExc_TypeError, "Vector.set must be set to "
-				"a sequence of %d floats, or one float", NUMELTS );
-		// TODO: Remove single-float repeating option
-		return NULL;
-	}
+    if (!good) {
+        PyErr_Format(PyExc_TypeError,
+                     "Vector.set must be set to "
+                     "a sequence of %d floats, or one float",
+                     NUMELTS);
+        // TODO: Remove single-float repeating option
+        return NULL;
+    }
 
-	if (!this->safeSetVector( v ))
-	{
-		return NULL;
-	}
+    if (!this->safeSetVector(v)) {
+        return NULL;
+    }
 
-	Py_RETURN_NONE;
+    Py_RETURN_NONE;
 }
-
 
 /// Scalar multiplication
 template <class V>
-PyObject * PyVector<V>::py_scale( PyObject * args )
+PyObject* PyVector<V>::py_scale(PyObject* args)
 {
-	if (PyTuple_Size(args) == 1)
-	{
-		PyObject * pItem = PyTuple_GetItem( args, 0 );
+    if (PyTuple_Size(args) == 1) {
+        PyObject* pItem = PyTuple_GetItem(args, 0);
 
-		float	f;
-		if (Script::setData( pItem, f ) == 0)
-		{
-			return Script::getData( this->getVector() * f );
-		}
-	}
+        float f;
+        if (Script::setData(pItem, f) == 0) {
+            return Script::getData(this->getVector() * f);
+        }
+    }
 
-	PyErr_SetString( PyExc_TypeError,
-			"Vector.scale expects a float argument" );
-	return NULL;
+    PyErr_SetString(PyExc_TypeError, "Vector.scale expects a float argument");
+    return NULL;
 }
-
 
 /// Dot product
 template <class V>
-PyObject * PyVector<V>::py_dot( PyObject * args )
+PyObject* PyVector<V>::py_dot(PyObject* args)
 {
-	PyObject * po = PyVector<V>::pyNew( args );
-	if (po == NULL)
-	{
-		return NULL;
-	}
+    PyObject* po = PyVector<V>::pyNew(args);
+    if (po == NULL) {
+        return NULL;
+    }
 
-	float result =
-		this->getVector().dotProduct( ((PyVector<V>*)po)->getVector() );
+    float result =
+      this->getVector().dotProduct(((PyVector<V>*)po)->getVector());
 
-	Py_DECREF( po );
-	return Script::getData( result );
+    Py_DECREF(po);
+    return Script::getData(result);
 }
-
-
-
 
 /// Normalise it
 template <class V>
-PyObject * PyVector<V>::py_normalise( PyObject * args )
+PyObject* PyVector<V>::py_normalise(PyObject* args)
 {
-	if (PyTuple_Size(args) != 0)
-	{
-		PyErr_SetString( PyExc_TypeError,
-			"Vector.normalise takes no arguments"
-			" (nor does it brook any dissent :)" );
-		return NULL;
-	}
+    if (PyTuple_Size(args) != 0) {
+        PyErr_SetString(PyExc_TypeError,
+                        "Vector.normalise takes no arguments"
+                        " (nor does it brook any dissent :)");
+        return NULL;
+    }
 
-	V v = this->getVector();
-	v.normalise();
-	if (!this->safeSetVector( v ))
-		return NULL;
+    V v = this->getVector();
+    v.normalise();
+    if (!this->safeSetVector(v))
+        return NULL;
 
-	Py_RETURN_NONE;
+    Py_RETURN_NONE;
 }
-
-
 
 /// Return it as a tuple
 template <class V>
-PyObject * PyVector<V>::py_tuple( PyObject * args )
+PyObject* PyVector<V>::py_tuple(PyObject* args)
 {
-	if (PyTuple_Size(args) != 0)
-	{
-		PyErr_SetString( PyExc_TypeError, "Vector.tuple takes no arguments" );
-		return NULL;
-	}
+    if (PyTuple_Size(args) != 0) {
+        PyErr_SetString(PyExc_TypeError, "Vector.tuple takes no arguments");
+        return NULL;
+    }
 
-	PyObject * pTuple = PyTuple_New( NUMELTS );
+    PyObject* pTuple = PyTuple_New(NUMELTS);
 
-	V v = this->getVector();
+    V v = this->getVector();
 
-	for (int i = 0; i < NUMELTS; i++)
-	{
-		PyTuple_SetItem( pTuple, i, PyFloat_FromDouble( v[i] ) );
-	}
+    for (int i = 0; i < NUMELTS; i++) {
+        PyTuple_SetItem(pTuple, i, PyFloat_FromDouble(v[i]));
+    }
 
-	return pTuple;
+    return pTuple;
 }
-
 
 /// Return it as a list
 template <class V>
-PyObject * PyVector<V>::py_list( PyObject * args )
+PyObject* PyVector<V>::py_list(PyObject* args)
 {
-	if (PyTuple_Size(args) != 0)
-	{
-		PyErr_SetString( PyExc_TypeError, "Vector.list takes no arguments" );
-		return NULL;
-	}
+    if (PyTuple_Size(args) != 0) {
+        PyErr_SetString(PyExc_TypeError, "Vector.list takes no arguments");
+        return NULL;
+    }
 
-	V v = this->getVector();
+    V v = this->getVector();
 
-	PyObject * pList = PyList_New( NUMELTS );
-	for (int i=0; i < NUMELTS; i++)
-	{
-		PyList_SetItem( pList, i, Script::getData( v[i] ) );
-	}
+    PyObject* pList = PyList_New(NUMELTS);
+    for (int i = 0; i < NUMELTS; i++) {
+        PyList_SetItem(pList, i, Script::getData(v[i]));
+    }
 
-	return pList;
+    return pList;
 }
-
 
 /// Return the 2D cross product
 template <class V>
-PyObject * PyVector<V>::py_cross2D( PyObject * /*args*/ )
+PyObject* PyVector<V>::py_cross2D(PyObject* /*args*/)
 {
-	PyErr_SetString( PyExc_TypeError, "No cross2D for this type of vector" );
-	return NULL;
+    PyErr_SetString(PyExc_TypeError, "No cross2D for this type of vector");
+    return NULL;
 }
-
 
 /// Return the 2D cross product for a Vector2
 template <>
-PyObject * PyVector<Vector2>::py_cross2D( PyObject * args )
+PyObject* PyVector<Vector2>::py_cross2D(PyObject* args)
 {
-	PyObject * pOther = PyVector<Vector2>::pyNew( args );
-	if (pOther == NULL)
-	{
-		return NULL;
-	}
+    PyObject* pOther = PyVector<Vector2>::pyNew(args);
+    if (pOther == NULL) {
+        return NULL;
+    }
 
-	const Vector2 otherV = ((PyVector<Vector2>*)pOther)->getVector();
-	const Vector2 thisV = this->getVector();
-	float result = thisV[0] * otherV[1] - thisV[1] * otherV[0];
+    const Vector2 otherV = ((PyVector<Vector2>*)pOther)->getVector();
+    const Vector2 thisV  = this->getVector();
+    float         result = thisV[0] * otherV[1] - thisV[1] * otherV[0];
 
-	Py_DECREF( pOther );
-	return Script::getData( result );
+    Py_DECREF(pOther);
+    return Script::getData(result);
 }
-
 
 /// Return the 2D cross product for a Vector3
 template <>
-PyObject * PyVector<Vector3>::py_cross2D( PyObject * args )
+PyObject* PyVector<Vector3>::py_cross2D(PyObject* args)
 {
-	PyObject * pOther = PyVector<Vector3>::pyNew( args );
-	if (pOther == NULL)
-	{
-		return NULL;
-	}
+    PyObject* pOther = PyVector<Vector3>::pyNew(args);
+    if (pOther == NULL) {
+        return NULL;
+    }
 
-	const Vector3 otherV = ((PyVector<Vector3>*)pOther)->getVector();
-	const Vector3 thisV = this->getVector();
-	float result = thisV[0] * otherV[2] - thisV[2] * otherV[0];
+    const Vector3 otherV = ((PyVector<Vector3>*)pOther)->getVector();
+    const Vector3 thisV  = this->getVector();
+    float         result = thisV[0] * otherV[2] - thisV[2] * otherV[0];
 
-	Py_DECREF( pOther );
-	return Script::getData( result );
+    Py_DECREF(pOther);
+    return Script::getData(result);
 }
 
 /**
  *	This method returns the distance to the input Vector.
  */
 template <class V>
-PyObject * PyVector<V>::py_distTo( PyObject * args )
+PyObject* PyVector<V>::py_distTo(PyObject* args)
 {
-	V v;
+    V v;
 
-	if (PyTuple_Size( args ) != 1 ||
-		Script::setData( PyTuple_GET_ITEM( args, 0 ), v, "argument 1" ) != 0)
-	{
-		if (Script::setData( args, v, "argument 1" ) != 0)
-			return NULL;
-	}
+    if (PyTuple_Size(args) != 1 ||
+        Script::setData(PyTuple_GET_ITEM(args, 0), v, "argument 1") != 0) {
+        if (Script::setData(args, v, "argument 1") != 0)
+            return NULL;
+    }
 
-	return PyFloat_FromDouble( (this->getVector() - v).length() );
+    return PyFloat_FromDouble((this->getVector() - v).length());
 }
-
-
-
 
 /**
  *	This method returns the distance to the input Vector.
  */
 template <class V>
-PyObject * PyVector<V>::py_distSqrTo( PyObject * args )
+PyObject* PyVector<V>::py_distSqrTo(PyObject* args)
 {
-	V v;
+    V v;
 
-	if (PyTuple_Size( args ) != 1 ||
-		Script::setData( PyTuple_GET_ITEM( args, 0 ), v, "argument 1" ) != 0)
-	{
-		if (Script::setData( args, v, "argument 1" ) != 0)
-			return NULL;
-	}
+    if (PyTuple_Size(args) != 1 ||
+        Script::setData(PyTuple_GET_ITEM(args, 0), v, "argument 1") != 0) {
+        if (Script::setData(args, v, "argument 1") != 0)
+            return NULL;
+    }
 
-	return PyFloat_FromDouble( (this->getVector() - v).lengthSquared() );
+    return PyFloat_FromDouble((this->getVector() - v).lengthSquared());
 }
-
 
 /**
  *	This method returns the distance between the points in the XZ plane. It is
  *	only implemented for Vector3.
  */
 template <class V>
-PyObject * PyVector<V>::py_flatDistTo( PyObject * /*args*/ )
+PyObject* PyVector<V>::py_flatDistTo(PyObject* /*args*/)
 {
-	PyErr_SetString( PyExc_TypeError,
-			"No flatDistTo for this type of vector" );
-	return NULL;
+    PyErr_SetString(PyExc_TypeError, "No flatDistTo for this type of vector");
+    return NULL;
 }
-
 
 /**
  *	This method returns the distance squared between the points in the XZ plane.
  *	It is only implemented for Vector3.
  */
 template <>
-PyObject * PyVector<Vector3>::py_flatDistTo( PyObject * args )
+PyObject* PyVector<Vector3>::py_flatDistTo(PyObject* args)
 {
-	Vector3 v;
+    Vector3 v;
 
-	if (PyTuple_Size( args ) != 1 ||
-		Script::setData( PyTuple_GET_ITEM( args, 0 ), v, "argument 1" ) != 0)
-	{
-		if (Script::setData( args, v, "argument 1" ) != 0)
-			return NULL;
-	}
+    if (PyTuple_Size(args) != 1 ||
+        Script::setData(PyTuple_GET_ITEM(args, 0), v, "argument 1") != 0) {
+        if (Script::setData(args, v, "argument 1") != 0)
+            return NULL;
+    }
 
-	const Vector3 thisV = this->getVector();
-	float x = thisV.x - v.x;
-	float z = thisV.z - v.z;
+    const Vector3 thisV = this->getVector();
+    float         x     = thisV.x - v.x;
+    float         z     = thisV.z - v.z;
 
-	return PyFloat_FromDouble( sqrt( x*x + z*z ) );
+    return PyFloat_FromDouble(sqrt(x * x + z * z));
 }
-
 
 /**
  *	This method returns the distance squared between the points in the XZ plane.
  *	It is only implemented for Vector3.
  */
 template <class V>
-PyObject * PyVector<V>::py_flatDistSqrTo( PyObject * /*args*/ )
+PyObject* PyVector<V>::py_flatDistSqrTo(PyObject* /*args*/)
 {
-	PyErr_SetString( PyExc_TypeError,
-			"No flatDistSqrTo for this type of vector" );
-	return NULL;
+    PyErr_SetString(PyExc_TypeError,
+                    "No flatDistSqrTo for this type of vector");
+    return NULL;
 }
-
 
 /**
  *	This method returns the distance between the points in the XZ plane. It is
  *	only implemented for Vector3.
  */
 template <>
-PyObject * PyVector<Vector3>::py_flatDistSqrTo( PyObject * args )
+PyObject* PyVector<Vector3>::py_flatDistSqrTo(PyObject* args)
 {
-	Vector3 v;
+    Vector3 v;
 
-	if (PyTuple_Size( args ) != 1 ||
-		Script::setData( PyTuple_GET_ITEM( args, 0 ), v, "argument 1" ) != 0)
-	{
-		if (Script::setData( args, v, "argument 1" ) != 0)
-			return NULL;
-	}
+    if (PyTuple_Size(args) != 1 ||
+        Script::setData(PyTuple_GET_ITEM(args, 0), v, "argument 1") != 0) {
+        if (Script::setData(args, v, "argument 1") != 0)
+            return NULL;
+    }
 
-	const Vector3 thisV = this->getVector();
-	float x = thisV.x - v.x;
-	float z = thisV.z - v.z;
+    const Vector3 thisV = this->getVector();
+    float         x     = thisV.x - v.x;
+    float         z     = thisV.z - v.z;
 
-	return PyFloat_FromDouble( x*x + z*z );
+    return PyFloat_FromDouble(x * x + z * z);
 }
 
-
 /**
- *	This method sets the vector to be a unit vector pointing to the given pitch and yaw.
- *	It is only implemented for Vector3.
+ *	This method sets the vector to be a unit vector pointing to the given pitch
+ *and yaw. It is only implemented for Vector3.
  */
 template <class V>
-PyObject * PyVector<V>::py_setPitchYaw( PyObject * /*args*/ )
+PyObject* PyVector<V>::py_setPitchYaw(PyObject* /*args*/)
 {
-	PyErr_SetString( PyExc_TypeError,
-			"No setPitchYaw for this type of vector" );
-	return NULL;
+    PyErr_SetString(PyExc_TypeError, "No setPitchYaw for this type of vector");
+    return NULL;
 }
 
-
 /**
- *	This method sets the vector to be a unit vector pointing to the given pitch and yaw.
- *	It is only implemented for Vector3.
+ *	This method sets the vector to be a unit vector pointing to the given pitch
+ *and yaw. It is only implemented for Vector3.
  */
 template <>
-PyObject * PyVector<Vector3>::py_setPitchYaw( PyObject * args )
+PyObject* PyVector<Vector3>::py_setPitchYaw(PyObject* args)
 {
-	float pitch, yaw;
-	if (PyTuple_Size( args ) != 2 ||
-		Script::setData( PyTuple_GET_ITEM( args, 0 ), pitch ) != 0 ||
-		Script::setData( PyTuple_GET_ITEM( args, 1 ), yaw ) != 0)
-	{
-		return NULL;
-	}
+    float pitch, yaw;
+    if (PyTuple_Size(args) != 2 ||
+        Script::setData(PyTuple_GET_ITEM(args, 0), pitch) != 0 ||
+        Script::setData(PyTuple_GET_ITEM(args, 1), yaw) != 0) {
+        return NULL;
+    }
 
-	Vector3 v = this->getVector();
-	v.setPitchYaw(pitch, yaw);
-	if (!this->safeSetVector( v ))
-		return NULL;
+    Vector3 v = this->getVector();
+    v.setPitchYaw(pitch, yaw);
+    if (!this->safeSetVector(v))
+        return NULL;
 
-	Py_RETURN_NONE;
-}
-
-
-template <class V>
-PyObject * PyVector<V>::py___getstate__( PyObject * args )
-{
-	V v = this->getVector();
-	return PyString_FromStringAndSize( (char *)&v, sizeof( V ) );
+    Py_RETURN_NONE;
 }
 
 template <class V>
-PyObject * PyVector<V>::py___setstate__( PyObject * args )
+PyObject* PyVector<V>::py___getstate__(PyObject* args)
 {
-	if (PyTuple_Check( args ) &&
-		PyTuple_Size( args ) == 1)
-	{
-		PyObject * pStr = PyTuple_GET_ITEM( args, 0 );
-
-		if (PyString_Check( pStr ) &&
-			(PyString_Size( pStr ) == sizeof( V )))
-		{
-			V v;
-			memcpy( &v, PyString_AsString( pStr ), sizeof( V ) );
-
-			if (!this->safeSetVector( v ))
-			{
-				return NULL;
-			}
-
-			Py_RETURN_NONE;
-		}
-	}
-
-	PyErr_SetString( PyExc_TypeError,
-		"__setstate__ called with invalid type\n" );
-	return NULL;
+    V v = this->getVector();
+    return PyString_FromStringAndSize((char*)&v, sizeof(V));
 }
 
+template <class V>
+PyObject* PyVector<V>::py___setstate__(PyObject* args)
+{
+    if (PyTuple_Check(args) && PyTuple_Size(args) == 1) {
+        PyObject* pStr = PyTuple_GET_ITEM(args, 0);
+
+        if (PyString_Check(pStr) && (PyString_Size(pStr) == sizeof(V))) {
+            V v;
+            memcpy(&v, PyString_AsString(pStr), sizeof(V));
+
+            if (!this->safeSetVector(v)) {
+                return NULL;
+            }
+
+            Py_RETURN_NONE;
+        }
+    }
+
+    PyErr_SetString(PyExc_TypeError, "__setstate__ called with invalid type\n");
+    return NULL;
+}
 
 /**
  *	PyVector yaw method
  */
 template <class V>
-PyObject * PyVector<V>::pyGet_yaw()
+PyObject* PyVector<V>::pyGet_yaw()
 {
-	Py_RETURN_NONE;
+    Py_RETURN_NONE;
 }
 
 template <>
-PyObject * PyVector<Vector3>::pyGet_yaw()
+PyObject* PyVector<Vector3>::pyGet_yaw()
 {
-	return Script::getData( this->getVector().yaw() );
+    return Script::getData(this->getVector().yaw());
 }
 
 /**
  *	PyVector pitch method
  */
 template <class V>
-PyObject * PyVector<V>::pyGet_pitch()
+PyObject* PyVector<V>::pyGet_pitch()
 {
-	Py_RETURN_NONE;
+    Py_RETURN_NONE;
 }
 
 template <>
-PyObject * PyVector<Vector3>::pyGet_pitch()
+PyObject* PyVector<Vector3>::pyGet_pitch()
 {
-	return Script::getData( this->getVector().pitch() );
-}
-
-
-template <class V>
-PyObject * PyVector<V>::pyGet_x()
-{
-	return Script::getData( this->getVector()[0] );
-}
-
-
-template <class V>
-PyObject * PyVector<V>::pyGet_y()
-{
-	return Script::getData( this->getVector()[1] );
-}
-
-
-template <class V>
-PyObject * PyVector<V>::pyGet_z()
-{
-	MF_ASSERT( NUMELTS >= 3 );
-	return Script::getData( this->getVector()[2] );
-}
-
-
-template <class V>
-PyObject * PyVector<V>::pyGet_w()
-{
-	MF_ASSERT( NUMELTS >= 4 );
-	return Script::getData( this->getVector()[3] );
-}
-
-
-template <class V>
-int PyVector<V>::pySet_x( PyObject * value )
-{
-	V v = this->getVector();
-	int result = Script::setData( value, v[0] );
-	if (result == 0)
-	{
-		if (!this->safeSetVector( v ))
-			return -1;
-	}
-	return result;
-}
-
-
-template <class V>
-int PyVector<V>::pySet_y( PyObject * value )
-{
-	V v = this->getVector();
-	int result = Script::setData( value, v[1] );
-	if (result == 0)
-	{
-		if (!this->safeSetVector( v ))
-			return -1;
-	}
-	return result;
-}
-
-
-template <class V>
-int PyVector<V>::pySet_z( PyObject * value )
-{
-	V v = this->getVector();
-	int result = Script::setData( value, v[2] );
-	if (result == 0)
-	{
-		if (!this->safeSetVector( v ))
-			return -1;
-	}
-	return result;
-}
-
-
-template <class V>
-int PyVector<V>::pySet_w( PyObject * value )
-{
-	V v = this->getVector();
-	int result = Script::setData( value, v[3] );
-	if (result == 0)
-	{
-		if (!this->safeSetVector( v ))
-			return -1;
-	}
-	return result;
-}
-
-
-
-template <class V>
-PyNumberMethods * PyVector_tp_as_number()
-{
-	static PyNumberMethods tp_as_number = {
-		PyVector<V>::_py_add,				//binaryfunc nb_add;
-		PyVector<V>::_py_subtract,			//binaryfunc nb_subtract;
-		PyVector<V>::_py_multiply,			//binaryfunc nb_multiply;
-		PyVector<V>::_py_divide,			//binaryfunc nb_divide;
-		0,									//binaryfunc nb_remainder;
-		0,									//binaryfunc nb_divmod;
-		0,									//ternaryfunc nb_power;
-		PyVector<V>::_py_negative,			//unaryfunc nb_negative;
-		PyVector<V>::_py_positive,			//unaryfunc nb_positive;
-		0,									//unaryfunc nb_absolute;
-		PyVector<V>::_py_nonzero,			//inquiry nb_nonzero;
-		0,									//unaryfunc nb_invert;
-		0,									//binaryfunc nb_lshift;
-		0,									//binaryfunc nb_rshift;
-		0,									//binaryfunc nb_and;
-		0,									//binaryfunc nb_xor;
-		0,									//binaryfunc nb_or;
-		0,									//coercion nb_coerce;
-		0,									//unaryfunc nb_int;
-		0,									//unaryfunc nb_long;
-		0,									//unaryfunc nb_float;
-		0,									//unaryfunc nb_oct;
-		0,									//unaryfunc nb_hex;
-		PyVector<V>::_py_inplace_add,		//binaryfunc nb_inplace_add;
-		PyVector<V>::_py_inplace_subtract,	//binaryfunc nb_inplace_subtract;
-		PyVector<V>::_py_inplace_multiply,	//binaryfunc nb_inplace_multiply;
-		PyVector<V>::_py_inplace_divide,	//binaryfunc nb_inplace_divide;
-		0,									//binaryfunc nb_inplace_remainder;
-		0,									//ternaryfunc nb_inplace_power;
-		0,									//binaryfunc nb_inplace_lshift;
-		0,									//binaryfunc nb_inplace_rshift;
-		0,									//binaryfunc nb_inplace_and;
-		0,									//binaryfunc nb_inplace_xor;
-		0,									//binaryfunc nb_inplace_or;
-		// Added in release 2.2
-		0,									//binaryfunc nb_floor_divide;
-		0,									//binaryfunc nb_true_divide;
-		0,									//binaryfunc nb_inplace_floor_divide;
-		0,									//binaryfunc nb_inplace_true_divide;
-		// Added in release 2.5
-		0,									//unaryfunc nb_index;
-	};
-	return &tp_as_number;
+    return Script::getData(this->getVector().pitch());
 }
 
 template <class V>
-PySequenceMethods * PyVector_tp_as_sequence()
+PyObject* PyVector<V>::pyGet_x()
 {
-	static PySequenceMethods tp_as_sequence =
-	{
-		PyVector<V>::_py_sq_length,		/* sq_length */
-		0,								/* sq_concat */
-		0,								/* sq_repeat */
-		PyVector<V>::_py_sq_item,		/* sq_item */
-		PyVector<V>::_py_sq_slice,		/* sq_slice */
-		PyVector<V>::_py_sq_ass_item,	/* sq_ass_item */
-		0,								/* sq_ass_slice */
-		0,								/* sq_contains */
-		0,								/* sq_inplace_concat */
-		0,								/* sq_inplace_repeat */
-	};
-	return &tp_as_sequence;
+    return Script::getData(this->getVector()[0]);
 }
 
-template <class V> const char * PyVector_fullName();
+template <class V>
+PyObject* PyVector<V>::pyGet_y()
+{
+    return Script::getData(this->getVector()[1]);
+}
+
+template <class V>
+PyObject* PyVector<V>::pyGet_z()
+{
+    MF_ASSERT(NUMELTS >= 3);
+    return Script::getData(this->getVector()[2]);
+}
+
+template <class V>
+PyObject* PyVector<V>::pyGet_w()
+{
+    MF_ASSERT(NUMELTS >= 4);
+    return Script::getData(this->getVector()[3]);
+}
+
+template <class V>
+int PyVector<V>::pySet_x(PyObject* value)
+{
+    V   v      = this->getVector();
+    int result = Script::setData(value, v[0]);
+    if (result == 0) {
+        if (!this->safeSetVector(v))
+            return -1;
+    }
+    return result;
+}
+
+template <class V>
+int PyVector<V>::pySet_y(PyObject* value)
+{
+    V   v      = this->getVector();
+    int result = Script::setData(value, v[1]);
+    if (result == 0) {
+        if (!this->safeSetVector(v))
+            return -1;
+    }
+    return result;
+}
+
+template <class V>
+int PyVector<V>::pySet_z(PyObject* value)
+{
+    V   v      = this->getVector();
+    int result = Script::setData(value, v[2]);
+    if (result == 0) {
+        if (!this->safeSetVector(v))
+            return -1;
+    }
+    return result;
+}
+
+template <class V>
+int PyVector<V>::pySet_w(PyObject* value)
+{
+    V   v      = this->getVector();
+    int result = Script::setData(value, v[3]);
+    if (result == 0) {
+        if (!this->safeSetVector(v))
+            return -1;
+    }
+    return result;
+}
+
+template <class V>
+PyNumberMethods* PyVector_tp_as_number()
+{
+    static PyNumberMethods tp_as_number = {
+        PyVector<V>::_py_add,              // binaryfunc nb_add;
+        PyVector<V>::_py_subtract,         // binaryfunc nb_subtract;
+        PyVector<V>::_py_multiply,         // binaryfunc nb_multiply;
+        PyVector<V>::_py_divide,           // binaryfunc nb_divide;
+        0,                                 // binaryfunc nb_remainder;
+        0,                                 // binaryfunc nb_divmod;
+        0,                                 // ternaryfunc nb_power;
+        PyVector<V>::_py_negative,         // unaryfunc nb_negative;
+        PyVector<V>::_py_positive,         // unaryfunc nb_positive;
+        0,                                 // unaryfunc nb_absolute;
+        PyVector<V>::_py_nonzero,          // inquiry nb_nonzero;
+        0,                                 // unaryfunc nb_invert;
+        0,                                 // binaryfunc nb_lshift;
+        0,                                 // binaryfunc nb_rshift;
+        0,                                 // binaryfunc nb_and;
+        0,                                 // binaryfunc nb_xor;
+        0,                                 // binaryfunc nb_or;
+        0,                                 // coercion nb_coerce;
+        0,                                 // unaryfunc nb_int;
+        0,                                 // unaryfunc nb_long;
+        0,                                 // unaryfunc nb_float;
+        0,                                 // unaryfunc nb_oct;
+        0,                                 // unaryfunc nb_hex;
+        PyVector<V>::_py_inplace_add,      // binaryfunc nb_inplace_add;
+        PyVector<V>::_py_inplace_subtract, // binaryfunc nb_inplace_subtract;
+        PyVector<V>::_py_inplace_multiply, // binaryfunc nb_inplace_multiply;
+        PyVector<V>::_py_inplace_divide,   // binaryfunc nb_inplace_divide;
+        0,                                 // binaryfunc nb_inplace_remainder;
+        0,                                 // ternaryfunc nb_inplace_power;
+        0,                                 // binaryfunc nb_inplace_lshift;
+        0,                                 // binaryfunc nb_inplace_rshift;
+        0,                                 // binaryfunc nb_inplace_and;
+        0,                                 // binaryfunc nb_inplace_xor;
+        0,                                 // binaryfunc nb_inplace_or;
+        // Added in release 2.2
+        0, // binaryfunc nb_floor_divide;
+        0, // binaryfunc nb_true_divide;
+        0, // binaryfunc nb_inplace_floor_divide;
+        0, // binaryfunc nb_inplace_true_divide;
+        // Added in release 2.5
+        0, // unaryfunc nb_index;
+    };
+    return &tp_as_number;
+}
+
+template <class V>
+PySequenceMethods* PyVector_tp_as_sequence()
+{
+    static PySequenceMethods tp_as_sequence = {
+        PyVector<V>::_py_sq_length,   /* sq_length */
+        0,                            /* sq_concat */
+        0,                            /* sq_repeat */
+        PyVector<V>::_py_sq_item,     /* sq_item */
+        PyVector<V>::_py_sq_slice,    /* sq_slice */
+        PyVector<V>::_py_sq_ass_item, /* sq_ass_item */
+        0,                            /* sq_ass_slice */
+        0,                            /* sq_contains */
+        0,                            /* sq_inplace_concat */
+        0,                            /* sq_inplace_repeat */
+    };
+    return &tp_as_sequence;
+}
+
+template <class V>
+const char* PyVector_fullName();
 
 /*~ function Math.Vector2
  *	@components{ all }
  *
- *	This function creates a Vector with 2 elements.  It can either take 2 floats, or a single
- *	float which is applied to both components.
+ *	This function creates a Vector with 2 elements.  It can either take 2
+ *floats, or a single float which is applied to both components.
  *
  *	@return	the newly created Vector2.
  */
-template <> const char * PyVector_fullName< Vector2 >() { return "Math.Vector2"; }
+template <>
+const char* PyVector_fullName<Vector2>()
+{
+    return "Math.Vector2";
+}
 
 /*~ function Math.Vector3
  *	@components{ all }
  *
- *	This function creates a Vector with 3 elements.  It can either take 3 floats, or a single
- *	float which is applied to all components.
+ *	This function creates a Vector with 3 elements.  It can either take 3
+ *floats, or a single float which is applied to all components.
  *
  *	@return	the newly created Vector3.
  */
-template <> const char * PyVector_fullName< Vector3 >() { return "Math.Vector3"; }
+template <>
+const char* PyVector_fullName<Vector3>()
+{
+    return "Math.Vector3";
+}
 
 /*~ function Math.Vector4
  *	@components{ all }
  *
- *	This function creates a Vector with 4 elements.  It can either take 4 floats, or a single
- *	float which is applied to all components.
+ *	This function creates a Vector with 4 elements.  It can either take 4
+ *floats, or a single float which is applied to all components.
  *
  *	@return	the newly created Vector4.
  */
-template <> const char * PyVector_fullName< Vector4 >() { return "Math.Vector4"; }
-
-template <class V>
-const char * PyVector_baseName()
+template <>
+const char* PyVector_fullName<Vector4>()
 {
-	const char * path = PyVector_fullName<V>();
-	const char * pBase = strrchr( path, '.' );
-	return pBase ? (pBase + 1) : path;
+    return "Math.Vector4";
 }
 
-int PyVector_tp_compare( PyObject * v, PyObject * w )
+template <class V>
+const char* PyVector_baseName()
 {
-	if (PyVector< Vector2 >::Check( v ) &&
-		(PyVector< Vector2 >::Check( w )))
-	{
-		const Vector2 & a = ((PyVector<Vector2> *)v)->getVector();
-		const Vector2 & b = ((PyVector<Vector2> *)w)->getVector();
-		return (a < b) ? -1 : (b < a) ? 1 : 0;
-	}
-	if (PyVector< Vector3 >::Check( v ) &&
-		(PyVector< Vector3 >::Check( w )))
-	{
-		const Vector3 & a = ((PyVector<Vector3> *)v)->getVector();
-		const Vector3 & b = ((PyVector<Vector3> *)w)->getVector();
-		return (a < b) ? -1 : (b < a) ? 1 : 0;
-	}
-	if (PyVector< Vector4 >::Check( v ) &&
-		(PyVector< Vector4 >::Check( w )))
-	{
-		const Vector4 & a = ((PyVector<Vector4> *)v)->getVector();
-		const Vector4 & b = ((PyVector<Vector4> *)w)->getVector();
-		return (a < b) ? -1 : (b < a) ? 1 : 0;
-	}
-
-	return 0;
+    const char* path  = PyVector_fullName<V>();
+    const char* pBase = strrchr(path, '.');
+    return pBase ? (pBase + 1) : path;
 }
 
-#define DEFINE_PYVECTOR_TYPEOBJECT( V ) 									\
-	PY_TYPEOBJECT_SPECIALISE_REPR_AND_STR( PyVector< V >, 					\
-		&PyVector<V>::_pyStr, &PyVector<V>::_pyStr )						\
-	PY_TYPEOBJECT_SPECIALISE_BASIC_SIZE( PyVector< V >, 					\
-		sizeof( PyVectorCopy< V > )	)										\
-	PY_TYPEOBJECT_SPECIALISE_CMP( PyVector< V >, 							\
-		&PyVector_tp_compare )												\
-	PY_TYPEOBJECT_SPECIALISE_SEQ( PyVector< V >, 							\
-		PyVector_tp_as_sequence< V >() )									\
-	PY_TYPEOBJECT_SPECIALISE_NUM( PyVector< V >, 							\
-		PyVector_tp_as_number< V >() )										\
-	PY_TYPEOBJECT_SPECIALISE_FLAGS( PyVector< V >, 							\
-		Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES )						\
-	template<>																\
-	PY_GENERAL_TYPEOBJECT_WITH_BASE_WITH_NAME( PyVector< V >, 0, 			\
-		PyVector_fullName< V >() )
+int PyVector_tp_compare(PyObject* v, PyObject* w)
+{
+    if (PyVector<Vector2>::Check(v) && (PyVector<Vector2>::Check(w))) {
+        const Vector2& a = ((PyVector<Vector2>*)v)->getVector();
+        const Vector2& b = ((PyVector<Vector2>*)w)->getVector();
+        return (a < b) ? -1 : (b < a) ? 1 : 0;
+    }
+    if (PyVector<Vector3>::Check(v) && (PyVector<Vector3>::Check(w))) {
+        const Vector3& a = ((PyVector<Vector3>*)v)->getVector();
+        const Vector3& b = ((PyVector<Vector3>*)w)->getVector();
+        return (a < b) ? -1 : (b < a) ? 1 : 0;
+    }
+    if (PyVector<Vector4>::Check(v) && (PyVector<Vector4>::Check(w))) {
+        const Vector4& a = ((PyVector<Vector4>*)v)->getVector();
+        const Vector4& b = ((PyVector<Vector4>*)w)->getVector();
+        return (a < b) ? -1 : (b < a) ? 1 : 0;
+    }
 
+    return 0;
+}
 
-DEFINE_PYVECTOR_TYPEOBJECT( Vector2 )
-DEFINE_PYVECTOR_TYPEOBJECT( Vector3 )
-DEFINE_PYVECTOR_TYPEOBJECT( Vector4 )
+#define DEFINE_PYVECTOR_TYPEOBJECT(V)                                          \
+    PY_TYPEOBJECT_SPECIALISE_REPR_AND_STR(                                     \
+      PyVector<V>, &PyVector<V>::_pyStr, &PyVector<V>::_pyStr)                 \
+    PY_TYPEOBJECT_SPECIALISE_BASIC_SIZE(PyVector<V>, sizeof(PyVectorCopy<V>))  \
+    PY_TYPEOBJECT_SPECIALISE_CMP(PyVector<V>, &PyVector_tp_compare)            \
+    PY_TYPEOBJECT_SPECIALISE_SEQ(PyVector<V>, PyVector_tp_as_sequence<V>())    \
+    PY_TYPEOBJECT_SPECIALISE_NUM(PyVector<V>, PyVector_tp_as_number<V>())      \
+    PY_TYPEOBJECT_SPECIALISE_FLAGS(PyVector<V>,                                \
+                                   Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES) \
+    template <>                                                                \
+    PY_GENERAL_TYPEOBJECT_WITH_BASE_WITH_NAME(                                 \
+      PyVector<V>, 0, PyVector_fullName<V>())
+
+DEFINE_PYVECTOR_TYPEOBJECT(Vector2)
+DEFINE_PYVECTOR_TYPEOBJECT(Vector3)
+DEFINE_PYVECTOR_TYPEOBJECT(Vector4)
 
 template <class V>
-PY_BEGIN_METHODS( PyVector<V> )
-	// Documentation is done separately below for each Vector[234]
-	PY_METHOD_WITH_DOC( set, 
-		"This method sets the Vector to the given vector value." )
-	PY_METHOD_WITH_DOC( scale, 
-		"This method scales the Vector by the given scalar." )
-	PY_METHOD_WITH_DOC( dot, 
-		"This method performs a dot-product between the Vector and the given "
-		"vector value." )
-	PY_METHOD_WITH_DOC( normalise, "This method normalises the Vector." )
-	PY_METHOD_WITH_DOC( tuple,
-		"This method returns a tuple representation of the vector." )
-	PY_METHOD_WITH_DOC( list,
-		"This method returns a list representation of the vector." )
-	PY_METHOD_WITH_DOC( cross2D,
-		"This method performs a 2D cross-product of the vector, as long as it "
-		"is a Vector2 or Vector3." ) // Not available for Vector4
-	PY_METHOD_WITH_DOC( distTo,
-		"This method returns the distance to the input vector." )
-	PY_METHOD_WITH_DOC( distSqrTo,
-		"This method returns the distance squared to the input vector." )
+PY_BEGIN_METHODS(PyVector<V>)
+// Documentation is done separately below for each Vector[234]
+PY_METHOD_WITH_DOC(set,
+                   "This method sets the Vector to the given vector value.")
+  PY_METHOD_WITH_DOC(scale,
+                     "This method scales the Vector by the given scalar.")
+    PY_METHOD_WITH_DOC(
+      dot,
+      "This method performs a dot-product between the Vector and the given "
+      "vector value.")
+      PY_METHOD_WITH_DOC(normalise, "This method normalises the Vector.")
+        PY_METHOD_WITH_DOC(
+          tuple,
+          "This method returns a tuple representation of the vector.")
+          PY_METHOD_WITH_DOC(
+            list,
+            "This method returns a list representation of the vector.")
+            PY_METHOD_WITH_DOC(
+              cross2D,
+              "This method performs a 2D cross-product of the vector, as long "
+              "as it "
+              "is a Vector2 or Vector3.") // Not available for Vector4
+  PY_METHOD_WITH_DOC(distTo,
+                     "This method returns the distance to the input vector.")
+    PY_METHOD_WITH_DOC(
+      distSqrTo,
+      "This method returns the distance squared to the input vector.")
 
-	// Vector3 only methods
-	PY_METHOD_WITH_DOC( flatDistTo,
-		"This method returns the distance between the points on the XZ plane. "
-		"It is only implemented for Vector3." )
-	PY_METHOD_WITH_DOC( flatDistSqrTo,
-		"This method returns the distance squared between the points on "
-		"the XZ plane. It is only implemented for Vector3." )
-	PY_METHOD_WITH_DOC( setPitchYaw,
-		"This method sets the vector to be a unit vector pointing to the "
-		"given pitch and yaw. It is only implemented for Vector3." )
+  // Vector3 only methods
+  PY_METHOD_WITH_DOC(
+    flatDistTo,
+    "This method returns the distance between the points on the XZ plane. "
+    "It is only implemented for Vector3.")
+    PY_METHOD_WITH_DOC(
+      flatDistSqrTo,
+      "This method returns the distance squared between the points on "
+      "the XZ plane. It is only implemented for Vector3.")
+      PY_METHOD_WITH_DOC(
+        setPitchYaw,
+        "This method sets the vector to be a unit vector pointing to the "
+        "given pitch and yaw. It is only implemented for Vector3.")
 
-	// PY_METHOD( __reduce__ )
-	PY_METHOD( __getstate__ )
-	PY_METHOD( __setstate__ )
-PY_END_METHODS()
+  // PY_METHOD( __reduce__ )
+  PY_METHOD(__getstate__) PY_METHOD(__setstate__) PY_END_METHODS()
 
-// Common vector stuff
-template <class V> 
-PY_BEGIN_ATTRIBUTES( PyVector< V > )
-	PY_ATTRIBUTE( isReference )
-	PY_ATTRIBUTE( isReadOnly )
+  // Common vector stuff
+  template <class V>
+  PY_BEGIN_ATTRIBUTES(PyVector<V>)
+  PY_ATTRIBUTE(isReference) PY_ATTRIBUTE(isReadOnly)
 
-	PY_ATTRIBUTE( length )
+    PY_ATTRIBUTE(length)
 
-	PY_ATTRIBUTE( lengthSquared )
+      PY_ATTRIBUTE(lengthSquared)
 
-	PY_ATTRIBUTE( x )
-	PY_ATTRIBUTE( y )
+        PY_ATTRIBUTE(x) PY_ATTRIBUTE(y)
 
-	if (NUMELTS == 3)
-	{
-		PY_ATTRIBUTE( yaw )
-		PY_ATTRIBUTE( pitch )
-	}
+          if (NUMELTS == 3)
+{
+    PY_ATTRIBUTE(yaw)
+    PY_ATTRIBUTE(pitch)
+}
 
-	if (NUMELTS >= 3)
-	{
-		PY_ATTRIBUTE( z )
-	}
+if (NUMELTS >= 3) {
+    PY_ATTRIBUTE(z)
+}
 
-	if (NUMELTS >= 4)
-	{
-		PY_ATTRIBUTE( w )
-	}
+if (NUMELTS >= 4) {
+    PY_ATTRIBUTE(w)
+}
 
 PY_END_ATTRIBUTES()
-
 
 // -----------------------------------------------------------------------------
 // Section: Special comment section for Vector[234]
@@ -2530,119 +2363,118 @@ PY_END_ATTRIBUTES()
  *	Subtraction: ex. v1 = v2 - v3
  *	Negative: ex. v1 = -v2
  *	Positive: ex. v1 = +v2
- *	True-value test: ex. if v1: statements. In this case v1 is true if v1.lengthSquared > 0.f
- *	In-place addition: ex. v1 += v2
- *	In-place subtraction: ex. v1 -= v2
- *	Length: ex. len(v1). In this case always returns 2.
- *	Index: ex. v1[0] equals to v1.x, v1[1] equals to v1.y.
- *	Slice: ex. v1[0:1] returns a tuple contains v1.x, v1[0:2] returns a Vector2 eqauls to v1 itself.
- *	Indexed Assignment: ex. v1[0] = 3.2 equals to v1.x = 3.2
+ *	True-value test: ex. if v1: statements. In this case v1 is true if
+ *v1.lengthSquared > 0.f In-place addition: ex. v1 += v2 In-place subtraction:
+ *ex. v1 -= v2 Length: ex. len(v1). In this case always returns 2. Index: ex.
+ *v1[0] equals to v1.x, v1[1] equals to v1.y. Slice: ex. v1[0:1] returns a tuple
+ *contains v1.x, v1[0:2] returns a Vector2 eqauls to v1 itself. Indexed
+ *Assignment: ex. v1[0] = 3.2 equals to v1.x = 3.2
  */
-	/*~ function Vector2.set
-	 *	@components{ all }
-	 *
-	 *	This function sets the value of a Vector2 to the specified value.  It can
-	 *	take several different styles of argument:
-	 *
-	 *	- It can take a Vector2, which sets this vector equal to the argument.
-	 *
-	 *	- It can take a tuple, with the same size as the vector, assigning the
-	 *	first element to x and the second to y.
-	 *
-	 *	- It can take a floating point number, which will be assigned to all
-	 *	components of the vector.
-	 *
-	 *	@return None
-	 */
-	/*~ function Vector2.scale
-	 *	@components{ all }
-	 *
-	 *	Returns the value of this vector, multiplied by a scalar, leaving this
-	 *	vector unaffected.
-	 *
-	 *	@param	s	the scalar to multiply by.
-	 *
-	 *	@return		returns the Vector2 product of the scalar with the vector.
-	 */
-	/*~ function Vector2.dot
-	 *	@components{ all }
-	 *
-	 *	This function performs a dot product between this vector and the specified
-	 *	vector, and returns the product as a float. It doesn't effect this vector.
-	 *
-	 *	Dot product is defined to be the sum of the products of the individual
-	 *	components, ie:
-	 *
-	 *	x*x + y*y
-	 *
-	 *	@param	rhs		The vector to dot this vector with.
-	 *
-	 *	@return			The float which is the dot product.
-	 */
-	/*~ function Vector2.normalise
-	 *	@components{ all }
-	 *
-	 *	This function normalises this vector (scales it so that its length is
-	 *	exactly 1).
-	 *
-	 *	@return		None
-	 */
-	/*~ function Vector2.tuple
-	 *	@components{ all }
-	 *
-	 *	Returns the vector converted to a tuple of 2 elements.
-	 *
-	 *	@return		the tuple representing the vector.
-	 */
-	/*~ function Vector2.list
-	 *	@components{ all }
-	 *
-	 *	This function returns the vector converted to a list of 2 elements.
-	 *
-	 *	@return		The list representation of the vector.
-	 */
-	/*~ function Vector2.cross2D
-	 *	@components{ all }
-	 *
-	 *	This function returns the magnitude of the cross product between two
-	 *	Vector2s.
-	 *
-	 *	The formula is v1.x * v2.y - v1.y * v2.x
-	 *
-	 *	@param	v2	The vector on the right hand side of the cross product.
-	 *
-	 *	@return		The magnitude of the cross product (a float).
-	 */
-	/*~	function Vector2.distTo
-	 *	@components{ all }
-	 *
-	 *	This function returns the distance between two vectors.
-	 *
-	 *	@param	v2	the vector to calculated the distance to, from this vector.
-	 *
-	 *	@return		the distance between the two vectors, as a float.
-	 */
-	/*~	function Vector2.distSqrTo
-	 *	@components{ all }
-	 *
-	 *	This function returns the square of the distance between two vectors.  This
-	 *	is often used for comparisons between two distances, because it saves the
-	 *	computational expense of calculating a square root.
-	 *
-	 *	@param	v2	the vector to calculated the distance to, from this vector.
-	 *
-	 *	@return		the square of the distance between the two vectors, as a float.
-	 */
-	/*~	attribute Vector2.length
-	 *	@components{ all }
-	 *	This is the length that is represented by the vector
-	 *	@type	Read-only float
-	 */
-	/*~	attribute Vector2.lengthSquared
-	 *	@components{ all }
-	 *	This is the square of the length represented by the vector
-	 *	@type	Read-only float
-	 */
+/*~ function Vector2.set
+ *	@components{ all }
+ *
+ *	This function sets the value of a Vector2 to the specified value.  It can
+ *	take several different styles of argument:
+ *
+ *	- It can take a Vector2, which sets this vector equal to the argument.
+ *
+ *	- It can take a tuple, with the same size as the vector, assigning the
+ *	first element to x and the second to y.
+ *
+ *	- It can take a floating point number, which will be assigned to all
+ *	components of the vector.
+ *
+ *	@return None
+ */
+/*~ function Vector2.scale
+ *	@components{ all }
+ *
+ *	Returns the value of this vector, multiplied by a scalar, leaving this
+ *	vector unaffected.
+ *
+ *	@param	s	the scalar to multiply by.
+ *
+ *	@return		returns the Vector2 product of the scalar with the vector.
+ */
+/*~ function Vector2.dot
+ *	@components{ all }
+ *
+ *	This function performs a dot product between this vector and the specified
+ *	vector, and returns the product as a float. It doesn't effect this vector.
+ *
+ *	Dot product is defined to be the sum of the products of the individual
+ *	components, ie:
+ *
+ *	x*x + y*y
+ *
+ *	@param	rhs		The vector to dot this vector with.
+ *
+ *	@return			The float which is the dot product.
+ */
+/*~ function Vector2.normalise
+ *	@components{ all }
+ *
+ *	This function normalises this vector (scales it so that its length is
+ *	exactly 1).
+ *
+ *	@return		None
+ */
+/*~ function Vector2.tuple
+ *	@components{ all }
+ *
+ *	Returns the vector converted to a tuple of 2 elements.
+ *
+ *	@return		the tuple representing the vector.
+ */
+/*~ function Vector2.list
+ *	@components{ all }
+ *
+ *	This function returns the vector converted to a list of 2 elements.
+ *
+ *	@return		The list representation of the vector.
+ */
+/*~ function Vector2.cross2D
+ *	@components{ all }
+ *
+ *	This function returns the magnitude of the cross product between two
+ *	Vector2s.
+ *
+ *	The formula is v1.x * v2.y - v1.y * v2.x
+ *
+ *	@param	v2	The vector on the right hand side of the cross product.
+ *
+ *	@return		The magnitude of the cross product (a float).
+ */
+/*~	function Vector2.distTo
+ *	@components{ all }
+ *
+ *	This function returns the distance between two vectors.
+ *
+ *	@param	v2	the vector to calculated the distance to, from this vector.
+ *
+ *	@return		the distance between the two vectors, as a float.
+ */
+/*~	function Vector2.distSqrTo
+ *	@components{ all }
+ *
+ *	This function returns the square of the distance between two vectors.  This
+ *	is often used for comparisons between two distances, because it saves the
+ *	computational expense of calculating a square root.
+ *
+ *	@param	v2	the vector to calculated the distance to, from this vector.
+ *
+ *	@return		the square of the distance between the two vectors, as a float.
+ */
+/*~	attribute Vector2.length
+ *	@components{ all }
+ *	This is the length that is represented by the vector
+ *	@type	Read-only float
+ */
+/*~	attribute Vector2.lengthSquared
+ *	@components{ all }
+ *	This is the square of the length represented by the vector
+ *	@type	Read-only float
+ */
 
 /*~	class Math.Vector3
  *	@components{ all }
@@ -2657,160 +2489,159 @@ PY_END_ATTRIBUTES()
  *	Cross product: ex. v1 = v2 * v3
  *	Negative: ex. v1 = -v2
  *	Positive: ex. v1 = +v2
- *	True-value test: ex. if v1: statements. In this case v1 is true if v1.lengthSquared > 0.f
- *	In-place Addition: ex. v1 += v2
- *	In-place subtraction: ex. v1 -= v2
- *	In-place cross product: ex. v1 *= v2
- *	Length: ex. len(v1). In this case always returns 3.
- *	Index: ex. v1[0] equals to v1.x, v1[1] equals to v1.y, etc.
- *	Slice: ex. v1[0:1] returns a tuple contains v1.x, v1[0:2] returns a Vector2 consists of x and y.
- *	Indexed Assignment: ex. v1[0] = 3.2 equals to v1.x = 3.2
+ *	True-value test: ex. if v1: statements. In this case v1 is true if
+ *v1.lengthSquared > 0.f In-place Addition: ex. v1 += v2 In-place subtraction:
+ *ex. v1 -= v2 In-place cross product: ex. v1 *= v2 Length: ex. len(v1). In this
+ *case always returns 3. Index: ex. v1[0] equals to v1.x, v1[1] equals to v1.y,
+ *etc. Slice: ex. v1[0:1] returns a tuple contains v1.x, v1[0:2] returns a
+ *Vector2 consists of x and y. Indexed Assignment: ex. v1[0] = 3.2 equals to
+ *v1.x = 3.2
  */
-	/*~ function Vector3.set
-	 *	@components{ all }
-	 *
-	 *	This function sets the value of a Vector3 to the specified value.  It can
-	 *	take several different styles of argument:
-	 *
-	 *	- It can take a Vector3, which sets this vector equal to the argument.
-	 *
-	 *	- It can take a tuple, with the same size as the vector, assigning the
-	 *	first element to x, the second to y and the third to z.
-	 *
-	 *	- It can take a floating point number, which will be assigned to all
-	 *	components of the vector.
-	 *
-	 *	@return None
-	 */
-	/*~ function Vector3.scale
-	 *	@components{ all }
-	 *
-	 *	Returns the value of this vector, multiplied by a scalar, leaving this
-	 *	vector unaffected.
-	 *
-	 *	@param	s	the scalar to multiply by.
-	 *
-	 *	@return		returns the Vector3 product of the scalar with the vector.
-	 */
-	/*~ function Vector3.dot
-	 *	@components{ all }
-	 *
-	 *	This function performs a dot product between this vector and the specified
-	 *	vector, and returns the product as a float. It doesn't effect this vector.
-	 *
-	 *	Dot product is defined to be the sum of the products of the individual
-	 *	components, ie:
-	 *
-	 *	x*x + y*y + z*z
-	 *
-	 *	@param	rhs		The vector to dot this vector with.
-	 *
-	 *	@return			The float which is the dot product.
-	 */
-	/*~ function Vector3.normalise
-	 *	@components{ all }
-	 *
-	 *	This function normalises this vector (scales it so that its length is
-	 *	exactly 1).
-	 *
-	 *	@return		None
-	 */
-	/*~ function Vector3.tuple
-	 *	@components{ all }
-	 *
-	 *	Returns the vector converted to a tuple of 3 elements.
-	 *
-	 *	@return		the tuple representing the vector.
-	 */
-	/*~ function Vector3.list
-	 *	@components{ all }
-	 *
-	 *	This function returns the vector converted to a list of 3 elements.
-	 *
-	 *	@return		The list representation of the vector.
-	 */
-	/*~ function Vector3.cross2D
-	 *	@components{ all }
-	 *
-	 *	This function returns the magnitude of the cross product between two
-	 *	Vector3.
-	 *
-	 *	The formula is v1.x * v2.z - v1.z * v2.x
-	 *
-	 *	@param	v2	The vector on the right hand side of the cross product.
-	 *
-	 *	@return		The magnitude of the cross product (a float).
-	 */
-	/*~	function Vector3.distTo
-	 *	@components{ all }
-	 *
-	 *	This function returns the distance between two vectors.
-	 *
-	 *	@param	v2	the vector to calculated the distance to, from this vector.
-	 *
-	 *	@return		the distance between the two vectors, as a float.
-	 */
-	/*~	function Vector3.distSqrTo
-	 *	@components{ all }
-	 *
-	 *	This function returns the square of the distance between two vectors.  This
-	 *	is often used for comparisons between two distances, because it saves the
-	 *	computational expense of calculating a square root.
-	 *
-	 *	@param	v2	the vector to calculated the distance to, from this vector.
-	 *
-	 *	@return		the square of the distance between the two vectors, as a float.
-	 */
-	/*~ function Vector3.flatDistTo
-	 *	@components{ all }
-	 *
-	 *	This function calculates the distance between the points in the XZ plane.
-	 *
-	 *	@param	v2	the vector to calculated the distance to, from this vector.
-	 *
-	 *	@return		the distance between the two vectors, as a float.
-	 */
-	/*~ function Vector3.flatDistSqrTo
-	 *	@components{ all }
-	 *
-	 *	This function calculates the distance squared between the points in the XZ
-	 *	plane. This is often used for comparisons between two distances, because
-	 *	it saves the computational expense of calculating a square root.
-	 *
-	 *	@param	v2	the vector to calculated the distance to, from this vector.
-	 *
-	 *	@return		the distance squared between the two vectors, as a float.
-	 */
-	/*~	attribute Vector3.length
-	 *	@components{ all }
-	 *	This is the length that is represented by the vector
-	 *	@type	Read-only float
-	 */
-	/*~	attribute Vector3.lengthSquared
-	 *	@components{ all }
-	 *	This is the square of the length represented by the vector
-	 *	@type	Read-only float
-	 */
-	/*~ function Vector3.setPitchYaw
-	 *	@components{ all }
-	 *
-	 *	This function sets the vector to be a unit vector pointing to the given
-	 *	pitch and yaw.
-	 *
-	 *	@param	pitch	pitch angle in radians (float).
-	 *	@param	yaw		yaw angle in radians (float).
-	 *
-	 */
-	/*~	attribute Vector3.yaw
-	 *	@components{ all }
-	 *	This returns the yaw component of the Vector3.
-	 *	@type	Read-only float
-	 */
-	/*~	attribute Vector3.pitch
-	 *	@components{ all }
-	 *	This returns the pitch component of the Vector3.
-	 *	@type	Read-only float
-	 */
+/*~ function Vector3.set
+ *	@components{ all }
+ *
+ *	This function sets the value of a Vector3 to the specified value.  It can
+ *	take several different styles of argument:
+ *
+ *	- It can take a Vector3, which sets this vector equal to the argument.
+ *
+ *	- It can take a tuple, with the same size as the vector, assigning the
+ *	first element to x, the second to y and the third to z.
+ *
+ *	- It can take a floating point number, which will be assigned to all
+ *	components of the vector.
+ *
+ *	@return None
+ */
+/*~ function Vector3.scale
+ *	@components{ all }
+ *
+ *	Returns the value of this vector, multiplied by a scalar, leaving this
+ *	vector unaffected.
+ *
+ *	@param	s	the scalar to multiply by.
+ *
+ *	@return		returns the Vector3 product of the scalar with the vector.
+ */
+/*~ function Vector3.dot
+ *	@components{ all }
+ *
+ *	This function performs a dot product between this vector and the specified
+ *	vector, and returns the product as a float. It doesn't effect this vector.
+ *
+ *	Dot product is defined to be the sum of the products of the individual
+ *	components, ie:
+ *
+ *	x*x + y*y + z*z
+ *
+ *	@param	rhs		The vector to dot this vector with.
+ *
+ *	@return			The float which is the dot product.
+ */
+/*~ function Vector3.normalise
+ *	@components{ all }
+ *
+ *	This function normalises this vector (scales it so that its length is
+ *	exactly 1).
+ *
+ *	@return		None
+ */
+/*~ function Vector3.tuple
+ *	@components{ all }
+ *
+ *	Returns the vector converted to a tuple of 3 elements.
+ *
+ *	@return		the tuple representing the vector.
+ */
+/*~ function Vector3.list
+ *	@components{ all }
+ *
+ *	This function returns the vector converted to a list of 3 elements.
+ *
+ *	@return		The list representation of the vector.
+ */
+/*~ function Vector3.cross2D
+ *	@components{ all }
+ *
+ *	This function returns the magnitude of the cross product between two
+ *	Vector3.
+ *
+ *	The formula is v1.x * v2.z - v1.z * v2.x
+ *
+ *	@param	v2	The vector on the right hand side of the cross product.
+ *
+ *	@return		The magnitude of the cross product (a float).
+ */
+/*~	function Vector3.distTo
+ *	@components{ all }
+ *
+ *	This function returns the distance between two vectors.
+ *
+ *	@param	v2	the vector to calculated the distance to, from this vector.
+ *
+ *	@return		the distance between the two vectors, as a float.
+ */
+/*~	function Vector3.distSqrTo
+ *	@components{ all }
+ *
+ *	This function returns the square of the distance between two vectors.  This
+ *	is often used for comparisons between two distances, because it saves the
+ *	computational expense of calculating a square root.
+ *
+ *	@param	v2	the vector to calculated the distance to, from this vector.
+ *
+ *	@return		the square of the distance between the two vectors, as a float.
+ */
+/*~ function Vector3.flatDistTo
+ *	@components{ all }
+ *
+ *	This function calculates the distance between the points in the XZ plane.
+ *
+ *	@param	v2	the vector to calculated the distance to, from this vector.
+ *
+ *	@return		the distance between the two vectors, as a float.
+ */
+/*~ function Vector3.flatDistSqrTo
+ *	@components{ all }
+ *
+ *	This function calculates the distance squared between the points in the XZ
+ *	plane. This is often used for comparisons between two distances, because
+ *	it saves the computational expense of calculating a square root.
+ *
+ *	@param	v2	the vector to calculated the distance to, from this vector.
+ *
+ *	@return		the distance squared between the two vectors, as a float.
+ */
+/*~	attribute Vector3.length
+ *	@components{ all }
+ *	This is the length that is represented by the vector
+ *	@type	Read-only float
+ */
+/*~	attribute Vector3.lengthSquared
+ *	@components{ all }
+ *	This is the square of the length represented by the vector
+ *	@type	Read-only float
+ */
+/*~ function Vector3.setPitchYaw
+ *	@components{ all }
+ *
+ *	This function sets the vector to be a unit vector pointing to the given
+ *	pitch and yaw.
+ *
+ *	@param	pitch	pitch angle in radians (float).
+ *	@param	yaw		yaw angle in radians (float).
+ *
+ */
+/*~	attribute Vector3.yaw
+ *	@components{ all }
+ *	This returns the yaw component of the Vector3.
+ *	@type	Read-only float
+ */
+/*~	attribute Vector3.pitch
+ *	@components{ all }
+ *	This returns the pitch component of the Vector3.
+ *	@type	Read-only float
+ */
 /*~	class Math.Vector4
  *	@components{ all }
  *	The Vector4 class is a 4-element vector. It can be created using
@@ -2823,107 +2654,106 @@ PY_END_ATTRIBUTES()
  *	Subtraction: ex. v1 = v2 - v3
  *	Negative: ex. v1 = -v2
  *	Positive: ex. v1 = +v2
- *	True-value test: ex. if v1: statements. In this case v1 is true if v1.lengthSquared > 0.f
- *	In-place Addition: ex. v1 += v2
- *	In-place subtraction: ex. v1 -= v2
- *	Length: ex. len(v1). In this case always returns 4.
- *	Index: ex. v1[0] equals to v1.x, v1[1] equals to v1.y, etc.
- *	Slice: ex. v1[0:1] returns a tuple contains v1.x, v1[0:3] returns a Vector3 consists of x, y and z.
- *	Indexed Assignment: ex. v1[3] = 3.2 equals to v1.w = 3.2
+ *	True-value test: ex. if v1: statements. In this case v1 is true if
+ *v1.lengthSquared > 0.f In-place Addition: ex. v1 += v2 In-place subtraction:
+ *ex. v1 -= v2 Length: ex. len(v1). In this case always returns 4. Index: ex.
+ *v1[0] equals to v1.x, v1[1] equals to v1.y, etc. Slice: ex. v1[0:1] returns a
+ *tuple contains v1.x, v1[0:3] returns a Vector3 consists of x, y and z. Indexed
+ *Assignment: ex. v1[3] = 3.2 equals to v1.w = 3.2
  */
-	/*~ function Vector4.set
-	 *	@components{ all }
-	 *
-	 *	This function sets the value of a Vector4 to the specified value.  It can
-	 *	take several different styles of argument:
-	 *
-	 *	- It can take a Vector4, which sets this vector equal to the argument.
-	 *
-	 *	- It can take a tuple, with the same size as the vector, assigning the
-	 *	first element to x, the second to y, the third to z and the last to w.
-	 *
-	 *	- It can take a floating point number, which will be assigned to all
-	 *	components of the vector.
-	 *
-	 *	@return None
-	 */
-	/*~ function Vector4.scale
-	 *	@components{ all }
-	 *
-	 *	Returns the value of this vector, multiplied by a scalar, leaving this
-	 *	vector unaffected.
-	 *
-	 *	@param	s	the scalar to multiply by.
-	 *
-	 *	@return		returns the Vector4 product of the scalar with the vector.
-	 */
-	/*~ function Vector4.dot
-	 *	@components{ all }
-	 *
-	 *	This function performs a dot product between this vector and the specified
-	 *	vector, and returns the product as a float. It doesn't effect this vector.
-	 *
-	 *	Dot product is defined to be the sum of the products of the individual
-	 *	components, ie:
-	 *
-	 *	x*x + y*y + z*z + w*w
-	 *
-	 *	@param	rhs		The vector to dot this vector with.
-	 *
-	 *	@return			The float which is the dot product.
-	 */
-	/*~ function Vector4.normalise
-	 *	@components{ all }
-	 *
-	 *	This function normalises this vector (scales it so that its length is
-	 *	exactly 1).
-	 *
-	 *	@return		None
-	 */
-	/*~ function Vector4.tuple
-	 *	@components{ all }
-	 *
-	 *	Returns the vector converted to a tuple of 4 elements.
-	 *
-	 *	@return		the tuple representing the vector.
-	 */
-	/*~ function Vector4.list
-	 *	@components{ all }
-	 *
-	 *	This function returns the vector converted to a list of 4 elements.
-	 *
-	 *	@return		The list representation of the vector.
-	 */
-	/*~	function Vector4.distTo
-	 *	@components{ all }
-	 *
-	 *	This function returns the distance between two vectors.
-	 *
-	 *	@param	v2	the vector to calculated the distance to, from this vector.
-	 *
-	 *	@return		the distance between the two vectors, as a float.
-	 */
-	/*~	function Vector4.distSqrTo
-	 *	@components{ all }
-	 *
-	 *	This function returns the square of the distance between two vectors.  This
-	 *	is often used for comparisons between two distances, because it saves the
-	 *	computational expense of calculating a square root.
-	 *
-	 *	@param	v2	the vector to calculated the distance to, from this vector.
-	 *
-	 *	@return		the square of the distance between the two vectors, as a float.
-	 */
-	/*~	attribute Vector4.length
-	 *	@components{ all }
-	 *	This is the length that is represented by the vector
-	 *	@type	Read-only float
-	 */
-	/*~	attribute Vector4.lengthSquared
-	 *	@components{ all }
-	 *	This is the square of the length represented by the vector
-	 *	@type	Read-only float
-	 */
+/*~ function Vector4.set
+ *	@components{ all }
+ *
+ *	This function sets the value of a Vector4 to the specified value.  It can
+ *	take several different styles of argument:
+ *
+ *	- It can take a Vector4, which sets this vector equal to the argument.
+ *
+ *	- It can take a tuple, with the same size as the vector, assigning the
+ *	first element to x, the second to y, the third to z and the last to w.
+ *
+ *	- It can take a floating point number, which will be assigned to all
+ *	components of the vector.
+ *
+ *	@return None
+ */
+/*~ function Vector4.scale
+ *	@components{ all }
+ *
+ *	Returns the value of this vector, multiplied by a scalar, leaving this
+ *	vector unaffected.
+ *
+ *	@param	s	the scalar to multiply by.
+ *
+ *	@return		returns the Vector4 product of the scalar with the vector.
+ */
+/*~ function Vector4.dot
+ *	@components{ all }
+ *
+ *	This function performs a dot product between this vector and the specified
+ *	vector, and returns the product as a float. It doesn't effect this vector.
+ *
+ *	Dot product is defined to be the sum of the products of the individual
+ *	components, ie:
+ *
+ *	x*x + y*y + z*z + w*w
+ *
+ *	@param	rhs		The vector to dot this vector with.
+ *
+ *	@return			The float which is the dot product.
+ */
+/*~ function Vector4.normalise
+ *	@components{ all }
+ *
+ *	This function normalises this vector (scales it so that its length is
+ *	exactly 1).
+ *
+ *	@return		None
+ */
+/*~ function Vector4.tuple
+ *	@components{ all }
+ *
+ *	Returns the vector converted to a tuple of 4 elements.
+ *
+ *	@return		the tuple representing the vector.
+ */
+/*~ function Vector4.list
+ *	@components{ all }
+ *
+ *	This function returns the vector converted to a list of 4 elements.
+ *
+ *	@return		The list representation of the vector.
+ */
+/*~	function Vector4.distTo
+ *	@components{ all }
+ *
+ *	This function returns the distance between two vectors.
+ *
+ *	@param	v2	the vector to calculated the distance to, from this vector.
+ *
+ *	@return		the distance between the two vectors, as a float.
+ */
+/*~	function Vector4.distSqrTo
+ *	@components{ all }
+ *
+ *	This function returns the square of the distance between two vectors.  This
+ *	is often used for comparisons between two distances, because it saves the
+ *	computational expense of calculating a square root.
+ *
+ *	@param	v2	the vector to calculated the distance to, from this vector.
+ *
+ *	@return		the square of the distance between the two vectors, as a float.
+ */
+/*~	attribute Vector4.length
+ *	@components{ all }
+ *	This is the length that is represented by the vector
+ *	@type	Read-only float
+ */
+/*~	attribute Vector4.lengthSquared
+ *	@components{ all }
+ *	This is the square of the length represented by the vector
+ *	@type	Read-only float
+ */
 
 #if 0
 // Could use this and get rid of s_baseName
@@ -2935,39 +2765,39 @@ static const char * getbasename( const char * path )
 #endif
 
 template <class V>
-void PyVector_init( PyObject * pModule )
+void PyVector_init(PyObject* pModule)
 {
-	PyTypeObject * pType = &PyVector< V >::s_type_;
-	Py_INCREF( pType );
-	PyModule_AddObject( pModule,
-			const_cast< char * >( PyVector_baseName<V>() ),
-			(PyObject *)pType );
+    PyTypeObject* pType = &PyVector<V>::s_type_;
+    Py_INCREF(pType);
+    PyModule_AddObject(
+      pModule, const_cast<char*>(PyVector_baseName<V>()), (PyObject*)pType);
 }
-
 
 /**
  * TODO: to be documented.
  */
 class TempPyVectorInit : public Script::InitTimeJob
 {
-public:
-	TempPyVectorInit() : Script::InitTimeJob( 0 ) {}
+  public:
+    TempPyVectorInit()
+      : Script::InitTimeJob(0)
+    {
+    }
 
-	virtual void init()
-	{
-		PyObject * pModule = PyImport_AddModule( "Math" );
-		PyVector_init<Vector2>( pModule );
-		PyVector_init<Vector3>( pModule );
-		PyVector_init<Vector4>( pModule );
-	}
+    virtual void init()
+    {
+        PyObject* pModule = PyImport_AddModule("Math");
+        PyVector_init<Vector2>(pModule);
+        PyVector_init<Vector3>(pModule);
+        PyVector_init<Vector4>(pModule);
+    }
 };
 
 static TempPyVectorInit pyVectorIniter;
 
 // we don't want this kind of token...
 #undef PY_CLASS_TOKEN
-#define PY_CLASS_TOKEN( THIS_CLASS )
-
+#define PY_CLASS_TOKEN(THIS_CLASS)
 
 // -----------------------------------------------------------------------------
 // Section: Module composition
@@ -2981,25 +2811,23 @@ static TempPyVectorInit pyVectorIniter;
  *	This variable is a token which should be referenced by applications
  *	that want to use the math classes.
  */
-int Math_token =	*(int*)(&PyVector<Vector2>::s_type_);
-
+int Math_token = *(int*)(&PyVector<Vector2>::s_type_);
 
 // -----------------------------------------------------------------------------
 // Section: PyColour
 // -----------------------------------------------------------------------------
 
-PY_TYPEOBJECT( PyColour )
+PY_TYPEOBJECT(PyColour)
 
-PY_BEGIN_METHODS( PyColour )
+PY_BEGIN_METHODS(PyColour)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( PyColour )
-	PY_ATTRIBUTE_ALIAS( x, red )
-	PY_ATTRIBUTE_ALIAS( y, green )
-	PY_ATTRIBUTE_ALIAS( z, blue )
-	PY_ATTRIBUTE_ALIAS( w, alpha )
+PY_BEGIN_ATTRIBUTES(PyColour)
+PY_ATTRIBUTE_ALIAS(x, red)
+PY_ATTRIBUTE_ALIAS(y, green)
+PY_ATTRIBUTE_ALIAS(z, blue)
+PY_ATTRIBUTE_ALIAS(w, alpha)
 PY_END_ATTRIBUTES()
-
 
 // -----------------------------------------------------------------------------
 // Section: Vector4Provider
@@ -3049,49 +2877,44 @@ PY_END_ATTRIBUTES()
  *	This base class provides no methods, and only one attribute, which is the
  *  Vector4 currently being provided.
  */
-PY_TYPEOBJECT( Vector4Provider )
+PY_TYPEOBJECT(Vector4Provider)
 
-PY_BEGIN_METHODS( Vector4Provider )
+PY_BEGIN_METHODS(Vector4Provider)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( Vector4Provider )
+PY_BEGIN_ATTRIBUTES(Vector4Provider)
 
-	/*~ attribute Vector4Provider.value
-	 *	@components{ all }
-	 *  The Vector4 currently being provided.
-	 *  @type Read-Only Vector4
-	 */
-	PY_ATTRIBUTE( value )
+/*~ attribute Vector4Provider.value
+ *	@components{ all }
+ *  The Vector4 currently being provided.
+ *  @type Read-Only Vector4
+ */
+PY_ATTRIBUTE(value)
 
 PY_END_ATTRIBUTES()
 
-Vector4Provider::Vector4Provider( bool autoTick, PyTypeObject * pType ) :
-	PyObjectPlusWithWeakReference( pType ),
-	autoTick_( autoTick )
+Vector4Provider::Vector4Provider(bool autoTick, PyTypeObject* pType)
+  : PyObjectPlusWithWeakReference(pType)
+  , autoTick_(autoTick)
 {
-	if (autoTick_)
-	{
-		ProviderStore::add( this );
-	}
+    if (autoTick_) {
+        ProviderStore::add(this);
+    }
 }
-
 
 Vector4Provider::~Vector4Provider()
 {
-	if (autoTick_)
-	{
-		ProviderStore::del( this );
-	}
+    if (autoTick_) {
+        ProviderStore::del(this);
+    }
 }
 
-
-PyObject * Vector4Provider::pyGet_value()
+PyObject* Vector4Provider::pyGet_value()
 {
-	Vector4 val;
-	this->output( val );
-	return Script::getData( val );
+    Vector4 val;
+    this->output(val);
+    return Script::getData(val);
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Vector4Basic
@@ -3109,7 +2932,8 @@ PyObject * Vector4Provider::pyGet_value()
  *  Code Example:
  *  @{
  *  >>> # This shows how Vector4Basic objects are used by BigWorld to cast
- *  >>> # tuples of four floats and Vector4 objects to Vector4Provider instances.
+ *  >>> # tuples of four floats and Vector4 objects to Vector4Provider
+ *instances.
  *  >>>
  *  >>> # import Math module
  *  >>> import Math
@@ -3134,51 +2958,44 @@ PyObject * Vector4Provider::pyGet_value()
  *  Vector4Basic at 0x09EE75E8 (2.000000, 3.000000, 4.000000, 5.500000)
  *  @}
  */
-PY_TYPEOBJECT( Vector4Basic )
+PY_TYPEOBJECT(Vector4Basic)
 
-PY_BEGIN_METHODS( Vector4Basic )
+PY_BEGIN_METHODS(Vector4Basic)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( Vector4Basic )
+PY_BEGIN_ATTRIBUTES(Vector4Basic)
 
-	/*~ attribute Vector4Basic.value
-	 *	@components{ all }
-	 *	The contents of the Vector4Basic
-	 *	@type Vector4
-	 */
-	PY_ATTRIBUTE( value )
+/*~ attribute Vector4Basic.value
+ *	@components{ all }
+ *	The contents of the Vector4Basic
+ *	@type Vector4
+ */
+PY_ATTRIBUTE(value)
 
 PY_END_ATTRIBUTES()
-
 
 /**
  *	Constructor
  */
-Vector4Basic::Vector4Basic( const Vector4 & val, PyTypeObject * pType ) :
-	Vector4Provider( false, pType ),
-	value_( val )
+Vector4Basic::Vector4Basic(const Vector4& val, PyTypeObject* pType)
+  : Vector4Provider(false, pType)
+  , value_(val)
 {
 }
 
-
-PyObjectPtr Vector4Provider::coerce( PyObject * pObject )
+PyObjectPtr Vector4Provider::coerce(PyObject* pObject)
 {
-	Vector4 v4;
-	if (Script::setData( pObject, v4 ) == 0)
-	{
-		return PyObjectPtr( new Vector4Basic( v4 ), 
-			PyObjectPtr::STEAL_REFERENCE );
-	}
-	else
-	{
-		PyErr_Clear();
-		return pObject;
-	}
+    Vector4 v4;
+    if (Script::setData(pObject, v4) == 0) {
+        return PyObjectPtr(new Vector4Basic(v4), PyObjectPtr::STEAL_REFERENCE);
+    } else {
+        PyErr_Clear();
+        return pObject;
+    }
 }
 
-PY_SCRIPT_CONVERTERS( Vector4Provider )
-PY_SCRIPT_CONVERTERS( Vector4Basic )
-
+PY_SCRIPT_CONVERTERS(Vector4Provider)
+PY_SCRIPT_CONVERTERS(Vector4Basic)
 
 // -----------------------------------------------------------------------------
 // Section: Vector4Product
@@ -3189,26 +3006,26 @@ PY_SCRIPT_CONVERTERS( Vector4Basic )
  */
 class Vector4Product : public Vector4Provider
 {
-	Py_Header( Vector4Product, Vector4Provider )
+    Py_Header(Vector4Product, Vector4Provider)
 
-public:
-	Vector4Product( PyTypeObject * pType = &s_type_ )
-		: Vector4Provider( false, pType )
-	{ }
+      public
+      : Vector4Product(PyTypeObject* pType = &s_type_)
+      : Vector4Provider(false, pType)
+    {
+    }
 
-	virtual void output( Vector4 & m );
+    virtual void output(Vector4& m);
 
-	PY_RW_ATTRIBUTE_DECLARE( a_, a )
-	PY_RW_ATTRIBUTE_DECLARE( b_, b )
+    PY_RW_ATTRIBUTE_DECLARE(a_, a)
+    PY_RW_ATTRIBUTE_DECLARE(b_, b)
 
-	static Vector4Product * New()	{ return new Vector4Product(); }
-	PY_AUTO_FACTORY_DECLARE( Vector4Product, END )
+    static Vector4Product* New() { return new Vector4Product(); }
+    PY_AUTO_FACTORY_DECLARE(Vector4Product, END)
 
-private:
-	Vector4ProviderPtr	a_;
-	Vector4ProviderPtr	b_;
+  private:
+    Vector4ProviderPtr a_;
+    Vector4ProviderPtr b_;
 };
-
 
 /*~ class Math.Vector4Product
  *	@components{ all }
@@ -3256,142 +3073,131 @@ private:
  *  light.shader = yellowFlash
  *  @}
  */
-PY_TYPEOBJECT( Vector4Product )
+PY_TYPEOBJECT(Vector4Product)
 
-PY_BEGIN_METHODS( Vector4Product )
+PY_BEGIN_METHODS(Vector4Product)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( Vector4Product )
+PY_BEGIN_ATTRIBUTES(Vector4Product)
 
-	/*~ attribute Vector4Product.a
-	 *	@components{ all }
-	 *  Each component of the value of this is multiplied by the corresponding
-	 *  component in b to determine the corresponding component in the
-	 *  Vector4Product object's value.
-	 *  @type Read-Write Vector4Provider
-	 */
-	PY_ATTRIBUTE( a )
+/*~ attribute Vector4Product.a
+ *	@components{ all }
+ *  Each component of the value of this is multiplied by the corresponding
+ *  component in b to determine the corresponding component in the
+ *  Vector4Product object's value.
+ *  @type Read-Write Vector4Provider
+ */
+PY_ATTRIBUTE(a)
 
-	/*~ attribute Vector4Product.b
-	 *	@components{ all }
-	 *  Each component of the value of this is multiplied by the corresponding
-	 *  component in a to determine the corresponding component in the
-	 *  Vector4Product object's value.
-	 *  @type Read-Write Vector4Provider
-	 */
-	PY_ATTRIBUTE( b )
+/*~ attribute Vector4Product.b
+ *	@components{ all }
+ *  Each component of the value of this is multiplied by the corresponding
+ *  component in a to determine the corresponding component in the
+ *  Vector4Product object's value.
+ *  @type Read-Write Vector4Provider
+ */
+PY_ATTRIBUTE(b)
 
 PY_END_ATTRIBUTES()
 
 /*~ function Math Vector4Product
  *	@components{ all }
  *  Creates a new instance of Vector4Product. This is a subclass of
- *  Vector4Provider which provides the componentwise product of the outputs of two
- *  Vector4Provider objects.
+ *  Vector4Provider which provides the componentwise product of the outputs of
+ *two Vector4Provider objects.
  *  @return The new Vector4Product
  */
-PY_FACTORY( Vector4Product, Math )
-
+PY_FACTORY(Vector4Product, Math)
 
 /**
  *	Vector4Provider output method
  */
-void Vector4Product::output( Vector4 & v )
+void Vector4Product::output(Vector4& v)
 {
-	if (a_)
-	{
-		a_->output( v );
-		if (b_)
-		{
-			Vector4 bv;
-			b_->output( bv );
-			v.parallelMultiply( bv );
-		}
-	}
-	else
-	{
-		if (b_)
-			b_->output( v );
-		else
-			v.set(0.f,0.f,0.f,0.f);
-	}
-
+    if (a_) {
+        a_->output(v);
+        if (b_) {
+            Vector4 bv;
+            b_->output(bv);
+            v.parallelMultiply(bv);
+        }
+    } else {
+        if (b_)
+            b_->output(v);
+        else
+            v.set(0.f, 0.f, 0.f, 0.f);
+    }
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Vector4Animation
 // -----------------------------------------------------------------------------
 
 // keyframe converters
-typedef std::pair<float,Vector4ProviderPtr> Vector4Animation_Keyframe;
+typedef std::pair<float, Vector4ProviderPtr> Vector4Animation_Keyframe;
 
-namespace Script
-{
-	int setData( PyObject * pObject, Vector4Animation_Keyframe & rpVal,
-		const char * varName )
-	{
-		Vector4Animation_Keyframe t;
-		bool good = false;
-		if (PyTuple_Check( pObject ) && PyTuple_Size( pObject ) == 2)
-		{
-			int ret = 0;
-			ret |= Script::setData( PyTuple_GET_ITEM( pObject, 0 ), t.first );
-			ret |= Script::setData( PyTuple_GET_ITEM( pObject, 1 ), t.second );
-			good = (ret == 0) && t.second;
-		}
-		if (!good)
-		{
-			PyErr_Format( PyExc_TypeError, "%s must be set to "
-				"a tuple of a float and a Vector4Provider", varName );
-			return -1;
-		}
+namespace Script {
+    int setData(PyObject*                  pObject,
+                Vector4Animation_Keyframe& rpVal,
+                const char*                varName)
+    {
+        Vector4Animation_Keyframe t;
+        bool                      good = false;
+        if (PyTuple_Check(pObject) && PyTuple_Size(pObject) == 2) {
+            int ret = 0;
+            ret |= Script::setData(PyTuple_GET_ITEM(pObject, 0), t.first);
+            ret |= Script::setData(PyTuple_GET_ITEM(pObject, 1), t.second);
+            good = (ret == 0) && t.second;
+        }
+        if (!good) {
+            PyErr_Format(PyExc_TypeError,
+                         "%s must be set to "
+                         "a tuple of a float and a Vector4Provider",
+                         varName);
+            return -1;
+        }
 
-		rpVal = t;
-		return 0;
-	}
+        rpVal = t;
+        return 0;
+    }
 
-	PyObject * getData( const Vector4Animation_Keyframe & pVal )
-	{
-		PyObject * pTuple = PyTuple_New( 2 );
-		PyTuple_SET_ITEM( pTuple, 0, Script::getData( pVal.first ) );
-		PyTuple_SET_ITEM( pTuple, 1, Script::getData( pVal.second ) );
-		return pTuple;
-	}
+    PyObject* getData(const Vector4Animation_Keyframe& pVal)
+    {
+        PyObject* pTuple = PyTuple_New(2);
+        PyTuple_SET_ITEM(pTuple, 0, Script::getData(pVal.first));
+        PyTuple_SET_ITEM(pTuple, 1, Script::getData(pVal.second));
+        return pTuple;
+    }
 };
-
 
 /**
  *	This animates between a number of Vector4 providers.
  */
 class Vector4Animation : public Vector4Provider
 {
-	Py_Header( Vector4Animation, Vector4Provider )
-public:
-	Vector4Animation( PyTypeObject * pType = &s_type_ );
+    Py_Header(Vector4Animation, Vector4Provider) public
+      : Vector4Animation(PyTypeObject* pType = &s_type_);
 
-	PY_RW_ATTRIBUTE_DECLARE( keyframesHolder_, keyframes )
-	PY_RW_ATTRIBUTE_DECLARE( time_, time )
-	PY_RW_ATTRIBUTE_DECLARE( duration_, duration )
+    PY_RW_ATTRIBUTE_DECLARE(keyframesHolder_, keyframes)
+    PY_RW_ATTRIBUTE_DECLARE(time_, time)
+    PY_RW_ATTRIBUTE_DECLARE(duration_, duration)
 
-	static Vector4Animation * New()		{ return new Vector4Animation(); }
-	PY_AUTO_FACTORY_DECLARE( Vector4Animation, END )
+    static Vector4Animation* New() { return new Vector4Animation(); }
+    PY_AUTO_FACTORY_DECLARE(Vector4Animation, END)
 
-	virtual void tick( float dTime );
-	virtual void output( Vector4 & val );
+    virtual void tick(float dTime);
+    virtual void output(Vector4& val);
 
-	typedef Vector4Animation_Keyframe Keyframe;
-	typedef BW::vector< Vector4Animation_Keyframe > Keyframes;
+    typedef Vector4Animation_Keyframe             Keyframe;
+    typedef BW::vector<Vector4Animation_Keyframe> Keyframes;
 
-private:
+  private:
+    Keyframes                      keyframes_;
+    PySTLSequenceHolder<Keyframes> keyframesHolder_;
 
-	Keyframes	keyframes_;
-	PySTLSequenceHolder<Keyframes>	keyframesHolder_;
-
-	float		time_;
-	float		duration_;
+    float time_;
+    float duration_;
 };
-
 
 /*~ class Math.Vector4Animation
  *	@components{ all }
@@ -3484,37 +3290,37 @@ private:
  *  lights[3].shader = flashFadeV4
  *  @}
  */
-PY_TYPEOBJECT( Vector4Animation )
+PY_TYPEOBJECT(Vector4Animation)
 
-PY_BEGIN_METHODS( Vector4Animation )
+PY_BEGIN_METHODS(Vector4Animation)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( Vector4Animation )
+PY_BEGIN_ATTRIBUTES(Vector4Animation)
 
-	/*~ attribute Vector4Animation.keyframes
-	 *	@components{ all }
-	 *  Each entry in this list contains a time to which the keyframe
-	 *  applies, in seconds, and a Vector4Provider which provides the
-	 *  keyframe value.
-	 *  @type Read-Write list of tuples containing a float and a Vector4Provider
-	 */
-	PY_ATTRIBUTE( keyframes )
+/*~ attribute Vector4Animation.keyframes
+ *	@components{ all }
+ *  Each entry in this list contains a time to which the keyframe
+ *  applies, in seconds, and a Vector4Provider which provides the
+ *  keyframe value.
+ *  @type Read-Write list of tuples containing a float and a Vector4Provider
+ */
+PY_ATTRIBUTE(keyframes)
 
-	/*~ attribute Vector4Animation.time
-	 *	@components{ all }
-	 *  The time that has passed since the animation
-	 *  entered it's current cycle, in seconds.
-	 *  @type Read-Write float
-	 */
-	PY_ATTRIBUTE( time )
+/*~ attribute Vector4Animation.time
+ *	@components{ all }
+ *  The time that has passed since the animation
+ *  entered it's current cycle, in seconds.
+ *  @type Read-Write float
+ */
+PY_ATTRIBUTE(time)
 
-	/*~ attribute Vector4Animation.duration
-	 *	@components{ all }
-	 *  The total duration of the animation's cycle, in
-	 *  seconds.
-	 *  @type Read-Write float
-	 */
-	PY_ATTRIBUTE( duration )
+/*~ attribute Vector4Animation.duration
+ *	@components{ all }
+ *  The total duration of the animation's cycle, in
+ *  seconds.
+ *  @type Read-Write float
+ */
+PY_ATTRIBUTE(duration)
 
 PY_END_ATTRIBUTES()
 
@@ -3525,112 +3331,106 @@ PY_END_ATTRIBUTES()
  *  a number of Vector4Provider objects.
  *  @return The new Vector4Animation
  */
-PY_FACTORY( Vector4Animation, Math )
+PY_FACTORY(Vector4Animation, Math)
 
-
-#if defined( _MSC_VER )
-#pragma warning( push )
+#if defined(_MSC_VER)
+#pragma warning(push)
 // C4355: 'this' : used in base member initializer list
-#pragma warning( disable: 4355 )
+#pragma warning(disable : 4355)
 #endif // defined( _MSC_VER )
 
-Vector4Animation::Vector4Animation( PyTypeObject * pType ) :
-	Vector4Provider( true, pType ),
-	keyframesHolder_( keyframes_, this, true ),
-	time_( 0.f ),
-	duration_( 1.f )
+Vector4Animation::Vector4Animation(PyTypeObject* pType)
+  : Vector4Provider(true, pType)
+  , keyframesHolder_(keyframes_, this, true)
+  , time_(0.f)
+  , duration_(1.f)
 {
 }
 
-#if defined( _MSC_VER )
-#pragma warning( pop )
+#if defined(_MSC_VER)
+#pragma warning(pop)
 #endif // defined( _MSC_VER )
 
-void Vector4Animation::tick( float dTime )
+void Vector4Animation::tick(float dTime)
 {
-	time_ = fmodf( time_ + dTime, std::max( duration_, 0.001f ) );
+    time_ = fmodf(time_ + dTime, std::max(duration_, 0.001f));
 }
 
-void Vector4Animation::output( Vector4 & val )
+void Vector4Animation::output(Vector4& val)
 {
-	if (keyframes_.empty())
-	{
-		val = Vector4(0.f,0.f,0.f,0.f);
-		return;
-	}
+    if (keyframes_.empty()) {
+        val = Vector4(0.f, 0.f, 0.f, 0.f);
+        return;
+    }
 
-	// note: it is up to the user to keep the keyframes in order
-	Keyframes::iterator nit = keyframes_.begin();
-	Keyframes::iterator oit = nit;
-	while (nit != keyframes_.end() && nit->first < time_)
-	{
-		oit = nit;
-		nit++;
-	}
+    // note: it is up to the user to keep the keyframes in order
+    Keyframes::iterator nit = keyframes_.begin();
+    Keyframes::iterator oit = nit;
+    while (nit != keyframes_.end() && nit->first < time_) {
+        oit = nit;
+        nit++;
+    }
 
-	// are we before the first?
-	if (nit == oit)
-	{
-		nit->second->output( val );
-	}
-	// are we after the last?
-	else if (nit == keyframes_.end())
-	{
-		oit->second->output( val );
-	}
-	// we must be between oit and nit then
-	else
-	{
-		Vector4 ov, nv;
-		oit->second->output( ov );
-		nit->second->output( nv );
-		float t = (time_ - oit->first) / (nit->first - oit->first);
-		XPVec4Lerp( &val, &ov, &nv, t );
-	}
+    // are we before the first?
+    if (nit == oit) {
+        nit->second->output(val);
+    }
+    // are we after the last?
+    else if (nit == keyframes_.end()) {
+        oit->second->output(val);
+    }
+    // we must be between oit and nit then
+    else {
+        Vector4 ov, nv;
+        oit->second->output(ov);
+        nit->second->output(nv);
+        float t = (time_ - oit->first) / (nit->first - oit->first);
+        XPVec4Lerp(&val, &ov, &nv, t);
+    }
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Vector4Morph
 // -----------------------------------------------------------------------------
 class Vector4Morph : public Vector4Provider
 {
-	Py_Header( Vector4Morph, Vector4Provider )
-public:
+    Py_Header(Vector4Morph, Vector4Provider) public
+      :
 
-	Vector4Morph( const Vector4& orig, PyTypeObject * pType = &s_type_ ):
-		Vector4Provider( true, pType ),
-		target_( orig ),
-		duration_( 1.f ),
-		time_( 0.f ),
-		old_( orig )
-	{
-	};
+      Vector4Morph(const Vector4& orig, PyTypeObject* pType = &s_type_)
+      : Vector4Provider(true, pType)
+      , target_(orig)
+      , duration_(1.f)
+      , time_(0.f)
+      , old_(orig){};
 
-	void tick( float dTime );
-	void output( Vector4 & v );	
+    void tick(float dTime);
+    void output(Vector4& v);
 
-	const Vector4& target() const	{ return target_; }
-	void target( const Vector4& t );
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( Vector4, target, target );
+    const Vector4& target() const { return target_; }
+    void           target(const Vector4& t);
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(Vector4, target, target);
 
-	float duration() const	{ return duration_; }
-	void duration( float d );
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( float, duration, duration );
+    float duration() const { return duration_; }
+    void  duration(float d);
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(float, duration, duration);
 
-	float time() const	{ return time_; }
-	void time( float t );
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( float, time, time );
+    float time() const { return time_; }
+    void  time(float t);
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(float, time, time);
 
-	static Vector4Morph * New( const Vector4& val = Vector4(0,0,0,0) )	{ return new Vector4Morph(val); }
-	PY_AUTO_FACTORY_DECLARE( Vector4Morph, OPTARG(Vector4, Vector4(0,0,0,0), END) )
-private:
-	Vector4 target_;	
-	float	duration_;
-	float	time_;
-	Vector4 old_;
+    static Vector4Morph* New(const Vector4& val = Vector4(0, 0, 0, 0))
+    {
+        return new Vector4Morph(val);
+    }
+    PY_AUTO_FACTORY_DECLARE(Vector4Morph,
+                            OPTARG(Vector4, Vector4(0, 0, 0, 0), END))
+  private:
+    Vector4 target_;
+    float   duration_;
+    float   time_;
+    Vector4 old_;
 };
-
 
 /*~ class Math.Vector4Morph
  *	@components{ all }
@@ -3638,7 +3438,7 @@ private:
  *  value that morphs from the current value to the target value, over
  *	the specified duration.
  *	You can query its current value using the value attribute.
- *	
+ *
  *
  *  Code Example:
  *  @{
@@ -3646,12 +3446,12 @@ private:
  *
  *  # import the Math module
  *  import Math
- * 
+ *
  *  v = Math.Vector4Morph()
  *  v.duration = 2.0
  *
  *  print Math.Vector4(v)
- *	# '0, 0, 0, 0' 
+ *	# '0, 0, 0, 0'
  *
  *	v.target = (4,4,4,4)
  *	BigWorld.callback( 1.0, partial( checkValue, v ) )
@@ -3666,37 +3466,36 @@ private:
  *		# '2, 3, 1, 9'
  *  @}
  */
-PY_TYPEOBJECT( Vector4Morph )
+PY_TYPEOBJECT(Vector4Morph)
 
-PY_BEGIN_METHODS( Vector4Morph )
+PY_BEGIN_METHODS(Vector4Morph)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( Vector4Morph )
+PY_BEGIN_ATTRIBUTES(Vector4Morph)
 
-	/*~ attribute Vector4Morph.target
-	 *	@components{ all }
-	 *  The target value
-	 *  @type Read-Write Vector4
-	 */
-	PY_ATTRIBUTE( target )
+/*~ attribute Vector4Morph.target
+ *	@components{ all }
+ *  The target value
+ *  @type Read-Write Vector4
+ */
+PY_ATTRIBUTE(target)
 
-	/*~ attribute Vector4Morph.duration
-	 *	@components{ all }
-	 *  The time taken by the morpher to transition
-	 *  to the new value
-	 *  @type Read-Write float
-	 */
-	PY_ATTRIBUTE( duration )
+/*~ attribute Vector4Morph.duration
+ *	@components{ all }
+ *  The time taken by the morpher to transition
+ *  to the new value
+ *  @type Read-Write float
+ */
+PY_ATTRIBUTE(duration)
 
-	/*~ attribute Vector4Morph.time
-	 *	@components{ all }
-	 *  The current time value
-	 *  @type Read-Write float
-	 */
-	PY_ATTRIBUTE( time )
+/*~ attribute Vector4Morph.time
+ *	@components{ all }
+ *  The current time value
+ *  @type Read-Write float
+ */
+PY_ATTRIBUTE(time)
 
 PY_END_ATTRIBUTES()
-
 
 /*~ function Math Vector4Morph
  *	@components{ all }
@@ -3707,8 +3506,7 @@ PY_END_ATTRIBUTES()
  *	You can make it update immediately by using the reset() method.
  *  @return The new Vector4Morph
  */
-PY_FACTORY( Vector4Morph, Math )
-
+PY_FACTORY(Vector4Morph, Math)
 
 /**
  *	This method ticks the Vector4Morph, advancing time by the passed
@@ -3717,25 +3515,23 @@ PY_FACTORY( Vector4Morph, Math )
  *
  *	@param	dTime	The delta time, in seconds.
  */
-void Vector4Morph::tick( float dTime )
+void Vector4Morph::tick(float dTime)
 {
-	this->time( time_ + dTime );	
+    this->time(time_ + dTime);
 }
-
 
 /**
  *	Vector4Morph output method.
  *
  *	@param	v	The output Vector4
  */
-void Vector4Morph::output( Vector4 & v )
-{	
-	//duration is guaranteed to be > 0.f because
-	//it is clamped in the set duration method.
-	float t = time_ / duration_;
-	v = (t * target_) + ( (1.f-t) * old_ );
+void Vector4Morph::output(Vector4& v)
+{
+    // duration is guaranteed to be > 0.f because
+    // it is clamped in the set duration method.
+    float t = time_ / duration_;
+    v       = (t * target_) + ((1.f - t) * old_);
 }
-
 
 /**
  *	This method sets the target value, and resets
@@ -3743,13 +3539,12 @@ void Vector4Morph::output( Vector4 & v )
  *
  *	@param	v		The new target value.
  */
-void Vector4Morph::target( const Vector4& v )
+void Vector4Morph::target(const Vector4& v)
 {
-	this->output( this->old_ );
-	target_ = v;
-	time_ = 0.f;
+    this->output(this->old_);
+    target_ = v;
+    time_   = 0.f;
 }
-
 
 /**
  *	Vector4Morph duration method.
@@ -3761,57 +3556,55 @@ void Vector4Morph::target( const Vector4& v )
  *
  *	@param d	the new duration, its minimum being 0.0001 seconds.
  */
-void Vector4Morph::duration( float d )
+void Vector4Morph::duration(float d)
 {
-	float t = time_ / duration_;
+    float t = time_ / duration_;
 
-	duration_ = std::max( 0.0001f, d );
+    duration_ = std::max(0.0001f, d);
 
-	//call the time function, in order to clamp it to sensible values.
-	this->time( t * duration_ );	
+    // call the time function, in order to clamp it to sensible values.
+    this->time(t * duration_);
 }
-
 
 /**
  *	Vector4Morph time method.  The time is clamped between 0 and duration_.
  *
  *	@param t	the new time.
  */
-void Vector4Morph::time( float t )
+void Vector4Morph::time(float t)
 {
-	time_ = Math::clamp( 0.0001f, t, duration_ );
+    time_ = Math::clamp(0.0001f, t, duration_);
 }
-
 
 // -----------------------------------------------------------------------------
 // Section - Vector4Translation
 // -----------------------------------------------------------------------------
 class Vector4Translation : public Vector4Provider
 {
-	Py_Header( Vector4Translation, Vector4Provider )
-public:
+    Py_Header(Vector4Translation, Vector4Provider) public
+      :
 
-	Vector4Translation( MatrixProviderPtr s, PyTypeObject * pType = &s_type_ ):
-		Vector4Provider( true, pType ),
-		source_( s )
-	{
-	};
+      Vector4Translation(MatrixProviderPtr s, PyTypeObject* pType = &s_type_)
+      : Vector4Provider(true, pType)
+      , source_(s){};
 
-	void output( Vector4 & v );	
+    void output(Vector4& v);
 
-	PY_RW_ATTRIBUTE_DECLARE( source_, source );
+    PY_RW_ATTRIBUTE_DECLARE(source_, source);
 
-
-	static Vector4Translation * New( MatrixProviderPtr a )	{ return new Vector4Translation(a); }
-	PY_AUTO_FACTORY_DECLARE( Vector4Translation, ARG(MatrixProviderPtr, END) )
-private:
-	MatrixProviderPtr source_;
+    static Vector4Translation* New(MatrixProviderPtr a)
+    {
+        return new Vector4Translation(a);
+    }
+    PY_AUTO_FACTORY_DECLARE(Vector4Translation, ARG(MatrixProviderPtr, END))
+  private:
+    MatrixProviderPtr source_;
 };
 /*~ class Math.Vector4Translation
  *	@components{ all }
  *  This is a subclass of Vector4Provider. This provides a Vector4
  *  value that returns the translation part of the source Matrix.
- *	
+ *
  *
  *  Code Example:
  *  @{
@@ -3820,27 +3613,26 @@ private:
  *
  *  # import the Math module
  *  import Math
- * 
+ *
  *  v = Math.Vector4Translation()
  *  v.source = BigWorld.player().model.node("biped Head")
  *  @}
  */
-PY_TYPEOBJECT( Vector4Translation )
+PY_TYPEOBJECT(Vector4Translation)
 
-PY_BEGIN_METHODS( Vector4Translation )
+PY_BEGIN_METHODS(Vector4Translation)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( Vector4Translation )
+PY_BEGIN_ATTRIBUTES(Vector4Translation)
 
-	/*~ attribute Vector4Translation.source
-	 *	@components{ all }
-	 *  Transform 1
-	 *  @type Read-Write Vector4
-	 */
-	PY_ATTRIBUTE( source )	
+/*~ attribute Vector4Translation.source
+ *	@components{ all }
+ *  Transform 1
+ *  @type Read-Write Vector4
+ */
+PY_ATTRIBUTE(source)
 
 PY_END_ATTRIBUTES()
-
 
 /*~ function Math Vector4Translation
  *	@components{ all }
@@ -3848,56 +3640,57 @@ PY_END_ATTRIBUTES()
  *  value that returns the translation part of the given MatrixProvider
  *  @return The new Vector4Translation
  */
-PY_FACTORY( Vector4Translation, Math )
-
+PY_FACTORY(Vector4Translation, Math)
 
 /**
  *	Vector4Translation output method.
  *	@param	v	The output Vector4
  */
-void Vector4Translation::output( Vector4 & v )
-{	
-	Matrix ma;
-	this->source_->matrix(ma);
-	Vector3 tr = ma.applyToOrigin();
-	v.set( tr.x, tr.y, tr.z, 1.f );
+void Vector4Translation::output(Vector4& v)
+{
+    Matrix ma;
+    this->source_->matrix(ma);
+    Vector3 tr = ma.applyToOrigin();
+    v.set(tr.x, tr.y, tr.z, 1.f);
 }
-
 
 // -----------------------------------------------------------------------------
 // Section - Vector4Distance
 // -----------------------------------------------------------------------------
 class Vector4Distance : public Vector4Provider
 {
-	Py_Header( Vector4Distance, Vector4Provider )
-public:
+    Py_Header(Vector4Distance, Vector4Provider) public
+      :
 
-	Vector4Distance( MatrixProviderPtr a, MatrixProviderPtr b, PyTypeObject * pType = &s_type_ ):
-		Vector4Provider( true, pType ),
-		a_( a ),
-		b_( b )		
-	{
-	};
+      Vector4Distance(MatrixProviderPtr a,
+                      MatrixProviderPtr b,
+                      PyTypeObject*     pType = &s_type_)
+      : Vector4Provider(true, pType)
+      , a_(a)
+      , b_(b){};
 
-	void output( Vector4 & v );	
+    void output(Vector4& v);
 
-	PY_RW_ATTRIBUTE_DECLARE( a_, a );
-	PY_RW_ATTRIBUTE_DECLARE( b_, b );
+    PY_RW_ATTRIBUTE_DECLARE(a_, a);
+    PY_RW_ATTRIBUTE_DECLARE(b_, b);
 
+    static Vector4Distance* New(MatrixProviderPtr a, MatrixProviderPtr b)
+    {
+        return new Vector4Distance(a, b);
+    }
+    PY_AUTO_FACTORY_DECLARE(Vector4Distance,
+                            ARG(MatrixProviderPtr, ARG(MatrixProviderPtr, END)))
 
-	static Vector4Distance * New( MatrixProviderPtr a, MatrixProviderPtr b )	{ return new Vector4Distance(a,b); }
-	PY_AUTO_FACTORY_DECLARE( Vector4Distance, ARG(MatrixProviderPtr, ARG(MatrixProviderPtr, END) ) )
-
-private:
-	MatrixProviderPtr a_;
-	MatrixProviderPtr b_;
+  private:
+    MatrixProviderPtr a_;
+    MatrixProviderPtr b_;
 };
 /*~ class Math.Vector4Distance
  *	@components{ all }
  *  This is a subclass of Vector4Provider. This provides a Vector4
  *  value that returns the distance in metres between the two given
  *	Matrix providers.  The distance is returned in all 4 components
- *	
+ *
  *
  *  Code Example:
  *  @{
@@ -3906,35 +3699,34 @@ private:
  *
  *  # import the Math module
  *  import Math
- * 
+ *
  *  v = Math.Vector4Distance()
  *  v.a = BigWorld.player().model.node("biped Head")
  *	v.b = BigWorld.camera().invViewMatrix()
  *  @}
  */
-PY_TYPEOBJECT( Vector4Distance )
+PY_TYPEOBJECT(Vector4Distance)
 
-PY_BEGIN_METHODS( Vector4Distance )
+PY_BEGIN_METHODS(Vector4Distance)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( Vector4Distance )
+PY_BEGIN_ATTRIBUTES(Vector4Distance)
 
-	/*~ attribute Vector4Distance.a
-	 *	@components{ all }
-	 *  Transform 1
-	 *  @type Read-Write Vector4
-	 */
-	PY_ATTRIBUTE( a )
+/*~ attribute Vector4Distance.a
+ *	@components{ all }
+ *  Transform 1
+ *  @type Read-Write Vector4
+ */
+PY_ATTRIBUTE(a)
 
-	/*~ attribute Vector4Distance.b
-	 *	@components{ all }
-	 *  Transform 2
-	 *  @type Read-Write Vector4
-	 */
-	PY_ATTRIBUTE( b )
+/*~ attribute Vector4Distance.b
+ *	@components{ all }
+ *  Transform 2
+ *  @type Read-Write Vector4
+ */
+PY_ATTRIBUTE(b)
 
 PY_END_ATTRIBUTES()
-
 
 /*~ function Math Vector4Distance
  *	@components{ all }
@@ -3943,22 +3735,20 @@ PY_END_ATTRIBUTES()
  *	Matrix providers.  The distance is returned in all 4 components
  *  @return The new Vector4Distance
  */
-PY_FACTORY( Vector4Distance, Math )
-
+PY_FACTORY(Vector4Distance, Math)
 
 /**
  *	Vector4Distance output method.
  *	@param	v	The output Vector4
  */
-void Vector4Distance::output( Vector4 & v )
-{	
-	Matrix ma, mb;
-	this->a_->matrix(ma);
-	this->b_->matrix(mb);
-	float d = Vector3(ma.applyToOrigin() - mb.applyToOrigin()).length();
-	v.set(d,d,d,d);
+void Vector4Distance::output(Vector4& v)
+{
+    Matrix ma, mb;
+    this->a_->matrix(ma);
+    this->b_->matrix(mb);
+    float d = Vector3(ma.applyToOrigin() - mb.applyToOrigin()).length();
+    v.set(d, d, d, d);
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Vector4LFO
@@ -3969,63 +3759,61 @@ void Vector4Distance::output( Vector4 & v )
  */
 class Vector4LFO : public Vector4Provider
 {
-	Py_Header( Vector4LFO, Vector4Provider )
+    Py_Header(Vector4LFO, Vector4Provider)
 
-public:
-	enum Waveform
-	{
-		WAVE_SQUARE,
-		WAVE_TRIANGLE,
-		WAVE_SINE,
-		WAVE_SAWTOOTH
-	};
+      public : enum Waveform {
+          WAVE_SQUARE,
+          WAVE_TRIANGLE,
+          WAVE_SINE,
+          WAVE_SAWTOOTH
+      };
 
-	PY_BEGIN_ENUM_MAP( Waveform, WAVE_ )
-		PY_ENUM_VALUE( WAVE_SQUARE )
-		PY_ENUM_VALUE( WAVE_TRIANGLE )
-		PY_ENUM_VALUE( WAVE_SINE )
-		PY_ENUM_VALUE( WAVE_SAWTOOTH )
-	PY_END_ENUM_MAP()
+    PY_BEGIN_ENUM_MAP(Waveform, WAVE_)
+    PY_ENUM_VALUE(WAVE_SQUARE)
+    PY_ENUM_VALUE(WAVE_TRIANGLE)
+    PY_ENUM_VALUE(WAVE_SINE)
+    PY_ENUM_VALUE(WAVE_SAWTOOTH)
+    PY_END_ENUM_MAP()
 
-	Vector4LFO( PyTypeObject * pType = &s_type_ ):
-		Vector4Provider( true, pType ),
-		waveform_( WAVE_SINE ),
-		period_( 1.f ),
-		a_( 1.f ),
-		phase_( 0.f ),
-		time_( 0.f ),
-		parity_( 0 )
-	{}
+    Vector4LFO(PyTypeObject* pType = &s_type_)
+      : Vector4Provider(true, pType)
+      , waveform_(WAVE_SINE)
+      , period_(1.f)
+      , a_(1.f)
+      , phase_(0.f)
+      , time_(0.f)
+      , parity_(0)
+    {
+    }
 
-	virtual void tick( float dTime );
-	virtual void output( Vector4 & m );
+    virtual void tick(float dTime);
+    virtual void output(Vector4& m);
 
-	PY_RW_ATTRIBUTE_DECLARE( period_, period )
-	PY_RW_ATTRIBUTE_DECLARE( a_, amplitude )
-	PY_RW_ATTRIBUTE_DECLARE( phase_, phase )
-	PY_RW_ATTRIBUTE_DECLARE( time_, time )
-	PY_DEFERRED_ATTRIBUTE_DECLARE( waveform )
+    PY_RW_ATTRIBUTE_DECLARE(period_, period)
+    PY_RW_ATTRIBUTE_DECLARE(a_, amplitude)
+    PY_RW_ATTRIBUTE_DECLARE(phase_, phase)
+    PY_RW_ATTRIBUTE_DECLARE(time_, time)
+    PY_DEFERRED_ATTRIBUTE_DECLARE(waveform)
 
-	static Vector4LFO * New()	{ return new Vector4LFO(); }
-	PY_AUTO_FACTORY_DECLARE( Vector4LFO, END )
+    static Vector4LFO* New() { return new Vector4LFO(); }
+    PY_AUTO_FACTORY_DECLARE(Vector4LFO, END)
 
-private:
-	Waveform waveform_;
-	float	period_;
-	float	a_;
-	float	phase_;
-	float	time_;
-	uint8	parity_;
+  private:
+    Waveform waveform_;
+    float    period_;
+    float    a_;
+    float    phase_;
+    float    time_;
+    uint8    parity_;
 };
 
 // declare the enum converter functions
-PY_ENUM_CONVERTERS_DECLARE( Vector4LFO::Waveform )
-
+PY_ENUM_CONVERTERS_DECLARE(Vector4LFO::Waveform)
 
 #undef PY_ATTR_SCOPE
 #define PY_ATTR_SCOPE Vector4LFO::
 
-PY_RW_ATTRIBUTE_DECLARE( waveform_, waveform )
+PY_RW_ATTRIBUTE_DECLARE(waveform_, waveform)
 
 /*~ class Math.Vector4LFO
  *	@components{ all }
@@ -4063,57 +3851,57 @@ PY_RW_ATTRIBUTE_DECLARE( waveform_, waveform )
  *  light.shader = v
  *  @}
  */
-PY_TYPEOBJECT( Vector4LFO )
+PY_TYPEOBJECT(Vector4LFO)
 
-PY_BEGIN_METHODS( Vector4LFO )
+PY_BEGIN_METHODS(Vector4LFO)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( Vector4LFO )
+PY_BEGIN_ATTRIBUTES(Vector4LFO)
 
-	/*~ attribute Vector4LFO.period
-	 *	@components{ all }
-	 *  The time taken by the oscillator to complete
-	 *  an entire wave, in seconds.
-	 *  @type Read-Write float
-	 */
-	PY_ATTRIBUTE( period )
+/*~ attribute Vector4LFO.period
+ *	@components{ all }
+ *  The time taken by the oscillator to complete
+ *  an entire wave, in seconds.
+ *  @type Read-Write float
+ */
+PY_ATTRIBUTE(period)
 
-	/*~ attribute Vector4LFO.amplitude
-	 *	@components{ all }
-	 *  The upper bound of the wave's range. The
-	 *  lower bound is 0. This can be less that 0, which causes the wave to be
-	 *  inverted.
-	 *  @type Read-Write float
-	 */
-	PY_ATTRIBUTE( amplitude )
+/*~ attribute Vector4LFO.amplitude
+ *	@components{ all }
+ *  The upper bound of the wave's range. The
+ *  lower bound is 0. This can be less that 0, which causes the wave to be
+ *  inverted.
+ *  @type Read-Write float
+ */
+PY_ATTRIBUTE(amplitude)
 
-	/*~ attribute Vector4LFO.phase
-	 *	@components{ all }
-	 *  The wave's offset from time 0, in seconds.
-	 *  @type Read-Write float
-	 */
-	PY_ATTRIBUTE( phase )
+/*~ attribute Vector4LFO.phase
+ *	@components{ all }
+ *  The wave's offset from time 0, in seconds.
+ *  @type Read-Write float
+ */
+PY_ATTRIBUTE(phase)
 
-	/*~ attribute Vector4LFO.waveform
-	 *	@components{ all }
-	 *  Specifies the shape of the wave. This may be one of the following values:
-	 *  "SINE", "SQUARE", "TRIANGLE", "SAWTOOTH".
-	 *  @type Read-Write string
-	 */
-	PY_ATTRIBUTE( waveform )
+/*~ attribute Vector4LFO.waveform
+ *	@components{ all }
+ *  Specifies the shape of the wave. This may be one of the following values:
+ *  "SINE", "SQUARE", "TRIANGLE", "SAWTOOTH".
+ *  @type Read-Write string
+ */
+PY_ATTRIBUTE(waveform)
 
-	/*~ attribute Vector4LFO.time
-	 *	@components{ all }
-	 *  The time that has passed since the wave entered it's current cycle, in
-	 *  seconds.
-	 *  @type Read-Write float
-	 */
-	PY_ATTRIBUTE( time )
+/*~ attribute Vector4LFO.time
+ *	@components{ all }
+ *  The time that has passed since the wave entered it's current cycle, in
+ *  seconds.
+ *  @type Read-Write float
+ */
+PY_ATTRIBUTE(time)
 
 PY_END_ATTRIBUTES()
 
-PY_ENUM_MAP( Vector4LFO::Waveform )
-PY_ENUM_CONVERTERS_CONTIGUOUS( Vector4LFO::Waveform )
+PY_ENUM_MAP(Vector4LFO::Waveform)
+PY_ENUM_CONVERTERS_CONTIGUOUS(Vector4LFO::Waveform)
 
 /*~ function Math Vector4LFO
  *	@components{ all }
@@ -4123,84 +3911,73 @@ PY_ENUM_CONVERTERS_CONTIGUOUS( Vector4LFO::Waveform )
  *  square, triangle, sine or sawtooth  shaped waveforms.
  *  @return The new Vector4LFO
  */
-PY_FACTORY( Vector4LFO, Math )
+PY_FACTORY(Vector4LFO, Math)
 
-
-void Vector4LFO::tick( float dTime )
+void Vector4LFO::tick(float dTime)
 {
-	time_ = time_ + dTime;
-	parity_++;
+    time_ = time_ + dTime;
+    parity_++;
 }
 
 /**
  *	Vector4LFO output method
  */
-void Vector4LFO::output( Vector4 & v )
+void Vector4LFO::output(Vector4& v)
 {
-	float x = 0.f;
+    float x = 0.f;
 
-	switch( waveform_ )
-	{
-	case WAVE_SQUARE:
-		if (almostZero( period_ )) {
-			x = 0;
-		}
-		else
-		{
-			time_ = fmodf( time_, period_ );
-			float t = time_ + phase_;
-			bool positive = false;
-			if ( period_ > 0.f )
-				positive = (t-period_/2.f > 0.f);
-			else
-				positive = !!(parity_%2);
-			x = positive ? a_ : 0.f;
-		}
-		break;
-	case WAVE_TRIANGLE:
-		if (almostZero( period_ )) {
-			x = 0;
-		}
-		else
-		{
-			time_ = fmodf( time_, period_ );
-			float t = time_ + phase_;
-			float f = 1.f / period_;
-			bool positive = (t-period_/2.f > 0.f);
-			x = fmodf( t*f, 1.f );
-			if ( !positive )
-				x = 1.f - x;
-			x = x * a_;
-		}
-		break;
-	case WAVE_SINE:
-		if (almostZero( period_ )) {
-			x = 0;
-		}
-		else
-		{
-			float t = fmodf(time_ + phase_, period_);
-			t = (t / period_) * 2.f * MATH_PI;
-			x = (sinf( t ) * 0.5f + 0.5f) * a_;
-		}
-		break;
-	case WAVE_SAWTOOTH:
-		if (almostZero( period_ )) {
-			x = 0;
-		}
-		else
-		{
-			time_ = fmodf( time_, period_ );
-			float t = time_ + phase_;
-			float f = 1.f / period_;
-			x = fmodf( t*f, 1.f ) * a_;
-		}
-		break;
-	}
+    switch (waveform_) {
+        case WAVE_SQUARE:
+            if (almostZero(period_)) {
+                x = 0;
+            } else {
+                time_          = fmodf(time_, period_);
+                float t        = time_ + phase_;
+                bool  positive = false;
+                if (period_ > 0.f)
+                    positive = (t - period_ / 2.f > 0.f);
+                else
+                    positive = !!(parity_ % 2);
+                x = positive ? a_ : 0.f;
+            }
+            break;
+        case WAVE_TRIANGLE:
+            if (almostZero(period_)) {
+                x = 0;
+            } else {
+                time_          = fmodf(time_, period_);
+                float t        = time_ + phase_;
+                float f        = 1.f / period_;
+                bool  positive = (t - period_ / 2.f > 0.f);
+                x              = fmodf(t * f, 1.f);
+                if (!positive)
+                    x = 1.f - x;
+                x = x * a_;
+            }
+            break;
+        case WAVE_SINE:
+            if (almostZero(period_)) {
+                x = 0;
+            } else {
+                float t = fmodf(time_ + phase_, period_);
+                t       = (t / period_) * 2.f * MATH_PI;
+                x       = (sinf(t) * 0.5f + 0.5f) * a_;
+            }
+            break;
+        case WAVE_SAWTOOTH:
+            if (almostZero(period_)) {
+                x = 0;
+            } else {
+                time_   = fmodf(time_, period_);
+                float t = time_ + phase_;
+                float f = 1.f / period_;
+                x       = fmodf(t * f, 1.f) * a_;
+            }
+            break;
+    }
 
-	v.set( x,x,x,x );
+    v.set(x, x, x, x);
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Vector4MatrixAdaptor
@@ -4216,58 +3993,56 @@ void Vector4LFO::output( Vector4 & v )
  */
 class Vector4MatrixAdaptor : public MatrixProvider
 {
-	Py_Header( Vector4MatrixAdaptor, MatrixProvider )
+    Py_Header(Vector4MatrixAdaptor, MatrixProvider)
 
-public:
-	enum Style
-	{
-		STYLE_XYZ_SCALE,
-		STYLE_XY_SCALE,
-		STYLE_X_ROTATE,
-		STYLE_Y_ROTATE,
-		STYLE_Z_ROTATE,
-		STYLE_LOOKAT,
-		STYLE_LOOKAT_SCALEZ
-	};
+      public : enum Style {
+          STYLE_XYZ_SCALE,
+          STYLE_XY_SCALE,
+          STYLE_X_ROTATE,
+          STYLE_Y_ROTATE,
+          STYLE_Z_ROTATE,
+          STYLE_LOOKAT,
+          STYLE_LOOKAT_SCALEZ
+      };
 
-	PY_BEGIN_ENUM_MAP( Style, STYLE_ )
-		PY_ENUM_VALUE( STYLE_XYZ_SCALE )
-		PY_ENUM_VALUE( STYLE_XY_SCALE )
-		PY_ENUM_VALUE( STYLE_X_ROTATE )
-		PY_ENUM_VALUE( STYLE_Y_ROTATE )
-		PY_ENUM_VALUE( STYLE_Z_ROTATE )
-		PY_ENUM_VALUE( STYLE_LOOKAT )
-		PY_ENUM_VALUE( STYLE_LOOKAT_SCALEZ )
-	PY_END_ENUM_MAP()
+    PY_BEGIN_ENUM_MAP(Style, STYLE_)
+    PY_ENUM_VALUE(STYLE_XYZ_SCALE)
+    PY_ENUM_VALUE(STYLE_XY_SCALE)
+    PY_ENUM_VALUE(STYLE_X_ROTATE)
+    PY_ENUM_VALUE(STYLE_Y_ROTATE)
+    PY_ENUM_VALUE(STYLE_Z_ROTATE)
+    PY_ENUM_VALUE(STYLE_LOOKAT)
+    PY_ENUM_VALUE(STYLE_LOOKAT_SCALEZ)
+    PY_END_ENUM_MAP()
 
-	Vector4MatrixAdaptor( PyTypeObject * pType = &s_type_ ):
-		MatrixProvider( false, &s_type_ ),
-		style_( STYLE_XY_SCALE ),
-		source_( NULL )
-	{}
+    Vector4MatrixAdaptor(PyTypeObject* pType = &s_type_)
+      : MatrixProvider(false, &s_type_)
+      , style_(STYLE_XY_SCALE)
+      , source_(NULL)
+    {
+    }
 
-	virtual void matrix( Matrix & m ) const;
+    virtual void matrix(Matrix& m) const;
 
-	PY_RW_ATTRIBUTE_DECLARE( source_, source )
-	PY_RW_ATTRIBUTE_DECLARE( positionProvider_, position )
-	PY_DEFERRED_ATTRIBUTE_DECLARE( style )
+    PY_RW_ATTRIBUTE_DECLARE(source_, source)
+    PY_RW_ATTRIBUTE_DECLARE(positionProvider_, position)
+    PY_DEFERRED_ATTRIBUTE_DECLARE(style)
 
-	static Vector4MatrixAdaptor * New()	{ return new Vector4MatrixAdaptor(); }
-	PY_AUTO_FACTORY_DECLARE( Vector4MatrixAdaptor, END )
+    static Vector4MatrixAdaptor* New() { return new Vector4MatrixAdaptor(); }
+    PY_AUTO_FACTORY_DECLARE(Vector4MatrixAdaptor, END)
 
-private:
-	Style style_;
-	Vector4ProviderPtr	source_;
-	Vector4ProviderPtr	positionProvider_;
+  private:
+    Style              style_;
+    Vector4ProviderPtr source_;
+    Vector4ProviderPtr positionProvider_;
 };
 
 // declare the enum converter functions
-PY_ENUM_CONVERTERS_DECLARE( Vector4MatrixAdaptor::Style )
-
+PY_ENUM_CONVERTERS_DECLARE(Vector4MatrixAdaptor::Style)
 
 #undef PY_ATTR_SCOPE
 #define PY_ATTR_SCOPE Vector4MatrixAdaptor::
-PY_RW_ATTRIBUTE_DECLARE( style_, style )
+PY_RW_ATTRIBUTE_DECLARE(style_, style)
 
 /*~ class Math.Vector4MatrixAdaptor
  *	@components{ all }
@@ -4277,133 +4052,122 @@ PY_RW_ATTRIBUTE_DECLARE( style_, style )
  *	A new Vector4MatrixAdaptor is created using Math.Vector4MatrixAdaptor
  *	method.
  */
-PY_TYPEOBJECT( Vector4MatrixAdaptor )
+PY_TYPEOBJECT(Vector4MatrixAdaptor)
 
-PY_BEGIN_METHODS( Vector4MatrixAdaptor )
+PY_BEGIN_METHODS(Vector4MatrixAdaptor)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( Vector4MatrixAdaptor )
+PY_BEGIN_ATTRIBUTES(Vector4MatrixAdaptor)
 
-	/*~	attribute Vector4MatrixAdaptor.source
-	 *	@components{ all }
-	 *	Stores the values that this MatrixProvider will represent.
-	 *	@type Vector4Provider
-	 */
-	PY_ATTRIBUTE( source )
+/*~	attribute Vector4MatrixAdaptor.source
+ *	@components{ all }
+ *	Stores the values that this MatrixProvider will represent.
+ *	@type Vector4Provider
+ */
+PY_ATTRIBUTE(source)
 
-	/*~	attribute Vector4MatrixAdaptor.position
-	 *	@components{ all }
-	 *	Optional position provider.
-	 *	@type Vector4Provider
-	 */
-	PY_ATTRIBUTE( position )
+/*~	attribute Vector4MatrixAdaptor.position
+ *	@components{ all }
+ *	Optional position provider.
+ *	@type Vector4Provider
+ */
+PY_ATTRIBUTE(position)
 
-	/*~	attribute Vector4MatrixAdaptor.style
-	 *	@components{ all }
-	 *	Specifies the rotational or scale style that the source is to represent in this MatrixProvider.
-	 *	Possible styles are:
-	 *
-	 *	"XYZ_SCALE"      - scale by (v.x,v.y,v.z)
-	 *	"XY_SCALE"		 - scale by (v.x,v.y,1.0)
-	 *	"X_ROTATE"		 - rotate around X by (v.x)
-	 *	"Y_ROTATE"		 - rotate around Y by (v.y)
-	 *	"Z_ROTATE"		 - rotate around Z by (v.z)
-	 *	"LOOKAT"		 - look in the direction of (v.x,v.y,v.z)
-	 *	"LOOKAT_SCALEZ"  - look in the direction of (v.x,v.y,v.z) and scale in Z by length(v)
-	 *
-	 *	@type Vector4Provider
-	 */
-	PY_ATTRIBUTE( style )
+/*~	attribute Vector4MatrixAdaptor.style
+ *	@components{ all }
+ *	Specifies the rotational or scale style that the source is to represent in
+ *this MatrixProvider. Possible styles are:
+ *
+ *	"XYZ_SCALE"      - scale by (v.x,v.y,v.z)
+ *	"XY_SCALE"		 - scale by (v.x,v.y,1.0)
+ *	"X_ROTATE"		 - rotate around X by (v.x)
+ *	"Y_ROTATE"		 - rotate around Y by (v.y)
+ *	"Z_ROTATE"		 - rotate around Z by (v.z)
+ *	"LOOKAT"		 - look in the direction of (v.x,v.y,v.z)
+ *	"LOOKAT_SCALEZ"  - look in the direction of (v.x,v.y,v.z) and scale in Z by
+ *length(v)
+ *
+ *	@type Vector4Provider
+ */
+PY_ATTRIBUTE(style)
 
 PY_END_ATTRIBUTES()
 
-PY_ENUM_MAP( Vector4MatrixAdaptor::Style )
-PY_ENUM_CONVERTERS_CONTIGUOUS( Vector4MatrixAdaptor::Style )
+PY_ENUM_MAP(Vector4MatrixAdaptor::Style)
+PY_ENUM_CONVERTERS_CONTIGUOUS(Vector4MatrixAdaptor::Style)
 
 /*~	function Math.Vector4MatrixAdaptor
  *	@components{ all }
- *	Creates and returns a new Vector4MatrixAdaptor, which is a MatrixProvider that represents
- *	a Vector4Provider, based upon its designated style/purpose.
+ *	Creates and returns a new Vector4MatrixAdaptor, which is a MatrixProvider
+ *that represents a Vector4Provider, based upon its designated style/purpose.
  */
-PY_FACTORY( Vector4MatrixAdaptor, Math )
-
+PY_FACTORY(Vector4MatrixAdaptor, Math)
 
 /**
  *	Vector4MatrixAdaptor output method
  */
-void Vector4MatrixAdaptor::matrix( Matrix & m ) const
+void Vector4MatrixAdaptor::matrix(Matrix& m) const
 {
-	if ( !source_ )
-		return;
+    if (!source_)
+        return;
 
-	Vector4 v;
-	source_->output( v );
+    Vector4 v;
+    source_->output(v);
 
-	Vector4 tr( Vector4::zero() );
-	if ( positionProvider_ )
-	{
-		positionProvider_->output( tr );
-	}
-	Vector3 pos(tr.x,tr.y,tr.z);
+    Vector4 tr(Vector4::zero());
+    if (positionProvider_) {
+        positionProvider_->output(tr);
+    }
+    Vector3 pos(tr.x, tr.y, tr.z);
 
-	switch( style_ )
-	{
-	case STYLE_XYZ_SCALE:
-		m.setScale( v.x, v.y, v.z );
-		m.translation(pos);
-		break;
-	case STYLE_XY_SCALE:
-		m.setScale( v.x, v.y, 1.f );
-		m.translation(pos);
-		break;
-	case STYLE_X_ROTATE:
-		m.setRotateX( v.x );
-		m.translation(pos);
-		break;
-	case STYLE_Y_ROTATE:
-		m.setRotateY( v.y );
-		m.translation(pos);
-		break;
-	case STYLE_Z_ROTATE:
-		m.setRotateZ( v.z );
-		m.translation(pos);
-		break;
-	case STYLE_LOOKAT:
-		{
-			Vector3 at(v.x,v.y,v.z);
-			Vector3 up(0,1,0);
-			if ( up.dotProduct(at) > 0.95f )
-			{
-				up.set(0,0,1);
-			}
-			m.lookAt( pos, at, up );
-			m.invert();
-		}
-		break;
-	case STYLE_LOOKAT_SCALEZ:
-		{
-			Vector3 at(v.x,v.y,v.z);
-			Vector3 up(0,1,0);
-			if ( up.dotProduct(at) > 0.95f )
-			{
-				up.set(0,0,1);
-			}
-			m.lookAt( Vector3::zero(), at, up );
-			m.invert();
-			float scale = v.length();
-			Matrix sc;
-			sc.setScale( 1.f, 1.f, scale );
-			m.preMultiply( sc );
-			m.translation(pos);
-		}
-		break;
-	}
+    switch (style_) {
+        case STYLE_XYZ_SCALE:
+            m.setScale(v.x, v.y, v.z);
+            m.translation(pos);
+            break;
+        case STYLE_XY_SCALE:
+            m.setScale(v.x, v.y, 1.f);
+            m.translation(pos);
+            break;
+        case STYLE_X_ROTATE:
+            m.setRotateX(v.x);
+            m.translation(pos);
+            break;
+        case STYLE_Y_ROTATE:
+            m.setRotateY(v.y);
+            m.translation(pos);
+            break;
+        case STYLE_Z_ROTATE:
+            m.setRotateZ(v.z);
+            m.translation(pos);
+            break;
+        case STYLE_LOOKAT: {
+            Vector3 at(v.x, v.y, v.z);
+            Vector3 up(0, 1, 0);
+            if (up.dotProduct(at) > 0.95f) {
+                up.set(0, 0, 1);
+            }
+            m.lookAt(pos, at, up);
+            m.invert();
+        } break;
+        case STYLE_LOOKAT_SCALEZ: {
+            Vector3 at(v.x, v.y, v.z);
+            Vector3 up(0, 1, 0);
+            if (up.dotProduct(at) > 0.95f) {
+                up.set(0, 0, 1);
+            }
+            m.lookAt(Vector3::zero(), at, up);
+            m.invert();
+            float  scale = v.length();
+            Matrix sc;
+            sc.setScale(1.f, 1.f, scale);
+            m.preMultiply(sc);
+            m.translation(pos);
+        } break;
+    }
 }
 
-
 #undef PY_ATTR_SCOPE
-
-
 
 // -----------------------------------------------------------------------------
 // Section: Vector4Swizzle
@@ -4417,33 +4181,33 @@ void Vector4MatrixAdaptor::matrix( Matrix & m ) const
  */
 class Vector4Swizzle : public Vector4Provider
 {
-	Py_Header( Vector4Swizzle, Vector4Provider )
+    Py_Header(Vector4Swizzle, Vector4Provider)
 
-public:
-	Vector4Swizzle( PyTypeObject * pType = &s_type_ ):
-		Vector4Provider( false, pType ),
-		x_( NULL ),
-		y_( NULL ),
-		z_( NULL ),
-		w_( NULL )
-	{}
+      public
+      : Vector4Swizzle(PyTypeObject* pType = &s_type_)
+      : Vector4Provider(false, pType)
+      , x_(NULL)
+      , y_(NULL)
+      , z_(NULL)
+      , w_(NULL)
+    {
+    }
 
-	virtual void output( Vector4 & m );
+    virtual void output(Vector4& m);
 
-	PY_RW_ATTRIBUTE_DECLARE( x_, x )
-	PY_RW_ATTRIBUTE_DECLARE( y_, y )
-	PY_RW_ATTRIBUTE_DECLARE( z_, z )
-	PY_RW_ATTRIBUTE_DECLARE( w_, w )
+    PY_RW_ATTRIBUTE_DECLARE(x_, x)
+    PY_RW_ATTRIBUTE_DECLARE(y_, y)
+    PY_RW_ATTRIBUTE_DECLARE(z_, z)
+    PY_RW_ATTRIBUTE_DECLARE(w_, w)
 
+    static Vector4Swizzle* New() { return new Vector4Swizzle; }
+    PY_AUTO_FACTORY_DECLARE(Vector4Swizzle, END)
 
-	static Vector4Swizzle * New()	{ return new Vector4Swizzle; }
-	PY_AUTO_FACTORY_DECLARE( Vector4Swizzle, END )
-
-private:
-	Vector4ProviderPtr	x_;
-	Vector4ProviderPtr	y_;
-	Vector4ProviderPtr	z_;
-	Vector4ProviderPtr	w_;
+  private:
+    Vector4ProviderPtr x_;
+    Vector4ProviderPtr y_;
+    Vector4ProviderPtr z_;
+    Vector4ProviderPtr w_;
 };
 
 /*~ class Math.Vector4Swizzle
@@ -4453,82 +4217,76 @@ private:
  *
  *	A new Vector4Swizzle is created using Math.Vector4Swizzle method.
  */
-PY_TYPEOBJECT( Vector4Swizzle )
+PY_TYPEOBJECT(Vector4Swizzle)
 
-PY_BEGIN_METHODS( Vector4Swizzle )
+PY_BEGIN_METHODS(Vector4Swizzle)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( Vector4Swizzle )
+PY_BEGIN_ATTRIBUTES(Vector4Swizzle)
 
-	/*~ attribute Vector4Swizzle.x
-	 *	@components{ all }
-	 *  Provides the x component for the output, taken from the input x component.
-	 *  @type Read-Write Vector4Provider
-	 */
-	PY_ATTRIBUTE( x )
+/*~ attribute Vector4Swizzle.x
+ *	@components{ all }
+ *  Provides the x component for the output, taken from the input x component.
+ *  @type Read-Write Vector4Provider
+ */
+PY_ATTRIBUTE(x)
 
-	/*~ attribute Vector4Swizzle.y
-	 *	@components{ all }
-	 *  Provides the y component for the output, taken from the input x component.
-	 *  @type Read-Write Vector4Provider
-	 */
-	PY_ATTRIBUTE( y )
+/*~ attribute Vector4Swizzle.y
+ *	@components{ all }
+ *  Provides the y component for the output, taken from the input x component.
+ *  @type Read-Write Vector4Provider
+ */
+PY_ATTRIBUTE(y)
 
-	/*~ attribute Vector4Swizzle.z
-	 *	@components{ all }
-	 *  Provides the z component for the output, taken from the input x component.
-	 *  @type Read-Write Vector4Provider
-	 */
-	PY_ATTRIBUTE( z )
+/*~ attribute Vector4Swizzle.z
+ *	@components{ all }
+ *  Provides the z component for the output, taken from the input x component.
+ *  @type Read-Write Vector4Provider
+ */
+PY_ATTRIBUTE(z)
 
-	/*~ attribute Vector4Swizzle.w
-	 *	@components{ all }
-	 *  Provides the w component for the output, taken from the input x component.
-	 *  @type Read-Write Vector4Provider
-	 */
-	PY_ATTRIBUTE( w )
+/*~ attribute Vector4Swizzle.w
+ *	@components{ all }
+ *  Provides the w component for the output, taken from the input x component.
+ *  @type Read-Write Vector4Provider
+ */
+PY_ATTRIBUTE(w)
 
 PY_END_ATTRIBUTES()
 
 /*~ function Math.Vector4Swizzle
  *	@components{ all }
- *	Creates and returns a new Vector4Swizzle, which is used to combine the x component of four Vector4Providers.
+ *	Creates and returns a new Vector4Swizzle, which is used to combine the x
+ *component of four Vector4Providers.
  */
-PY_FACTORY( Vector4Swizzle, Math )
-
+PY_FACTORY(Vector4Swizzle, Math)
 
 /**
  *	Vector4Swizzle output method
  */
-void Vector4Swizzle::output( Vector4 & m )
+void Vector4Swizzle::output(Vector4& m)
 {
-	Vector4 out;
+    Vector4 out;
 
-	if ( x_ )
-	{
-		x_->output( out );
-		m.x = out.x;
-	}
-	if ( y_ )
-	{
-		y_->output( out );
-		m.y = out.x;
-	}
-	if ( z_ )
-	{
-		z_->output( out );
-		m.z = out.x;
-	}
-	if ( w_ )
-	{
-		w_->output( out );
-		m.w = out.x;
-	}
+    if (x_) {
+        x_->output(out);
+        m.x = out.x;
+    }
+    if (y_) {
+        y_->output(out);
+        m.y = out.x;
+    }
+    if (z_) {
+        z_->output(out);
+        m.z = out.x;
+    }
+    if (w_) {
+        w_->output(out);
+        m.w = out.x;
+    }
 }
 
 #undef PY_ATTR_SCOPE
-
-
 
 // -----------------------------------------------------------------------------
 // Section: Vector4Combiner
@@ -4542,59 +4300,57 @@ void Vector4Swizzle::output( Vector4 & m )
  */
 class Vector4Combiner : public Vector4Provider
 {
-	Py_Header( Vector4Combiner, Vector4Provider )
+    Py_Header(Vector4Combiner, Vector4Provider)
 
-public:
-	enum Fn
-	{
-		FN_MULTIPLY,
-		FN_DIVIDE,
-		FN_ADD,
-		FN_SUBTRACT,
-		FN_DOT,
-		FN_MIN,
-		FN_MAX,
-	};
+      public : enum Fn {
+          FN_MULTIPLY,
+          FN_DIVIDE,
+          FN_ADD,
+          FN_SUBTRACT,
+          FN_DOT,
+          FN_MIN,
+          FN_MAX,
+      };
 
-	PY_BEGIN_ENUM_MAP( Fn, FN_ )
-		PY_ENUM_VALUE( FN_MULTIPLY )
-		PY_ENUM_VALUE( FN_DIVIDE )
-		PY_ENUM_VALUE( FN_ADD )
-		PY_ENUM_VALUE( FN_SUBTRACT )
-		PY_ENUM_VALUE( FN_DOT )
-		PY_ENUM_VALUE( FN_MIN )
-		PY_ENUM_VALUE( FN_MAX )
-	PY_END_ENUM_MAP()
+    PY_BEGIN_ENUM_MAP(Fn, FN_)
+    PY_ENUM_VALUE(FN_MULTIPLY)
+    PY_ENUM_VALUE(FN_DIVIDE)
+    PY_ENUM_VALUE(FN_ADD)
+    PY_ENUM_VALUE(FN_SUBTRACT)
+    PY_ENUM_VALUE(FN_DOT)
+    PY_ENUM_VALUE(FN_MIN)
+    PY_ENUM_VALUE(FN_MAX)
+    PY_END_ENUM_MAP()
 
-	Vector4Combiner( PyTypeObject * pType = &s_type_ ):
-		Vector4Provider( false, pType ),
-		fn_( FN_ADD ),
-		a_( NULL ),
-		b_( NULL )
-	{}
+    Vector4Combiner(PyTypeObject* pType = &s_type_)
+      : Vector4Provider(false, pType)
+      , fn_(FN_ADD)
+      , a_(NULL)
+      , b_(NULL)
+    {
+    }
 
-	virtual void output( Vector4 & m );
+    virtual void output(Vector4& m);
 
-	PY_DEFERRED_ATTRIBUTE_DECLARE( fn )
-	PY_RW_ATTRIBUTE_DECLARE( a_, a );
-	PY_RW_ATTRIBUTE_DECLARE( b_, b );
+    PY_DEFERRED_ATTRIBUTE_DECLARE(fn)
+    PY_RW_ATTRIBUTE_DECLARE(a_, a);
+    PY_RW_ATTRIBUTE_DECLARE(b_, b);
 
-	static Vector4Combiner * New()	{ return new Vector4Combiner; }
-	PY_AUTO_FACTORY_DECLARE( Vector4Combiner, END )
+    static Vector4Combiner* New() { return new Vector4Combiner; }
+    PY_AUTO_FACTORY_DECLARE(Vector4Combiner, END)
 
-private:
-	Fn	fn_;
-	Vector4ProviderPtr	a_;
-	Vector4ProviderPtr	b_;
+  private:
+    Fn                 fn_;
+    Vector4ProviderPtr a_;
+    Vector4ProviderPtr b_;
 };
 
 // declare the enum converter functions
-PY_ENUM_CONVERTERS_DECLARE( Vector4Combiner::Fn )
-
+PY_ENUM_CONVERTERS_DECLARE(Vector4Combiner::Fn)
 
 #undef PY_ATTR_SCOPE
 #define PY_ATTR_SCOPE Vector4Combiner::
-PY_RW_ATTRIBUTE_DECLARE( fn_, fn )
+PY_RW_ATTRIBUTE_DECLARE(fn_, fn)
 
 /*~ class Math.Vector4Combiner
  *	@components{ all }
@@ -4603,104 +4359,100 @@ PY_RW_ATTRIBUTE_DECLARE( fn_, fn )
  *	A new Vector4Combiner is created using Math.Vector4Combiner
  *	method.
  */
-PY_TYPEOBJECT( Vector4Combiner )
+PY_TYPEOBJECT(Vector4Combiner)
 
-PY_BEGIN_METHODS( Vector4Combiner )
+PY_BEGIN_METHODS(Vector4Combiner)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( Vector4Combiner )
+PY_BEGIN_ATTRIBUTES(Vector4Combiner)
 
-	/*~ attribute Vector4Combiner.fn
-	 *	@components{ all }
-	 *  Designates how to combine the a and b Vector4 inputs.
-	 *	Possible values are:
-	 *
-	 *	"MULTIPLY"
-	 *	"DIVIDE"
-	 *	"ADD"
-	 *	"SUBTRACT"
-	 *	"DOT"
-	 *	"MIN"
-	 *	"MAX"
-	 *
-	 *	@type string
-	 */
-	PY_ATTRIBUTE( fn )
+/*~ attribute Vector4Combiner.fn
+ *	@components{ all }
+ *  Designates how to combine the a and b Vector4 inputs.
+ *	Possible values are:
+ *
+ *	"MULTIPLY"
+ *	"DIVIDE"
+ *	"ADD"
+ *	"SUBTRACT"
+ *	"DOT"
+ *	"MIN"
+ *	"MAX"
+ *
+ *	@type string
+ */
+PY_ATTRIBUTE(fn)
 
-	/*~ attribute Vector4Combiner.a
-	 *	@components{ all }
-	 *  Provides the first component for the operation.
-	 *  @type Read-Write Vector4Provider
-	 */
-	PY_ATTRIBUTE( a )
+/*~ attribute Vector4Combiner.a
+ *	@components{ all }
+ *  Provides the first component for the operation.
+ *  @type Read-Write Vector4Provider
+ */
+PY_ATTRIBUTE(a)
 
-	/*~ attribute Vector4Combiner.b
-	 *	@components{ all }
-	 *  Provides the second component for the operation.
-	 *  @type Read-Write Vector4Provider
-	 */
-	PY_ATTRIBUTE( b )
+/*~ attribute Vector4Combiner.b
+ *	@components{ all }
+ *  Provides the second component for the operation.
+ *  @type Read-Write Vector4Provider
+ */
+PY_ATTRIBUTE(b)
 
 PY_END_ATTRIBUTES()
 
-PY_ENUM_MAP( Vector4Combiner::Fn )
-PY_ENUM_CONVERTERS_CONTIGUOUS( Vector4Combiner::Fn )
+PY_ENUM_MAP(Vector4Combiner::Fn)
+PY_ENUM_CONVERTERS_CONTIGUOUS(Vector4Combiner::Fn)
 
 /*~ function Math.Vector4Combiner
  *	@components{ all }
  *	Creates and returns a new Vector4Combiner, which is used to
  *	combine two Vector4Providers based on a given function.
  */
-PY_FACTORY( Vector4Combiner, Math )
-
+PY_FACTORY(Vector4Combiner, Math)
 
 /**
  *	Vector4Combiner output method
  */
-void Vector4Combiner::output( Vector4 & v )
+void Vector4Combiner::output(Vector4& v)
 {
-	if ( !(a_ && b_) )
-		return;
+    if (!(a_ && b_))
+        return;
 
-	a_->output( v );
-	Vector4 b;
-	b_->output( b );
+    a_->output(v);
+    Vector4 b;
+    b_->output(b);
 
-	switch( fn_ )
-	{
-	case FN_MULTIPLY:
-		v *= b;
-		break;
-	case FN_DIVIDE:
-		v /= b;
-		break;
-	case FN_ADD:
-		v += b;
-		break;
-	case FN_SUBTRACT:
-		v -= b;
-		break;
-	case FN_DOT:
-		{
-			float s = v.dotProduct( b );
-			v.set( s,s,s,s );
-			break;
-		}
-	case FN_MIN:
-		v.x = std::min( v.x, b.x );
-		v.y = std::min( v.y, b.y );
-		v.z = std::min( v.z, b.z );
-		v.w = std::min( v.w, b.w );
-		break;
-	case FN_MAX:
-		v.x = std::max( v.x, b.x );
-		v.y = std::max( v.y, b.y );
-		v.z = std::max( v.z, b.z );
-		v.w = std::max( v.w, b.w );
-		break;
-	}
+    switch (fn_) {
+        case FN_MULTIPLY:
+            v *= b;
+            break;
+        case FN_DIVIDE:
+            v /= b;
+            break;
+        case FN_ADD:
+            v += b;
+            break;
+        case FN_SUBTRACT:
+            v -= b;
+            break;
+        case FN_DOT: {
+            float s = v.dotProduct(b);
+            v.set(s, s, s, s);
+            break;
+        }
+        case FN_MIN:
+            v.x = std::min(v.x, b.x);
+            v.y = std::min(v.y, b.y);
+            v.z = std::min(v.z, b.z);
+            v.w = std::min(v.w, b.w);
+            break;
+        case FN_MAX:
+            v.x = std::max(v.x, b.x);
+            v.y = std::max(v.y, b.y);
+            v.z = std::max(v.z, b.z);
+            v.w = std::max(v.w, b.w);
+            break;
+    }
 }
-
 
 #undef PY_ATTR_SCOPE
 
@@ -4711,117 +4463,131 @@ void Vector4Combiner::output( Vector4 & v )
  */
 class Vector4Register : public Vector4Provider
 {
-	Py_Header( Vector4Register, Vector4Provider )
-public:
-	Vector4Register( uint8 index, Vector4 & value, PyTypeObject * pType = &s_type_ ) :
-		Vector4Provider( false, pType ),
-		index_( index ),
-		value_( value )
-	{
-	}
+    Py_Header(Vector4Register, Vector4Provider) public
+      : Vector4Register(uint8         index,
+                        Vector4&      value,
+                        PyTypeObject* pType = &s_type_)
+      : Vector4Provider(false, pType)
+      , index_(index)
+      , value_(value)
+    {
+    }
 
-	virtual void output( Vector4 & val ) { val = value_; }
+    virtual void output(Vector4& val) { val = value_; }
 
-	uint8 index()		{ return index_; }
-	Vector4 & value()	{ return value_; }
-private:
-	uint8 index_;
-	Vector4 & value_;
+    uint8    index() { return index_; }
+    Vector4& value() { return value_; }
+
+  private:
+    uint8    index_;
+    Vector4& value_;
 };
 
-PY_TYPEOBJECT( Vector4Register )
+PY_TYPEOBJECT(Vector4Register)
 
-PY_BEGIN_METHODS( Vector4Register )
+PY_BEGIN_METHODS(Vector4Register)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( Vector4Register )
+PY_BEGIN_ATTRIBUTES(Vector4Register)
 PY_END_ATTRIBUTES()
 
 // -----------------------------------------------------------------------------
 // Section: Vector4Shader
 // -----------------------------------------------------------------------------
 // Some magic numbers used below
-#define MAX_TEMP_REGISTERS	63
-#define NUM_USER_REGISTERS	64
-#define UNUSED_REGISTER		63
-#define BASE_USER_REGISTER	64
-#define NUM_REGISTERS		128
+#define MAX_TEMP_REGISTERS 63
+#define NUM_USER_REGISTERS 64
+#define UNUSED_REGISTER 63
+#define BASE_USER_REGISTER 64
+#define NUM_REGISTERS 128
 
 /**
  * TODO: to be documented.
  */
 class Vector4Shader : public Vector4Provider
 {
-	Py_Header( Vector4Shader, Vector4Provider )
+    Py_Header(Vector4Shader, Vector4Provider)
 
-public:
-	//Note - if you add opcodes, then please update the python file
-	//res/common/V4ShaderHelper.py
-	enum Op
-	{
-		//one param
-		OP_MOVE = 0,
-		OP_RECIPROCAL,
-		OP_BIAS,
-		OP_COMPLEMENT,
-		//two params
-		OP_MULTIPLY,
-		OP_DIVIDE,
-		OP_ADD,
-		OP_SUBTRACT,
-		OP_DOT,
-		OP_MIN,
-		OP_MAX,
-		OP_SGE,
-		OP_SLT
-	};
+      public
+      :
+      // Note - if you add opcodes, then please update the python file
+      // res/common/V4ShaderHelper.py
+      enum Op {
+          // one param
+          OP_MOVE = 0,
+          OP_RECIPROCAL,
+          OP_BIAS,
+          OP_COMPLEMENT,
+          // two params
+          OP_MULTIPLY,
+          OP_DIVIDE,
+          OP_ADD,
+          OP_SUBTRACT,
+          OP_DOT,
+          OP_MIN,
+          OP_MAX,
+          OP_SGE,
+          OP_SLT
+      };
 
+    Vector4Shader(PyTypeObject* pType = &s_type_)
+      : Vector4Provider(false, pType)
+    {
+    }
 
-	Vector4Shader( PyTypeObject * pType = &s_type_ ):
-		Vector4Provider( false, pType )
-	{}
+    virtual void output(Vector4& m);
 
-	virtual void output( Vector4 & m );
+    // output registers and temporary registers are implemented on the python
+    // side of things. this simplifies the interface considerably.
+    void addOp(uint8              opcode,
+               Vector4ProviderPtr outReg,
+               Vector4ProviderPtr i1,
+               Vector4ProviderPtr i2 = NULL);
+    PY_AUTO_METHOD_DECLARE(
+      RETVOID,
+      addOp,
+      ARG(uint8,
+          ARG(Vector4ProviderPtr,
+              ARG(Vector4ProviderPtr, OPTARG(Vector4ProviderPtr, NULL, END)))));
 
-	//output registers and temporary registers are implemented on the python side of things.
-	//this simplifies the interface considerably.
-	void		addOp( uint8 opcode, Vector4ProviderPtr outReg, Vector4ProviderPtr i1, Vector4ProviderPtr i2 = NULL );
-	PY_AUTO_METHOD_DECLARE ( RETVOID, addOp, ARG(uint8,ARG(Vector4ProviderPtr,ARG(Vector4ProviderPtr,OPTARG(Vector4ProviderPtr,NULL,END)))));
+    static Vector4Shader* New() { return new Vector4Shader; }
+    PY_AUTO_FACTORY_DECLARE(Vector4Shader, END)
 
-	static Vector4Shader * New()	{ return new Vector4Shader; }
-	PY_AUTO_FACTORY_DECLARE( Vector4Shader, END )
+    static Vector4ProviderPtr getRegister(uint8 r);
+    PY_AUTO_MODULE_STATIC_METHOD_DECLARE(RETDATA,
+                                         getRegister,
+                                         MAX_ARG(uint8,
+                                                 MAX_TEMP_REGISTERS - 1,
+                                                 END))
 
-	static Vector4ProviderPtr getRegister( uint8 r );
-	PY_AUTO_MODULE_STATIC_METHOD_DECLARE( RETDATA, getRegister, MAX_ARG( uint8, MAX_TEMP_REGISTERS - 1, END ) )
+  private:
+    class Instruction
+    {
+      public:
+        uint8 op_;
+        uint8 out_;   // output register. always a temp register.
+        uint8 in_[2]; // input register.
+    };
 
-private:
-	class Instruction
-	{
-	public:
-		uint8	op_;
-		uint8	out_;	//output register. always a temp register.
-		uint8	in_[2];	//input register.
-	};
-
-	typedef BW::vector<Instruction> Instructions;
-	Instructions	instructions_;
-	BW::vector<Vector4ProviderPtr> uniqueInputs_;
-	static Vector4ProviderPtr pr_[MAX_TEMP_REGISTERS];
-	static Vector4 r_[NUM_REGISTERS];
-	//addInputVector returns the index of the register.
-	uint8 addInputVector( Vector4ProviderPtr v, bool mustBeTemp = false );
+    typedef BW::vector<Instruction> Instructions;
+    Instructions                    instructions_;
+    BW::vector<Vector4ProviderPtr>  uniqueInputs_;
+    static Vector4ProviderPtr       pr_[MAX_TEMP_REGISTERS];
+    static Vector4                  r_[NUM_REGISTERS];
+    // addInputVector returns the index of the register.
+    uint8 addInputVector(Vector4ProviderPtr v, bool mustBeTemp = false);
 };
 
 // declare the enum converter functions
-PY_ENUM_CONVERTERS_DECLARE( Vector4Shader::Op )
+PY_ENUM_CONVERTERS_DECLARE(Vector4Shader::Op)
 
 /*~ class Math.Vector4Shader
  *	@components{ all }
- *	The Vector4Shader implements a Vector4Provider that can be used to emulate a pixel
- *	shader implementation for 2D GUI components.
+ *	The Vector4Shader implements a Vector4Provider that can be used to emulate a
+ *pixel shader implementation for 2D GUI components.
  *
- *	The following code example show how to create a flickering light, for example
- *	when a spot fire occurs for "duration" and fades out gracefully.
+ *	The following code example show how to create a flickering light, for
+ *example when a spot fire occurs for "duration" and fades out gracefully.
  *
  *	code:
  *	@{
@@ -4866,42 +4632,45 @@ PY_ENUM_CONVERTERS_DECLARE( Vector4Shader::Op )
  *	self.light.shader = self.lightFader
  *	@}
  */
-PY_TYPEOBJECT( Vector4Shader )
+PY_TYPEOBJECT(Vector4Shader)
 
-PY_BEGIN_METHODS( Vector4Shader )
+PY_BEGIN_METHODS(Vector4Shader)
 
-	/*~ function Vector4Shader.addOp
-	 *	@components{ all }
-	 *  This method adds a single operation to the shader.  An operation may require one or
-	 *	two parameters to achieve a result.  Valid operations are (opcode - description):
-	 *
-	 *	One parameter:
-	 *	0 - MOVE
-	 *	1 - RECIPROCAL
-	 *	2 - BIAS
-	 *	3 - COMPLEMENT
-	 *
-	 *	Two parameters:
-	 *	4 - MULTIPLY
-	 *	5 - DIVIDE
-	 *	6 - ADD
-	 *	6 - SUBTRACT
-	 *	7 - DOT
-	 *	8 - MIN
-	 *	9 - MAX
-	 *	10 - SGE
-	 *	11 - SLT
-	 *
-	 *	@param	opcode	One of the above values as an uint8
-	 *	@param	outreg	Temporary output register as Vector4ProviderPtr to store result
-	 *	@param	param1	First parameter as Vector4ProviderPtr
-	 *	@param	param2	Optional second parameter as Vector4ProviderPtr, used as required
-	 */
-	PY_METHOD( addOp )
+/*~ function Vector4Shader.addOp
+ *	@components{ all }
+ *  This method adds a single operation to the shader.  An operation may require
+ *one or two parameters to achieve a result.  Valid operations are (opcode -
+ *description):
+ *
+ *	One parameter:
+ *	0 - MOVE
+ *	1 - RECIPROCAL
+ *	2 - BIAS
+ *	3 - COMPLEMENT
+ *
+ *	Two parameters:
+ *	4 - MULTIPLY
+ *	5 - DIVIDE
+ *	6 - ADD
+ *	6 - SUBTRACT
+ *	7 - DOT
+ *	8 - MIN
+ *	9 - MAX
+ *	10 - SGE
+ *	11 - SLT
+ *
+ *	@param	opcode	One of the above values as an uint8
+ *	@param	outreg	Temporary output register as Vector4ProviderPtr to store
+ *result
+ *	@param	param1	First parameter as Vector4ProviderPtr
+ *	@param	param2	Optional second parameter as Vector4ProviderPtr, used as
+ *required
+ */
+PY_METHOD(addOp)
 
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( Vector4Shader )
+PY_BEGIN_ATTRIBUTES(Vector4Shader)
 PY_END_ATTRIBUTES()
 
 /*~ function Math.Vector4Shader
@@ -4909,342 +4678,325 @@ PY_END_ATTRIBUTES()
  *	Creates and returns a new Vector4Shader, which used to
  *	perform pixel shader-like operations on a Vector4Provider.
  */
-PY_FACTORY( Vector4Shader, Math )
+PY_FACTORY(Vector4Shader, Math)
 
-Vector4ProviderPtr Vector4Shader::pr_[MAX_TEMP_REGISTERS];	//note - smartpointers default to NULL
-Vector4 Vector4Shader::r_[NUM_REGISTERS];
+Vector4ProviderPtr
+  Vector4Shader::pr_[MAX_TEMP_REGISTERS]; // note - smartpointers default to
+                                          // NULL
+Vector4     Vector4Shader::r_[NUM_REGISTERS];
 static bool V4ShaderTempPtrsInited = false; //...but it's best to be explicit
-
 
 /**
  *	This method provides a python interface to retrieve
  *	references to temporary registers.  This is used by
  *	V4ShaderHelper at static initialisation time.
  */
-Vector4ProviderPtr Vector4Shader::getRegister( uint8 r )
+Vector4ProviderPtr Vector4Shader::getRegister(uint8 r)
 {
-	if ( !V4ShaderTempPtrsInited )
-	{
-		for ( int i=0; i<MAX_TEMP_REGISTERS; i++ )
-		{
-			pr_[i] = Vector4ProviderPtr( new Vector4Register( i, r_[i] ), true );
-		}
-		V4ShaderTempPtrsInited = true;
-	}
+    if (!V4ShaderTempPtrsInited) {
+        for (int i = 0; i < MAX_TEMP_REGISTERS; i++) {
+            pr_[i] = Vector4ProviderPtr(new Vector4Register(i, r_[i]), true);
+        }
+        V4ShaderTempPtrsInited = true;
+    }
 
-	MF_ASSERT( r < MAX_TEMP_REGISTERS );
-	return pr_[r];
+    MF_ASSERT(r < MAX_TEMP_REGISTERS);
+    return pr_[r];
 }
 
 /*~	function Math.getRegister
  *	@components{ all }
  *
- *	This method provides a python interface to retrieve references to temporary registers.  The value is
- *	returned as a Vector4ProviderPtr, so the register can also be updated by changing the returned value.
+ *	This method provides a python interface to retrieve references to temporary
+ *registers.  The value is returned as a Vector4ProviderPtr, so the register can
+ *also be updated by changing the returned value.
  *
  *	@param	register	The temporary register to access as an int (eg, 1-16)
  *
  *	@return	A Vector4ProviderPtr containing the contents of the given register
  */
-PY_MODULE_STATIC_METHOD( Vector4Shader, getRegister, Math )
-
+PY_MODULE_STATIC_METHOD(Vector4Shader, getRegister, Math)
 
 /**
- *	This method is private.  It converts a vector4Provider into its register number.
- *	It checks if the incoming v4p is one of the temporary registers, or a new input
- *	register.
+ *	This method is private.  It converts a vector4Provider into its register
+ *number. It checks if the incoming v4p is one of the temporary registers, or a
+ *new input register.
  */
-uint8 Vector4Shader::addInputVector( Vector4ProviderPtr v, bool mustBeTemp )
+uint8 Vector4Shader::addInputVector(Vector4ProviderPtr v, bool mustBeTemp)
 {
-	//no pointer - no register.
-	if ( !v.getObject() )
-		return UNUSED_REGISTER;
+    // no pointer - no register.
+    if (!v.getObject())
+        return UNUSED_REGISTER;
 
-	//check if the V4Provider is one of our temp registers.
-	//if so, return a value from 0 to MAX_TEMP_REGISTERS
-	if (Vector4Register::Check( v.getObject() ))
-	{
-		//all the temp registers point to Vector4Basics.
-		Vector4Register * v4r = static_cast<Vector4Register*>(v.getObject());
-		return v4r->index();
-	}
+    // check if the V4Provider is one of our temp registers.
+    // if so, return a value from 0 to MAX_TEMP_REGISTERS
+    if (Vector4Register::Check(v.getObject())) {
+        // all the temp registers point to Vector4Basics.
+        Vector4Register* v4r = static_cast<Vector4Register*>(v.getObject());
+        return v4r->index();
+    }
 
-	if ( mustBeTemp )
-	{
-		ERROR_MSG( "Vector4Shader::addInputVector - register that must be temporary was not\n" );
-		return UNUSED_REGISTER;
-	}
+    if (mustBeTemp) {
+        ERROR_MSG("Vector4Shader::addInputVector - register that must be "
+                  "temporary was not\n");
+        return UNUSED_REGISTER;
+    }
 
-	//only insert a new unique input if necessary.
-	//return the index of the user register, from 1 .. n
-	BW::vector<Vector4ProviderPtr>::iterator it = uniqueInputs_.begin();
-	BW::vector<Vector4ProviderPtr>::iterator end = uniqueInputs_.end();
-	BW::vector<Vector4ProviderPtr>::iterator found = std::find( it, end, v );
-	if ( found == end )
-	{
-		if (uniqueInputs_.size() == NUM_USER_REGISTERS)
-		{
-			ERROR_MSG( "Vector4Shader::addInputVector - shader has exceeded \
-					   the maximum number of user registers\n" );
-			return UNUSED_REGISTER;
-		}
-		uniqueInputs_.push_back(v);
-		return static_cast<uint8>(uniqueInputs_.size() -1 + BASE_USER_REGISTER);
-	}
-	size_t returnValue = ( found - uniqueInputs_.begin() + BASE_USER_REGISTER );
-	MF_ASSERT( returnValue <= UCHAR_MAX );
-	return ( uint8 ) returnValue;
+    // only insert a new unique input if necessary.
+    // return the index of the user register, from 1 .. n
+    BW::vector<Vector4ProviderPtr>::iterator it    = uniqueInputs_.begin();
+    BW::vector<Vector4ProviderPtr>::iterator end   = uniqueInputs_.end();
+    BW::vector<Vector4ProviderPtr>::iterator found = std::find(it, end, v);
+    if (found == end) {
+        if (uniqueInputs_.size() == NUM_USER_REGISTERS) {
+            ERROR_MSG("Vector4Shader::addInputVector - shader has exceeded \
+					   the maximum number of user registers\n");
+            return UNUSED_REGISTER;
+        }
+        uniqueInputs_.push_back(v);
+        return static_cast<uint8>(uniqueInputs_.size() - 1 +
+                                  BASE_USER_REGISTER);
+    }
+    size_t returnValue = (found - uniqueInputs_.begin() + BASE_USER_REGISTER);
+    MF_ASSERT(returnValue <= UCHAR_MAX);
+    return (uint8)returnValue;
 }
 
-
 /**
- *	This method adds an opcode to the shader.  The second and third register params are optional.
+ *	This method adds an opcode to the shader.  The second and third register
+ *params are optional.
  */
-void Vector4Shader::addOp( uint8 opcode, Vector4ProviderPtr outReg, Vector4ProviderPtr reg1, Vector4ProviderPtr reg2 )
+void Vector4Shader::addOp(uint8              opcode,
+                          Vector4ProviderPtr outReg,
+                          Vector4ProviderPtr reg1,
+                          Vector4ProviderPtr reg2)
 {
-	Instruction ins;
-	ins.op_ = opcode;
+    Instruction ins;
+    ins.op_ = opcode;
 
-	ins.out_ = addInputVector( outReg, true );
-	ins.in_[0] = addInputVector( reg1 );
-	ins.in_[1] = addInputVector( reg2 );
+    ins.out_   = addInputVector(outReg, true);
+    ins.in_[0] = addInputVector(reg1);
+    ins.in_[1] = addInputVector(reg2);
 
-	instructions_.push_back( ins );
+    instructions_.push_back(ins);
 }
 
 /**
  *	Vector4Shader output method
  */
-void Vector4Shader::output( Vector4 & finalOutput )
+void Vector4Shader::output(Vector4& finalOutput)
 {
-	float s;	//temporary scalar value
+    float s; // temporary scalar value
 
-	//Calculate each of the used input vector4providers once only.
-	BW::vector<Vector4ProviderPtr>::iterator uit = uniqueInputs_.begin();
-	BW::vector<Vector4ProviderPtr>::iterator uend = uniqueInputs_.end();
-	int idx = BASE_USER_REGISTER;
-	while ( uit != uend )
-	{
-		Vector4ProviderPtr& v = *uit++;
-		v->output(r_[idx++]);
-	}
+    // Calculate each of the used input vector4providers once only.
+    BW::vector<Vector4ProviderPtr>::iterator uit  = uniqueInputs_.begin();
+    BW::vector<Vector4ProviderPtr>::iterator uend = uniqueInputs_.end();
+    int                                      idx  = BASE_USER_REGISTER;
+    while (uit != uend) {
+        Vector4ProviderPtr& v = *uit++;
+        v->output(r_[idx++]);
+    }
 
-	Instructions::iterator it = instructions_.begin();
-	Instructions::iterator end = instructions_.end();
+    Instructions::iterator it  = instructions_.begin();
+    Instructions::iterator end = instructions_.end();
 
-	while ( it != end )
-	{
-		Instruction& i = *it++;
+    while (it != end) {
+        Instruction& i = *it++;
 
-		//get pointers to the vector4s we are using.
-		Vector4& out = r_[i.out_];
-		Vector4& i0 = r_[i.in_[0]];
-		Vector4& i1 = r_[i.in_[1]];
+        // get pointers to the vector4s we are using.
+        Vector4& out = r_[i.out_];
+        Vector4& i0  = r_[i.in_[0]];
+        Vector4& i1  = r_[i.in_[1]];
 
-		switch( i.op_ )
-		{
-		case OP_MOVE:
-			out = i0;
-			break;
-		case OP_RECIPROCAL:
-			out.x = 1.f / i0.x;
-			out.y = 1.f / i0.y;
-			out.z = 1.f / i0.z;
-			out.w = 1.f / i0.w;
-			break;
-		case OP_BIAS:
-			out.x = i0.x - 0.5f;
-			out.y = i0.y - 0.5f;
-			out.z = i0.z - 0.5f;
-			out.w = i0.w - 0.5f;
-			break;
-		case OP_COMPLEMENT:
-			out.x = 1.f - i0.x;
-			out.y = 1.f - i0.y;
-			out.z = 1.f - i0.z;
-			out.w = 1.f - i0.w;
-			break;
-		case OP_MULTIPLY:
-			out = i0 * i1;
-			break;
-		case OP_DIVIDE:
-			out = i0 / i1;
-			break;
-		case OP_ADD:
-			out = i0 + i1;
-			break;
-		case OP_SUBTRACT:
-			out = i0 - i1;
-			break;
-		case OP_DOT:
-			s = i0.dotProduct(i1);
-			out.set( s,s,s,s );
-			break;
-		case OP_MIN:
-			out.x = std::min( i0.x, i1.x );
-			out.y = std::min( i0.y, i1.y );
-			out.z = std::min( i0.z, i1.z );
-			out.w = std::min( i0.w, i1.w );
-			break;
-		case OP_MAX:
-			out.x = std::max( i0.x, i1.x );
-			out.y = std::max( i0.y, i1.y );
-			out.z = std::max( i0.z, i1.z );
-			out.w = std::max( i0.w, i1.w );
-			break;
-		case OP_SGE:
-			out.x = (i0.x >= i1.x ? 1.f : 0.f);
-			out.y = (i0.x >= i1.y ? 1.f : 0.f);
-			out.z = (i0.x >= i1.z ? 1.f : 0.f);
-			out.w = (i0.x >= i1.w ? 1.f : 0.f);
-			break;
-		case OP_SLT:
-			out.x = (i0.x < i1.x ? 1.f : 0.f);
-			out.y = (i0.x < i1.y ? 1.f : 0.f);
-			out.z = (i0.x < i1.z ? 1.f : 0.f);
-			out.w = (i0.x < i1.w ? 1.f : 0.f);
-			break;
-		}
-	}
+        switch (i.op_) {
+            case OP_MOVE:
+                out = i0;
+                break;
+            case OP_RECIPROCAL:
+                out.x = 1.f / i0.x;
+                out.y = 1.f / i0.y;
+                out.z = 1.f / i0.z;
+                out.w = 1.f / i0.w;
+                break;
+            case OP_BIAS:
+                out.x = i0.x - 0.5f;
+                out.y = i0.y - 0.5f;
+                out.z = i0.z - 0.5f;
+                out.w = i0.w - 0.5f;
+                break;
+            case OP_COMPLEMENT:
+                out.x = 1.f - i0.x;
+                out.y = 1.f - i0.y;
+                out.z = 1.f - i0.z;
+                out.w = 1.f - i0.w;
+                break;
+            case OP_MULTIPLY:
+                out = i0 * i1;
+                break;
+            case OP_DIVIDE:
+                out = i0 / i1;
+                break;
+            case OP_ADD:
+                out = i0 + i1;
+                break;
+            case OP_SUBTRACT:
+                out = i0 - i1;
+                break;
+            case OP_DOT:
+                s = i0.dotProduct(i1);
+                out.set(s, s, s, s);
+                break;
+            case OP_MIN:
+                out.x = std::min(i0.x, i1.x);
+                out.y = std::min(i0.y, i1.y);
+                out.z = std::min(i0.z, i1.z);
+                out.w = std::min(i0.w, i1.w);
+                break;
+            case OP_MAX:
+                out.x = std::max(i0.x, i1.x);
+                out.y = std::max(i0.y, i1.y);
+                out.z = std::max(i0.z, i1.z);
+                out.w = std::max(i0.w, i1.w);
+                break;
+            case OP_SGE:
+                out.x = (i0.x >= i1.x ? 1.f : 0.f);
+                out.y = (i0.x >= i1.y ? 1.f : 0.f);
+                out.z = (i0.x >= i1.z ? 1.f : 0.f);
+                out.w = (i0.x >= i1.w ? 1.f : 0.f);
+                break;
+            case OP_SLT:
+                out.x = (i0.x < i1.x ? 1.f : 0.f);
+                out.y = (i0.x < i1.y ? 1.f : 0.f);
+                out.z = (i0.x < i1.z ? 1.f : 0.f);
+                out.w = (i0.x < i1.w ? 1.f : 0.f);
+                break;
+        }
+    }
 
-	finalOutput = r_[0];
+    finalOutput = r_[0];
 }
 
 #undef PY_ATTR_SCOPE
 #define PY_ATTR_SCOPE
 
-
 /*~ class Math.Plane
  *	@components{ all }
  *
- *	The Plane class is a 3d plane 
+ *	The Plane class is a 3d plane
  *
  *	A Plane can be created using the Math.Plane() function.
  */
-PY_TYPEOBJECT( PyPlane )
+PY_TYPEOBJECT(PyPlane)
 
-PY_BEGIN_METHODS( PyPlane )
+PY_BEGIN_METHODS(PyPlane)
 
-	/*~ function Plane.init
-	 *	@components{ all }
- 	 *
-	 *	This method initialises the plane equation so that the input points
-	 *	lie on it. The points should be in a clockwise order when looked at from the
-	 *	front of the plane. The points must not be colinear.
-	 *
-	 *	@param p0			A Vector3 point on the plane.
-	 *	@param p1			A Vector3 point on the plane.
-	 *	@param p2			A Vector3 point on the plane.
-	 * 
-	 *	@return			    The location of the intersection
-	 */
-	PY_METHOD_WITH_DOC( init, "This method initialises the Plane" )
-	/*~ function Plane.intersectRay
-	 *	@components{ all }
- 	 *
-	 *	This method calculates the intersection of a ray with 
-	 *	This plane
-	 *
-	 *	@param	src		A point of the source ray
-	 *	@param	dst		The direction of the ray
-	 *
-	 *	@return			The location of the intersection
-	 */
-	PY_METHOD_WITH_DOC( intersectRay, "This method finds an intersection between a "
-		"ray from source to dest and the plane" )
+/*~ function Plane.init
+ *	@components{ all }
+ *
+ *	This method initialises the plane equation so that the input points
+ *	lie on it. The points should be in a clockwise order when looked at from the
+ *	front of the plane. The points must not be colinear.
+ *
+ *	@param p0			A Vector3 point on the plane.
+ *	@param p1			A Vector3 point on the plane.
+ *	@param p2			A Vector3 point on the plane.
+ *
+ *	@return			    The location of the intersection
+ */
+PY_METHOD_WITH_DOC(init, "This method initialises the Plane")
+/*~ function Plane.intersectRay
+ *	@components{ all }
+ *
+ *	This method calculates the intersection of a ray with
+ *	This plane
+ *
+ *	@param	src		A point of the source ray
+ *	@param	dst		The direction of the ray
+ *
+ *	@return			The location of the intersection
+ */
+PY_METHOD_WITH_DOC(intersectRay,
+                   "This method finds an intersection between a "
+                   "ray from source to dest and the plane")
 
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( PyPlane )
-
+PY_BEGIN_ATTRIBUTES(PyPlane)
 
 PY_END_ATTRIBUTES()
-
 
 /*~ function Math.Plane
  *	@components{ all }
  *
- *	This function creates a new Plane.  
+ *	This function creates a new Plane.
  *
  *	@return	a new Plane
  */
-PY_FACTORY_NAMED( PyPlane, "Plane", Math )
-
+PY_FACTORY_NAMED(PyPlane, "Plane", Math)
 
 /**
  *	Python factory method
  */
-PyObject * PyPlane::pyNew( PyObject * args )
+PyObject* PyPlane::pyNew(PyObject* args)
 {
-	PyPlane * pp = new PyPlane();
-	return pp;
+    PyPlane* pp = new PyPlane();
+    return pp;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Provider per-frame update
 // -----------------------------------------------------------------------------
 
 ProviderStore::Vector4Providers ProviderStore::v4s_;
-ProviderStore::MatrixProviders ProviderStore::ms_;
+ProviderStore::MatrixProviders  ProviderStore::ms_;
 
-void ProviderStore::add( MatrixProvider* m )
+void ProviderStore::add(MatrixProvider* m)
 {
-	ms_.push_back( m );
+    ms_.push_back(m);
 }
 
-
-void ProviderStore::add( Vector4Provider* v )
+void ProviderStore::add(Vector4Provider* v)
 {
-	v4s_.push_back( v );
+    v4s_.push_back(v);
 }
 
-
-void ProviderStore::del( MatrixProvider* m )
+void ProviderStore::del(MatrixProvider* m)
 {
-	BW_GUARD_PROFILER( ProviderStore_delMatrixProvider );
-	MatrixProviders::iterator it = std::find(
-		ms_.begin(), ms_.end(), m );
-	if ( it != ms_.end() )
-	{
-		ms_.erase( it );
-	}
+    BW_GUARD_PROFILER(ProviderStore_delMatrixProvider);
+    MatrixProviders::iterator it = std::find(ms_.begin(), ms_.end(), m);
+    if (it != ms_.end()) {
+        ms_.erase(it);
+    }
 }
 
-
-void ProviderStore::del( Vector4Provider* v )
-{	
-	BW_GUARD_PROFILER( ProviderStore_delVector4Provider );
-	Vector4Providers::iterator it = std::find(
-		v4s_.begin(), v4s_.end(), v );
-	if ( it != v4s_.end() )
-	{
-		v4s_.erase( it );
-	}
+void ProviderStore::del(Vector4Provider* v)
+{
+    BW_GUARD_PROFILER(ProviderStore_delVector4Provider);
+    Vector4Providers::iterator it = std::find(v4s_.begin(), v4s_.end(), v);
+    if (it != v4s_.end()) {
+        v4s_.erase(it);
+    }
 }
 
-
-void ProviderStore::tick( float dTime )
+void ProviderStore::tick(float dTime)
 {
-	{
-	Vector4Providers::iterator it = v4s_.begin();
-	Vector4Providers::iterator end = v4s_.end();
-	while (it != end)
-	{
-		Vector4Provider* v4p = *it++;
-		v4p->tick(dTime);
-	}
-	}
+    {
+        Vector4Providers::iterator it  = v4s_.begin();
+        Vector4Providers::iterator end = v4s_.end();
+        while (it != end) {
+            Vector4Provider* v4p = *it++;
+            v4p->tick(dTime);
+        }
+    }
 
-	{
-	MatrixProviders::iterator it = ms_.begin();
-	MatrixProviders::iterator end = ms_.end();
-	while (it != end)
-	{
-		MatrixProvider* m = *it++;
-		m->tick(dTime);
-	}
-	}
+    {
+        MatrixProviders::iterator it  = ms_.begin();
+        MatrixProviders::iterator end = ms_.end();
+        while (it != end) {
+            MatrixProvider* m = *it++;
+            m->tick(dTime);
+        }
+    }
 }
 
 BW_END_NAMESPACE

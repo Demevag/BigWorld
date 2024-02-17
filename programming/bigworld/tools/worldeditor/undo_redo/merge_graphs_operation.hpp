@@ -1,7 +1,6 @@
 #ifndef MERGE_GRAPHS_OPERATION_HPP
 #define MERGE_GRAPHS_OPERATION_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "gizmo/undoredo.hpp"
@@ -14,29 +13,22 @@ BW_BEGIN_NAMESPACE
  */
 class MergeGraphsOperation : public UndoRedo::Operation
 {
-public:
-    MergeGraphsOperation
-    (
-        UniqueID                const &graph1Id,
-        UniqueID                const &graph2Id
-    );
+  public:
+    MergeGraphsOperation(UniqueID const& graph1Id, UniqueID const& graph2Id);
 
-	/*virtual*/ void undo();
+    /*virtual*/ void undo();
 
-	/*virtual*/ bool iseq( const UndoRedo::Operation & oth ) const;
+    /*virtual*/ bool iseq(const UndoRedo::Operation& oth) const;
 
-protected:
-    MergeGraphsOperation
-    (
-        UniqueID                const &graph1Id,
-        UniqueID                const &graph2Id,
-        BW::vector<UniqueID>   const &nodes
-    );
+  protected:
+    MergeGraphsOperation(UniqueID const&             graph1Id,
+                         UniqueID const&             graph2Id,
+                         BW::vector<UniqueID> const& nodes);
 
-protected:
-    UniqueID                    graph1Id_;
-    UniqueID                    graph2Id_;
-    BW::vector<UniqueID>       nodes_;
+  protected:
+    UniqueID             graph1Id_;
+    UniqueID             graph2Id_;
+    BW::vector<UniqueID> nodes_;
 };
 
 BW_END_NAMESPACE

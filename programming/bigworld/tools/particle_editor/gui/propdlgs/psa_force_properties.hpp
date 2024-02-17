@@ -12,49 +12,50 @@ BW_BEGIN_NAMESPACE
 
 class ForcePSA;
 
-
 // PsaForceProperties form view
 
 class PsaForceProperties : public PsaProperties
 {
-	DECLARE_DYNCREATE(PsaForceProperties)
+    DECLARE_DYNCREATE(PsaForceProperties)
 
-public:
-	PsaForceProperties(); 
-	virtual ~PsaForceProperties();
+  public:
+    PsaForceProperties();
+    virtual ~PsaForceProperties();
 
-	enum { IDD = IDD_PSA_FORCE_PROPERTIES };
+    enum
+    {
+        IDD = IDD_PSA_FORCE_PROPERTIES
+    };
 #ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+    virtual void AssertValid() const;
+    virtual void Dump(CDumpContext& dc) const;
 #endif
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 
-	DECLARE_MESSAGE_MAP()
-public:
-	controls::EditNumeric x_;
-	controls::EditNumeric y_;
-	controls::EditNumeric z_;
+    DECLARE_MESSAGE_MAP()
+  public:
+    controls::EditNumeric x_;
+    controls::EditNumeric y_;
+    controls::EditNumeric z_;
 
-public:
-	ForcePSA *	action();
-	void		SetParameters(SetOperation task);
+  public:
+    ForcePSA* action();
+    void      SetParameters(SetOperation task);
 
-private:
-	void		position(const Vector3 & position);
-	Vector3 	position() const;
+  private:
+    void    position(const Vector3& position);
+    Vector3 position() const;
 
-	void		addPositionGizmo();
-	void		removePositionGizmo();
+    void addPositionGizmo();
+    void removePositionGizmo();
 
-	SmartPointer< VectorGeneratorMatrixProxy<PsaForceProperties> > positionMatrixProxy_;
-	GizmoPtr		positionGizmo_;
+    SmartPointer<VectorGeneratorMatrixProxy<PsaForceProperties>>
+             positionMatrixProxy_;
+    GizmoPtr positionGizmo_;
 
-	controls::EditNumeric delay_;
+    controls::EditNumeric delay_;
 };
 
-
 BW_END_NAMESPACE
-

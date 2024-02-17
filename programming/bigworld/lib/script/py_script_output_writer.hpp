@@ -24,30 +24,30 @@ class ScriptOutputHook;
  */
 class ScriptOutputWriter : public ReferenceCount
 {
-public:
-	ScriptOutputWriter();
+  public:
+    ScriptOutputWriter();
 
-	// These are only for use by ScriptOutputHook
-	void addHook( ScriptOutputHook * pHook );
-	void delHook( ScriptOutputHook * pHook );
+    // These are only for use by ScriptOutputHook
+    void addHook(ScriptOutputHook* pHook);
+    void delHook(ScriptOutputHook* pHook);
 
-	static ScriptOutputWriter * getCurrentStdio();
+    static ScriptOutputWriter* getCurrentStdio();
 
-private:
-	// Prevent subclassing
-	~ScriptOutputWriter();
+  private:
+    // Prevent subclassing
+    ~ScriptOutputWriter();
 
-	friend class PyOutputStream;
-	void handleWrite( const BW::string & msg, bool isStderr );
+    friend class PyOutputStream;
+    void handleWrite(const BW::string& msg, bool isStderr);
 
-	BW::string			stdoutBuffer_;
-	BW::string			stderrBuffer_;
+    BW::string stdoutBuffer_;
+    BW::string stderrBuffer_;
 
-	typedef BW::list< ScriptOutputHook * > Hooks;
-	// The following are protected by the Python GIL
-	Hooks				hooks_;
-	ScriptOutputHook *	pCurrentHook_;
-	bool				shouldDeleteCurrentHook_;
+    typedef BW::list<ScriptOutputHook*> Hooks;
+    // The following are protected by the Python GIL
+    Hooks             hooks_;
+    ScriptOutputHook* pCurrentHook_;
+    bool              shouldDeleteCurrentHook_;
 };
 
 BW_END_NAMESPACE

@@ -3,16 +3,15 @@
 
 #include "physics2/worldtri.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class Entity;
 
-namespace PortalStateChanger
-{
-	void changePortalCollisionState(
-		Entity * pEntity, bool isPermissive, WorldTriangle::Flags flags );
-	void tick( float dTime );
+namespace PortalStateChanger {
+    void changePortalCollisionState(Entity*              pEntity,
+                                    bool                 isPermissive,
+                                    WorldTriangle::Flags flags);
+    void tick(float dTime);
 }
 
 BW_END_NAMESPACE

@@ -12,32 +12,33 @@ class ScalerPSA;
 
 class PsaScalerProperties : public PsaProperties
 {
-	DECLARE_DYNCREATE(PsaScalerProperties)
+    DECLARE_DYNCREATE(PsaScalerProperties)
 
-public:
-	PsaScalerProperties();           // protected constructor used by dynamic creation
-	virtual ~PsaScalerProperties();
+  public:
+    PsaScalerProperties(); // protected constructor used by dynamic creation
+    virtual ~PsaScalerProperties();
 
-	enum { IDD = IDD_PSA_SCALER_PROPERTIES };
+    enum
+    {
+        IDD = IDD_PSA_SCALER_PROPERTIES
+    };
 #ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+    virtual void AssertValid() const;
+    virtual void Dump(CDumpContext& dc) const;
 #endif
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 
+  public:
+    ScalerPSA* action();
+    void       SetParameters(SetOperation task);
 
-public:
-	ScalerPSA *	action();
-	void		SetParameters(SetOperation task);
-
-	controls::EditNumeric size_;
-	controls::EditNumeric rate_;
-	controls::EditNumeric	delay_;
+    controls::EditNumeric size_;
+    controls::EditNumeric rate_;
+    controls::EditNumeric delay_;
 };
 
 BW_END_NAMESPACE
-

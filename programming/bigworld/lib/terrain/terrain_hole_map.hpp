@@ -4,18 +4,17 @@
 #include "terrain_map.hpp"
 #include "terrain_map_holder.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Terrain
-{
+namespace Terrain {
     /**
      *  This class allows access to hole data of a terrain.
      */
     class TerrainHoleMap : public TerrainMap<bool>
     {
-    public:
-		TerrainHoleMap( float blockSize ) : TerrainMap<bool>( blockSize ) {};
+      public:
+        TerrainHoleMap(float blockSize)
+          : TerrainMap<bool>(blockSize){};
         /**
          *  This function returns whether there are no holes in the terrain.
          *
@@ -32,29 +31,27 @@ namespace Terrain
 
         /**
          *  This function returns whether there is a hole at the specified x/z
-		 *	location
-		 *
-		 *	@param x the local x position in the terrain block in meters
-		 *	@param z the local x position in the terrain block in meters
+         *	location
+         *
+         *	@param x the local x position in the terrain block in meters
+         *	@param z the local x position in the terrain block in meters
          *
          *  @return true if there is a hole at the specified location
          */
-		virtual bool holeAt( float x, float z ) const = 0;
+        virtual bool holeAt(float x, float z) const = 0;
 
-		virtual bool holeAt( float xs, float zs, float xe, float ze ) const = 0;
+        virtual bool holeAt(float xs, float zs, float xe, float ze) const = 0;
     };
-
 
     /**
      *  A TerrainHoleMapIter can be used to iterate over a TerrainHoleMap.
      */
-    typedef TerrainMapIter<TerrainHoleMap>      TerrainHoleMapIter;
-
+    typedef TerrainMapIter<TerrainHoleMap> TerrainHoleMapIter;
 
     /**
      *  A TerrainHoleMapHolder can be used to lock/unlock a TerrainHoleMap.
      */
-    typedef TerrainMapHolder<TerrainHoleMap>    TerrainHoleMapHolder;
+    typedef TerrainMapHolder<TerrainHoleMap> TerrainHoleMapHolder;
 }
 
 BW_END_NAMESPACE

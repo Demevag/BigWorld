@@ -1,7 +1,6 @@
 #ifndef LIST_SEARCH_FILTERS_HPP
 #define LIST_SEARCH_FILTERS_HPP
 
-
 #include "world/item_info_db.hpp"
 #include "list_column.hpp"
 
@@ -13,27 +12,27 @@ BW_BEGIN_NAMESPACE
  */
 class ListSearchFilters
 {
-public:
-	typedef BW::set< ItemInfoDB::Type > Types;
+  public:
+    typedef BW::set<ItemInfoDB::Type> Types;
 
-	ListSearchFilters( const ListColumns & columns );
+    ListSearchFilters(const ListColumns& columns);
 
-	void doModal( const CWnd & pParent, const CPoint & pt );
-	
-	const Types & allowedTypes() const { return allowedTypes_; }
+    void doModal(const CWnd& pParent, const CPoint& pt);
 
-	void updateAllowedTypes();
+    const Types& allowedTypes() const { return allowedTypes_; }
 
-	BW::wstring filterDesc() const;
+    void updateAllowedTypes();
 
-private:
-	const ListColumns & columns_;
-	int currentFilter_;
-	Types allowedTypes_;
+    BW::wstring filterDesc() const;
 
-	BW::wstring checkedPrefix( int filter ) const;
+  private:
+    const ListColumns& columns_;
+    int                currentFilter_;
+    Types              allowedTypes_;
 
-	BW::wstring descFromId( int filter ) const;
+    BW::wstring checkedPrefix(int filter) const;
+
+    BW::wstring descFromId(int filter) const;
 };
 
 BW_END_NAMESPACE

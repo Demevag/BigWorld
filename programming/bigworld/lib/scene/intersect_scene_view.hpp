@@ -6,40 +6,32 @@
 #include "scene_provider.hpp"
 #include "scene_type_system.hpp"
 
-namespace BW
-{
+namespace BW {
 
-class ConvexHull;
-class SceneIntersectContext;
+    class ConvexHull;
+    class SceneIntersectContext;
 
-class IIntersectSceneViewProvider
-{
-public:
+    class IIntersectSceneViewProvider
+    {
+      public:
+        virtual ~IIntersectSceneViewProvider() {}
 
-	virtual ~IIntersectSceneViewProvider(){}
+        virtual size_t intersect(const SceneIntersectContext& context,
+                                 const ConvexHull&            hull,
+                                 IntersectionSet& intersection) const = 0;
+    };
 
-	virtual size_t intersect( const SceneIntersectContext& context,
-		const ConvexHull& hull, 
-		IntersectionSet & intersection) const = 0;
-	
-};
+    class IntersectSceneView : public SceneView<IIntersectSceneViewProvider>
+    {
+      public:
+        size_t intersect(const SceneIntersectContext& context,
+                         const ConvexHull&            hull,
+                         IntersectionSet&             intersection) const;
 
-
-class IntersectSceneView : public 
-	SceneView<IIntersectSceneViewProvider>
-{
-public:
-
-	size_t intersect( const SceneIntersectContext& context,
-		const ConvexHull& hull, 
-		IntersectionSet & intersection) const;
-
-	size_t cull( const SceneIntersectContext& context,
-		const Matrix & worldViewProjectionMat, 
-		IntersectionSet & intersection ) const;
-
-
-};
+        size_t cull(const SceneIntersectContext& context,
+                    const Matrix&                worldViewProjectionMat,
+                    IntersectionSet&             intersection) const;
+    };
 
 } // namespace BW
 

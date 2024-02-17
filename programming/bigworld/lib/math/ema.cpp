@@ -21,12 +21,9 @@ BW_BEGIN_NAMESPACE
  *
  *	@returns The bias to achieve the desired weighting on the specified samples.
  */
-float EMA::calculateBiasFromNumSamples( float numSamples,
-		float weighting )
+float EMA::calculateBiasFromNumSamples(float numSamples, float weighting)
 {
-	return (!isZero( numSamples )) ?
-		exp( log( 1.f - weighting )/numSamples ) :
-		0.f;
+    return (!isZero(numSamples)) ? exp(log(1.f - weighting) / numSamples) : 0.f;
 }
 
 BW_END_NAMESPACE

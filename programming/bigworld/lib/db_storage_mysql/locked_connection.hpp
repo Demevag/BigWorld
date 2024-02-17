@@ -7,7 +7,6 @@
 
 #include <mysql/mysql.h>
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -19,32 +18,32 @@ BW_BEGIN_NAMESPACE
  */
 class MySqlLockedConnection
 {
-public:
-	MySqlLockedConnection( const DBConfig::ConnectionInfo & connectionInfo );
-	virtual ~MySqlLockedConnection();
+  public:
+    MySqlLockedConnection(const DBConfig::ConnectionInfo& connectionInfo);
+    virtual ~MySqlLockedConnection();
 
-	bool connect( bool shouldLock );
-	bool connectAndLock() { return this->connect( true ); }
-	bool connectAndLockWithRetry( uint8 numRetries );
+    bool connect(bool shouldLock);
+    bool connectAndLock() { return this->connect(true); }
+    bool connectAndLockWithRetry(uint8 numRetries);
 
-	// TODO: This should be removed when the cleanup in mysql_database is done.
-	bool reconnectTo( const DBConfig::ConnectionInfo & connectionInfo )
-	{
-		return pConnection_ && pConnection_->reconnectTo( connectionInfo );
-	}
+    // TODO: This should be removed when the cleanup in mysql_database is done.
+    bool reconnectTo(const DBConfig::ConnectionInfo& connectionInfo)
+    {
+        return pConnection_ && pConnection_->reconnectTo(connectionInfo);
+    }
 
-	bool lock();
-	bool unlock();
+    bool lock();
+    bool unlock();
 
-	MySql * connection() { return pConnection_; }
+    MySql* connection() { return pConnection_; }
 
-protected:
-	virtual MySql * createMysqlWrapper() const;
-	DBConfig::ConnectionInfo connectionInfo_;
+  protected:
+    virtual MySql*           createMysqlWrapper() const;
+    DBConfig::ConnectionInfo connectionInfo_;
 
-private:
-	MySql * pConnection_;
-	MySQL::NamedLock dbLock_;
+  private:
+    MySql*           pConnection_;
+    MySQL::NamedLock dbLock_;
 };
 
 BW_END_NAMESPACE

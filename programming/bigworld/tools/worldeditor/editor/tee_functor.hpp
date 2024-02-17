@@ -14,31 +14,31 @@ BW_BEGIN_NAMESPACE
  */
 class TeeFunctor : public ToolFunctor
 {
-	Py_Header( TeeFunctor, ToolFunctor )
+    Py_Header(TeeFunctor, ToolFunctor)
 
-public:
-	TeeFunctor( ToolFunctor* f1,
-		ToolFunctor* f2,
-		KeyCode::Key altKey,
-		PyTypeObject * pType = &s_type_ );
+      public
+      : TeeFunctor(ToolFunctor*  f1,
+                   ToolFunctor*  f2,
+                   KeyCode::Key  altKey,
+                   PyTypeObject* pType = &s_type_);
 
-	virtual void update( float dTime, Tool& tool );
-	virtual bool handleKeyEvent( const KeyEvent & event, Tool& tool );
-	virtual bool handleMouseEvent( const MouseEvent & event, Tool& tool );
-	virtual bool applying() const;
-	virtual void stopApplying( Tool & tool, bool saveChanges );
-	virtual void onBeginUsing( Tool & tool );
-	virtual void onEndUsing( Tool & tool );
-	virtual bool isAllowedToDiscardChanges() const;
+    virtual void update(float dTime, Tool& tool);
+    virtual bool handleKeyEvent(const KeyEvent& event, Tool& tool);
+    virtual bool handleMouseEvent(const MouseEvent& event, Tool& tool);
+    virtual bool applying() const;
+    virtual void stopApplying(Tool& tool, bool saveChanges);
+    virtual void onBeginUsing(Tool& tool);
+    virtual void onEndUsing(Tool& tool);
+    virtual bool isAllowedToDiscardChanges() const;
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-private:
-	ToolFunctor* f1_;
-	ToolFunctor* f2_;
-	KeyCode::Key altKey_;
+  private:
+    ToolFunctor* f1_;
+    ToolFunctor* f2_;
+    KeyCode::Key altKey_;
 
-	ToolFunctor* activeFunctor() const;
+    ToolFunctor* activeFunctor() const;
 };
 
 BW_END_NAMESPACE

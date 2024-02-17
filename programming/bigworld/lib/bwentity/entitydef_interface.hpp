@@ -1,5 +1,5 @@
 /**
- * This header should be included before using bwentity.dll interface 
+ * This header should be included before using bwentity.dll interface
  */
 #include "bw_warnings_off.hpp"
 #include "cstdmf/binary_stream.hpp"
@@ -18,4 +18,3 @@
 
 #include "entity_description_map_factory.hpp"
 #include "entity_description_map.hpp"
-

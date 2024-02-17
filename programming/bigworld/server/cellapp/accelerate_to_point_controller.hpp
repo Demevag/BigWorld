@@ -1,9 +1,7 @@
 #ifndef ACCELERATE_TO_POINT_CONTROLLER_HPP
 #define ACCELERATE_TO_POINT_CONTROLLER_HPP
 
-
 #include "base_acceleration_controller.hpp"
-
 
 BW_BEGIN_NAMESPACE
 
@@ -14,22 +12,22 @@ BW_BEGIN_NAMESPACE
  */
 class AccelerateToPointController : public BaseAccelerationController
 {
-	DECLARE_CONTROLLER_TYPE( AccelerateToPointController )
+    DECLARE_CONTROLLER_TYPE(AccelerateToPointController)
 
-public:
-	AccelerateToPointController( Vector3 destination = Vector3(0,0,0),
-								float acceleration = 0.0f,
-								float maxSpeed = 0.0f,
-								Facing facing = FACING_NONE,
-								bool stopAtDestination = true );
+  public:
+    AccelerateToPointController(Vector3 destination       = Vector3(0, 0, 0),
+                                float   acceleration      = 0.0f,
+                                float   maxSpeed          = 0.0f,
+                                Facing  facing            = FACING_NONE,
+                                bool    stopAtDestination = true);
 
-	virtual void		writeRealToStream( BinaryOStream & stream );
-	virtual bool		readRealFromStream( BinaryIStream & stream );
-	void				update();
+    virtual void writeRealToStream(BinaryOStream& stream);
+    virtual bool readRealFromStream(BinaryIStream& stream);
+    void         update();
 
-private:
-	Vector3				destination_;
-	bool				stopAtDestination_;
+  private:
+    Vector3 destination_;
+    bool    stopAtDestination_;
 };
 
 BW_END_NAMESPACE

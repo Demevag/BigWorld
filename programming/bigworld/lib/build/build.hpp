@@ -8,15 +8,14 @@
 
 #include "cstdmf/bw_namespace.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class Build
 {
-public:
-	typedef int Revision;
-	static const Revision UNKNOWN_REVISION = -1;
-	static Revision revision();
+  public:
+    typedef int           Revision;
+    static const Revision UNKNOWN_REVISION = -1;
+    static Revision       revision();
 };
 
 BW_END_NAMESPACE

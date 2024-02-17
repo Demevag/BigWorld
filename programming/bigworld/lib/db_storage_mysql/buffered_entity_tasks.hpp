@@ -11,7 +11,7 @@ class TaskManager;
 class EntityKey;
 class EntityTask;
 
-typedef SmartPointer< EntityTask > EntityTaskPtr;
+typedef SmartPointer<EntityTask> EntityTaskPtr;
 
 /**
  *	This class is responsible for ensuring there is only a single database
@@ -21,47 +21,44 @@ typedef SmartPointer< EntityTask > EntityTaskPtr;
  */
 class BufferedEntityTasks
 {
-public:
-	BufferedEntityTasks( TaskManager & bgTaskManager );
+  public:
+    BufferedEntityTasks(TaskManager& bgTaskManager);
 
-	void addBackgroundTask( const EntityTaskPtr & pTask );
+    void addBackgroundTask(const EntityTaskPtr& pTask);
 
-	void onFinished( const EntityTaskPtr & pTask );
+    void onFinished(const EntityTaskPtr& pTask);
 
-	bool shouldDelayAdds() const
-	{
-		return shouldDelayAdds_;
-	}
+    bool shouldDelayAdds() const { return shouldDelayAdds_; }
 
-	void shouldDelayAdds( bool shouldDelayAdds )
-	{
-		shouldDelayAdds_ = shouldDelayAdds;
-	}
+    void shouldDelayAdds(bool shouldDelayAdds)
+    {
+        shouldDelayAdds_ = shouldDelayAdds;
+    }
 
-	unsigned int size() const { return tasks_.size(); }
+    unsigned int size() const { return tasks_.size(); }
 
-private:
-	bool grabLock( const EntityTaskPtr & pTask );
-	void buffer( const EntityTaskPtr & pTask );
-	void doTask( const EntityTaskPtr & pTask );
+  private:
+    bool grabLock(const EntityTaskPtr& pTask);
+    void buffer(const EntityTaskPtr& pTask);
+    void doTask(const EntityTaskPtr& pTask);
 
-	void onFinishedNewEntity( const EntityTaskPtr & pFinishedTask );
+    void onFinishedNewEntity(const EntityTaskPtr& pFinishedTask);
 
-	template < class MAP, class ID >
-	bool playNextTask( MAP & tasks, ID id );
+    template <class MAP, class ID>
+    bool playNextTask(MAP& tasks, ID id);
 
-	TaskManager & bgTaskManager_;
+    TaskManager& bgTaskManager_;
 
-	typedef BW::multimap< EntityKey, EntityTaskPtr > EntityKeyMap;
-	typedef BW::multimap< EntityID, EntityTaskPtr > EntityIDMap;
+    typedef BW::multimap<EntityKey, EntityTaskPtr> EntityKeyMap;
+    typedef BW::multimap<EntityID, EntityTaskPtr>  EntityIDMap;
 
-	EntityKeyMap tasks_;
-	EntityIDMap priorToDBIDTasks_;
+    EntityKeyMap tasks_;
+    EntityIDMap  priorToDBIDTasks_;
 
-	typedef BW::map< EntityID, DatabaseID > NewEntityMap;
-	NewEntityMap newEntityMap_;
+    typedef BW::map<EntityID, DatabaseID> NewEntityMap;
+    NewEntityMap                          newEntityMap_;
 
-	bool shouldDelayAdds_;
+    bool shouldDelayAdds_;
 };
 
 BW_END_NAMESPACE

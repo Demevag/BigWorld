@@ -17,37 +17,36 @@ class DownloadSegment;
  *  A list of DownloadSegments used to collect chunks of data as they are
  *  downloaded from an addProxyData() or addProxyFileData() call.
  */
-class DataDownload : public BW::list< DownloadSegment* >
+class DataDownload : public BW::list<DownloadSegment*>
 {
-public:
-	DataDownload( uint16 id ) :
-		id_( id ),
-		pDesc_( NULL ),
-		hasLast_( false )
-	{}
+  public:
+    DataDownload(uint16 id)
+      : id_(id)
+      , pDesc_(NULL)
+      , hasLast_(false)
+    {
+    }
 
-	~DataDownload();
+    ~DataDownload();
 
-	void insert( DownloadSegment *pSegment, bool isLast );
-	bool complete();
-	void write( BinaryOStream &os );
-	uint16 id() const { return id_; }
-	const BW::string *pDesc() const { return pDesc_; }
-	void setDesc( BinaryIStream &stream );
+    void              insert(DownloadSegment* pSegment, bool isLast);
+    bool              complete();
+    void              write(BinaryOStream& os);
+    uint16            id() const { return id_; }
+    const BW::string* pDesc() const { return pDesc_; }
+    void              setDesc(BinaryIStream& stream);
 
-protected:
+  protected:
+    // The id of this DataDownload transfer
+    uint16 id_;
 
-	// The id of this DataDownload transfer
-	uint16 id_;
+    // The description associated with this download
+    BW::string* pDesc_;
 
-	// The description associated with this download
-	BW::string *pDesc_;
-
-	// Set to true when the final segment has been added.
-	bool hasLast_;
+    // Set to true when the final segment has been added.
+    bool hasLast_;
 };
 
 BW_END_NAMESPACE
 
 #endif // DATA_DOWNLOAD_HPP
-

@@ -9,27 +9,27 @@
 #include "cstdmf/bw_map.hpp"
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
-
 
 /**
  * This class handles the mapping between IP addresses and hostnames
  */
-class HostnamesMLDB : public TextFileHandler, public Hostnames
+class HostnamesMLDB
+  : public TextFileHandler
+  , public Hostnames
 {
-public:
-	bool init( const char *logLocation, const char *mode );
+  public:
+    bool init(const char* logLocation, const char* mode);
 
-	virtual bool handleLine( const char *line );
+    virtual bool handleLine(const char* line);
 
-	bool writeHostnameToDB( const MessageLogger::IPAddress & addr,
-		const BW::string & hostname );
+    bool writeHostnameToDB(const MessageLogger::IPAddress& addr,
+                           const BW::string&               hostname);
 
-	static const char * getHostnamesFilename();
+    static const char* getHostnamesFilename();
 
-protected:
-	virtual void flush();
+  protected:
+    virtual void flush();
 };
 
 BW_END_NAMESPACE

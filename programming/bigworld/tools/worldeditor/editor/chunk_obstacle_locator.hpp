@@ -1,7 +1,6 @@
 #ifndef CHUNK_OBSTACLE_LOCATOR_HPP
 #define CHUNK_OBSTACLE_LOCATOR_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "gizmo/tool_locator.hpp"
@@ -15,24 +14,23 @@ BW_BEGIN_NAMESPACE
  */
 class ChunkObstacleToolLocator : public ChunkToolLocator
 {
-	Py_Header( ChunkObstacleToolLocator, ChunkToolLocator )
-public:
-	ChunkObstacleToolLocator( class CollisionCallback& collisionRoutine,
-			PyTypeObject * pType = &s_type_ );
-	virtual void calculatePosition( const Vector3& worldRay, Tool& tool );
+    Py_Header(ChunkObstacleToolLocator, ChunkToolLocator) public
+      : ChunkObstacleToolLocator(class CollisionCallback& collisionRoutine,
+                                 PyTypeObject*            pType = &s_type_);
+    virtual void calculatePosition(const Vector3& worldRay, Tool& tool);
 
-	virtual bool positionValid() const { return positionValid_; }
+    virtual bool positionValid() const { return positionValid_; }
 
-	//class CollisionCallback& callback()				{return *callback_;}
-	//void callback( class CollisionCallback& c )		{callback_ = &c;}
+    // class CollisionCallback& callback()				{return *callback_;}
+    // void callback( class CollisionCallback& c )		{callback_ = &c;}
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-protected:
-	class CollisionCallback* callback_;
-	bool positionValid_;
+  protected:
+    class CollisionCallback* callback_;
+    bool                     positionValid_;
 };
 
 BW_END_NAMESPACE
 
-#endif	// CHUNK_OBSTACLE_LOCATOR_HPP
+#endif // CHUNK_OBSTACLE_LOCATOR_HPP

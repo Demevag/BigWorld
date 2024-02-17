@@ -4,7 +4,6 @@
 
 #include "db_storage_mysql/mysql_database_creation.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -12,29 +11,29 @@ BW_BEGIN_NAMESPACE
  */
 class MySqlEngineCreator : public DatabaseEngineCreator
 {
-public:
-	/**
-	 *	Constructor.
-	 */
-	MySqlEngineCreator() :
-		DatabaseEngineCreator( "mysql" )
-	{ }
+  public:
+    /**
+     *	Constructor.
+     */
+    MySqlEngineCreator()
+      : DatabaseEngineCreator("mysql")
+    {
+    }
 
-
-	/*
-	 *	Override from DatabaseEngineCreator
-	 */
-	IDatabase * createImpl( Mercury::NetworkInterface & interface,
-							Mercury::EventDispatcher & dispatcher ) const
-	{
-		return createMySqlDatabase( interface, dispatcher );
-	}
+    /*
+     *	Override from DatabaseEngineCreator
+     */
+    IDatabase* createImpl(Mercury::NetworkInterface& interface,
+                          Mercury::EventDispatcher&  dispatcher) const
+    {
+        return createMySqlDatabase(interface, dispatcher);
+    }
 };
 
 namespace // (anonymous)
 {
 
-MySqlEngineCreator staticInitialiser;
+    MySqlEngineCreator staticInitialiser;
 
 } // end namespace (anonymous)
 

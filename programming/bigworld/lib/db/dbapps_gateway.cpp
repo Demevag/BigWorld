@@ -2,7 +2,6 @@
 
 #include "cstdmf/binary_stream.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,85 +10,76 @@ BW_BEGIN_NAMESPACE
  *	This needs to be done so we don't have to stream DBApp ID twice: once as
  *	the bucket, and once again for the data for the descriptor.
  */
-template<>
+template <>
 struct DBAppsGateway::HashScheme::MapStreaming
 {
-	template< typename BUCKET_MAP >
-	static void addToStream( BinaryOStream & os,
-			const BUCKET_MAP & map )
-	{
-		os.writePackedInt( static_cast< int >( map.size() ) );
-		for (typename BUCKET_MAP::const_iterator iter = map.begin();
-				iter != map.end();
-				++iter)
-		{
-			os << iter->first << iter->second.address();
-		}
-	}
+    template <typename BUCKET_MAP>
+    static void addToStream(BinaryOStream& os, const BUCKET_MAP& map)
+    {
+        os.writePackedInt(static_cast<int>(map.size()));
+        for (typename BUCKET_MAP::const_iterator iter = map.begin();
+             iter != map.end();
+             ++iter) {
+            os << iter->first << iter->second.address();
+        }
+    }
 
-	template< typename BUCKET_MAP >
-	static bool readFromStream( BinaryIStream & is, BUCKET_MAP & map )
-	{
-		map.clear();
+    template <typename BUCKET_MAP>
+    static bool readFromStream(BinaryIStream& is, BUCKET_MAP& map)
+    {
+        map.clear();
 
-		int size = is.readPackedInt();
+        int size = is.readPackedInt();
 
-		while ((size-- > 0) && !is.error())
-		{
-			DBAppID id;
-			Mercury::Address address;
-			is >> id >> address;
+        while ((size-- > 0) && !is.error()) {
+            DBAppID          id;
+            Mercury::Address address;
+            is >> id >> address;
 
-			map.insert( BucketMap::value_type( id,
-				DBAppGateway( id, address ) ) );
-		}
+            map.insert(BucketMap::value_type(id, DBAppGateway(id, address)));
+        }
 
-		return !is.error();
-	}
+        return !is.error();
+    }
 };
 
-
 /** Out-streaming operator for DBAppsGateway. */
-BinaryOStream & operator<<( BinaryOStream & os, const DBAppsGateway & gateway )
+BinaryOStream& operator<<(BinaryOStream& os, const DBAppsGateway& gateway)
 {
-	return os << gateway.hashScheme_;
+    return os << gateway.hashScheme_;
 }
-
 
 /** In-streaming operator for DBAppsGateway. */
-BinaryIStream & operator>>( BinaryIStream & is, DBAppsGateway & gateway )
+BinaryIStream& operator>>(BinaryIStream& is, DBAppsGateway& gateway)
 {
-	return is >> gateway.hashScheme_;
+    return is >> gateway.hashScheme_;
 }
-
 
 /**
  *	Constructor.
  */
-DBAppsGateway::DBAppsGateway() :
-		hashScheme_()
-{}
-
+DBAppsGateway::DBAppsGateway()
+  : hashScheme_()
+{
+}
 
 /**
  *	This method adds a DBApp to the collection.
  */
-void DBAppsGateway::addDBApp( const DBAppGateway & descriptor )
+void DBAppsGateway::addDBApp(const DBAppGateway& descriptor)
 {
-	hashScheme_.insert( std::make_pair( descriptor.id(), descriptor ) );
+    hashScheme_.insert(std::make_pair(descriptor.id(), descriptor));
 }
-
 
 /**
  *	This method removes a DBApp from the collection.
  *
- *	@param descriptor 
+ *	@param descriptor
  */
-bool DBAppsGateway::removeDBApp( DBAppID appID )
+bool DBAppsGateway::removeDBApp(DBAppID appID)
 {
-	return hashScheme_.erase( appID );
+    return hashScheme_.erase(appID);
 }
-
 
 /**
  *	This method updates the gateway hash with an input stream. It can also take
@@ -100,50 +90,46 @@ bool DBAppsGateway::removeDBApp( DBAppID appID )
  *
  *	@return 		false if a stream error occurred, true otherwise.
  */
-bool DBAppsGateway::updateFromStream( BinaryIStream & data,
-		IUpdateVisitor * pVisitor /* = NULL */ )
+bool DBAppsGateway::updateFromStream(BinaryIStream&  data,
+                                     IUpdateVisitor* pVisitor /* = NULL */)
 {
-	HashScheme oldHashScheme = hashScheme_;
+    HashScheme oldHashScheme = hashScheme_;
 
-	data >> hashScheme_;
+    data >> hashScheme_;
 
-	if (data.error())
-	{
-		return false;
-	}
+    if (data.error()) {
+        return false;
+    }
 
-	if (!pVisitor)
-	{
-		return true;
-	}
+    if (!pVisitor) {
+        return true;
+    }
 
-	HashScheme::const_iterator iter = hashScheme_.begin();
-	while (iter != hashScheme_.end())
-	{
-		if (oldHashScheme.count( iter->first ) == 0)
-		{
-			pVisitor->onDBAppAdded( *this, iter->second, 
-				/* isAlpha */ (iter == hashScheme_.begin()) );
-		}
+    HashScheme::const_iterator iter = hashScheme_.begin();
+    while (iter != hashScheme_.end()) {
+        if (oldHashScheme.count(iter->first) == 0) {
+            pVisitor->onDBAppAdded(*this,
+                                   iter->second,
+                                   /* isAlpha */ (iter == hashScheme_.begin()));
+        }
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	iter = oldHashScheme.begin();
-	while (iter != oldHashScheme.end())
-	{
-		if (hashScheme_.count( iter->first ) == 0)
-		{
-			pVisitor->onDBAppRemoved( *this, iter->second, 
-				/* wasAlpha */ (iter == oldHashScheme.begin()) );
-		}
+    iter = oldHashScheme.begin();
+    while (iter != oldHashScheme.end()) {
+        if (hashScheme_.count(iter->first) == 0) {
+            pVisitor->onDBAppRemoved(
+              *this,
+              iter->second,
+              /* wasAlpha */ (iter == oldHashScheme.begin()));
+        }
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method returns the DBApp descriptor for the given database ID.
@@ -152,51 +138,45 @@ bool DBAppsGateway::updateFromStream( BinaryIStream & data,
  *	@return 		The DBApp to handle that database ID, or
  *					DBAppGateway::NONE if the DBApp map is empty.
  */
-const DBAppGateway & DBAppsGateway::getDBApp( DatabaseID dbID /* = 0 */ ) const
+const DBAppGateway& DBAppsGateway::getDBApp(DatabaseID dbID /* = 0 */) const
 {
-	if (hashScheme_.empty())
-	{
-		return DBAppGateway::NONE;
-	}
+    if (hashScheme_.empty()) {
+        return DBAppGateway::NONE;
+    }
 
-	if (dbID == 0)
-	{
-		return this->alpha();
-	}
+    if (dbID == 0) {
+        return this->alpha();
+    }
 
-	return hashScheme_[ dbID ];
+    return hashScheme_[dbID];
 }
-
 
 /**
  *	This method returns DBApp Alpha.
  */
-const DBAppGateway & DBAppsGateway::alpha() const
+const DBAppGateway& DBAppsGateway::alpha() const
 {
-	if (hashScheme_.empty())
-	{
-		return DBAppGateway::NONE;
-	}
+    if (hashScheme_.empty()) {
+        return DBAppGateway::NONE;
+    }
 
-	 // TODO: Scalable DB: When we switch to use
-	 // DBAppHashSchemes::StringBuckets, we will need to be configured to know
-	 // what the alpha storage shard is, and which DBApp is handling it.
-	return hashScheme_.smallest().second;
+    // TODO: Scalable DB: When we switch to use
+    // DBAppHashSchemes::StringBuckets, we will need to be configured to know
+    // what the alpha storage shard is, and which DBApp is handling it.
+    return hashScheme_.smallest().second;
 }
-
 
 /**  *	This method returns a watcher for this class.
  */
 WatcherPtr DBAppsGateway::pWatcher()
 {
-	DBAppsGateway * pNull = NULL;
+    DBAppsGateway* pNull = NULL;
 
-	Watcher * pWatcher = new MapWatcher< HashScheme >(
-		pNull->hashScheme_ );
+    Watcher* pWatcher = new MapWatcher<HashScheme>(pNull->hashScheme_);
 
-	pWatcher->addChild( "*", DBAppGateway::pWatcher() );
+    pWatcher->addChild("*", DBAppGateway::pWatcher());
 
-	return pWatcher;
+    return pWatcher;
 }
 
 BW_END_NAMESPACE

@@ -5,34 +5,32 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class MySql;
 
-namespace MySQL
-{
-/**
- * 	This class obtains and releases an named lock.
- */
-class NamedLock
-{
-public:
-	NamedLock( const BW::string & lockName = BW::string() );
-	~NamedLock();
+namespace MySQL {
+    /**
+     * 	This class obtains and releases an named lock.
+     */
+    class NamedLock
+    {
+      public:
+        NamedLock(const BW::string& lockName = BW::string());
+        ~NamedLock();
 
-	bool lock( MySql & connection );
-	bool unlock();
+        bool lock(MySql& connection);
+        bool unlock();
 
-	const BW::string& lockName() const 	{ return lockName_; }
-	bool isLocked() const 					{ return pConnection_ != NULL; }
+        const BW::string& lockName() const { return lockName_; }
+        bool              isLocked() const { return pConnection_ != NULL; }
 
-private:
-	MySql *		pConnection_;
-	BW::string lockName_;
-};
+      private:
+        MySql*     pConnection_;
+        BW::string lockName_;
+    };
 
-}	// namespace MySQL
+} // namespace MySQL
 
 BW_END_NAMESPACE
 

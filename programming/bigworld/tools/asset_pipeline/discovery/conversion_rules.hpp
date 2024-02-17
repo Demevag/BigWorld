@@ -11,4 +11,4 @@ typedef BW::vector<ConversionRule*> ConversionRules;
 
 BW_END_NAMESPACE
 
-#endif //ASSET_PIPELINE_CONVERSION_RULES
+#endif // ASSET_PIPELINE_CONVERSION_RULES

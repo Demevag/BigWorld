@@ -10,15 +10,13 @@ BW_BEGIN_NAMESPACE
  */
 class GizmoViewKind
 {
-public:
-	static int kindID()
-	{
-		static int kid = GeneralProperty::nextViewKindID();
-		return kid;
-	}
+  public:
+    static int kindID()
+    {
+        static int kid = GeneralProperty::nextViewKindID();
+        return kid;
+    }
 };
-
-
 
 BW_END_NAMESPACE
 #endif // GENPROP_GIZMOVIEWS_HPP

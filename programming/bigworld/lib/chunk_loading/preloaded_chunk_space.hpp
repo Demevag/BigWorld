@@ -15,26 +15,28 @@ class GeometryMapper;
  */
 class PreloadedChunkSpace
 {
-public:
-	PreloadedChunkSpace( BW::Matrix m, const BW::string & path,
-			const SpaceEntryID & entryID, SpaceID spaceID,
-			GeometryMapper & mapper );
-	~PreloadedChunkSpace() {}
+  public:
+    PreloadedChunkSpace(BW::Matrix          m,
+                        const BW::string&   path,
+                        const SpaceEntryID& entryID,
+                        SpaceID             spaceID,
+                        GeometryMapper&     mapper);
+    ~PreloadedChunkSpace() {}
 
-	void chunkTick();
+    void chunkTick();
 
-	void prepareNewlyLoadedChunksForDelete();
+    void prepareNewlyLoadedChunksForDelete();
 
-	ChunkSpacePtr pChunkSpace() const { return pChunkSpace_; }
+    ChunkSpacePtr pChunkSpace() const { return pChunkSpace_; }
 
-	SpaceEntryID & entryID() { return entryID_; }
+    SpaceEntryID& entryID() { return entryID_; }
 
-private:
-	ChunkSpacePtr pChunkSpace_;
+  private:
+    ChunkSpacePtr pChunkSpace_;
 
-	EdgeGeometryMappings geometryMappings_;
+    EdgeGeometryMappings geometryMappings_;
 
-	SpaceEntryID entryID_;
+    SpaceEntryID entryID_;
 };
 
 BW_END_NAMESPACE

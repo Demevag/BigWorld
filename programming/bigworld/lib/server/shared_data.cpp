@@ -7,8 +7,7 @@
 #include "pyscript/pickler.hpp"
 #include "server/server_app_config.hpp"
 
-DECLARE_DEBUG_COMPONENT( 0 )
-
+DECLARE_DEBUG_COMPONENT(0)
 
 BW_BEGIN_NAMESPACE
 
@@ -16,42 +15,39 @@ BW_BEGIN_NAMESPACE
  *	This static function is used to implement operator[] for the scripting
  *	object.
  */
-int SharedData::s_ass_subscript( PyObject * self,
-		PyObject * index, PyObject * value )
+int SharedData::s_ass_subscript(PyObject* self,
+                                PyObject* index,
+                                PyObject* value)
 {
-	return ((SharedData *) self)->ass_subscript( index, value );
+    return ((SharedData*)self)->ass_subscript(index, value);
 }
 
 /**
  *	This static function is used to implement operator[] for the scripting
  *	object.
  */
-PyObject * SharedData::s_subscript( PyObject * self, PyObject * index )
+PyObject* SharedData::s_subscript(PyObject* self, PyObject* index)
 {
-	return ((SharedData *) self)->subscript( index );
+    return ((SharedData*)self)->subscript(index);
 }
-
 
 /**
  * 	This static function returns the number of entities in the system.
  */
-Py_ssize_t SharedData::s_length( PyObject * self )
+Py_ssize_t SharedData::s_length(PyObject* self)
 {
-	return ((SharedData *) self)->length();
+    return ((SharedData*)self)->length();
 }
-
 
 /**
  *	This structure contains the function pointers necessary to provide
  * 	a Python Mapping interface.
  */
-static PyMappingMethods g_sharedDataMapping =
-{
-	SharedData::s_length,			// mp_length
-	SharedData::s_subscript,		// mp_subscript
-	SharedData::s_ass_subscript	// mp_ass_subscript
+static PyMappingMethods g_sharedDataMapping = {
+    SharedData::s_length,       // mp_length
+    SharedData::s_subscript,    // mp_subscript
+    SharedData::s_ass_subscript // mp_ass_subscript
 };
-
 
 /*~ function SharedData has_key
  *  @components{ base, cell }
@@ -82,19 +78,18 @@ static PyMappingMethods g_sharedDataMapping =
  *
  *  @return The found value.
  */
-PY_TYPEOBJECT_WITH_MAPPING( SharedData, &g_sharedDataMapping )
+PY_TYPEOBJECT_WITH_MAPPING(SharedData, &g_sharedDataMapping)
 
-PY_BEGIN_METHODS( SharedData )
-	PY_METHOD( has_key )
-	PY_METHOD( keys )
-	PY_METHOD( items )
-	PY_METHOD( values )
-	PY_METHOD( get )
+PY_BEGIN_METHODS(SharedData)
+PY_METHOD(has_key)
+PY_METHOD(keys)
+PY_METHOD(items)
+PY_METHOD(values)
+PY_METHOD(get)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( SharedData )
+PY_BEGIN_ATTRIBUTES(SharedData)
 PY_END_ATTRIBUTES()
-
 
 // -----------------------------------------------------------------------------
 // Section: Construction/Destruction
@@ -103,33 +98,31 @@ PY_END_ATTRIBUTES()
 /**
  *	The constructor for SharedData.
  */
-SharedData::SharedData( SharedDataType dataType,
-		SharedData::SetFn setFn,
-		SharedData::DelFn delFn,
-		SharedData::OnSetFn onSetFn,
-		SharedData::OnDelFn onDelFn,
-		Pickler * pPickler,
-		PyTypeObject * pType ) :
-	PyObjectPlus( pType ),
-	dataType_( dataType ),
-	setFn_( setFn ),
-	delFn_( delFn ),
-	onSetFn_( onSetFn ),
-	onDelFn_( onDelFn ),
-	pPickler_( pPickler )
+SharedData::SharedData(SharedDataType      dataType,
+                       SharedData::SetFn   setFn,
+                       SharedData::DelFn   delFn,
+                       SharedData::OnSetFn onSetFn,
+                       SharedData::OnDelFn onDelFn,
+                       Pickler*            pPickler,
+                       PyTypeObject*       pType)
+  : PyObjectPlus(pType)
+  , dataType_(dataType)
+  , setFn_(setFn)
+  , delFn_(delFn)
+  , onSetFn_(onSetFn)
+  , onDelFn_(onDelFn)
+  , pPickler_(pPickler)
 {
-	pMap_ = PyDict_New();
+    pMap_ = PyDict_New();
 }
-
 
 /**
  *	Destructor.
  */
 SharedData::~SharedData()
 {
-	Py_DECREF( pMap_ );
+    Py_DECREF(pMap_);
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Script Mapping Related
@@ -142,21 +135,17 @@ SharedData::~SharedData()
  *
  *	@return	A new reference to the object associated with the given key.
  */
-PyObject * SharedData::subscript( PyObject * key )
+PyObject* SharedData::subscript(PyObject* key)
 {
-	PyObject * pObject = PyDict_GetItem( pMap_, key );
-	if (pObject == NULL)
-	{
-		PyErr_SetObject( PyExc_KeyError, key );
-	}
-	else
-	{
-		Py_INCREF( pObject );
-	}
+    PyObject* pObject = PyDict_GetItem(pMap_, key);
+    if (pObject == NULL) {
+        PyErr_SetObject(PyExc_KeyError, key);
+    } else {
+        Py_INCREF(pObject);
+    }
 
-	return pObject;
+    return pObject;
 }
-
 
 /**
  *	This method sets a new shared data value.
@@ -166,155 +155,137 @@ PyObject * SharedData::subscript( PyObject * key )
  *
  *	@return	0 on success, otherwise false.
  */
-int SharedData::ass_subscript( PyObject* key, PyObject * value )
+int SharedData::ass_subscript(PyObject* key, PyObject* value)
 {
-	BW::string pickledKey = this->pickle( ScriptObject( key,
-			ScriptObject::FROM_BORROWED_REFERENCE ) );
+    BW::string pickledKey =
+      this->pickle(ScriptObject(key, ScriptObject::FROM_BORROWED_REFERENCE));
 
-	if (PyErr_Occurred())
-	{
-		BW::string keyRepr = PyString_AsString( 
-			PyObjectPtr( PyObject_Repr( key ), 
-				PyObjectPtr::STEAL_REFERENCE ).get() );
+    if (PyErr_Occurred()) {
+        BW::string keyRepr = PyString_AsString(
+          PyObjectPtr(PyObject_Repr(key), PyObjectPtr::STEAL_REFERENCE).get());
 
-		ERROR_MSG( "SharedData::ass_subscript( %s ): "
-				"Failed to pickle key: %s\n",
-			this->sharedDataTypeAsString(),
-			keyRepr.c_str() );
+        ERROR_MSG("SharedData::ass_subscript( %s ): "
+                  "Failed to pickle key: %s\n",
+                  this->sharedDataTypeAsString(),
+                  keyRepr.c_str());
 
-		return -1;
-	}
+        return -1;
+    }
 
-	ScriptObject pUnpickledKey = this->unpickle( pickledKey );
+    ScriptObject pUnpickledKey = this->unpickle(pickledKey);
 
-	if (!pUnpickledKey ||
-			(PyObject_Compare( key, pUnpickledKey.get() ) != 0))
-	{
-		PyErr_SetString( PyExc_TypeError,
-				"Unpickled key is not equal to original key" );
-		return -1;
-	}
+    if (!pUnpickledKey || (PyObject_Compare(key, pUnpickledKey.get()) != 0)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "Unpickled key is not equal to original key");
+        return -1;
+    }
 
-	if (value == NULL)
-	{
-		int result = PyDict_DelItem( pMap_, key );
+    if (value == NULL) {
+        int result = PyDict_DelItem(pMap_, key);
 
-		if (result == 0)
-		{
-			(*delFn_)( pickledKey, dataType_ );
-			this->changeOutstandingAcks( pickledKey, 1 /* delta */);
-		}
+        if (result == 0) {
+            (*delFn_)(pickledKey, dataType_);
+            this->changeOutstandingAcks(pickledKey, 1 /* delta */);
+        }
 
-		return result;
-	}
-	else
-	{
-		BW::string pickledValue = this->pickle( ScriptObject( value,
-			ScriptObject::FROM_BORROWED_REFERENCE ) );
+        return result;
+    } else {
+        BW::string pickledValue = this->pickle(
+          ScriptObject(value, ScriptObject::FROM_BORROWED_REFERENCE));
 
-		if (PyErr_Occurred())
-		{
-			BW::string keyRepr = PyString_AsString( 
-				PyObjectPtr( PyObject_Repr( key ), 
-					PyObjectPtr::STEAL_REFERENCE ).get() );
+        if (PyErr_Occurred()) {
+            BW::string keyRepr = PyString_AsString(
+              PyObjectPtr(PyObject_Repr(key), PyObjectPtr::STEAL_REFERENCE)
+                .get());
 
-			ERROR_MSG( "SharedData::ass_subscript( %s ): "
-					"Failed to pickle value for key %s\n",
-				this->sharedDataTypeAsString(),
-				keyRepr.c_str() );
-			return -1;
-		}
+            ERROR_MSG("SharedData::ass_subscript( %s ): "
+                      "Failed to pickle value for key %s\n",
+                      this->sharedDataTypeAsString(),
+                      keyRepr.c_str());
+            return -1;
+        }
 
-		if ((pickledKey.size() + pickledValue.size()) > 
-				ServerAppConfig::maxSharedDataValueSize())
-		{
-			BW::string keyRepr = PyString_AsString( 
-				PyObjectPtr( PyObject_Repr( key ), 
-					PyObjectPtr::STEAL_REFERENCE ).get() );
+        if ((pickledKey.size() + pickledValue.size()) >
+            ServerAppConfig::maxSharedDataValueSize()) {
+            BW::string keyRepr = PyString_AsString(
+              PyObjectPtr(PyObject_Repr(key), PyObjectPtr::STEAL_REFERENCE)
+                .get());
 
-			WARNING_MSG( "SharedData::ass_subscript( %s ): "
-						"Large change to shared data value "
-						"(key: %zu bytes, value: %zu bytes). "
-						"Recommended limit of %u bytes is set by the "
-						"configuration option 'maxSharedDataValueSize'. "
-						"Key: %s\n",
-					this->sharedDataTypeAsString(),
-					pickledKey.size(),
-					pickledValue.size(),
-					ServerAppConfig::maxSharedDataValueSize(),
-					keyRepr.c_str() );
-		}
+            WARNING_MSG("SharedData::ass_subscript( %s ): "
+                        "Large change to shared data value "
+                        "(key: %zu bytes, value: %zu bytes). "
+                        "Recommended limit of %u bytes is set by the "
+                        "configuration option 'maxSharedDataValueSize'. "
+                        "Key: %s\n",
+                        this->sharedDataTypeAsString(),
+                        pickledKey.size(),
+                        pickledValue.size(),
+                        ServerAppConfig::maxSharedDataValueSize(),
+                        keyRepr.c_str());
+        }
 
-		int result = PyDict_SetItem( pMap_, key, value );
+        int result = PyDict_SetItem(pMap_, key, value);
 
-		if (result == 0)
-		{
-			(*setFn_)( pickledKey, pickledValue, dataType_ );
-			this->changeOutstandingAcks( pickledKey, 1 /* delta */);
-		}
+        if (result == 0) {
+            (*setFn_)(pickledKey, pickledValue, dataType_);
+            this->changeOutstandingAcks(pickledKey, 1 /* delta */);
+        }
 
-		return result;
-	}
+        return result;
+    }
 }
-
 
 /**
  * 	This method returns the number of data entries.
  */
 int SharedData::length()
 {
-	return PyDict_Size( pMap_ );
+    return PyDict_Size(pMap_);
 }
-
 
 /**
  * 	This method returns true if the given entry exists.
  */
-PyObject * SharedData::py_has_key( PyObject* args )
+PyObject* SharedData::py_has_key(PyObject* args)
 {
-	return PyObject_CallMethod( pMap_, "has_key", "O", args );
+    return PyObject_CallMethod(pMap_, "has_key", "O", args);
 }
-
 
 /**
  * 	This method returns the value with the input key or the default value if not
- *	found.  
+ *	found.
  *
  * 	@param args		A python tuple containing the arguments.
  */
-PyObject * SharedData::py_get( PyObject* args )
+PyObject* SharedData::py_get(PyObject* args)
 {
-	return PyObject_CallMethod( pMap_, "get", "O", args );
+    return PyObject_CallMethod(pMap_, "get", "O", args);
 }
-
 
 /**
  * 	This method returns a list of all the keys of this object.
  */
 PyObject* SharedData::py_keys(PyObject* /*args*/)
 {
-	return PyDict_Keys( pMap_ );
+    return PyDict_Keys(pMap_);
 }
-
 
 /**
  * 	This method returns a list of all the values of this object.
  */
-PyObject* SharedData::py_values( PyObject* /*args*/ )
+PyObject* SharedData::py_values(PyObject* /*args*/)
 {
-	return PyDict_Values( pMap_ );
+    return PyDict_Values(pMap_);
 }
-
 
 /**
  * 	This method returns a list of tuples of all the keys and values of this
  *	object.
  */
-PyObject* SharedData::py_items( PyObject* /*args*/ )
+PyObject* SharedData::py_items(PyObject* /*args*/)
 {
-	return PyDict_Items( pMap_ );
+    return PyDict_Items(pMap_);
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Misc.
@@ -323,169 +294,151 @@ PyObject* SharedData::py_items( PyObject* /*args*/ )
 /**
  *	This method sets a local SharedData entry from the input value.
  */
-bool SharedData::setValue( const BW::string & key, const BW::string & value,
-		bool isAck )
+bool SharedData::setValue(const BW::string& key,
+                          const BW::string& value,
+                          bool              isAck)
 {
-	if (isAck)
-	{
-		this->changeOutstandingAcks( key, -1 /* delta */ );
-	}
+    if (isAck) {
+        this->changeOutstandingAcks(key, -1 /* delta */);
+    }
 
-	ScriptObject pKey = this->unpickle( key );
-	ScriptObject pValue = this->unpickle( value );
+    ScriptObject pKey   = this->unpickle(key);
+    ScriptObject pValue = this->unpickle(value);
 
-	if (!pKey || !pValue)
-	{
-		ERROR_MSG( "SharedData::setValue( %s ): "
-				"Unpickle failed. Invalid key(%s) or value(%s)\n",
-			this->sharedDataTypeAsString(),
-			key.c_str(), value.c_str() );
+    if (!pKey || !pValue) {
+        ERROR_MSG("SharedData::setValue( %s ): "
+                  "Unpickle failed. Invalid key(%s) or value(%s)\n",
+                  this->sharedDataTypeAsString(),
+                  key.c_str(),
+                  value.c_str());
 
-		PyErr_Print();
-		return false;
-	}
+        PyErr_Print();
+        return false;
+    }
 
-	if (!this->hasOutstandingAcks( key ))
-	{
-		if (PyDict_SetItem( pMap_, pKey.get(), pValue.get() ) == -1)
-		{
-			BW::string keyRepr = PyString_AsString( PyObjectPtr( 
-				PyObject_Repr( pKey.get() ), 
-					PyObjectPtr::STEAL_REFERENCE ).get() );
+    if (!this->hasOutstandingAcks(key)) {
+        if (PyDict_SetItem(pMap_, pKey.get(), pValue.get()) == -1) {
+            BW::string keyRepr =
+              PyString_AsString(PyObjectPtr(PyObject_Repr(pKey.get()),
+                                            PyObjectPtr::STEAL_REFERENCE)
+                                  .get());
 
-			ERROR_MSG( "SharedData::setValue( %s ): "
-					"Failed to set value for key %s\n",
-				this->sharedDataTypeAsString(), keyRepr.c_str() );
-			PyErr_Print();
-			return false;
-		}
-	}
-	else
-	{
-		const char * msg = "SharedData::setValue( %s ): "
-				"Received update (originally "
-				"from %s app) for key %s before our local change has been "
-				"acknowledged. Keeping local change.\n";
+            ERROR_MSG("SharedData::setValue( %s ): "
+                      "Failed to set value for key %s\n",
+                      this->sharedDataTypeAsString(),
+                      keyRepr.c_str());
+            PyErr_Print();
+            return false;
+        }
+    } else {
+        const char* msg =
+          "SharedData::setValue( %s ): "
+          "Received update (originally "
+          "from %s app) for key %s before our local change has been "
+          "acknowledged. Keeping local change.\n";
 
-		ScriptObject pKeyRepr( PyObject_Repr( pKey.get() ),
-				ScriptObject::STEAL_REFERENCE );
-		const char * keyRepr = PyString_AsString( pKeyRepr.get() );
-		const char * dataTypeString = this->sharedDataTypeAsString();
+        ScriptObject pKeyRepr(PyObject_Repr(pKey.get()),
+                              ScriptObject::STEAL_REFERENCE);
+        const char*  keyRepr        = PyString_AsString(pKeyRepr.get());
+        const char*  dataTypeString = this->sharedDataTypeAsString();
 
-		if (isAck)
-		{
-			INFO_MSG( msg, dataTypeString, "this", keyRepr );
-		}
-		else
-		{
-			WARNING_MSG( msg, dataTypeString, "a remote", keyRepr );
-		}
-	}
+        if (isAck) {
+            INFO_MSG(msg, dataTypeString, "this", keyRepr);
+        } else {
+            WARNING_MSG(msg, dataTypeString, "a remote", keyRepr);
+        }
+    }
 
-	if (onSetFn_)
-	{
-		(*onSetFn_)( pKey.get(), pValue.get(), dataType_ );
-	}
+    if (onSetFn_) {
+        (*onSetFn_)(pKey.get(), pValue.get(), dataType_);
+    }
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method deletes a local SharedData entry from the input value.
  */
-bool SharedData::delValue( const BW::string & key, bool isAck )
+bool SharedData::delValue(const BW::string& key, bool isAck)
 {
-	if (isAck)
-	{
-		this->changeOutstandingAcks( key, -1 );
-	}
+    if (isAck) {
+        this->changeOutstandingAcks(key, -1);
+    }
 
-	ScriptObject pKey = this->unpickle( key );
+    ScriptObject pKey = this->unpickle(key);
 
-	if (!pKey)
-	{
-		ERROR_MSG( "SharedData::delValue( %s ): Invalid key to delete (%s)\n",
-			this->sharedDataTypeAsString(), key.c_str() );
-		PyErr_Print();
-		return false;
-	}
+    if (!pKey) {
+        ERROR_MSG("SharedData::delValue( %s ): Invalid key to delete (%s)\n",
+                  this->sharedDataTypeAsString(),
+                  key.c_str());
+        PyErr_Print();
+        return false;
+    }
 
-	if (!this->hasOutstandingAcks( key ))
-	{
-		if (PyDict_GetItem( pMap_, pKey.get() ) && 
-			PyDict_DelItem( pMap_, pKey.get() ) == -1)
-		{
-			ERROR_MSG( "SharedData::delValue( %s ): Failed to delete key.\n",
-				this->sharedDataTypeAsString() );
-			PyErr_Print();
-			return false;
-		}
-	}
-	else
-	{
-		const char * msg = "SharedData::delValue( %s ): "
-			"Received update (originally from %s app) for key %s before our "
-			"local change has been acknowledged. Keeping local change.\n";
+    if (!this->hasOutstandingAcks(key)) {
+        if (PyDict_GetItem(pMap_, pKey.get()) &&
+            PyDict_DelItem(pMap_, pKey.get()) == -1) {
+            ERROR_MSG("SharedData::delValue( %s ): Failed to delete key.\n",
+                      this->sharedDataTypeAsString());
+            PyErr_Print();
+            return false;
+        }
+    } else {
+        const char* msg =
+          "SharedData::delValue( %s ): "
+          "Received update (originally from %s app) for key %s before our "
+          "local change has been acknowledged. Keeping local change.\n";
 
-		ScriptObject pKeyRepr( PyObject_Repr( pKey.get() ),
-				ScriptObject::STEAL_REFERENCE );
-		const char * keyRepr = PyString_AsString( pKeyRepr.get() );
-		const char * dataTypeString = this->sharedDataTypeAsString();
+        ScriptObject pKeyRepr(PyObject_Repr(pKey.get()),
+                              ScriptObject::STEAL_REFERENCE);
+        const char*  keyRepr        = PyString_AsString(pKeyRepr.get());
+        const char*  dataTypeString = this->sharedDataTypeAsString();
 
-		if (isAck)
-		{
-			INFO_MSG( msg, dataTypeString, "this", keyRepr );
-		}
-		else
-		{
-			WARNING_MSG( msg, dataTypeString, "a remote", keyRepr );
-		}
-	}
+        if (isAck) {
+            INFO_MSG(msg, dataTypeString, "this", keyRepr);
+        } else {
+            WARNING_MSG(msg, dataTypeString, "a remote", keyRepr);
+        }
+    }
 
-	if (onDelFn_)
-	{
-		(*onDelFn_)( pKey.get(), dataType_ );
-	}
+    if (onDelFn_) {
+        (*onDelFn_)(pKey.get(), dataType_);
+    }
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method adds the dictionary to the input stream.
  */
-bool SharedData::addToStream( BinaryOStream & stream ) const
+bool SharedData::addToStream(BinaryOStream& stream) const
 {
-	uint32 size = PyDict_Size( pMap_ );
-	stream << size;
+    uint32 size = PyDict_Size(pMap_);
+    stream << size;
 
-	PyObject * pKey;
-	PyObject * pValue;
-	Py_ssize_t pos = 0;
+    PyObject*  pKey;
+    PyObject*  pValue;
+    Py_ssize_t pos = 0;
 
-	while (PyDict_Next( pMap_, &pos, &pKey, &pValue ))
-	{
-		stream << this->pickle( ScriptObject( pKey,
-				ScriptObject::FROM_BORROWED_REFERENCE ) ) 
-			<< this->pickle( ScriptObject( pValue,
-				ScriptObject::FROM_BORROWED_REFERENCE ) );
-	}
+    while (PyDict_Next(pMap_, &pos, &pKey, &pValue)) {
+        stream << this->pickle(
+                    ScriptObject(pKey, ScriptObject::FROM_BORROWED_REFERENCE))
+               << this->pickle(ScriptObject(
+                    pValue, ScriptObject::FROM_BORROWED_REFERENCE));
+    }
 
-	MF_ASSERT( !PyErr_Occurred() );
+    MF_ASSERT(!PyErr_Occurred());
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method pickles the input object.
  */
-BW::string SharedData::pickle( ScriptObject pObj ) const
+BW::string SharedData::pickle(ScriptObject pObj) const
 {
-	return pPickler_->pickle( pObj );
+    return pPickler_->pickle(pObj);
 }
-
 
 /**
  *	This method changes the number of outstanding acks. Whenever a shared
@@ -494,19 +447,17 @@ BW::string SharedData::pickle( ScriptObject pObj ) const
  *	will be called with a delta of -1. A value of zero means there are no
  *	outstanding acks, and that entry will be removed.
  */
-void SharedData::changeOutstandingAcks( const BW::string & key, int delta )
+void SharedData::changeOutstandingAcks(const BW::string& key, int delta)
 {
-	int & entry = outstandingAcks_[ key ];
+    int& entry = outstandingAcks_[key];
 
-	entry += delta;
-	MF_ASSERT( entry >= 0 );
+    entry += delta;
+    MF_ASSERT(entry >= 0);
 
-	if (entry == 0)
-	{
-		outstandingAcks_.erase( key );
-	}
+    if (entry == 0) {
+        outstandingAcks_.erase(key);
+    }
 }
-
 
 /*
  *	This method returns true if the given key has outstanding acks, meaning
@@ -514,43 +465,38 @@ void SharedData::changeOutstandingAcks( const BW::string & key, int delta )
  *	previously set to it. This method returns false if there are no outstanding
  *	acks.
  */
-bool SharedData::hasOutstandingAcks( const BW::string & key ) const
+bool SharedData::hasOutstandingAcks(const BW::string& key) const
 {
-	return (outstandingAcks_.find( key ) !=
-			outstandingAcks_.end());
+    return (outstandingAcks_.find(key) != outstandingAcks_.end());
 }
-
 
 /**
  *	This method unpickles the input data.
  */
-ScriptObject SharedData::unpickle( const BW::string & str ) const
+ScriptObject SharedData::unpickle(const BW::string& str) const
 {
-	return pPickler_->unpickle( str );
+    return pPickler_->unpickle(str);
 }
-
 
 /**
  *	This method returns a human-readable string description for the data type
  *	of this instance.
  */
-const char * SharedData::sharedDataTypeAsString() const
+const char* SharedData::sharedDataTypeAsString() const
 {
-	switch (dataType_)
-	{
-	case SHARED_DATA_TYPE_CELL_APP:
-		return "cellAppData";
-	case SHARED_DATA_TYPE_BASE_APP:
-		return "baseAppData";
-	case SHARED_DATA_TYPE_GLOBAL:
-		return "globalData";
-	case SHARED_DATA_TYPE_GLOBAL_FROM_BASE_APP:
-		return "globalData (from BaseApp)";
-	default:
-		return "(unknown)";
-	}
+    switch (dataType_) {
+        case SHARED_DATA_TYPE_CELL_APP:
+            return "cellAppData";
+        case SHARED_DATA_TYPE_BASE_APP:
+            return "baseAppData";
+        case SHARED_DATA_TYPE_GLOBAL:
+            return "globalData";
+        case SHARED_DATA_TYPE_GLOBAL_FROM_BASE_APP:
+            return "globalData (from BaseApp)";
+        default:
+            return "(unknown)";
+    }
 }
-
 
 BW_END_NAMESPACE
 

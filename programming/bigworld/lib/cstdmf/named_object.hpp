@@ -11,82 +11,74 @@ BW_BEGIN_NAMESPACE
  *	This class keeps named objects that register themselves into
  *	a global pool. The pool is searched by name.
  */
-template <class Type> class NamedObject
+template <class Type>
+class NamedObject
 {
-public:
-	typedef NamedObject<Type> This;
-	
-	NamedObject( const BW::string & name, Type object ) :
-		name_( name ),
-		object_( object )
-	{
-		This::add( this );
-	}
+  public:
+    typedef NamedObject<Type> This;
 
-	~NamedObject()
-	{
-		This::del( this );
-	}
+    NamedObject(const BW::string& name, Type object)
+      : name_(name)
+      , object_(object)
+    {
+        This::add(this);
+    }
 
-	static Type get( const BW::string & name )
-	{
-		if (pMap_ == NULL)
-		{
-			return NULL;
-		}
+    ~NamedObject() { This::del(this); }
 
-		typename ObjectMap::iterator it = pMap_->find( name );
-		if (it == pMap_->end())
-		{
-			return NULL;
-		}
+    static Type get(const BW::string& name)
+    {
+        if (pMap_ == NULL) {
+            return NULL;
+        }
 
-		return it->second->object_;
-	}
+        typename ObjectMap::iterator it = pMap_->find(name);
+        if (it == pMap_->end()) {
+            return NULL;
+        }
 
-	const BW::string & name() const { return name_; }
+        return it->second->object_;
+    }
 
-private:
-	NamedObject( const NamedObject & no );
-	NamedObject & operator=( const NamedObject & no );
+    const BW::string& name() const { return name_; }
 
-	BW::string name_;
-	Type object_;
+  private:
+    NamedObject(const NamedObject& no);
+    NamedObject& operator=(const NamedObject& no);
 
-	static void add( This * f )
-	{
-		if (pMap_ == NULL)
-		{
-			pMap_ = new ObjectMap();
-		}
+    BW::string name_;
+    Type       object_;
 
-		(*pMap_)[ f->name_ ] = f;
-	}
+    static void add(This* f)
+    {
+        if (pMap_ == NULL) {
+            pMap_ = new ObjectMap();
+        }
 
-	static void del( This * f )
-	{
-		if (pMap_ == NULL)
-		{
-			return;
-		}
+        (*pMap_)[f->name_] = f;
+    }
 
-		typename ObjectMap::iterator it = pMap_->find( f->name_ );
+    static void del(This* f)
+    {
+        if (pMap_ == NULL) {
+            return;
+        }
 
-		if (it == pMap_->end() || it->second != f)
-		{
-			return;
-		}
+        typename ObjectMap::iterator it = pMap_->find(f->name_);
 
-		pMap_->erase( it );
+        if (it == pMap_->end() || it->second != f) {
+            return;
+        }
 
-		if (pMap_->empty())
-		{
-			bw_safe_delete( pMap_ );
-		}
-	}
+        pMap_->erase(it);
 
-	typedef StringHashMap<This*> ObjectMap;
-	static ObjectMap * pMap_;
+        if (pMap_->empty()) {
+            bw_safe_delete(pMap_);
+        }
+    }
+
+    typedef StringHashMap<This*> ObjectMap;
+    static ObjectMap*            pMap_;
 };
 
 BW_END_NAMESPACE

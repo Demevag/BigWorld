@@ -11,7 +11,6 @@
 
 DECLARE_DEBUG_COMPONENT(0)
 
-
 BW_BEGIN_NAMESPACE
 
 /*~ function Entity addYawRotator
@@ -22,11 +21,10 @@ BW_BEGIN_NAMESPACE
  *  Entity is not real. The controller can be removed via the Entity's cancel
  *  function. For example, Entity.cancel( "Movement" ) or
  *	Entity.cancel( controllerID ).
- *  The controller will determine the shortest direction (clockwise or anti-clockwise)
- *  to turn
- *  On reaching its target yaw, the controller will call Entity.onTurn
- *  then delete itself. The Entity.onTurn method is not defined by default,
- *  and is called with two integer arguments, those being the ID of the
+ *  The controller will determine the shortest direction (clockwise or
+ *anti-clockwise) to turn On reaching its target yaw, the controller will call
+ *Entity.onTurn then delete itself. The Entity.onTurn method is not defined by
+ *default, and is called with two integer arguments, those being the ID of the
  *  controller, and the value specified as "userArg". Errors thrown by the
  *  attempt to call onTurn are silently ignored.
  *
@@ -50,8 +48,9 @@ BW_BEGIN_NAMESPACE
  *	@param controllerID The id of the controller.
  *	@param userData The user data passed in to the Entity.addYawRotator call.
  */
-IMPLEMENT_EXCLUSIVE_CONTROLLER_TYPE_WITH_PY_FACTORY(
-		YawRotatorController, DOMAIN_REAL, "Movement" )
+IMPLEMENT_EXCLUSIVE_CONTROLLER_TYPE_WITH_PY_FACTORY(YawRotatorController,
+                                                    DOMAIN_REAL,
+                                                    "Movement")
 
 /**
  *	This method is exposed to scripting. It creates a controller that
@@ -64,18 +63,18 @@ IMPLEMENT_EXCLUSIVE_CONTROLLER_TYPE_WITH_PY_FACTORY(
  *
  *	@return		The integer ID of the newly created controller.
  */
-Controller::FactoryFnRet YawRotatorController::New(
-	float targetYaw, float velocity, int userArg )
+Controller::FactoryFnRet YawRotatorController::New(float targetYaw,
+                                                   float velocity,
+                                                   int   userArg)
 {
-	if( velocity <= 0.f )
-	{
-		PyErr_SetString( PyExc_AttributeError,
-			"Can't add YawRotator controller with 0 or negative velocity" );
-		return NULL;
-	}
+    if (velocity <= 0.f) {
+        PyErr_SetString(
+          PyExc_AttributeError,
+          "Can't add YawRotator controller with 0 or negative velocity");
+        return NULL;
+    }
 
-	return FactoryFnRet(
-		new YawRotatorController( targetYaw, velocity ), userArg );
+    return FactoryFnRet(new YawRotatorController(targetYaw, velocity), userArg);
 }
 
 /**
@@ -84,103 +83,93 @@ Controller::FactoryFnRet YawRotatorController::New(
  *	@param targetYaw		The target yaw in radians.
  *	@param velocity			Velocity in metres per second
  */
-YawRotatorController::YawRotatorController( float targetYaw, float velocity )
+YawRotatorController::YawRotatorController(float targetYaw, float velocity)
 {
-	radiansPerTick_ = velocity / CellAppConfig::updateHertz();
-	targetYaw_ = Angle(targetYaw);
+    radiansPerTick_ = velocity / CellAppConfig::updateHertz();
+    targetYaw_      = Angle(targetYaw);
 }
-
 
 /**
  * 	This method rotates the entity towards the target yaw by radiansPerTick_.
  */
 bool YawRotatorController::turn()
 {
-	Direction3D direction = this->entity().direction();
-	bool reachedYaw = false;
-	Angle currentYaw = direction.yaw;
-	Angle newYaw	 = direction.yaw + radiansPerTick_;
+    Direction3D direction  = this->entity().direction();
+    bool        reachedYaw = false;
+    Angle       currentYaw = direction.yaw;
+    Angle       newYaw     = direction.yaw + radiansPerTick_;
 
-	if (radiansPerTick_ > 0.f ?
-			targetYaw_.isBetween( currentYaw, newYaw ) :
-			targetYaw_.isBetween( newYaw, currentYaw ))
-	{
-		newYaw = targetYaw_;
-		reachedYaw = true;
-	}
+    if (radiansPerTick_ > 0.f ? targetYaw_.isBetween(currentYaw, newYaw)
+                              : targetYaw_.isBetween(newYaw, currentYaw)) {
+        newYaw     = targetYaw_;
+        reachedYaw = true;
+    }
 
-	direction.yaw = newYaw;
+    direction.yaw = newYaw;
 
-	if( this->entity().pVehicle() )
-		Passengers::instance( *this->entity().pVehicle() ).transformToVehicleDir( direction );
+    if (this->entity().pVehicle())
+        Passengers::instance(*this->entity().pVehicle())
+          .transformToVehicleDir(direction);
 
-	this->entity().setPositionAndDirection(
-		this->entity().localPosition(), direction );
+    this->entity().setPositionAndDirection(this->entity().localPosition(),
+                                           direction);
 
-	return reachedYaw;
+    return reachedYaw;
 }
-
 
 /**
  *	This method overrides the Controller method.
  */
-void YawRotatorController::startReal( bool /*isInitialStart*/ )
+void YawRotatorController::startReal(bool /*isInitialStart*/)
 {
-	CellApp::instance().registerForUpdate( this );
+    CellApp::instance().registerForUpdate(this);
 
-	//check if anti-clockwise is shortest direction
-	Angle yaw = this->entity().direction().yaw;
-	if (targetYaw_.isBetween( yaw - MATH_PI, yaw ))
-	{
-		radiansPerTick_ = -radiansPerTick_;
-	}
+    // check if anti-clockwise is shortest direction
+    Angle yaw = this->entity().direction().yaw;
+    if (targetYaw_.isBetween(yaw - MATH_PI, yaw)) {
+        radiansPerTick_ = -radiansPerTick_;
+    }
 
-	// Turn at least once without checking so that you start turning.
-	// This is needed in the case that you want to do a full circle and
-	// specify the same yaw as the one you are facing.
-	this->turn();
+    // Turn at least once without checking so that you start turning.
+    // This is needed in the case that you want to do a full circle and
+    // specify the same yaw as the one you are facing.
+    this->turn();
 }
-
 
 /**
  *	This method overrides the Controller method.
  */
-void YawRotatorController::stopReal( bool /*isFinalStop*/ )
+void YawRotatorController::stopReal(bool /*isFinalStop*/)
 {
-	MF_VERIFY( CellApp::instance().deregisterForUpdate( this ) );
+    MF_VERIFY(CellApp::instance().deregisterForUpdate(this));
 }
-
 
 /**
  *	This method is called every tick.
  */
 void YawRotatorController::update()
 {
-	if (this->turn())
-	{
-		// Keep ourselves alive until we have finished cleaning up,
-		// with an extra reference count from a smart pointer.
-		ControllerPtr pController = this;
-		this->standardCallback( "onTurn" );
-		if (this->isAttached())
-		{
-			this->cancel();
-		}
-	}
+    if (this->turn()) {
+        // Keep ourselves alive until we have finished cleaning up,
+        // with an extra reference count from a smart pointer.
+        ControllerPtr pController = this;
+        this->standardCallback("onTurn");
+        if (this->isAttached()) {
+            this->cancel();
+        }
+    }
 }
-
 
 /**
  *	Write our state to a stream
  *
  *	@param stream		Stream to which we should write
  */
-void YawRotatorController::writeRealToStream( BinaryOStream & stream )
+void YawRotatorController::writeRealToStream(BinaryOStream& stream)
 {
-	this->Controller::writeRealToStream( stream );
-	stream << targetYaw_ << radiansPerTick_;
+    this->Controller::writeRealToStream(stream);
+    stream << targetYaw_ << radiansPerTick_;
 }
-
 
 /**
  *	Read our state from a stream
@@ -188,11 +177,11 @@ void YawRotatorController::writeRealToStream( BinaryOStream & stream )
  *	@param stream		Stream from which to read
  *	@return				true if successful, false otherwise
  */
-bool YawRotatorController::readRealFromStream( BinaryIStream & stream )
+bool YawRotatorController::readRealFromStream(BinaryIStream& stream)
 {
-	this->Controller::readRealFromStream( stream );
-	stream >> targetYaw_ >> radiansPerTick_;
-	return true;
+    this->Controller::readRealFromStream(stream);
+    stream >> targetYaw_ >> radiansPerTick_;
+    return true;
 }
 
 BW_END_NAMESPACE

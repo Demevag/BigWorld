@@ -19,44 +19,43 @@ BW_BEGIN_NAMESPACE
  */
 class VisualBumper
 {
-public:
-	VisualBumper( DataSectionPtr pVisual, const BW::string& primitivesName );
-	
-	bool bumpVisual();
+  public:
+    VisualBumper(DataSectionPtr pVisual, const BW::string& primitivesName);
 
-private:
+    bool bumpVisual();
 
-	typedef BW::vector< Moo::PrimitiveGroup > PGVector;
+  private:
+    typedef BW::vector<Moo::PrimitiveGroup> PGVector;
 
-	template< typename BumpedVertexType >
-	bool savePrimitiveFile( const BW::vector< BumpedVertexType >& bumpedVertices,
-							const BW::vector<Moo::VertexStream>& streams,
-							const Moo::IndicesHolder& newIndices, 
-							const PGVector& newPrimGroups );
+    template <typename BumpedVertexType>
+    bool savePrimitiveFile(const BW::vector<BumpedVertexType>&  bumpedVertices,
+                           const BW::vector<Moo::VertexStream>& streams,
+                           const Moo::IndicesHolder&            newIndices,
+                           const PGVector&                      newPrimGroups);
 
-	template< typename VertexType, typename BumpedVertexType >
-	bool makeBumped( const VertexType* pVertices, int nVertices, 
-					 BW::vector<Moo::VertexStream>& streams,
-					 const Moo::IndicesHolder& indices, 
-					 const PGVector& primGroups );
+    template <typename VertexType, typename BumpedVertexType>
+    bool makeBumped(const VertexType*              pVertices,
+                    int                            nVertices,
+                    BW::vector<Moo::VertexStream>& streams,
+                    const Moo::IndicesHolder&      indices,
+                    const PGVector&                primGroups);
 
+    void createPrimitiveGroups(size_t                    nBumpedVertices,
+                               const BW::vector<uint32>& bumpedIndices,
+                               const BW::vector<size_t>& material,
+                               PGVector&                 newPrimGroups,
+                               Moo::IndicesHolder&       newIndices);
 
-	void createPrimitiveGroups( size_t nBumpedVertices, 
-								const BW::vector< uint32 >& bumpedIndices, 
-								const BW::vector< size_t >& material, 
-								PGVector& newPrimGroups, 
-								Moo::IndicesHolder& newIndices );
+    bool updatePrimitives();
 
-	bool updatePrimitives();
+    BW::string             vertGroup_;
+    BW::vector<BW::string> streams_;
+    BW::string             indicesGroup_;
+    BW::string             format_;
 
-	BW::string vertGroup_;
-	BW::vector<BW::string> streams_;
-	BW::string indicesGroup_;
-	BW::string format_;
-	
-	DataSectionPtr pVisual_;
-	DataSectionPtr pPrimFile_;
-	BW::string primitivesName_;
+    DataSectionPtr pVisual_;
+    DataSectionPtr pPrimFile_;
+    BW::string     primitivesName_;
 };
 
 BW_END_NAMESPACE

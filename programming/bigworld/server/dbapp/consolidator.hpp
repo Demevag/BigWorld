@@ -5,16 +5,13 @@
 
 #include "server/child_process.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class DBApp;
 
-namespace Mercury
-{
-class EventDispatcher;
+namespace Mercury {
+    class EventDispatcher;
 }
-
 
 /**
  *	This class wraps the functionality of calling the ConsolidateDBs process,
@@ -22,27 +19,25 @@ class EventDispatcher;
  */
 class Consolidator : public IChildProcess
 {
-public:
-	Consolidator( DBApp & dbApp );
-	virtual ~Consolidator();
+  public:
+    Consolidator(DBApp& dbApp);
+    virtual ~Consolidator();
 
-	bool startConsolidation();
+    bool startConsolidation();
 
+  private:
+    Mercury::EventDispatcher& dispatcher();
 
-private:
-	Mercury::EventDispatcher & dispatcher();
+    void outputErrorLogs() const;
 
-	void outputErrorLogs() const;
+    // IChildProcess interface
+    virtual void onChildComplete(int status, ChildProcess* process);
+    virtual void onChildAboutToExec();
+    virtual void onExecFailure(int result);
 
-	// IChildProcess interface
-	virtual void onChildComplete( int status, ChildProcess * process );
-	virtual void onChildAboutToExec();
-	virtual void onExecFailure( int result );
+    DBApp& dbApp_;
 
-
-	DBApp & dbApp_;
-
-	ChildProcess * pChildProcess_;
+    ChildProcess* pChildProcess_;
 };
 
 BW_END_NAMESPACE

@@ -3,7 +3,6 @@
 
 #include "db_storage/idatabase.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -13,20 +12,22 @@ BW_BEGIN_NAMESPACE
  */
 class GetEntityHandler : public IDatabase::IGetEntityHandler
 {
-public:
-	// Intercepts the result callback. Derived classes should NOT implement
-	// this method.
-	virtual void onGetEntityComplete( bool isOK,
-				const EntityDBKey & entityKey,
-				const EntityMailBoxRef * pBaseEntityLocation );
+  public:
+    // Intercepts the result callback. Derived classes should NOT implement
+    // this method.
+    virtual void onGetEntityComplete(
+      bool                    isOK,
+      const EntityDBKey&      entityKey,
+      const EntityMailBoxRef* pBaseEntityLocation);
 
-	// Derived classes should implement this method instead of
-	// onGetEntityComplete() - note the extra 'd'.
-	virtual void onGetEntityCompleted( bool isOK,
-				const EntityDBKey & entityKey,
-				const EntityMailBoxRef * pBaseEntityLocation ) = 0;
+    // Derived classes should implement this method instead of
+    // onGetEntityComplete() - note the extra 'd'.
+    virtual void onGetEntityCompleted(
+      bool                    isOK,
+      const EntityDBKey&      entityKey,
+      const EntityMailBoxRef* pBaseEntityLocation) = 0;
 
-	static bool isActiveMailBox( const EntityMailBoxRef * pBaseRef );
+    static bool isActiveMailBox(const EntityMailBoxRef* pBaseRef);
 };
 
 BW_END_NAMESPACE

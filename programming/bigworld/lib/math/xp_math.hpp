@@ -25,11 +25,11 @@
 
 BW_BEGIN_NAMESPACE
 
-typedef D3DXMATRIX MatrixBase;
+typedef D3DXMATRIX     MatrixBase;
 typedef D3DXQUATERNION QuaternionBase;
-typedef D3DXVECTOR2 Vector2Base;
-typedef D3DXVECTOR3 Vector3Base;
-typedef D3DXVECTOR4 Vector4Base;
+typedef D3DXVECTOR2    Vector2Base;
+typedef D3DXVECTOR3    Vector3Base;
+typedef D3DXVECTOR4    Vector4Base;
 
 #define XPVec2Length D3DXVec2Length
 #define XPVec2LengthSq D3DXVec2LengthSq
@@ -89,22 +89,19 @@ BW_BEGIN_NAMESPACE
  */
 class MatrixBase : public XGMATRIX
 {
-public:
-	MatrixBase()
-	{
-		MF_ASSERT( (((int) this) & 0x0F) == 0 );
-	}
-	MatrixBase( const MatrixBase & other ) : XGMATRIX( other )
-	{
-		MF_ASSERT( (((int) this) & 0x0F) == 0 );
-	}
+  public:
+    MatrixBase() { MF_ASSERT((((int)this) & 0x0F) == 0); }
+    MatrixBase(const MatrixBase& other)
+      : XGMATRIX(other)
+    {
+        MF_ASSERT((((int)this) & 0x0F) == 0);
+    }
 };
 
 typedef XGQUATERNION QuaternionBase;
-typedef XGVECTOR2 Vector2Base;
-typedef XGVECTOR3 Vector3Base;
-typedef XGVECTOR4 Vector4Base;
-
+typedef XGVECTOR2    Vector2Base;
+typedef XGVECTOR3    Vector3Base;
+typedef XGVECTOR4    Vector4Base;
 
 #define XPVec2Length XGVec2Length
 #define XPVec2LengthSq XGVec2LengthSq
@@ -161,15 +158,17 @@ BW_BEGIN_NAMESPACE
  */
 struct BWENTITY_API Vector2Base
 {
-	Vector2Base() {};
-	Vector2Base( float _x, float _y ) : x( _x ), y( _y )
-	{
-	}
+    Vector2Base(){};
+    Vector2Base(float _x, float _y)
+      : x(_x)
+      , y(_y)
+    {
+    }
 
-	operator float *()				{ return (float *)&x; }
-	operator const float *() const	{ return (float *)&x; }
+    operator float*() { return (float*)&x; }
+    operator const float*() const { return (float*)&x; }
 
-	float x, y;
+    float x, y;
 };
 
 /**
@@ -177,15 +176,18 @@ struct BWENTITY_API Vector2Base
  */
 struct BWENTITY_API Vector3Base
 {
-	Vector3Base() {};
-	Vector3Base( float _x, float _y, float _z ) : x( _x ), y( _y ), z( _z )
-	{
-	}
+    Vector3Base(){};
+    Vector3Base(float _x, float _y, float _z)
+      : x(_x)
+      , y(_y)
+      , z(_z)
+    {
+    }
 
-	operator float *()				{ return (float *)&x; }
-	operator const float *() const	{ return (float *)&x; }
+    operator float*() { return (float*)&x; }
+    operator const float*() const { return (float*)&x; }
 
-	float x, y, z;
+    float x, y, z;
 };
 
 /**
@@ -193,16 +195,19 @@ struct BWENTITY_API Vector3Base
  */
 struct BWENTITY_API Vector4Base
 {
-	Vector4Base() {};
-	Vector4Base( float _x, float _y, float _z, float _w ) :
-		x( _x ), y( _y ), z( _z ), w( _w )
-	{
-	}
+    Vector4Base(){};
+    Vector4Base(float _x, float _y, float _z, float _w)
+      : x(_x)
+      , y(_y)
+      , z(_z)
+      , w(_w)
+    {
+    }
 
-	operator float *()				{ return (float *)&x; }
-	operator const float *() const	{ return (float *)&x; }
+    operator float*() { return (float*)&x; }
+    operator const float*() const { return (float*)&x; }
 
-	float x, y, z, w;
+    float x, y, z, w;
 };
 
 /**
@@ -210,20 +215,20 @@ struct BWENTITY_API Vector4Base
  */
 struct MatrixBase
 {
-	operator float *()				{ return (float *)&m00; }
-	operator const float *() const	{ return (float *)&m00; }
+    operator float*() { return (float*)&m00; }
+    operator const float*() const { return (float*)&m00; }
 
-	union
-	{
-		float m[4][4];
-		struct
-		{
-			float m00, m01, m02, m03;
-			float m10, m11, m12, m13;
-			float m20, m21, m22, m23;
-			float m30, m31, m32, m33;
-		};
-	};
+    union
+    {
+        float m[4][4];
+        struct
+        {
+            float m00, m01, m02, m03;
+            float m10, m11, m12, m13;
+            float m20, m21, m22, m23;
+            float m30, m31, m32, m33;
+        };
+    };
 };
 
 /**
@@ -231,26 +236,29 @@ struct MatrixBase
  */
 struct QuaternionBase
 {
-	QuaternionBase() {};
-	QuaternionBase( float _x, float _y, float _z, float _w ) :
-		x( _x ), y( _y ), z( _z ), w( _w )
-	{
-	}
+    QuaternionBase(){};
+    QuaternionBase(float _x, float _y, float _z, float _w)
+      : x(_x)
+      , y(_y)
+      , z(_z)
+      , w(_w)
+    {
+    }
 
-	operator float *()				{ return (float *)&x; }
-	operator const float *() const	{ return (float *)&x; }
+    operator float*() { return (float*)&x; }
+    operator const float*() const { return (float*)&x; }
 
-	float x, y, z, w;
+    float x, y, z, w;
 };
 
 #define XPVec3Length(v) (v)->length()
-#define XPVec3Cross(out,a,b) (out)->crossProduct(*(a),*(b))
-#define XPVec3Dot(a,b) (a)->dotProduct(*(b))
-#define XPVec3Lerp(out,a,b,s) (out)->lerp(*(a),*(b),(s))
-#define XPVec4Lerp(out,a,b,s) (*(out) = (*(a) + (s) * (*(b) - *(a))))
-#define XPQuaternionRotationMatrix(out,in) (out)->fromMatrix(*(in))
-#define XPMatrixRotationQuaternion(out,in) (out)->setRotate(*(in))
-#define XPQuaternionSlerp(out,a,b,s) (out)->slerp(*(a),*(b),(s))
+#define XPVec3Cross(out, a, b) (out)->crossProduct(*(a), *(b))
+#define XPVec3Dot(a, b) (a)->dotProduct(*(b))
+#define XPVec3Lerp(out, a, b, s) (out)->lerp(*(a), *(b), (s))
+#define XPVec4Lerp(out, a, b, s) (*(out) = (*(a) + (s) * (*(b) - *(a))))
+#define XPQuaternionRotationMatrix(out, in) (out)->fromMatrix(*(in))
+#define XPMatrixRotationQuaternion(out, in) (out)->setRotate(*(in))
+#define XPQuaternionSlerp(out, a, b, s) (out)->slerp(*(a), *(b), (s))
 
 BW_END_NAMESPACE
 

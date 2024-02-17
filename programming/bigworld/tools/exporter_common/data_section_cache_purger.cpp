@@ -8,17 +8,14 @@ BW_BEGIN_NAMESPACE
 /**
  *	DataSectionCachePurger constructor
  */
-DataSectionCachePurger::DataSectionCachePurger()
-{
-}
-
+DataSectionCachePurger::DataSectionCachePurger() {}
 
 /**
  *	DataSectionCachePurger destructor
  */
 DataSectionCachePurger::~DataSectionCachePurger()
 {
-	BWResource::instance().purgeAll();
+    BWResource::instance().purgeAll();
 }
 
 BW_END_NAMESPACE

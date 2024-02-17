@@ -5,30 +5,29 @@
 #define BW_COMMON_PREFIX "cellAppLoad/"
 #include "server/server_app_option_macros.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
 // Section: General options
 // -----------------------------------------------------------------------------
 
-BW_OPTION( float, lowerBound, 0.02f );
-BW_OPTION( float, safetyBound, 0.85f );
-BW_OPTION( float, safetyRatio, 1.1f );
-BW_OPTION( float, warningLevel, 0.75f );
+BW_OPTION(float, lowerBound, 0.02f);
+BW_OPTION(float, safetyBound, 0.85f);
+BW_OPTION(float, safetyRatio, 1.1f);
+BW_OPTION(float, warningLevel, 0.75f);
 
 bool CellAppLoadConfig::postInit()
 {
-#define CONFIG_CHECK( LOWER, UPPER )										\
-	if (LOWER() > UPPER())													\
-	{																		\
-		WARNING_MSG( "CellAppLoadConfig: cellAppMgr/cellAppLoad/" #LOWER	\
-			"should be less than cellAppMgr/cellAppLoad/" #UPPER "\n" );					\
-	}
-	CONFIG_CHECK( lowerBound, safetyBound )
-	CONFIG_CHECK( lowerBound, warningLevel )
+#define CONFIG_CHECK(LOWER, UPPER)                                             \
+    if (LOWER() > UPPER()) {                                                   \
+        WARNING_MSG("CellAppLoadConfig: cellAppMgr/cellAppLoad/" #LOWER        \
+                    "should be less than cellAppMgr/cellAppLoad/" #UPPER       \
+                    "\n");                                                     \
+    }
+    CONFIG_CHECK(lowerBound, safetyBound)
+    CONFIG_CHECK(lowerBound, warningLevel)
 
-	return true;
+    return true;
 }
 
 BW_END_NAMESPACE

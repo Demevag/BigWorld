@@ -8,24 +8,22 @@
 
 BW_BEGIN_NAMESPACE
 
-
 class BSPConversionRule : public ConversionRule
 {
-public:	
-	/* returns true and populates a conversion task if the rule can match the input filename. */
-	virtual bool createRootTask( const BW::StringRef& sourceFile,
-							     ConversionTask& task );
+  public:
+    /* returns true and populates a conversion task if the rule can match the
+     * input filename. */
+    virtual bool createRootTask(const BW::StringRef& sourceFile,
+                                ConversionTask&      task);
 
-	/* returns true if the rule can match the output filename. */
-	virtual bool getSourceFile( const BW::StringRef& file,
-								BW::string& sourcefile ) const;
+    /* returns true if the rule can match the output filename. */
+    virtual bool getSourceFile(const BW::StringRef& file,
+                               BW::string&          sourcefile) const;
 
-private:
-	bool isOutOfDateBSP( const BW::StringRef & resourceID ) const;
-
+  private:
+    bool isOutOfDateBSP(const BW::StringRef& resourceID) const;
 };
-
 
 BW_END_NAMESPACE
 
-#endif //ASSET_PIPELINE_BSP_CONVERSION_RULE
+#endif // ASSET_PIPELINE_BSP_CONVERSION_RULE

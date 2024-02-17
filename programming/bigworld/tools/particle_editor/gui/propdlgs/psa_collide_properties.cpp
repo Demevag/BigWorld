@@ -11,9 +11,8 @@
 DECLARE_DEBUG_COMPONENT2("GUI", 0)
 BW_BEGIN_NAMESPACE
 
-namespace 
-{
-	bool validSoundTag( const BW::string & filename )
+namespace {
+    bool validSoundTag(const BW::string& filename)
     {
         return true;
     }
@@ -22,22 +21,19 @@ namespace
 IMPLEMENT_DYNCREATE(PsaCollideProperties, PsaProperties)
 
 PsaCollideProperties::PsaCollideProperties()
-:
-PsaProperties(PsaCollideProperties::IDD)
+  : PsaProperties(PsaCollideProperties::IDD)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	delay_.SetNumericType( controls::EditNumeric::ENT_FLOAT );
-	delay_.SetMinimum( 0.0f );
+    delay_.SetNumericType(controls::EditNumeric::ENT_FLOAT);
+    delay_.SetMinimum(0.0f);
 }
 
-PsaCollideProperties::~PsaCollideProperties()
-{
-}
+PsaCollideProperties::~PsaCollideProperties() {}
 
 void PsaCollideProperties::OnInitialUpdate()
 {
-	BW_GUARD;
+    BW_GUARD;
 
     PsaProperties::OnInitialUpdate();
 }
@@ -46,23 +42,22 @@ void PsaCollideProperties::DoDataExchange(CDataExchange* pDX)
 {
     PsaProperties::DoDataExchange(pDX);
     DDX_Control(pDX, IDC_PSA_COLLIDE_ELASTICITY, elasticity_);
-	DDX_Control(pDX, IDC_PSA_DELAY, delay_);
+    DDX_Control(pDX, IDC_PSA_DELAY, delay_);
 }
 
 void PsaCollideProperties::SetParameters(SetOperation task)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     ASSERT(action_);
 
-    SET_FLOAT_PARAMETER( task, elasticity  );
-	SET_FLOAT_PARAMETER( task, delay );
+    SET_FLOAT_PARAMETER(task, elasticity);
+    SET_FLOAT_PARAMETER(task, delay);
 }
 
-CollidePSA * PsaCollideProperties::action()
+CollidePSA* PsaCollideProperties::action()
 {
-	return static_cast<CollidePSA *>(action_.get());
+    return static_cast<CollidePSA*>(action_.get());
 }
 
 BW_END_NAMESPACE
-

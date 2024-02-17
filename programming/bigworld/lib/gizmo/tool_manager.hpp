@@ -8,27 +8,27 @@ BW_BEGIN_NAMESPACE
 
 class ToolManager
 {
-public:
-	static ToolManager & instance();
+  public:
+    static ToolManager& instance();
 
-	void pushTool( ToolPtr pNewTool );
-	void popTool();
-	ToolPtr tool();
-	const ToolPtr tool() const;
+    void          pushTool(ToolPtr pNewTool);
+    void          popTool();
+    ToolPtr       tool();
+    const ToolPtr tool() const;
 
-	bool isToolApplying() const;
+    bool isToolApplying() const;
 
-	void changeSpace( const Vector3& worldRay );
+    void changeSpace(const Vector3& worldRay);
 
-private:
-	ToolManager();
+  private:
+    ToolManager();
 
-	ToolManager( const ToolManager& );
-	ToolManager& operator=( const ToolManager& );
+    ToolManager(const ToolManager&);
+    ToolManager& operator=(const ToolManager&);
 
-	typedef BW::vector<ToolPtr>	ToolStack;
-	ToolStack tools_;
-	bool reentry_;
+    typedef BW::vector<ToolPtr> ToolStack;
+    ToolStack                   tools_;
+    bool                        reentry_;
 };
 
 BW_END_NAMESPACE

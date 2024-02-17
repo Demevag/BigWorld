@@ -10,95 +10,99 @@
 
 BW_BEGIN_NAMESPACE
 
-CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
+CAboutDlg::CAboutDlg()
+  : CDialog(CAboutDlg::IDD)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	mBackground.LoadBitmap( IDB_ABOUTBOX );
-	mBuildFont.CreatePointFont( 90, L"Arial", NULL );
-	mCopyRightFont.CreatePointFont( 70, L"Arial", NULL );
+    mBackground.LoadBitmap(IDB_ABOUTBOX);
+    mBuildFont.CreatePointFont(90, L"Arial", NULL);
+    mCopyRightFont.CreatePointFont(70, L"Arial", NULL);
 }
 
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
+    CDialog::DoDataExchange(pDX);
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-	ON_WM_PAINT()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_RBUTTONDOWN()
+ON_WM_PAINT()
+ON_WM_LBUTTONDOWN()
+ON_WM_RBUTTONDOWN()
 END_MESSAGE_MAP()
 
 BOOL CAboutDlg::OnInitDialog()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	CDialog::OnInitDialog();
+    CDialog::OnInitDialog();
 
-	BITMAP bitmap;
-	mBackground.GetBitmap( &bitmap );
-	RECT rect = { 0, 0, bitmap.bmWidth, bitmap.bmHeight };
-	AdjustWindowRect( &rect, GetWindowLong( GetSafeHwnd(), GWL_STYLE ), FALSE );
-	MoveWindow( &rect, FALSE );
-	CenterWindow();
+    BITMAP bitmap;
+    mBackground.GetBitmap(&bitmap);
+    RECT rect = { 0, 0, bitmap.bmWidth, bitmap.bmHeight };
+    AdjustWindowRect(&rect, GetWindowLong(GetSafeHwnd(), GWL_STYLE), FALSE);
+    MoveWindow(&rect, FALSE);
+    CenterWindow();
 
-	SetCapture();
+    SetCapture();
 
-	return TRUE;
+    return TRUE;
 }
 
 void CAboutDlg::OnPaint()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	CPaintDC dc(this); // device context for painting
-	CDC memDC;
-	memDC.CreateCompatibleDC( &dc);
-	CBitmap* saveBmp = memDC.SelectObject( &mBackground );
+    CPaintDC dc(this); // device context for painting
+    CDC      memDC;
+    memDC.CreateCompatibleDC(&dc);
+    CBitmap* saveBmp = memDC.SelectObject(&mBackground);
 
-	RECT client;
-	GetClientRect( &client );
+    RECT client;
+    GetClientRect(&client);
 
-	dc.BitBlt( 0, 0, client.right, client.bottom, &memDC, 0, 0, SRCCOPY );
+    dc.BitBlt(0, 0, client.right, client.bottom, &memDC, 0, 0, SRCCOPY);
 
-	memDC.SelectObject( &saveBmp );
+    memDC.SelectObject(&saveBmp);
 
-	BW::wstring space = L" ";
-	CString builtOn = Localise(L"MODELEDITOR/GUI/ABOUT_BOX/VERSION_BUILT", BWVersion::versionString().c_str(),
-		ToolsCommon::isEval() ? space + Localise(L"MODELEDITOR/GUI/ABOUT_BOX/EVAL" ) : L"",
+    BW::wstring space = L" ";
+    CString     builtOn =
+      Localise(L"MODELEDITOR/GUI/ABOUT_BOX/VERSION_BUILT",
+               BWVersion::versionString().c_str(),
+               ToolsCommon::isEval()
+                 ? space + Localise(L"MODELEDITOR/GUI/ABOUT_BOX/EVAL")
+                 : L"",
 #ifdef _DEBUG
-		space + Localise(L"MODELEDITOR/GUI/ABOUT_BOX/DEBUG" ),
+               space + Localise(L"MODELEDITOR/GUI/ABOUT_BOX/DEBUG"),
 #else
-		"",
+               "",
 #endif
-		aboutCompileTimeString );
+               aboutCompileTimeString);
 
-	dc.SetBkMode( TRANSPARENT );
-	dc.SetTextColor( 0x00808080 );
-	CFont* saveFont = dc.SelectObject( &mBuildFont );
-	dc.ExtTextOut( 72, 290, 0, NULL, builtOn, NULL );
+    dc.SetBkMode(TRANSPARENT);
+    dc.SetTextColor(0x00808080);
+    CFont* saveFont = dc.SelectObject(&mBuildFont);
+    dc.ExtTextOut(72, 290, 0, NULL, builtOn, NULL);
 
-	dc.SelectObject( &mCopyRightFont );
-	dc.ExtTextOut( 72, 366, 0, NULL, TEXT( BW_COPYRIGHT_NOTICE ), NULL );
-	dc.SelectObject( &saveFont );
+    dc.SelectObject(&mCopyRightFont);
+    dc.ExtTextOut(72, 366, 0, NULL, TEXT(BW_COPYRIGHT_NOTICE), NULL);
+    dc.SelectObject(&saveFont);
 }
 
 void CAboutDlg::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	CDialog::OnLButtonDown(nFlags, point);
-	OnOK();
+    CDialog::OnLButtonDown(nFlags, point);
+    OnOK();
 }
 
 void CAboutDlg::OnRButtonDown(UINT nFlags, CPoint point)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	CDialog::OnRButtonDown(nFlags, point);
-	OnOK();
+    CDialog::OnRButtonDown(nFlags, point);
+    OnOK();
 }
 
 BW_END_NAMESPACE
-

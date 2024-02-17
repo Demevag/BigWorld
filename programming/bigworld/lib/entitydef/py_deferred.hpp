@@ -5,36 +5,33 @@
 
 #include "pyscript/pyobject_pointer.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
-class NubException;
+namespace Mercury {
+    class NubException;
 }
-
 
 /**
  *	This class is used to create Twisted Deferred instances.
  */
 class PyDeferred
 {
-public:
-	static bool staticInit();
+  public:
+    static bool staticInit();
 
-	PyDeferred();
+    PyDeferred();
 
-	bool callback( PyObjectPtr pArg );
-	bool errback( PyObjectPtr pArg );
-	bool errback( const char * excType, const char * msg );
-	bool mercuryErrback( const Mercury::NubException & exception );
+    bool callback(PyObjectPtr pArg);
+    bool errback(PyObjectPtr pArg);
+    bool errback(const char* excType, const char* msg);
+    bool mercuryErrback(const Mercury::NubException& exception);
 
-	PyObject * get() const	{ return pObject_.get(); }
+    PyObject* get() const { return pObject_.get(); }
 
-private:
-	bool callMethod( const char * methodName, PyObjectPtr pArg );
+  private:
+    bool callMethod(const char* methodName, PyObjectPtr pArg);
 
-	PyObjectPtr pObject_;
+    PyObjectPtr pObject_;
 };
 
 BW_END_NAMESPACE

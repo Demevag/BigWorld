@@ -7,7 +7,6 @@
 
 #include "cstdmf/bw_list.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class ChildQuery;
@@ -15,33 +14,33 @@ class MySql;
 class Query;
 class QueryRunner;
 
-
 /**
- *	This class is used as a helper when running PropertyMapping::fromStreamToDatabase.
+ *	This class is used as a helper when running
+ *PropertyMapping::fromStreamToDatabase.
  */
 class StreamToQueryHelper
 {
-public:
-	StreamToQueryHelper( MySql & connection, DatabaseID parentID );
-	~StreamToQueryHelper();
+  public:
+    StreamToQueryHelper(MySql& connection, DatabaseID parentID);
+    ~StreamToQueryHelper();
 
-	void executeBufferedQueries( DatabaseID parentID );
+    void executeBufferedQueries(DatabaseID parentID);
 
-	ChildQuery & createChildQuery( const Query & query );
+    ChildQuery& createChildQuery(const Query& query);
 
-	MySql & connection()				{ return connection_; }
+    MySql& connection() { return connection_; }
 
-	DatabaseID parentID() const			{ return parentID_; }
-	void parentID( DatabaseID id )		{ parentID_ = id; }
+    DatabaseID parentID() const { return parentID_; }
+    void       parentID(DatabaseID id) { parentID_ = id; }
 
-	bool hasBufferedQueries() const		{ return !bufferedQueries_.empty(); }
+    bool hasBufferedQueries() const { return !bufferedQueries_.empty(); }
 
-private:
-	MySql & connection_;
-	DatabaseID parentID_;
+  private:
+    MySql&     connection_;
+    DatabaseID parentID_;
 
-	typedef BW::list< ChildQuery * > BufferedQueries;
-	BufferedQueries bufferedQueries_;
+    typedef BW::list<ChildQuery*> BufferedQueries;
+    BufferedQueries               bufferedQueries_;
 };
 
 /**
@@ -52,17 +51,17 @@ private:
  */
 class ChildQuery
 {
-public:
-	ChildQuery( MySql & connection, const Query & query );
+  public:
+    ChildQuery(MySql& connection, const Query& query);
 
-	void execute( DatabaseID parentID );
+    void execute(DatabaseID parentID);
 
-	QueryRunner & queryRunner()			{ return queryRunner_; }
-	StreamToQueryHelper & helper()		{ return helper_; }
+    QueryRunner&         queryRunner() { return queryRunner_; }
+    StreamToQueryHelper& helper() { return helper_; }
 
-private:
-	QueryRunner queryRunner_;
-	StreamToQueryHelper helper_;
+  private:
+    QueryRunner         queryRunner_;
+    StreamToQueryHelper helper_;
 };
 
 BW_END_NAMESPACE

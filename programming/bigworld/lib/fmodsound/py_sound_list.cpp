@@ -6,18 +6,17 @@
 
 #if FMOD_SUPPORT
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
 // Section: PySoundList
 // -----------------------------------------------------------------------------
 
-PySoundList::PySoundList() :
-	BW::list< PySound * >(),
-	stopOnDestroy_( true )
+PySoundList::PySoundList()
+  : BW::list<PySound*>()
+  , stopOnDestroy_(true)
 {
-	BW_GUARD;	
+    BW_GUARD;
 }
 
 /**
@@ -26,34 +25,28 @@ PySoundList::PySoundList() :
  */
 PySoundList::~PySoundList()
 {
-	BW_GUARD;
-	if (stopOnDestroy_)
-	{
-		this->stopAll();
-	}
-	else
-	{
-		for (iterator it = this->begin(); it != this->end(); ++it)
-		{
+    BW_GUARD;
+    if (stopOnDestroy_) {
+        this->stopAll();
+    } else {
+        for (iterator it = this->begin(); it != this->end(); ++it) {
             (*it)->decRef();
-		}
-	}
+        }
+    }
 }
 
-bool PySoundList::removeSound( PySound *pPySound )
-{    
+bool PySoundList::removeSound(PySound* pPySound)
+{
     BW_GUARD;
-	PySoundList::iterator itr;
+    PySoundList::iterator itr;
 
-	for(itr = this->begin(); itr != this->end(); itr++)
-    {
-	    // It's fine for an event to not be in the list ... that just means it
-	    // was erased during an update(), probably because its Event* had been
-	    // stolen by a newer Event.
-        if (pPySound == *itr)
-        {
+    for (itr = this->begin(); itr != this->end(); itr++) {
+        // It's fine for an event to not be in the list ... that just means it
+        // was erased during an update(), probably because its Event* had been
+        // stolen by a newer Event.
+        if (pPySound == *itr) {
             (*itr)->decRef();
-		    this->erase( itr );
+            this->erase(itr);
             return true;
         }
     }
@@ -61,27 +54,26 @@ bool PySoundList::removeSound( PySound *pPySound )
     return false;
 }
 
-
-bool PySoundList::removeSound( SoundManager::Event *pEvent )
-{    
+bool PySoundList::removeSound(SoundManager::Event* pEvent)
+{
     BW_GUARD;
-	PySoundList::iterator itr;
+    PySoundList::iterator itr;
 
-    void *data;
+    void*       data;
     FMOD_RESULT result = pEvent->getUserData(&data);
-    SoundManager::FMOD_ErrCheck(result, "PySoundList::removeSound: Couldn't retrieve user data");
-    PySound *pySound = static_cast< PySound * >( data );
+    SoundManager::FMOD_ErrCheck(
+      result, "PySoundList::removeSound: Couldn't retrieve user data");
+    PySound* pySound = static_cast<PySound*>(data);
 
-	for(itr = this->begin(); itr != this->end(); itr++)
-    {
-	    // It's fine for an event to not be in the list ... that just means it
-	    // was erased during an update(), probably because its Event* had been
-	    // stolen by a newer Event.
-        if (pySound == *itr)
-        {
-		    this->erase( itr );
+    for (itr = this->begin(); itr != this->end(); itr++) {
+        // It's fine for an event to not be in the list ... that just means it
+        // was erased during an update(), probably because its Event* had been
+        // stolen by a newer Event.
+        if (pySound == *itr) {
+            this->erase(itr);
             result = pEvent->stop();
-            SoundManager::FMOD_ErrCheck(result, "PySoundList::removeSound: Couldn't stop event");
+            SoundManager::FMOD_ErrCheck(
+              result, "PySoundList::removeSound: Couldn't stop event");
             pySound->decRef();
             return true;
         }
@@ -89,52 +81,49 @@ bool PySoundList::removeSound( SoundManager::Event *pEvent )
 
     return false;
 }
-
 
 /**
  *  Appends an Event to this list.
  */
-void PySoundList::push_back( PySound *pySound )
+void PySoundList::push_back(PySound* pySound)
 {
-	BW_GUARD;
+    BW_GUARD;
     pySound->incRef();
-	BW::list< PySound * >::push_back( pySound );
+    BW::list<PySound*>::push_back(pySound);
 }
-
 
 /**
  *  Update positions for any sounds that are still playing.
  */
-bool PySoundList::update( const Vector3 &position, const Vector3 &orientation, float deltaTime )
+bool PySoundList::update(const Vector3& position,
+                         const Vector3& orientation,
+                         float          deltaTime)
 {
-	BW_GUARD;
-	bool ok = true;
+    BW_GUARD;
+    bool ok = true;
 
-	iterator it = this->begin();
-	while (it != this->end())
-	{
-		PySound *pySound = *it;
-        if ( !pySound->unloaded() && pySound->update( position, orientation, deltaTime ))
-		{
-			++it;
-		}
-		else
-		{
-			// If we get to here, the event must have had it's channel stolen.
-			it = this->erase( it );
+    iterator it = this->begin();
+    while (it != this->end()) {
+        PySound* pySound = *it;
+        if (!pySound->unloaded() &&
+            pySound->update(position, orientation, deltaTime)) {
+            ++it;
+        } else {
+            // If we get to here, the event must have had it's channel stolen.
+            it = this->erase(it);
             pySound->decRef();
-			/*
-			 technically we should notice FootTrigger::pSound_ if it pointers to this pySound,
-			 but given the current structure there is no way that we can 
-			 access the FootTrigger::pSound_ from here, so at this moment,
-			 we might just leave it as it is, FootTrigger::pSound_ will check if
-			 the sound is still valid, if not it will recreate another one
-			*/
+            /*
+             technically we should notice FootTrigger::pSound_ if it pointers to
+             this pySound, but given the current structure there is no way that
+             we can access the FootTrigger::pSound_ from here, so at this
+             moment, we might just leave it as it is, FootTrigger::pSound_ will
+             check if the sound is still valid, if not it will recreate another
+             one
+            */
+        }
+    }
 
-		}
-	}
-
-	return ok;
+    return ok;
 }
 
 /**
@@ -142,24 +131,22 @@ bool PySoundList::update( const Vector3 &position, const Vector3 &orientation, f
  */
 bool PySoundList::stopAll()
 {
-	BW_GUARD;
-	bool ok = true;
+    BW_GUARD;
+    bool ok = true;
 
-	for (iterator it = this->begin(); it != this->end(); ++it)
-	{
-		ok &= (*it)->stop();
+    for (iterator it = this->begin(); it != this->end(); ++it) {
+        ok &= (*it)->stop();
         (*it)->decRef();
-	}
+    }
 
-	if (!ok)
-	{
-		ERROR_MSG( "PySoundList::stopAll: "
-			"Some events failed to stop\n" );
-	}
+    if (!ok) {
+        ERROR_MSG("PySoundList::stopAll: "
+                  "Some events failed to stop\n");
+    }
 
-	this->clear();
+    this->clear();
 
-	return ok;
+    return ok;
 }
 
 BW_END_NAMESPACE

@@ -6,7 +6,6 @@
 
 #include "cstdmf/bw_set.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -16,28 +15,27 @@ BW_BEGIN_NAMESPACE
  */
 class CellAppDeathHandler
 {
-public:
-	CellAppDeathHandler( const Mercury::Address & deadAddr,
-		   int ticksToWait );
+  public:
+    CellAppDeathHandler(const Mercury::Address& deadAddr, int ticksToWait);
 
-	void addWaiting( const Mercury::Address & addr );
-	void clearWaiting( const Mercury::Address & waitingAddr,
-			const Mercury::Address & deadAddr );
+    void addWaiting(const Mercury::Address& addr);
+    void clearWaiting(const Mercury::Address& waitingAddr,
+                      const Mercury::Address& deadAddr);
 
-	void tick();
+    void tick();
 
-	void finish();
+    void finish();
 
-	MemoryOStream & stream()					{ return stream_; }
-	const Mercury::Address & deadAddr() const	{ return deadAddr_; }
+    MemoryOStream&          stream() { return stream_; }
+    const Mercury::Address& deadAddr() const { return deadAddr_; }
 
-private:
-	const Mercury::Address deadAddr_;
-	MemoryOStream stream_;
-	typedef BW::set< Mercury::Address > WaitingForSet;
-	WaitingForSet waitingFor_;
+  private:
+    const Mercury::Address            deadAddr_;
+    MemoryOStream                     stream_;
+    typedef BW::set<Mercury::Address> WaitingForSet;
+    WaitingForSet                     waitingFor_;
 
-	int ticksToWait_;
+    int ticksToWait_;
 };
 
 BW_END_NAMESPACE

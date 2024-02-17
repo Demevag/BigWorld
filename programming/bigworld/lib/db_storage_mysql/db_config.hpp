@@ -5,15 +5,13 @@
 
 #include "cstdmf/stdmf.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace DBConfig
-{
+namespace DBConfig {
 
-const ConnectionInfo & connectionInfo();
+    const ConnectionInfo& connectionInfo();
 
-}	// namespace DBConfig
+} // namespace DBConfig
 
 BW_END_NAMESPACE
 

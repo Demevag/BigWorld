@@ -7,43 +7,50 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Terrain
-{
+namespace Terrain {
 
-/**
- *	This class implements the ambient occlusion (AO) map resource for the terrain block 2
- */
-class TerrainAOMap2 : public SafeReferenceCount
-{
-public:
-	TerrainAOMap2();
-	~TerrainAOMap2();
+    /**
+     *	This class implements the ambient occlusion (AO) map resource for the
+     *terrain block 2
+     */
+    class TerrainAOMap2 : public SafeReferenceCount
+    {
+      public:
+        TerrainAOMap2();
+        ~TerrainAOMap2();
 
-	bool init(const BW::string& terrainResource);
-
-#ifdef EDITOR_ENABLED
-	bool save(const DataSectionPtr& pTerrainSection);
-	void regenerate(uint size);
-	bool import(const Moo::Image<uint8>& srcImage, uint top, uint left, uint size);
-#endif
-
-	DX::Texture*	texture() const	{ return pAOMap_.pComObject(); }
-	uint32			size() const	{ return pAOMap_.hasComObject() ? size_ : 0; }
-
-private:
-	static ComObjectWrap<DX::Texture> loadMap(const DataSectionPtr& pMapSection, uint32& size );
+        bool init(const BW::string& terrainResource);
 
 #ifdef EDITOR_ENABLED
-	static bool createMap(const Moo::Image<uint8>& srcImg, ComObjectWrap<DX::Texture>& pMap);
-	static bool saveMap(const DataSectionPtr& pSection, const ComObjectWrap<DX::Texture>& pMap);
+        bool save(const DataSectionPtr& pTerrainSection);
+        void regenerate(uint size);
+        bool import(const Moo::Image<uint8>& srcImage,
+                    uint                     top,
+                    uint                     left,
+                    uint                     size);
 #endif
 
-	ComObjectWrap<DX::Texture>  pAOMap_;
-	uint32					    size_;
-	BW::string					terrainResource_;
-};
+        DX::Texture* texture() const { return pAOMap_.pComObject(); }
+        uint32       size() const { return pAOMap_.hasComObject() ? size_ : 0; }
 
-typedef SmartPointer<TerrainAOMap2> TerrainAOMap2Ptr;
+      private:
+        static ComObjectWrap<DX::Texture> loadMap(
+          const DataSectionPtr& pMapSection,
+          uint32&               size);
+
+#ifdef EDITOR_ENABLED
+        static bool createMap(const Moo::Image<uint8>&    srcImg,
+                              ComObjectWrap<DX::Texture>& pMap);
+        static bool saveMap(const DataSectionPtr&             pSection,
+                            const ComObjectWrap<DX::Texture>& pMap);
+#endif
+
+        ComObjectWrap<DX::Texture> pAOMap_;
+        uint32                     size_;
+        BW::string                 terrainResource_;
+    };
+
+    typedef SmartPointer<TerrainAOMap2> TerrainAOMap2Ptr;
 
 }
 

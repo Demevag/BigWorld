@@ -9,9 +9,8 @@ class SceneObject;
 
 class IBatchRenderOperationTypeHandler
 {
-public:
-	virtual void doDrawBatch(
-		const SceneObject* objects, size_t count ) = 0;
+  public:
+    virtual void doDrawBatch(const SceneObject* objects, size_t count) = 0;
 };
 
 BW_END_NAMESPACE

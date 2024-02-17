@@ -14,129 +14,119 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-BaseAppMgrGateway::BaseAppMgrGateway( Mercury::NetworkInterface & interface ) :
-		ManagerAppGateway( interface, BaseAppMgrInterface::retireApp )
+BaseAppMgrGateway::BaseAppMgrGateway(Mercury::NetworkInterface& interface)
+  : ManagerAppGateway(interface, BaseAppMgrInterface::retireApp)
 {
 }
 
-
-void BaseAppMgrGateway::onManagerRebirth( BaseApp & baseApp,
-		const Mercury::Address & addr )
+void BaseAppMgrGateway::onManagerRebirth(BaseApp&                baseApp,
+                                         const Mercury::Address& addr)
 {
-	channel_.addr( addr );
+    channel_.addr(addr);
 
-	Mercury::Bundle & bundle = channel_.bundle();
+    Mercury::Bundle& bundle = channel_.bundle();
 
-	bundle.startMessage( BaseAppMgrInterface::recoverBaseApp );
-	baseApp.addBaseAppMgrRebirthData( bundle );
+    bundle.startMessage(BaseAppMgrInterface::recoverBaseApp);
+    baseApp.addBaseAppMgrRebirthData(bundle);
 
-	channel_.send();
+    channel_.send();
 }
 
-
-void BaseAppMgrGateway::add( const Mercury::Address & addrForCells,
-		const Mercury::Address & addrForClients, bool isServiceApp,
-		Mercury::ReplyMessageHandler * pHandler )
+void BaseAppMgrGateway::add(const Mercury::Address&       addrForCells,
+                            const Mercury::Address&       addrForClients,
+                            bool                          isServiceApp,
+                            Mercury::ReplyMessageHandler* pHandler)
 {
-	Mercury::Bundle	& bundle = channel_.bundle();
+    Mercury::Bundle& bundle = channel_.bundle();
 
-	BaseAppMgrInterface::addArgs * args =
-		(BaseAppMgrInterface::addArgs*)bundle.startStructRequest(
-			BaseAppMgrInterface::add, pHandler );
+    BaseAppMgrInterface::addArgs* args =
+      (BaseAppMgrInterface::addArgs*)bundle.startStructRequest(
+        BaseAppMgrInterface::add, pHandler);
 
-	args->addrForCells = addrForCells;
-	args->addrForClients = addrForClients;
-	args->isServiceApp = isServiceApp;
+    args->addrForCells   = addrForCells;
+    args->addrForClients = addrForClients;
+    args->isServiceApp   = isServiceApp;
 
-	channel_.send();
+    channel_.send();
 }
 
-
-void BaseAppMgrGateway::useNewBackupHash( const BackupHash & entityToAppHash,
-		const BackupHash & newEntityToAppHash )
+void BaseAppMgrGateway::useNewBackupHash(const BackupHash& entityToAppHash,
+                                         const BackupHash& newEntityToAppHash)
 {
-	Mercury::Bundle & bundle = channel_.bundle();
+    Mercury::Bundle& bundle = channel_.bundle();
 
-	bundle.startMessage( BaseAppMgrInterface::useNewBackupHash );
-	bundle << entityToAppHash;
-	bundle << newEntityToAppHash;
+    bundle.startMessage(BaseAppMgrInterface::useNewBackupHash);
+    bundle << entityToAppHash;
+    bundle << newEntityToAppHash;
 
-	channel_.send();
+    channel_.send();
 }
-
 
 void BaseAppMgrGateway::informOfArchiveComplete(
-		const Mercury::Address & deadBaseAppAddr )
+  const Mercury::Address& deadBaseAppAddr)
 {
-	Mercury::Bundle & bundle = channel_.bundle();
+    Mercury::Bundle& bundle = channel_.bundle();
 
-	bundle.startMessage( BaseAppMgrInterface::informOfArchiveComplete );
+    bundle.startMessage(BaseAppMgrInterface::informOfArchiveComplete);
 
-	bundle << deadBaseAppAddr;
+    bundle << deadBaseAppAddr;
 
-	channel_.send();
+    channel_.send();
 }
-
 
 void BaseAppMgrGateway::finishedInit()
 {
-	channel_.bundle().startMessage( BaseAppMgrInterface::finishedInit );
-	channel_.send();
+    channel_.bundle().startMessage(BaseAppMgrInterface::finishedInit);
+    channel_.send();
 }
 
-
-void BaseAppMgrGateway::registerBaseGlobally( const BW::string & pickledKey,
-		const EntityMailBoxRef & mailBox,
-		Mercury::ReplyMessageHandler * pHandler )
+void BaseAppMgrGateway::registerBaseGlobally(
+  const BW::string&             pickledKey,
+  const EntityMailBoxRef&       mailBox,
+  Mercury::ReplyMessageHandler* pHandler)
 {
-	Mercury::Bundle & bundle = channel_.bundle();
+    Mercury::Bundle& bundle = channel_.bundle();
 
-	bundle.startRequest( BaseAppMgrInterface::registerBaseGlobally, pHandler );
-	bundle << pickledKey;
-	bundle << mailBox;
+    bundle.startRequest(BaseAppMgrInterface::registerBaseGlobally, pHandler);
+    bundle << pickledKey;
+    bundle << mailBox;
 
-	channel_.send();
+    channel_.send();
 }
 
-
-void BaseAppMgrGateway::deregisterBaseGlobally( const BW::string & pickledKey )
+void BaseAppMgrGateway::deregisterBaseGlobally(const BW::string& pickledKey)
 {
-	Mercury::Bundle & bundle = channel_.bundle();
+    Mercury::Bundle& bundle = channel_.bundle();
 
-	bundle.startMessage( BaseAppMgrInterface::deregisterBaseGlobally );
-	bundle << pickledKey;
+    bundle.startMessage(BaseAppMgrInterface::deregisterBaseGlobally);
+    bundle << pickledKey;
 
-	channel_.channel().delayedSend();
+    channel_.channel().delayedSend();
 }
 
-
-void BaseAppMgrGateway::registerServiceFragment( Base * pBaseEntity )
+void BaseAppMgrGateway::registerServiceFragment(Base* pBaseEntity)
 {
-	Mercury::Bundle & bundle = channel_.bundle();
+    Mercury::Bundle& bundle = channel_.bundle();
 
-	bundle.startMessage( BaseAppMgrInterface::registerServiceFragment );
-	bundle << pBaseEntity->pType()->description().name();
-	bundle << pBaseEntity->baseEntityMailBoxRef();
+    bundle.startMessage(BaseAppMgrInterface::registerServiceFragment);
+    bundle << pBaseEntity->pType()->description().name();
+    bundle << pBaseEntity->baseEntityMailBoxRef();
 
-	channel_.send();
+    channel_.send();
 }
 
-
-void BaseAppMgrGateway::deregisterServiceFragment(
-	const BW::string & serviceName )
+void BaseAppMgrGateway::deregisterServiceFragment(const BW::string& serviceName)
 {
-	Mercury::Bundle & bundle = channel_.bundle();
-	bundle.startMessage( BaseAppMgrInterface::deregisterServiceFragment );
+    Mercury::Bundle& bundle = channel_.bundle();
+    bundle.startMessage(BaseAppMgrInterface::deregisterServiceFragment);
 
-	bundle << serviceName;
+    bundle << serviceName;
 
-	channel_.send();
+    channel_.send();
 }
 
 BW_END_NAMESPACE
 
 // baseappmgr_gateway.cpp
-

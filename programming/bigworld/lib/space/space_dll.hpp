@@ -6,12 +6,12 @@
 
 #ifndef SPACE_API
 
-#if defined( SPACE_EXPORT )
-#	define SPACE_API __declspec(dllexport)
-#elif defined( SPACE_IMPORT )
-#	define SPACE_API __declspec(dllimport)
+#if defined(SPACE_EXPORT)
+#define SPACE_API __declspec(dllexport)
+#elif defined(SPACE_IMPORT)
+#define SPACE_API __declspec(dllimport)
 #else
-#	define SPACE_API
+#define SPACE_API
 #endif
 
 #endif // SPACE_API

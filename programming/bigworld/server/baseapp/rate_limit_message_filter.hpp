@@ -12,12 +12,10 @@
 
 #include <queue>
 
-
 BW_BEGIN_NAMESPACE
 
 class BufferedMessage;
 class RateLimitConfig;
-
 
 /**
  *	All messages from external clients get passed through an instance of this
@@ -26,111 +24,105 @@ class RateLimitConfig;
  */
 class RateLimitMessageFilter : public Mercury::MessageFilter
 {
-public:
-	typedef RateLimitConfig Config;
+  public:
+    typedef RateLimitConfig Config;
 
-public:
+  public:
+    RateLimitMessageFilter(const Mercury::Address& addr);
 
-	RateLimitMessageFilter( const Mercury::Address & addr );
+    ~RateLimitMessageFilter();
 
-	~RateLimitMessageFilter();
+  public: // from Mercury::MessageFilter
+    void filterMessage(const Mercury::Address&         srcAddr,
+                       Mercury::UnpackedMessageHeader& header,
+                       BinaryIStream&                  data,
+                       Mercury::InputMessageHandler*   pHandler);
 
-public: // from Mercury::MessageFilter
-	void filterMessage( const Mercury::Address & srcAddr,
-		Mercury::UnpackedMessageHeader & header,
-		BinaryIStream & data,
-		Mercury::InputMessageHandler * pHandler );
+  public:
+    void tick();
 
-public:
+    void setProxy(ProxyPtr pProxy);
 
-	void tick();
+  private:
+    void replayAny();
 
-	void setProxy( ProxyPtr pProxy );
+    bool canSendNow(uint dataLen);
 
-private:
+    /**
+     *	Return the BufferedMessage at the front of the buffered message queue,
+     *	or NULL if the queue is empty.
+     */
+    BufferedMessage* front() { return queue_.empty() ? NULL : queue_.front(); }
 
-	void replayAny();
+    void pop_front();
 
-	bool canSendNow( uint dataLen );
+    void dispatch(Mercury::UnpackedMessageHeader& header,
+                  BinaryIStream&                  data,
+                  Mercury::InputMessageHandler*   pHandler);
 
+    void dispatch(BufferedMessage* pMessage);
 
-	/**
-	 *	Return the BufferedMessage at the front of the buffered message queue,
-	 *	or NULL if the queue is empty.
-	 */
-	BufferedMessage * front()
-	{ return queue_.empty() ? NULL : queue_.front(); }
+    bool buffer(BufferedMessage* pMsg);
 
+    void clear();
 
-	void pop_front();
+  private:
+    // Warn bit flag consts
+    /**
+     *	Warn bit flat constant for when the number of received messages exceeds
+     *	the warning limit.
+     */
+    static const uint8 WARN_MESSAGE_COUNT = 0x01;
+    /**
+     *	Warn bit flat constant for when the size of received messages exceeds
+     *	the warning limit.
+     */
+    static const uint8 WARN_MESSAGE_SIZE = 0x02;
+    /**
+     *	Warn bit flat constant for when the number of buffered messages exceeds
+     *	the warning limit.
+     */
+    static const uint8 WARN_MESSAGE_BUFFERED = 0x04;
+    /**
+     *	Warn bit flat constant for when the size of buffered messages exceeds
+     *	the warning limit.
+     */
+    static const uint8 WARN_BYTES_BUFFERED = 0x08;
 
-	void dispatch( Mercury::UnpackedMessageHeader & header,
-		BinaryIStream & data, Mercury::InputMessageHandler * pHandler );
+    /**
+     *	Message queue data type.
+     */
+    typedef std::queue<BufferedMessage*> MsgQueue;
 
-	void dispatch( BufferedMessage * pMessage );
+    // The callback object.
+    ProxyPtr pProxy_;
 
-	bool buffer( BufferedMessage * pMsg );
+    // This is a bitflag indicating whether we have warned about a particular
+    // condition or not, see FilterForAddress::WARN_* constants.
+    uint8 warnFlags_;
 
-	void clear();
+    // The number of received messages coming into the filter since we were
+    // last ticked.
+    uint numReceivedSinceLastTick_;
 
-private:
-	// Warn bit flag consts
-	/**
-	 *	Warn bit flat constant for when the number of received messages exceeds
-	 *	the warning limit.
-	 */
-	static const uint8 WARN_MESSAGE_COUNT 		= 0x01;
-	/**
-	 *	Warn bit flat constant for when the size of received messages exceeds
-	 *	the warning limit.
-	 */
-	static const uint8 WARN_MESSAGE_SIZE 		= 0x02;
-	/**
-	 *	Warn bit flat constant for when the number of buffered messages exceeds
-	 *	the warning limit.
-	 */
-	static const uint8 WARN_MESSAGE_BUFFERED 	= 0x04;
-	/**
-	 *	Warn bit flat constant for when the size of buffered messages exceeds
-	 *	the warning limit.
-	 */
-	static const uint8 WARN_BYTES_BUFFERED 		= 0x08;
+    // The total size of received messages coming into the filter since we were
+    // last ticked.
+    uint receivedBytesSinceLastTick_;
 
-	/**
-	 *	Message queue data type.
-	 */
-	typedef std::queue< BufferedMessage * > MsgQueue;
+    // The number of dispatches since we were last ticked.
+    uint numDispatchedSinceLastTick_;
 
-	// The callback object.
-	ProxyPtr 			pProxy_;
+    // The total size of the dispatched messages since we were last ticked.
+    uint dispatchedBytesSinceLastTick_;
 
-	// This is a bitflag indicating whether we have warned about a particular
-	// condition or not, see FilterForAddress::WARN_* constants.
-	uint8				warnFlags_;
+    // The buffer message queue.
+    MsgQueue queue_;
 
-	// The number of received messages coming into the filter since we were
-	// last ticked.
-	uint 				numReceivedSinceLastTick_;
-
-	// The total size of received messages coming into the filter since we were
-	// last ticked.
-	uint 				receivedBytesSinceLastTick_;
-
-	// The number of dispatches since we were last ticked.
-	uint 				numDispatchedSinceLastTick_;
-
-	// The total size of the dispatched messages since we were last ticked.
-	uint 				dispatchedBytesSinceLastTick_;
-
-	// The buffer message queue.
-	MsgQueue			queue_;
-
-	// This is always the sum of all the messages in queue_.
-	uint				sumBufferedSizes_;
-
+    // This is always the sum of all the messages in queue_.
+    uint sumBufferedSizes_;
 };
 
-typedef SmartPointer< RateLimitMessageFilter > RateLimitMessageFilterPtr;
+typedef SmartPointer<RateLimitMessageFilter> RateLimitMessageFilterPtr;
 
 BW_END_NAMESPACE
 

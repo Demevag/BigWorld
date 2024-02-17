@@ -5,14 +5,12 @@
 
 #include <iostream>
 
-
 BW_BEGIN_NAMESPACE
 
 class RenderContext;
 
-namespace Moo
-{
-    std::ostream &printRenderContextState(std::ostream &out, RenderContext &rc);
+namespace Moo {
+    std::ostream& printRenderContextState(std::ostream& out, RenderContext& rc);
 } // namespace Moo
 
 BW_END_NAMESPACE

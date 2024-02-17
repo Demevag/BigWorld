@@ -7,8 +7,8 @@
 
 BW_BEGIN_NAMESPACE
 
-class   MetaNode;
-class   MetaParticleSystem;
+class MetaNode;
+class MetaParticleSystem;
 typedef SmartPointer<MetaParticleSystem> MetaParticleSystemPtr;
 
 //
@@ -16,18 +16,18 @@ typedef SmartPointer<MetaParticleSystem> MetaParticleSystemPtr;
 //
 class PSTree : public TreeControl
 {
-public:
+  public:
     //
     // Constructor.
     //
-    PSTree();    
+    PSTree();
 
     //
     // Load at the given directory root.
     //
     // @param dir           The directory to load from.
     //
-    bool Load(BW::string const &dir);
+    bool Load(BW::string const& dir);
 
     //
     // Get the selected MetaParticleSystem.
@@ -54,38 +54,40 @@ public:
 
     //
     // Select a meta particle system.
-    // 
+    //
     // @param name          The name of the system to select.
     // @returns             True if the system was selected, false otherwise.
     //
-    bool SelectMetaParticleSystem(BW::string const &name);
+    bool SelectMetaParticleSystem(BW::string const& name);
 
-	//
-	// Sets all the checkboxes for the meta particle system
-	//
-	// @param metaNode		The MetaNode of the meta particle system to update the checkboxes.
-	//
-	void updateCheckBoxes( MetaNode *metaNode );
+    //
+    // Sets all the checkboxes for the meta particle system
+    //
+    // @param metaNode		The MetaNode of the meta particle system to update
+    // the checkboxes.
+    //
+    void updateCheckBoxes(MetaNode* metaNode);
 
-	// Sets the enabled state for the meta particle system from the checkboxes
-	//
-	// @param metaNode		The MetaNode of the meta particle system to update the enabled state.
-	//
-	void updateEnabledState( MetaNode *metaNode );
+    // Sets the enabled state for the meta particle system from the checkboxes
+    //
+    // @param metaNode		The MetaNode of the meta particle system to update
+    // the enabled state.
+    //
+    void updateEnabledState(MetaNode* metaNode);
 
     //
     // Set the display filter.
     //
-    void SetFilter(BW::string const &filter);
+    void SetFilter(BW::string const& filter);
 
     //
     // Get the particle system directory.
     //
     // @returns             The directory containing the meta-particle systems.
     //
-    BW::string const &GetDirectory() const;
+    BW::string const& GetDirectory() const;
 
-protected:
+  protected:
     //
     // Called upon item expansion.  This helper deals with virtual nodes.
     //
@@ -119,8 +121,8 @@ protected:
 
     DECLARE_MESSAGE_MAP()
 
-private:
-    BW::string             m_dir;
+  private:
+    BW::string m_dir;
 };
 
 BW_END_NAMESPACE

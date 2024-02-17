@@ -12,7 +12,7 @@
 
 BW_BEGIN_NAMESPACE
 
-typedef BW::map< SpaceID, ClientSpacePtr > ClientSpaceMap;
+typedef BW::map<SpaceID, ClientSpacePtr> ClientSpaceMap;
 
 /**
  *	This class is an implementation of BWSpaceDataStorage to wrap the
@@ -20,14 +20,14 @@ typedef BW::map< SpaceID, ClientSpacePtr > ClientSpaceMap;
  */
 class SpaceDataStorage : public BWSpaceDataStorage
 {
-private:
-	// BWSpaceDataStorage implementation
-	bool addMapping( SpaceID spaceID );
-	void clearMapping( SpaceID spaceID );
-	SpaceDataMapping * getMapping( SpaceID spaceID ) const;
-	void clearAllMappings();
+  private:
+    // BWSpaceDataStorage implementation
+    bool              addMapping(SpaceID spaceID);
+    void              clearMapping(SpaceID spaceID);
+    SpaceDataMapping* getMapping(SpaceID spaceID) const;
+    void              clearAllMappings();
 
-	ClientSpaceMap knownSpaces_;
+    ClientSpaceMap knownSpaces_;
 };
 
 BW_END_NAMESPACE

@@ -7,12 +7,9 @@
 
 BWENTITY_BEGIN_NAMESPACE
 
-void BWENTITY_API destroyObject( EntityDescriptionMap * ptr )
+void BWENTITY_API destroyObject(EntityDescriptionMap* ptr)
 {
-	EntityDescriptionMapFactory::destroy( ptr );
+    EntityDescriptionMapFactory::destroy(ptr);
 }
 
 BWENTITY_END_NAMESPACE
-
-
-

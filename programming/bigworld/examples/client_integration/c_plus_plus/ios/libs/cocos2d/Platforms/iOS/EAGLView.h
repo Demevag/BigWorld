@@ -61,8 +61,8 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 
 */
 
-// Only compile this code on iOS. These files should NOT be included on your Mac project.
-// But in case they are included, it won't be compiled.
+// Only compile this code on iOS. These files should NOT be included on your Mac
+// project. But in case they are included, it won't be compiled.
 #import <Availability.h>
 #ifdef __IPHONE_OS_VERSION_MAX_ALLOWED
 
@@ -74,82 +74,103 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 
 #import "ESRenderer.h"
 
-//CLASSES:
+// CLASSES:
 
 @class EAGLView;
 @class EAGLSharegroup;
 
-//PROTOCOLS:
+// PROTOCOLS:
 
-@protocol EAGLTouchDelegate <NSObject>
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
+@protocol EAGLTouchDelegate<NSObject>
+- (void)touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event;
+- (void)touchesEnded:(NSSet*)touches withEvent:(UIEvent*)event;
+- (void)touchesMoved:(NSSet*)touches withEvent:(UIEvent*)event;
+- (void)touchesCancelled:(NSSet*)touches withEvent:(UIEvent*)event;
 @end
 
-//CLASS INTERFACE:
+// CLASS INTERFACE:
 
 /** EAGLView Class.
- * This class wraps the CAEAGLLayer from CoreAnimation into a convenient UIView subclass.
- * The view content is basically an EAGL surface you render your OpenGL scene into.
- * Note that setting the view non-opaque will only work if the EAGL surface has an alpha channel.
+ * This class wraps the CAEAGLLayer from CoreAnimation into a convenient UIView
+ * subclass. The view content is basically an EAGL surface you render your
+ * OpenGL scene into. Note that setting the view non-opaque will only work if
+ * the EAGL surface has an alpha channel.
  */
-@interface EAGLView : UIView
-{
-    id<ESRenderer>			renderer_;	
-	EAGLContext				*context_; // weak ref
+@interface EAGLView : UIView {
+    id<ESRenderer> renderer_;
+    EAGLContext*   context_; // weak ref
 
-	NSString				*pixelformat_;
-	GLuint					depthFormat_;
-	BOOL					preserveBackbuffer_;
+    NSString* pixelformat_;
+    GLuint    depthFormat_;
+    BOOL      preserveBackbuffer_;
 
-	CGSize					size_;
-	BOOL					discardFramebufferSupported_;
-	id<EAGLTouchDelegate>   touchDelegate_;
+    CGSize                size_;
+    BOOL                  discardFramebufferSupported_;
+    id<EAGLTouchDelegate> touchDelegate_;
 
-	//fsaa addition
-	BOOL					multisampling_;
-	unsigned int			requestedSamples_;
+    // fsaa addition
+    BOOL         multisampling_;
+    unsigned int requestedSamples_;
 }
 
-/** creates an initializes an EAGLView with a frame and 0-bit depth buffer, and a RGB565 color buffer. */
-+ (id) viewWithFrame:(CGRect)frame;
-/** creates an initializes an EAGLView with a frame, a color buffer format, and 0-bit depth buffer. */
-+ (id) viewWithFrame:(CGRect)frame pixelFormat:(NSString*)format;
-/** creates an initializes an EAGLView with a frame, a color buffer format, and a depth buffer. */
-+ (id) viewWithFrame:(CGRect)frame pixelFormat:(NSString*)format depthFormat:(GLuint)depth;
-/** creates an initializes an EAGLView with a frame, a color buffer format, a depth buffer format, a sharegroup, and multisamping */
-+ (id) viewWithFrame:(CGRect)frame pixelFormat:(NSString*)format depthFormat:(GLuint)depth preserveBackbuffer:(BOOL)retained sharegroup:(EAGLSharegroup*)sharegroup multiSampling:(BOOL)multisampling numberOfSamples:(unsigned int)samples;
+/** creates an initializes an EAGLView with a frame and 0-bit depth buffer, and
+ * a RGB565 color buffer. */
++ (id)viewWithFrame:(CGRect)frame;
+/** creates an initializes an EAGLView with a frame, a color buffer format, and
+ * 0-bit depth buffer. */
++ (id)viewWithFrame:(CGRect)frame pixelFormat:(NSString*)format;
+/** creates an initializes an EAGLView with a frame, a color buffer format, and
+ * a depth buffer. */
++ (id)viewWithFrame:(CGRect)frame
+        pixelFormat:(NSString*)format
+        depthFormat:(GLuint)depth;
+/** creates an initializes an EAGLView with a frame, a color buffer format, a
+ * depth buffer format, a sharegroup, and multisamping */
++ (id)viewWithFrame:(CGRect)frame
+         pixelFormat:(NSString*)format
+         depthFormat:(GLuint)depth
+  preserveBackbuffer:(BOOL)retained
+          sharegroup:(EAGLSharegroup*)sharegroup
+       multiSampling:(BOOL)multisampling
+     numberOfSamples:(unsigned int)samples;
 
-/** Initializes an EAGLView with a frame and 0-bit depth buffer, and a RGB565 color buffer */
-- (id) initWithFrame:(CGRect)frame; //These also set the current context
-/** Initializes an EAGLView with a frame, a color buffer format, and 0-bit depth buffer */
-- (id) initWithFrame:(CGRect)frame pixelFormat:(NSString*)format;
-/** Initializes an EAGLView with a frame, a color buffer format, a depth buffer format, a sharegroup and multisampling support */
-- (id) initWithFrame:(CGRect)frame pixelFormat:(NSString*)format depthFormat:(GLuint)depth preserveBackbuffer:(BOOL)retained sharegroup:(EAGLSharegroup*)sharegroup multiSampling:(BOOL)sampling numberOfSamples:(unsigned int)nSamples;
+/** Initializes an EAGLView with a frame and 0-bit depth buffer, and a RGB565
+ * color buffer */
+- (id)initWithFrame:(CGRect)frame; // These also set the current context
+/** Initializes an EAGLView with a frame, a color buffer format, and 0-bit depth
+ * buffer */
+- (id)initWithFrame:(CGRect)frame pixelFormat:(NSString*)format;
+/** Initializes an EAGLView with a frame, a color buffer format, a depth buffer
+ * format, a sharegroup and multisampling support */
+- (id)initWithFrame:(CGRect)frame
+         pixelFormat:(NSString*)format
+         depthFormat:(GLuint)depth
+  preserveBackbuffer:(BOOL)retained
+          sharegroup:(EAGLSharegroup*)sharegroup
+       multiSampling:(BOOL)sampling
+     numberOfSamples:(unsigned int)nSamples;
 
 /** pixel format: it could be RGBA8 (32-bit) or RGB565 (16-bit) */
-@property(nonatomic,readonly) NSString* pixelFormat;
+@property (nonatomic, readonly) NSString* pixelFormat;
 /** depth format of the render buffer: 0, 16 or 24 bits*/
-@property(nonatomic,readonly) GLuint depthFormat;
+@property (nonatomic, readonly) GLuint depthFormat;
 
 /** returns surface size in pixels */
-@property(nonatomic,readonly) CGSize surfaceSize;
+@property (nonatomic, readonly) CGSize surfaceSize;
 
 /** OpenGL context */
-@property(nonatomic,readonly) EAGLContext *context;
+@property (nonatomic, readonly) EAGLContext* context;
 
-@property(nonatomic,readwrite) BOOL multiSampling;
+@property (nonatomic, readwrite) BOOL multiSampling;
 
 /** touch delegate */
-@property(nonatomic,readwrite,assign) id<EAGLTouchDelegate> touchDelegate;
+@property (nonatomic, readwrite, assign) id<EAGLTouchDelegate> touchDelegate;
 
 /** EAGLView uses double-buffer. This method swaps the buffers */
--(void) swapBuffers;
+- (void)swapBuffers;
 
-- (CGPoint) convertPointFromViewToSurface:(CGPoint)point;
-- (CGRect) convertRectFromViewToSurface:(CGRect)rect;
+- (CGPoint)convertPointFromViewToSurface:(CGPoint)point;
+- (CGRect)convertRectFromViewToSurface:(CGRect)rect;
 @end
 
 #endif // __IPHONE_OS_VERSION_MAX_ALLOWED

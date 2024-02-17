@@ -15,15 +15,14 @@ BW_BEGIN_NAMESPACE
  */
 class Pickler
 {
-public:
-	static BW::string 		pickle( ScriptObject pObj );
-	static ScriptObject 	unpickle( const BW::string & str );
+  public:
+    static BW::string   pickle(ScriptObject pObj);
+    static ScriptObject unpickle(const BW::string& str);
 
-	static bool			init();
-	static void			finalise();
+    static bool init();
+    static void finalise();
 };
 
 BW_END_NAMESPACE
 
 #endif
-

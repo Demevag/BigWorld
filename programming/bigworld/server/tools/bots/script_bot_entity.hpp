@@ -15,37 +15,37 @@ BW_BEGIN_NAMESPACE
 class ClientApp;
 class PyEntity;
 
-typedef ScriptObjectPtr< PyEntity > PyEntityPtr;
+typedef ScriptObjectPtr<PyEntity> PyEntityPtr;
 
 class ScriptBotEntity : public Entity
 {
-public:
-	ScriptBotEntity( const ClientApp & clientApp, const EntityType & type );
-	~ScriptBotEntity();
+  public:
+    ScriptBotEntity(const ClientApp& clientApp, const EntityType& type);
+    ~ScriptBotEntity();
 
-	  /* Entity overrides */
-	  ScriptObject pPyEntity() const;
+    /* Entity overrides */
+    ScriptObject pPyEntity() const;
 
-private:
-	/* BWEntity overrides */
-	// Method and property events
-	void onMethod( int methodID, BinaryIStream & data );
-	void onProperty( int propertyID, BinaryIStream & data,
-		bool isInitialising );
-	void onNestedProperty( BinaryIStream & data, bool isSlice,
-		bool isInitialising );
+  private:
+    /* BWEntity overrides */
+    // Method and property events
+    void onMethod(int methodID, BinaryIStream& data);
+    void onProperty(int propertyID, BinaryIStream& data, bool isInitialising);
+    void onNestedProperty(BinaryIStream& data,
+                          bool           isSlice,
+                          bool           isInitialising);
 
-	// Lifecycle events
-	bool initCellEntityFromStream( BinaryIStream & data );
-	bool initBasePlayerFromStream( BinaryIStream & data );
-	bool initCellPlayerFromStream( BinaryIStream & data );
-	bool restorePlayerFromStream( BinaryIStream & data );
-	void onBecomePlayer();
-	void onBecomeNonPlayer();
-	void onDestroyed();
+    // Lifecycle events
+    bool initCellEntityFromStream(BinaryIStream& data);
+    bool initBasePlayerFromStream(BinaryIStream& data);
+    bool initCellPlayerFromStream(BinaryIStream& data);
+    bool restorePlayerFromStream(BinaryIStream& data);
+    void onBecomePlayer();
+    void onBecomeNonPlayer();
+    void onDestroyed();
 
-	/* Entity data */
-	PyEntityPtr pPyEntity_;
+    /* Entity data */
+    PyEntityPtr pPyEntity_;
 };
 
 BW_END_NAMESPACE

@@ -7,51 +7,54 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
+namespace Mercury {
 
-class UDPChannel;
-class EventDispatcher;
+    class UDPChannel;
+    class EventDispatcher;
 
-/**
- *	This class is used to store monitored channels.  It provides base
- *	functionality used by IrregularChannels and KeepAliveChannels.
- */
-class MonitoredChannels : public TimerHandler
-{
-public:
-	typedef BW::list< UDPChannel * > Channels;
-	typedef Channels::iterator iterator;
+    /**
+     *	This class is used to store monitored channels.  It provides base
+     *	functionality used by IrregularChannels and KeepAliveChannels.
+     */
+    class MonitoredChannels : public TimerHandler
+    {
+      public:
+        typedef BW::list<UDPChannel*> Channels;
+        typedef Channels::iterator    iterator;
 
-	MonitoredChannels() : period_( 0.f ), timerHandle_() {}
-	virtual ~MonitoredChannels();
+        MonitoredChannels()
+          : period_(0.f)
+          , timerHandle_()
+        {
+        }
+        virtual ~MonitoredChannels();
 
-	void addIfNecessary( UDPChannel & channel );
-	void delIfNecessary( UDPChannel & channel );
-	void setPeriod( float seconds, EventDispatcher & dispatcher );
+        void addIfNecessary(UDPChannel& channel);
+        void delIfNecessary(UDPChannel& channel);
+        void setPeriod(float seconds, EventDispatcher& dispatcher);
 
-	void stopMonitoring( EventDispatcher & dispatcher );
+        void stopMonitoring(EventDispatcher& dispatcher);
 
-	iterator end()	{ return channels_.end(); }
+        iterator end() { return channels_.end(); }
 
-protected:
-	/**
-	 *  This method must return a reference to the Channel's iterator that
-	 *  stores its location in this collection.
-	 */
-	virtual iterator & channelIter( UDPChannel & channel ) const = 0;
+      protected:
+        /**
+         *  This method must return a reference to the Channel's iterator that
+         *  stores its location in this collection.
+         */
+        virtual iterator& channelIter(UDPChannel& channel) const = 0;
 
-	/**
-	 *  This method must return the default check period for this collection,
-	 *  and will be used in the first call to addIfNecessary if no period has
-	 *  been set previously.
-	 */
-	virtual float defaultPeriod() const = 0;
+        /**
+         *  This method must return the default check period for this
+         * collection, and will be used in the first call to addIfNecessary if
+         * no period has been set previously.
+         */
+        virtual float defaultPeriod() const = 0;
 
-	Channels channels_;
-	float period_;
-	TimerHandle timerHandle_;
-};
+        Channels    channels_;
+        float       period_;
+        TimerHandle timerHandle_;
+    };
 
 } // namespace Mercury
 

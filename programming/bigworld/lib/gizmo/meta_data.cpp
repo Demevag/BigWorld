@@ -5,137 +5,119 @@
 #include "resmgr/xml_section.hpp"
 #include "resmgr/bwresource.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 BW_SINGLETON_STORAGE(MetaData::Environment)
 
-namespace MetaData
-{
+namespace MetaData {
 
-PropertyType::PropertyType( const BW::string& name ) : name_( name )
-{
-	BW_GUARD;
+    PropertyType::PropertyType(const BW::string& name)
+      : name_(name)
+    {
+        BW_GUARD;
 
-	registerType();
-}
+        registerType();
+    }
 
+    PropertyType::TypeMap& PropertyType::typeMap()
+    {
+        static TypeMap s_typeMap;
+        return s_typeMap;
+    }
 
-PropertyType::TypeMap& PropertyType::typeMap()
-{
-	static TypeMap s_typeMap;
-	return s_typeMap;
-}
+    void PropertyType::registerType()
+    {
+        BW_GUARD;
 
+        typeMap()[name_] = this;
+    }
 
-void PropertyType::registerType()
-{
-	BW_GUARD;
+    const PropertyType* PropertyType::get(const BW::string& name)
+    {
+        BW_GUARD;
 
-	typeMap()[ name_ ] = this;
-}
+        TypeMap::iterator iter = typeMap().find(name);
+        if (iter != typeMap().end())
+            return iter->second;
+        return NULL;
+    }
 
+    Desc::Desc(const BW::string& configFile)
+    {
+        BW_GUARD;
 
-const PropertyType* PropertyType::get( const BW::string& name )
-{
-	BW_GUARD;
+        load(BWResource::openSection(configFile));
+    }
 
-	TypeMap::iterator iter = typeMap().find( name );
-	if (iter != typeMap().end())
-		return iter->second;
-	return NULL;
-}
+    bool Desc::load(DataSectionPtr ds)
+    {
+        BW_GUARD;
 
+        propDescs_.clear();
+        addDefaultDesc();
+        return internalLoad(ds);
+    }
 
-Desc::Desc( const BW::string& configFile )
-{
-	BW_GUARD;
+    bool Desc::load(DataSectionPtr ds, MetaData& metaData) const
+    {
+        BW_GUARD;
 
-	load( BWResource::openSection( configFile ) );
-}
+        metaData.clearProperties();
 
+        for (PropDescs::const_iterator iter = propDescs_.begin();
+             iter != propDescs_.end();
+             ++iter) {
+            metaData.addProperty(iter->second->create(metaData, ds));
+        }
 
-bool Desc::load( DataSectionPtr ds )
-{
-	BW_GUARD;
+        return true;
+    }
 
-	propDescs_.clear();
-	addDefaultDesc();
-	return internalLoad( ds );
-}
+    void Desc::addPropDesc(PropertyDescPtr propDesc)
+    {
+        BW_GUARD;
 
+        propDescs_[propDesc->name()] = propDesc;
+    }
 
-bool Desc::load( DataSectionPtr ds, MetaData& metaData ) const
-{
-	BW_GUARD;
+    bool Desc::internalLoad(DataSectionPtr ds)
+    {
+        BW_GUARD;
 
-	metaData.clearProperties();
+        if (ds) {
+            for (int i = 0; i < ds->countChildren(); ++i) {
+                DataSectionPtr      propDesc = ds->openChild(i);
+                const PropertyType* type =
+                  PropertyType::get(propDesc->readString("type"));
 
-	for (PropDescs::const_iterator iter = propDescs_.begin();
-		iter != propDescs_.end(); ++iter)
-	{
-		metaData.addProperty( iter->second->create( metaData, ds ) );
-	}
+                if (type) {
+                    BW::string     name = propDesc->sectionName();
+                    BW::string     description;
+                    DataSectionPtr desc = propDesc->openSection("description");
 
-	return true;
-}
+                    if (desc) {
+                        description = desc->asString();
+                    } else {
+                        description = name;
+                    }
 
+                    addPropDesc(
+                      new PropertyDesc(name, description, type, propDesc));
+                } else {
+                    ERROR_MSG("Desc::internalLoad failed to load property %s",
+                              propDesc->sectionName().c_str());
+                }
+            }
+        }
+        return true;
+    }
 
-void Desc::addPropDesc( PropertyDescPtr propDesc )
-{
-	BW_GUARD;
+    void Desc::addDefaultDesc()
+    {
+        BW_GUARD;
 
-	propDescs_[ propDesc->name() ] = propDesc;
-}
-
-
-bool Desc::internalLoad( DataSectionPtr ds )
-{
-	BW_GUARD;
-
-	if (ds)
-	{
-		for (int i = 0; i < ds->countChildren(); ++i)
-		{
-			DataSectionPtr propDesc = ds->openChild( i );
-			const PropertyType* type =
-				PropertyType::get( propDesc->readString( "type" ) );
-
-			if (type)
-			{
-				BW::string name = propDesc->sectionName();
-				BW::string description;
-				DataSectionPtr desc = propDesc->openSection( "description" );
-
-				if (desc)
-				{
-					description = desc->asString();
-				}
-				else
-				{
-					description = name;
-				}
-
-				addPropDesc( new PropertyDesc(
-					name, description, type, propDesc ) );
-			}
-			else
-			{
-				ERROR_MSG( "Desc::internalLoad failed to load property %s",
-					propDesc->sectionName().c_str() );
-			}
-		}
-	}
-	return true;
-}
-
-
-void Desc::addDefaultDesc()
-{
-	BW_GUARD;
-
-	BW::string defaultDesc =
-		"<root>															\
+        BW::string defaultDesc =
+          "<root>															\
 			<description>												\
 				<type>	STRING	</type>									\
 			</description>												\
@@ -161,227 +143,201 @@ void Desc::addDefaultDesc()
 				<readonly>	true	</readonly>							\
 			</" METADATA_MODIFIED_BY ">									\
 		</root>";
-	BW::istringstream iss( defaultDesc ) ;
+        BW::istringstream iss(defaultDesc);
 
-	internalLoad( XMLSection::createFromStream( "", iss ) );
-}
+        internalLoad(XMLSection::createFromStream("", iss));
+    }
 
+    MetaData::MetaData(const MetaData& that)
+    {
+        BW_GUARD;
 
-MetaData::MetaData( const MetaData& that )
-{
-	BW_GUARD;
+        *this = that;
+    }
 
-	*this = that;
-}
+    MetaData& MetaData::operator=(const MetaData& that)
+    {
+        BW_GUARD;
 
-MetaData& MetaData::operator =( const MetaData& that )
-{
-	BW_GUARD;
+        bool same = true;
 
-	bool same = true;
+        if (properties_.size() != that.properties_.size()) {
+            same = false;
+        } else {
+            Properties::iterator       iter = properties_.begin();
+            Properties::const_iterator jter = that.properties_.begin();
 
-	if (properties_.size() != that.properties_.size())
-	{
-		same = false;
-	}
-	else
-	{
-		Properties::iterator iter = properties_.begin();
-		Properties::const_iterator jter = that.properties_.begin();
+            for (; iter != properties_.end(); ++iter, ++jter) {
+                if (&(*iter)->desc() != &(*jter)->desc()) {
+                    same = false;
+                    break;
+                }
+            }
+        }
 
-		for (;iter != properties_.end(); ++iter, ++jter)
-		{
-			if (&(*iter)->desc() != &(*jter)->desc())
-			{
-				same = false;
-				break;
-			}
-		}
-	}
+        if (same) {
+            Properties::iterator       iter = properties_.begin();
+            Properties::const_iterator jter = that.properties_.begin();
 
-	if (same)
-	{
-		Properties::iterator iter = properties_.begin();
-		Properties::const_iterator jter = that.properties_.begin();
+            for (; iter != properties_.end(); ++iter, ++jter) {
+                DataSectionPtr temp = new XMLSection("temp");
 
-		for (;iter != properties_.end(); ++iter, ++jter)
-		{
-			DataSectionPtr temp = new XMLSection( "temp" );
+                (*jter)->save(temp);
+                (*iter)->load(temp);
+            }
+        } else {
+            properties_.clear();
 
-			(*jter)->save( temp );
-			(*iter)->load( temp );
-		}
-	}
-	else
-	{
-		properties_.clear();
+            Properties::const_iterator jter = that.properties_.begin();
 
-		Properties::const_iterator jter = that.properties_.begin();
+            for (; jter != that.properties_.end(); ++jter) {
+                properties_.push_back((*jter)->clone());
+                properties_.back()->metaData(*this);
+            }
+        }
 
-		for (;jter != that.properties_.end(); ++jter)
-		{
-			properties_.push_back( (*jter)->clone() );
-			properties_.back()->metaData( *this );
-		}
-	}
+        owner_ = that.owner_;
 
-	owner_ = that.owner_;
+        return *this;
+    }
 
-	return *this;
-}
+    bool MetaData::load(DataSectionPtr ds, const Desc& desc)
+    {
+        BW_GUARD;
 
-bool MetaData::load( DataSectionPtr ds, const Desc& desc )
-{
-	BW_GUARD;
+        ds = ds ? ds->openSection(METADATA_SECTION_NAME, false) : ds;
 
-	ds = ds ? ds->openSection( METADATA_SECTION_NAME, false ) : ds;
+        return desc.load(ds, *this);
+    }
 
-	return desc.load( ds, *this );
-}
+    bool MetaData::save(DataSectionPtr ds) const
+    {
+        BW_GUARD;
 
+        ds = ds->openSection(METADATA_SECTION_NAME, true);
 
-bool MetaData::save( DataSectionPtr ds ) const
-{
-	BW_GUARD;
+        for (Properties::const_iterator iter = properties_.begin();
+             iter != properties_.end();
+             ++iter) {
+            (*iter)->save(ds);
+        }
 
-	ds = ds->openSection( METADATA_SECTION_NAME, true );
+        return true;
+    }
 
-	for (Properties::const_iterator iter = properties_.begin();
-		iter != properties_.end(); ++iter)
-	{
-		(*iter)->save( ds );
-	}
+    void MetaData::edit(GeneralEditor& editor, const Name& group, bool readOnly)
+    {
+        BW_GUARD;
 
-	return true;
-}
+        for (Properties::iterator iter = properties_.begin();
+             iter != properties_.end();
+             ++iter) {
+            GeneralProperty* prop =
+              (*iter)->createProperty(readOnly, editor.useFullDateFormat());
 
+            if (!group.empty()) {
+                prop->setGroup(group.str() + '/' + prop->getGroup().c_str());
+            }
 
-void MetaData::edit( GeneralEditor& editor, const Name& group, bool readOnly )
-{
-	BW_GUARD;
+            editor.addProperty(prop);
+        }
+    }
 
-	for (Properties::iterator iter = properties_.begin();
-		iter != properties_.end(); ++iter)
-	{
-		GeneralProperty* prop = (*iter)->createProperty( readOnly, editor.useFullDateFormat() );
+    void MetaData::clearProperties()
+    {
+        BW_GUARD;
 
-		if (!group.empty())
-		{
-			prop->setGroup( group.str() + '/' + prop->getGroup().c_str() );
-		}
+        properties_.clear();
+    }
 
-		editor.addProperty( prop );
-	}
-}
+    void MetaData::addProperty(PropertyPtr property)
+    {
+        BW_GUARD;
 
+        properties_.push_back(property);
+    }
 
-void MetaData::clearProperties()
-{
-	BW_GUARD;
+    PropertyPtr MetaData::operator[](const BW::string& name)
+    {
+        BW_GUARD;
 
-	properties_.clear();
-}
+        for (Properties::iterator iter = properties_.begin();
+             iter != properties_.end();
+             ++iter) {
+            if ((*iter)->desc().name() == name) {
+                return *iter;
+            }
+        }
 
+        return NULL;
+    }
 
-void MetaData::addProperty( PropertyPtr property )
-{
-	BW_GUARD;
+    Restore::Restore(MetaData& metaData)
+      : metaData_(metaData)
+      , saved_(metaData)
+    {
+    }
 
-	properties_.push_back( property );
-}
+    void Restore::restore()
+    {
+        BW_GUARD;
 
+        GeneralEditor::Editors::const_iterator iter =
+          GeneralEditor::currentEditors().begin();
+        GeneralEditor::Editors::const_iterator end =
+          GeneralEditor::currentEditors().end();
 
-PropertyPtr MetaData::operator[]( const BW::string& name )
-{
-	BW_GUARD;
+        while (iter != end) {
+            (*iter)->expel();
+            ++iter;
+        }
 
-	for (Properties::iterator iter = properties_.begin();
-		iter != properties_.end(); ++iter)
-	{
-		if ((*iter)->desc().name() == name)
-		{
-			return *iter;
-		}
-	}
+        metaData_ = saved_;
+        Environment::instance().changed(metaData_.owner());
 
-	return NULL;
-}
+        iter = GeneralEditor::currentEditors().begin();
+        end  = GeneralEditor::currentEditors().end();
 
+        GeneralProperty::View::pLastElected(NULL);
 
-Restore::Restore( MetaData& metaData )
-	: metaData_( metaData ), saved_( metaData )
-{
-}
+        while (iter != end) {
+            (*iter)->elect();
+            ++iter;
+        }
 
+        if (GeneralProperty::View::pLastElected()) {
+            GeneralProperty::View::pLastElected()->lastElected();
+        }
+    }
 
-void Restore::restore()
-{
-	BW_GUARD;
+    BW::string Environment::username() const
+    {
+        BW_GUARD;
 
-	GeneralEditor::Editors::const_iterator iter
-		= GeneralEditor::currentEditors().begin();
-	GeneralEditor::Editors::const_iterator end
-		= GeneralEditor::currentEditors().end();
+        static wchar_t username[1024] = { 0 };
 
-	while (iter != end)
-	{
-		(*iter)->expel();
-		++iter;
-	}
+        if (!username[0]) {
+            DWORD size = sizeof(username) / sizeof(username[0]);
 
-	metaData_ = saved_;
-	Environment::instance().changed( metaData_.owner() );
+            GetUserName(username, &size);
+        }
 
-	iter = GeneralEditor::currentEditors().begin();
-	end = GeneralEditor::currentEditors().end();
+        return bw_wtoutf8(username);
+    }
 
-	GeneralProperty::View::pLastElected( NULL );
+    time_t Environment::time() const
+    {
+        BW_GUARD;
 
-	while (iter != end)
-	{
-		(*iter)->elect();
-		++iter;
-	}
+        return ::time(NULL);
+    }
 
-	if (GeneralProperty::View::pLastElected())
-	{
-		GeneralProperty::View::pLastElected()->lastElected();
-	}
-}
-
-
-BW::string Environment::username() const
-{
-	BW_GUARD;
-
-	static wchar_t username[ 1024 ] = { 0 };
-
-	if (!username[0])
-	{
-		DWORD size = sizeof( username ) / sizeof( username[0] );
-
-		GetUserName( username, &size );
-	}
-
-	return bw_wtoutf8( username );
-}
-
-
-time_t Environment::time() const
-{
-	BW_GUARD;
-
-	return ::time( NULL );
-}
-
-}//namespace MetaData
+} // namespace MetaData
 
 extern int metaDataGeneralPropertyTypeToken;
 extern int metaDataDateTimePropertyTypeToken;
 extern int metaDataCommentsPropertyTypeToken;
-static int metaDataToken =
-	metaDataGeneralPropertyTypeToken |
-	metaDataDateTimePropertyTypeToken |
-	metaDataCommentsPropertyTypeToken;
+static int metaDataToken = metaDataGeneralPropertyTypeToken |
+                           metaDataDateTimePropertyTypeToken |
+                           metaDataCommentsPropertyTypeToken;
 BW_END_NAMESPACE
-

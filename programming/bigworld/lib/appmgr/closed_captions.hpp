@@ -18,75 +18,75 @@ class TextGUIComponent;
  *	who cannot hear because they just can't, or they
  *	haven't got a sound card.
  */
-class ClosedCaptions : public Commentary::View, public PyObjectPlus
+class ClosedCaptions
+  : public Commentary::View
+  , public PyObjectPlus
 {
-	Py_Header( ClosedCaptions, PyObjectPlus )
+    Py_Header(ClosedCaptions, PyObjectPlus)
 
-public:
-	ClosedCaptions( int bufferSize = 5, PyTypeObject * pType = &s_type_ );
-	~ClosedCaptions();
+      public
+      : ClosedCaptions(int bufferSize = 5, PyTypeObject* pType = &s_type_);
+    ~ClosedCaptions();
 
-	void onAddMsg( const BW::wstring & msg, int id );
-	void update( float dTime );
+    void onAddMsg(const BW::wstring& msg, int id);
+    void update(float dTime);
 
-	void visible( bool state );
-	bool visible() const;
+    void visible(bool state);
+    bool visible() const;
 
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( bool, visible, visible )
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(bool, visible, visible)
 
-	PY_METHOD_DECLARE( py_update )
+    PY_METHOD_DECLARE(py_update)
 
-	PY_METHOD_DECLARE( py_addAsView )
-	PY_METHOD_DECLARE( py_delAsView )
+    PY_METHOD_DECLARE(py_addAsView)
+    PY_METHOD_DECLARE(py_delAsView)
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-private:
-	ClosedCaptions( const ClosedCaptions& );
-	ClosedCaptions& operator=( const ClosedCaptions& );
+  private:
+    ClosedCaptions(const ClosedCaptions&);
+    ClosedCaptions& operator=(const ClosedCaptions&);
 
-	void parseEventQueue();
-	void addMsg( const BW::wstring & msg, int id );
+    void parseEventQueue();
+    void addMsg(const BW::wstring& msg, int id);
 
-	class Caption
-	{
-	public:
-		Caption() :
-			backing_(),
-			component_(),
-			age_( 0.f )
-		{
-		}
+    class Caption
+    {
+      public:
+        Caption()
+          : backing_()
+          , component_()
+          , age_(0.f)
+        {
+        }
 
-		SimpleGUIComponent * backing_;
-		TextGUIComponent* component_;
-		float			  age_;
-	};
-	typedef BW::vector<Caption>	Captions;
+        SimpleGUIComponent* backing_;
+        TextGUIComponent*   component_;
+        float               age_;
+    };
+    typedef BW::vector<Caption> Captions;
 
-	SimpleGUIComponent * root_;
-	
-	Captions	msgs_;
-	int			head_;
-	CachedFontPtr font_;
-	float		timeout_;
-	float		fadeout_;
-	float		clipHeight_;
-	Vector2		margin_;
+    SimpleGUIComponent* root_;
 
-	struct PendingMessage
-	{
-		PendingMessage( const BW::wstring& msg, int id )
-			:msg_( msg ),
-			 id_( id )
-		{
-		};
+    Captions      msgs_;
+    int           head_;
+    CachedFontPtr font_;
+    float         timeout_;
+    float         fadeout_;
+    float         clipHeight_;
+    Vector2       margin_;
 
-		BW::wstring msg_;
-		int id_;
-	};
-	typedef BW::vector< PendingMessage > PendingMessages;
-	PendingMessages	pendingMessages_;
+    struct PendingMessage
+    {
+        PendingMessage(const BW::wstring& msg, int id)
+          : msg_(msg)
+          , id_(id){};
+
+        BW::wstring msg_;
+        int         id_;
+    };
+    typedef BW::vector<PendingMessage> PendingMessages;
+    PendingMessages                    pendingMessages_;
 };
 
 BW_END_NAMESPACE

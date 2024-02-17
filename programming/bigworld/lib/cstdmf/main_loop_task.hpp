@@ -15,23 +15,25 @@ BW_BEGIN_NAMESPACE
  */
 class MainLoopTask
 {
-public:
-	MainLoopTask() : enableDraw_( true ) {	}
-	virtual ~MainLoopTask() { }
+  public:
+    MainLoopTask()
+      : enableDraw_(true)
+    {
+    }
+    virtual ~MainLoopTask() {}
 
-	virtual bool init() { return true; }
-	virtual void fini()	{ }
+    virtual bool init() { return true; }
+    virtual void fini() {}
 
-	virtual bool tick( float eraseMe ) { return false; }
-	virtual void tick( float dGameTime, float dRenderTime ) { }
-	virtual void updateAnimations( float dGameTime ) const {}
-	virtual void draw() { }
-	virtual bool inactiveTick( float eraseMe ) { return false; }
-	virtual void inactiveTick( float dGameTime, float dRenderTime ) {}
+    virtual bool tick(float eraseMe) { return false; }
+    virtual void tick(float dGameTime, float dRenderTime) {}
+    virtual void updateAnimations(float dGameTime) const {}
+    virtual void draw() {}
+    virtual bool inactiveTick(float eraseMe) { return false; }
+    virtual void inactiveTick(float dGameTime, float dRenderTime) {}
 
-	bool	enableDraw_;
+    bool enableDraw_;
 };
-
 
 /**
  *	This class is a group of tasks with a similar function.
@@ -39,53 +41,56 @@ public:
  */
 class MainLoopTasks : public MainLoopTask
 {
-public:
-	MainLoopTasks();
-	virtual ~MainLoopTasks();
+  public:
+    MainLoopTasks();
+    virtual ~MainLoopTasks();
 
-	virtual bool init();
-	virtual void fini();
+    virtual bool init();
+    virtual void fini();
 
-	virtual bool tick( float eraseMe ) { return false; };
-	virtual void tick( float dGameTime, float dRenderTime );
-	virtual void updateAnimations( float dGameTime ) const;
-	virtual void draw();
+    virtual bool tick(float eraseMe) { return false; };
+    virtual void tick(float dGameTime, float dRenderTime);
+    virtual void updateAnimations(float dGameTime) const;
+    virtual void draw();
 
-	// this gets called rather than tick when the application is minimised
-	virtual bool inactiveTick( float eraseMe ) { return false; };
-	virtual void inactiveTick( float dGameTime, float dRenderTime );
+    // this gets called rather than tick when the application is minimised
+    virtual bool inactiveTick(float eraseMe) { return false; };
+    virtual void inactiveTick(float dGameTime, float dRenderTime);
 
-	// rules are strings like ">TaskA", "<TaskB"
-	CSTDMF_DLL void add( MainLoopTask * pTask, const char * name, ... ); // rules, NULL@end
-	void del( MainLoopTask * pTask, const char * name );
+    // rules are strings like ">TaskA", "<TaskB"
+    CSTDMF_DLL void add(MainLoopTask* pTask,
+                        const char*   name,
+                        ...); // rules, NULL@end
+    void            del(MainLoopTask* pTask, const char* name);
 
-	void outputOrder();
+    void outputOrder();
 
-	MainLoopTask * getMainLoopTask( const char * name );
+    MainLoopTask* getMainLoopTask(const char* name);
 
-	CSTDMF_DLL static MainLoopTasks & root();
+    CSTDMF_DLL static MainLoopTasks& root();
 
-	bool initted()							{ return initted_; }
+    bool initted() { return initted_; }
 
-	static void finiAll();
-private:
-	MainLoopTasks( const MainLoopTasks& );
-	MainLoopTasks& operator=( const MainLoopTasks& );
+    static void finiAll();
 
-	void sort();
+  private:
+    MainLoopTasks(const MainLoopTasks&);
+    MainLoopTasks& operator=(const MainLoopTasks&);
 
-	typedef OrderedStringMap<MainLoopTask*>	TaskMap;
-	typedef BW::vector<int>			OrderList;
-	typedef BW::vector<const char*>	RulesList;
+    void sort();
 
-	TaskMap			tasks_;
-	OrderList		order_;
-	RulesList		rules_;
+    typedef OrderedStringMap<MainLoopTask*> TaskMap;
+    typedef BW::vector<int>                 OrderList;
+    typedef BW::vector<const char*>         RulesList;
 
-	bool			initted_;
-	bool			finished_;
+    TaskMap   tasks_;
+    OrderList order_;
+    RulesList rules_;
 
-	static BW::vector<MainLoopTask*> *s_orphans_;
+    bool initted_;
+    bool finished_;
+
+    static BW::vector<MainLoopTask*>* s_orphans_;
 };
 
 BW_END_NAMESPACE

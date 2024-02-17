@@ -11,7 +11,7 @@
 
 #include "cstdmf/debug.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Billing", 0 )
+DECLARE_DEBUG_COMPONENT2("Billing", 0)
 
 BW_BEGIN_NAMESPACE
 
@@ -27,58 +27,50 @@ class EntityDefs;
 
 class StandardBillingSystemCreator : public BillingSystemCreator
 {
-public:
-	virtual BW::string typeName()
-	{
-		return "standard";
-	}
+  public:
+    virtual BW::string typeName() { return "standard"; }
 
-	virtual BillingSystem * create( const EntityDefs & entityDefs,
-		ServerApp & app ) const;
+    virtual BillingSystem* create(const EntityDefs& entityDefs,
+                                  ServerApp&        app) const;
 };
-
 
 namespace // (anonymous)
 {
-StandardBillingSystemCreator staticInitialiser;
+    StandardBillingSystemCreator staticInitialiser;
 } // end namespace (anonymous)
 
-
-BillingSystem * StandardBillingSystemCreator::create(
-	const EntityDefs & entityDefs, ServerApp & app ) const
+BillingSystem* StandardBillingSystemCreator::create(
+  const EntityDefs& entityDefs,
+  ServerApp&        app) const
 {
-	BillingSystem * pBillingSystem = NULL;
+    BillingSystem* pBillingSystem = NULL;
 
-	ScriptObject func;
+    ScriptObject func;
 
-	if (Personality::instance())
-	{
-		func = Personality::instance().getAttribute( "connectToBillingSystem",
-			ScriptErrorClear() );
-	}
+    if (Personality::instance()) {
+        func = Personality::instance().getAttribute("connectToBillingSystem",
+                                                    ScriptErrorClear());
+    }
 
-	if (func)
-	{
-		ScriptObject billingSystem = func.callFunction( ScriptErrorPrint() );
-		if (!billingSystem)
-		{
-			ERROR_MSG( "StandardBillingSystemCreator::create: "
-					"Failed. See script errors\n" );
-			return NULL;
-		}
+    if (func) {
+        ScriptObject billingSystem = func.callFunction(ScriptErrorPrint());
+        if (!billingSystem) {
+            ERROR_MSG("StandardBillingSystemCreator::create: "
+                      "Failed. See script errors\n");
+            return NULL;
+        }
 
-		if (!billingSystem.isNone())
-		{
-			pBillingSystem = new PyBillingSystem( billingSystem.get(), entityDefs );
-		}
-	}
+        if (!billingSystem.isNone()) {
+            pBillingSystem =
+              new PyBillingSystem(billingSystem.get(), entityDefs);
+        }
+    }
 
-	if (pBillingSystem == NULL)
-	{
-		pBillingSystem = DBApp::instance().getIDatabase().createBillingSystem();
-	}
+    if (pBillingSystem == NULL) {
+        pBillingSystem = DBApp::instance().getIDatabase().createBillingSystem();
+    }
 
-	return pBillingSystem;
+    return pBillingSystem;
 }
 
 BW_END_NAMESPACE

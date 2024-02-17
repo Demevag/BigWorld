@@ -8,91 +8,87 @@
 #include "network/channel_sender.hpp"
 #include "network/bundle.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
  *	Constructor.
  */
 LoginAppCheckStatusReplyHandler::LoginAppCheckStatusReplyHandler(
-		const Mercury::Address & srcAddr,
-		Mercury::ReplyID replyID ) :
-	srcAddr_( srcAddr ),
-	replyID_ ( replyID )
+  const Mercury::Address& srcAddr,
+  Mercury::ReplyID        replyID)
+  : srcAddr_(srcAddr)
+  , replyID_(replyID)
 {
 }
-
 
 /**
  *	This method handles the reply message.
  */
 void LoginAppCheckStatusReplyHandler::handleMessage(
-		const Mercury::Address & /*srcAddr*/,
-		Mercury::UnpackedMessageHeader & /*header*/,
-		BinaryIStream & data, void * /*arg*/ )
+  const Mercury::Address& /*srcAddr*/,
+  Mercury::UnpackedMessageHeader& /*header*/,
+  BinaryIStream& data,
+  void* /*arg*/)
 {
-	Mercury::ChannelSender sender( DBApp::getChannel( srcAddr_ ) );
-	Mercury::Bundle & bundle = sender.bundle();
+    Mercury::ChannelSender sender(DBApp::getChannel(srcAddr_));
+    Mercury::Bundle&       bundle = sender.bundle();
 
-	bundle.startReply( replyID_ );
+    bundle.startReply(replyID_);
 
-	bool isOkay;
-	uint32 numBaseApps;
-	uint32 numCellApps;
-	uint32 numServiceApps;
+    bool   isOkay;
+    uint32 numBaseApps;
+    uint32 numCellApps;
+    uint32 numServiceApps;
 
-	data >> isOkay >> numBaseApps >> numServiceApps >> numCellApps;
+    data >> isOkay >> numBaseApps >> numServiceApps >> numCellApps;
 
-	isOkay &= numBaseApps >= DBAppConfig::desiredBaseApps();
-	isOkay &= numServiceApps >= DBAppConfig::desiredServiceApps();
-	isOkay &= numCellApps >= DBAppConfig::desiredCellApps();
+    isOkay &= numBaseApps >= DBAppConfig::desiredBaseApps();
+    isOkay &= numServiceApps >= DBAppConfig::desiredServiceApps();
+    isOkay &= numCellApps >= DBAppConfig::desiredCellApps();
 
-	bundle << uint8( isOkay );
+    bundle << uint8(isOkay);
 
-	bundle.transfer( data, data.remainingLength() );
+    bundle.transfer(data, data.remainingLength());
 
-	if (numBaseApps < DBAppConfig::desiredBaseApps())
-	{
-		bundle << "Not enough BaseApps";
-	}
+    if (numBaseApps < DBAppConfig::desiredBaseApps()) {
+        bundle << "Not enough BaseApps";
+    }
 
-	if (numServiceApps < DBAppConfig::desiredServiceApps())
-	{
-		bundle << "Not enough ServiceApps";
-	}
+    if (numServiceApps < DBAppConfig::desiredServiceApps()) {
+        bundle << "Not enough ServiceApps";
+    }
 
-	if (numCellApps < DBAppConfig::desiredCellApps())
-	{
-		bundle << "Not enough CellApps";
-	}
+    if (numCellApps < DBAppConfig::desiredCellApps()) {
+        bundle << "Not enough CellApps";
+    }
 
-	delete this;
+    delete this;
 }
-
 
 /**
  *	This method handles a failed request.
  */
 void LoginAppCheckStatusReplyHandler::handleException(
-		const Mercury::NubException & /*ne*/, void * /*arg*/ )
+  const Mercury::NubException& /*ne*/,
+  void* /*arg*/)
 {
-	Mercury::ChannelSender sender( DBApp::getChannel( srcAddr_ ) );
-	Mercury::Bundle & bundle = sender.bundle();
+    Mercury::ChannelSender sender(DBApp::getChannel(srcAddr_));
+    Mercury::Bundle&       bundle = sender.bundle();
 
-	bundle.startReply( replyID_ );
-	bundle << uint8( false );
-	bundle << "No reply from BaseAppMgr";
+    bundle.startReply(replyID_);
+    bundle << uint8(false);
+    bundle << "No reply from BaseAppMgr";
 
-	delete this;
+    delete this;
 }
 
-
 void LoginAppCheckStatusReplyHandler::handleShuttingDown(
-		const Mercury::NubException & /*ne*/, void * /*arg*/ )
+  const Mercury::NubException& /*ne*/,
+  void* /*arg*/)
 {
-	INFO_MSG( "LoginAppCheckStatusReplyHandler::handleShuttingDown: "
-			"Ignoring\n" );
-	delete this;
+    INFO_MSG("LoginAppCheckStatusReplyHandler::handleShuttingDown: "
+             "Ignoring\n");
+    delete this;
 }
 
 BW_END_NAMESPACE

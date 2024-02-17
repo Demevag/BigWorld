@@ -3,85 +3,81 @@
 
 BW_BEGIN_NAMESPACE
 
-CVSInfoDialog::CVSInfoDialog( const BW::wstring& title ) :
-CDialog(CVSInfoDialog::IDD),
-title_( title )
+CVSInfoDialog::CVSInfoDialog(const BW::wstring& title)
+  : CDialog(CVSInfoDialog::IDD)
+  , title_(title)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	Create( IDD_MODELESS_INFO );
-	//CenterWindow();
-	//RedrawWindow();
+    Create(IDD_MODELESS_INFO);
+    // CenterWindow();
+    // RedrawWindow();
 }
 
 CVSInfoDialog::~CVSInfoDialog()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if( IsWindow( m_hWnd ) )
-	{
-		CWnd* okButton = GetDlgItem( IDC_OK );
-		if( okButton )
-			okButton->EnableWindow( TRUE );
+    if (IsWindow(m_hWnd)) {
+        CWnd* okButton = GetDlgItem(IDC_OK);
+        if (okButton)
+            okButton->EnableWindow(TRUE);
 
-		MSG msg;
-		while( GetMessage( &msg, NULL, 0, 0 ) )
-		{
-			TranslateMessage( &msg );
-			DispatchMessage( &msg );
-			if( !IsWindow( m_hWnd ) )
-				break;
-		}
-	}
+        MSG msg;
+        while (GetMessage(&msg, NULL, 0, 0)) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+            if (!IsWindow(m_hWnd))
+                break;
+        }
+    }
 }
 
 void CVSInfoDialog::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
+    CDialog::DoDataExchange(pDX);
 }
 
-BOOL CVSInfoDialog::OnInitDialog() 
+BOOL CVSInfoDialog::OnInitDialog()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	CDialog::OnInitDialog();
-   
-	SetWindowText(title_.c_str());
+    CDialog::OnInitDialog();
 
-	CWnd* okButton = GetDlgItem( IDC_OK );
-	if( okButton )
-		okButton->EnableWindow( FALSE );
+    SetWindowText(title_.c_str());
 
-	CMenu* mnu = this->GetSystemMenu(FALSE);
-	mnu->ModifyMenu(SC_CLOSE,MF_BYCOMMAND | MF_GRAYED );
+    CWnd* okButton = GetDlgItem(IDC_OK);
+    if (okButton)
+        okButton->EnableWindow(FALSE);
 
-	return TRUE;
+    CMenu* mnu = this->GetSystemMenu(FALSE);
+    mnu->ModifyMenu(SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
+
+    return TRUE;
 }
 
-void CVSInfoDialog::add( const BW::wstring& msg )
+void CVSInfoDialog::add(const BW::wstring& msg)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	CRichEditCtrl* infoText = (CRichEditCtrl*)GetDlgItem( IDC_INFO );
+    CRichEditCtrl* infoText = (CRichEditCtrl*)GetDlgItem(IDC_INFO);
 
-	if (infoText)
-	{
-		infoText->SetSel( -1, -1 );
-		infoText->ReplaceSel( msg.c_str() );
-		infoText->Invalidate();
-		infoText->UpdateWindow();
-	}
+    if (infoText) {
+        infoText->SetSel(-1, -1);
+        infoText->ReplaceSel(msg.c_str());
+        infoText->Invalidate();
+        infoText->UpdateWindow();
+    }
 }
 
 BEGIN_MESSAGE_MAP(CVSInfoDialog, CDialog)
-	ON_BN_CLICKED(IDC_OK, &CVSInfoDialog::OnBnClickedOk)
+ON_BN_CLICKED(IDC_OK, &CVSInfoDialog::OnBnClickedOk)
 END_MESSAGE_MAP()
 
 void CVSInfoDialog::OnBnClickedOk()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	DestroyWindow();
+    DestroyWindow();
 }
 BW_END_NAMESPACE
-

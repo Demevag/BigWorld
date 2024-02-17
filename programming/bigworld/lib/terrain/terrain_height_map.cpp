@@ -13,19 +13,19 @@ TerrainHeightMap::Iterator TerrainHeightMap::iterator(int32 x, int32 y)
 /*virtual*/ float TerrainHeightMap::heightAt(float x, float z) const
 {
     BW_GUARD;
-	// TODO: Make more accurate
+    // TODO: Make more accurate
     // This implementation uses bicubic interpolation, so it's not entirely
     // accurate.
-    TerrainHeightMap *myself = const_cast<TerrainHeightMap *>(this);
+    TerrainHeightMap* myself = const_cast<TerrainHeightMap*>(this);
 
 #ifdef EDITOR_ENABLED
-	myself->lock(true);
+    myself->lock(true);
 #endif
 
-	float result = myself->image().getBicubic(x, z);
+    float result = myself->image().getBicubic(x, z);
 
 #ifdef EDITOR_ENABLED
-	myself->unlock();
+    myself->unlock();
 #endif
 
     return result;
@@ -46,4 +46,3 @@ float TerrainHeightMap::slopeAt(float x, float z) const
 BW_END_NAMESPACE
 
 // terrrain_height_map.cpp
-

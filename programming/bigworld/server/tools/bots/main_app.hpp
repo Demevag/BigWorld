@@ -30,7 +30,6 @@
 
 #include <memory>
 
-
 BW_BEGIN_NAMESPACE
 
 class MainApp;
@@ -40,151 +39,149 @@ class MovementController;
 class MovementFactory;
 class PythonServer;
 class PreloadedChunkSpace;
-typedef ScriptObjectPtr< ClientApp > ClientAppPtr;
-
+typedef ScriptObjectPtr<ClientApp> ClientAppPtr;
 
 /**
  *	This ScriptTimeQueue subclass is specialised for MainApp's time
  */
 class MainAppTimeQueue : public ScriptTimeQueue
 {
-public:
-	MainAppTimeQueue( int updateHertz, MainApp & mainApp );
-	virtual GameTime time() const;
+  public:
+    MainAppTimeQueue(int updateHertz, MainApp& mainApp);
+    virtual GameTime time() const;
 
-private:
-	MainApp & mainApp_;
+  private:
+    MainApp& mainApp_;
 };
 
-
-class MainApp : public ServerApp,
-		public GeometryMapper,
-		public TimerHandler,
-		public Singleton< MainApp >
+class MainApp
+  : public ServerApp
+  , public GeometryMapper
+  , public TimerHandler
+  , public Singleton<MainApp>
 {
-private:
-	enum TimeOutType
-	{
-		TIMEOUT_GAME_TICK,
-		TIMEOUT_CHUNK_TICK
-	};
-public:
-	typedef BotsConfig Config;
+  private:
+    enum TimeOutType
+    {
+        TIMEOUT_GAME_TICK,
+        TIMEOUT_CHUNK_TICK
+    };
 
-	SERVER_APP_HEADER( Bots, bots )
+  public:
+    typedef BotsConfig Config;
 
-	MainApp( Mercury::EventDispatcher & mainDispatcher, 
-		Mercury::NetworkInterface & networkInterface );
-	virtual		~MainApp();
+    SERVER_APP_HEADER(Bots, bots)
 
-	// ServerApp overrides
-	virtual bool init( int argc, char * argv[] );
-	virtual void onTickProcessingComplete();
+    MainApp(Mercury::EventDispatcher&  mainDispatcher,
+            Mercury::NetworkInterface& networkInterface);
+    virtual ~MainApp();
 
-	// GeometryMapper overrides
-	virtual void onSpaceGeometryLoaded( SpaceID spaceID,
-			const BW::string & name );
+    // ServerApp overrides
+    virtual bool init(int argc, char* argv[]);
+    virtual void onTickProcessingComplete();
 
-	// TimerHandler overrides
-	virtual void handleTimeout( TimerHandle timerHandle, void * args );
+    // GeometryMapper overrides
+    virtual void onSpaceGeometryLoaded(SpaceID spaceID, const BW::string& name);
 
-	void handleGameTickTimeSlice();
-	void handleChunkTickTimeSlice();
+    // TimerHandler overrides
+    virtual void handleTimeout(TimerHandle timerHandle, void* args);
 
-	PreloadedChunkSpace * addSpaceGeometryMapping( ChunkSpaceID spaceID,
-		BW::Matrix & matrix, const BW::string & name );
+    void handleGameTickTimeSlice();
+    void handleChunkTickTimeSlice();
 
-	PyObject * addSpaceGeometryMapping( ChunkSpaceID spaceID,
-		MatrixProviderPtr pMapper, const BW::string & path );
+    PreloadedChunkSpace* addSpaceGeometryMapping(ChunkSpaceID      spaceID,
+                                                 BW::Matrix&       matrix,
+                                                 const BW::string& name);
 
-	void addBot();
-	void addBots( int num );
-	void addBotsWithName( PyObjectPtr logInfoData );
-	void delBots( int num );
+    PyObject* addSpaceGeometryMapping(ChunkSpaceID      spaceID,
+                                      MatrixProviderPtr pMapper,
+                                      const BW::string& path);
 
-	void delTaggedEntities( BW::string tag );
+    void addBot();
+    void addBots(int num);
+    void addBotsWithName(PyObjectPtr logInfoData);
+    void delBots(int num);
 
-	void updateMovement( BW::string tag );
+    void delTaggedEntities(BW::string tag);
 
-	MovementController * createDefaultMovementController( float & speed,
-		Vector3 & position );
-	MovementController * createMovementController( float & speed,
-		Vector3 & position, const BW::string & controllerType,
-		const BW::string & controllerData );
+    void updateMovement(BW::string tag);
 
-	double localTime() const { return localTime_; }
+    MovementController* createDefaultMovementController(float&   speed,
+                                                        Vector3& position);
+    MovementController* createMovementController(
+      float&            speed,
+      Vector3&          position,
+      const BW::string& controllerType,
+      const BW::string& controllerData);
 
-	static void addFactory( const BW::string & name,
-									MovementFactory & factory );
+    double localTime() const { return localTime_; }
 
+    static void addFactory(const BW::string& name, MovementFactory& factory);
 
-	// ---- Accessors ----
-	StreamEncoder * pLogOnParamsEncoder()
-		{ return pLogOnParamsEncoder_.get(); }
+    // ---- Accessors ----
+    StreamEncoder* pLogOnParamsEncoder() { return pLogOnParamsEncoder_.get(); }
 
-	double sendTimeReportThreshold() const
-		{ return sendTimeReportThreshold_; }
+    double sendTimeReportThreshold() const { return sendTimeReportThreshold_; }
 
-	CondemnedInterfaces & condemnedInterfaces()
-		{ return condemnedInterfaces_; }
+    CondemnedInterfaces& condemnedInterfaces() { return condemnedInterfaces_; }
 
-	void sendTimeReportThreshold( double threshold );
+    void sendTimeReportThreshold(double threshold);
 
-	// ---- Script related Methods ----
-	ClientAppPtr findApp( EntityID id ) const;
-	void appsKeys( PyObject * pList ) const;
-	void appsValues( PyObject * pList ) const;
-	void appsItems( PyObject * pList ) const;
+    // ---- Script related Methods ----
+    ClientAppPtr findApp(EntityID id) const;
+    void         appsKeys(PyObject* pList) const;
+    void         appsValues(PyObject* pList) const;
+    void         appsItems(PyObject* pList) const;
 
-	// ---- Get personality module ----
-	ScriptObject getPersonalityModule() const;
+    // ---- Get personality module ----
+    ScriptObject getPersonalityModule() const;
 
-	LoginChallengeFactories & loginChallengeFactories()
-	{
-		return loginChallengeFactories_;
-	}
+    LoginChallengeFactories& loginChallengeFactories()
+    {
+        return loginChallengeFactories_;
+    }
 
-private:
-	void parseCommandLine( int argc, char * argv[] );
-	bool initScript();
-	void initWatchers();
-	bool initLogOnParamsEncoder( const BW::string & path );
+  private:
+    void parseCommandLine(int argc, char* argv[]);
+    bool initScript();
+    void initWatchers();
+    bool initLogOnParamsEncoder(const BW::string& path);
 
-	void addBotWithName( const BW::string & botName,
-		const BW::string & botPassword );
+    void addBotWithName(const BW::string& botName,
+                        const BW::string& botPassword);
 
-	std::auto_ptr< StreamEncoder > 	pLogOnParamsEncoder_;
+    std::auto_ptr<StreamEncoder> pLogOnParamsEncoder_;
 
-	typedef BW::list< ClientAppPtr > Bots;
-	Bots bots_;
-	Bots botsForLogOnRetry_;
+    typedef BW::list<ClientAppPtr> Bots;
+    Bots                           bots_;
+    Bots                           botsForLogOnRetry_;
 
-	double localTime_;
-	TimerHandle gameTimer_;
-	TimerHandle chunkTimer_;
-	double sendTimeReportThreshold_;
+    double      localTime_;
+    TimerHandle gameTimer_;
+    TimerHandle chunkTimer_;
+    double      sendTimeReportThreshold_;
 
-	MainAppTimeQueue timeQueue_;
+    MainAppTimeQueue timeQueue_;
 
-	PythonServer *	pPythonServer_;
+    PythonServer* pPythonServer_;
 
-	Bots::iterator clientTickIndex_;
+    Bots::iterator clientTickIndex_;
 
-	BW::string appID_;
-	int	nextBotID_;
+    BW::string appID_;
+    int        nextBotID_;
 
-	uint16 nextSpaceEntryIDSalt_;
+    uint16 nextSpaceEntryIDSalt_;
 
-	BgTaskManager			bgTaskManager_;
-	FileIOTaskManager		fileIOTaskManager_;
+    BgTaskManager     bgTaskManager_;
+    FileIOTaskManager fileIOTaskManager_;
 
-	Terrain::Manager		terrainManager_;
+    Terrain::Manager terrainManager_;
 
-	typedef BW::map< SpaceID, PreloadedChunkSpace * > Spaces;
-	Spaces					spaces_;
+    typedef BW::map<SpaceID, PreloadedChunkSpace*> Spaces;
+    Spaces                                         spaces_;
 
-	LoginChallengeFactories loginChallengeFactories_;
-	CondemnedInterfaces		condemnedInterfaces_;
+    LoginChallengeFactories loginChallengeFactories_;
+    CondemnedInterfaces     condemnedInterfaces_;
 };
 
 BW_END_NAMESPACE

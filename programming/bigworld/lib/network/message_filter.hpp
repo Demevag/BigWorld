@@ -8,48 +8,46 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
-/**
- *	Abstract class for a message filter.
- *
- *	A message filter has first-pass handling of messages before their
- *	destination message handlers. They are associated with channels.
- *
- *	They may or may not decide to pass, alter the message to the handler. One
- *	example of use is to implement rate-limiting of message dispatches, where
- *	message handling can be deferred.
- *
- *	Message filters are reference-counted.
- */
-class MessageFilter: public ReferenceCount
-{
-public:
+namespace Mercury {
+    /**
+     *	Abstract class for a message filter.
+     *
+     *	A message filter has first-pass handling of messages before their
+     *	destination message handlers. They are associated with channels.
+     *
+     *	They may or may not decide to pass, alter the message to the handler.
+     *One example of use is to implement rate-limiting of message dispatches,
+     *where message handling can be deferred.
+     *
+     *	Message filters are reference-counted.
+     */
+    class MessageFilter : public ReferenceCount
+    {
+      public:
+        /** Constructor. */
+        MessageFilter()
+          : ReferenceCount()
+        {
+        }
 
-	/** Constructor. */
-	MessageFilter(): ReferenceCount()
-	{}
+        /** Destructor. */
+        virtual ~MessageFilter() {}
 
-	/** Destructor. */
-	virtual ~MessageFilter() {}
+        /**
+         *	Override this method to implement the message filter.
+         *
+         *	@param srcAddr 		The source address of the message.
+         *	@param header 		The message header.
+         *	@param data 		The message data stream.
+         *	@param pHandler 	The destination message handler.
+         */
+        virtual void filterMessage(const Address&                srcAddr,
+                                   UnpackedMessageHeader&        header,
+                                   BinaryIStream&                data,
+                                   Mercury::InputMessageHandler* pHandler) = 0;
+    };
 
-	/**
-	 *	Override this method to implement the message filter.
-	 *
-	 *	@param srcAddr 		The source address of the message.
-	 *	@param header 		The message header.
-	 *	@param data 		The message data stream.
-	 *	@param pHandler 	The destination message handler.
-	 */
-	virtual void filterMessage( const Address & srcAddr,
-		UnpackedMessageHeader & header,
-		BinaryIStream & data,
-		Mercury::InputMessageHandler * pHandler ) = 0;
-
-};
-
-
-typedef SmartPointer< MessageFilter > MessageFilterPtr;
+    typedef SmartPointer<MessageFilter> MessageFilterPtr;
 
 } // namespace Mercury
 

@@ -5,62 +5,64 @@
 
 BW_BEGIN_NAMESPACE
 
-typedef std::pair < BW::string , BW::string > StringPair;
+typedef std::pair<BW::string, BW::string> StringPair;
 
 // TreeListDlg
 
-class TreeListDlg: public CDialog
+class TreeListDlg : public CDialog
 {
-	DECLARE_DYNCREATE(TreeListDlg)
+    DECLARE_DYNCREATE(TreeListDlg)
 
-public:
-	//This is the default constructor required for DYNCREATE
-	TreeListDlg(): CDialog(IDD_EMPTY) {}
-	
-	TreeListDlg( UINT dialogID, TreeRoot* tree_root_, const BW::string& what, const BW::string& currentModel = "" );
-	virtual ~TreeListDlg();
+  public:
+    // This is the default constructor required for DYNCREATE
+    TreeListDlg()
+      : CDialog(IDD_EMPTY)
+    {
+    }
 
-private:
-	HTREEITEM selItem_ ;
-	StringPair selID_;
-	BW::string search_str_;
+    TreeListDlg(UINT              dialogID,
+                TreeRoot*         tree_root_,
+                const BW::string& what,
+                const BW::string& currentModel = "");
+    virtual ~TreeListDlg();
 
-	TreeRoot* treeRoot_;
-	BW::string what_;
-	BW::string currentModel_;
+  private:
+    HTREEITEM  selItem_;
+    StringPair selID_;
+    BW::string search_str_;
 
-protected:
+    TreeRoot*  treeRoot_;
+    BW::string what_;
+    BW::string currentModel_;
 
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 
-public:
+  public:
+    void OnUpdateTreeList();
 
-	void OnUpdateTreeList();
-	
-	afx_msg void OnEnSetFocusSearch();
-	afx_msg void OnEnChangeSearch();
-	afx_msg void OnStnClickedCancelSearch();
-	afx_msg void OnTvnSelChangedTree(NMHDR *pNMHDR, LRESULT *pResult);
+    afx_msg void OnEnSetFocusSearch();
+    afx_msg void OnEnChangeSearch();
+    afx_msg void OnStnClickedCancelSearch();
+    afx_msg void OnTvnSelChangedTree(NMHDR* pNMHDR, LRESULT* pResult);
 
-	virtual void selChange( const StringPair& itemID ) {};
+    virtual void selChange(const StringPair& itemID){};
 
-	StringPair& selID() { return selID_; };
-	HTREEITEM& selItem() { return selItem_; };
-	CTreeCtrl& tree() { return tree_; };
+    StringPair& selID() { return selID_; };
+    HTREEITEM&  selItem() { return selItem_; };
+    CTreeCtrl&  tree() { return tree_; };
 
-private:
+  private:
+    bool ignoreSelChange_;
 
-	bool ignoreSelChange_;
+    CStatic   search_bkg_;
+    CEdit     search_;
+    CWnd      search_button_;
+    CWnd      search_cancel_;
+    CTreeCtrl tree_;
 
-	CStatic search_bkg_;
-	CEdit search_;
-	CWnd search_button_;
-	CWnd search_cancel_;
-	CTreeCtrl tree_;
-
-	BW::vector<BW::string*> pathData_;
+    BW::vector<BW::string*> pathData_;
 };
 BW_END_NAMESPACE
-

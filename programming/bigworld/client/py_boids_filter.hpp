@@ -4,7 +4,6 @@
 #include "boids_filter.hpp"
 #include "py_avatar_filter.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /*~ class BigWorld.BoidsFilter
@@ -30,73 +29,73 @@ BW_BEGIN_NAMESPACE
  */
 class PyBoidsFilter : public PyAvatarFilter
 {
-	Py_Header( PyBoidsFilter, PyAvatarFilter );
+    Py_Header(PyBoidsFilter, PyAvatarFilter);
 
-public:
-	PyBoidsFilter( PyTypeObject * pType = &s_type_ );
-	virtual ~PyBoidsFilter() {}
+  public:
+    PyBoidsFilter(PyTypeObject* pType = &s_type_);
+    virtual ~PyBoidsFilter() {}
 
-	float influenceRadius() const;
-	void influenceRadius( float newValue );
+    float influenceRadius() const;
+    void  influenceRadius(float newValue);
 
-	float collisionFraction() const;
-	void collisionFraction( float newValue );
+    float collisionFraction() const;
+    void  collisionFraction(float newValue);
 
-	float normalSpeed() const;
-	void normalSpeed( float newValue );
+    float normalSpeed() const;
+    void  normalSpeed(float newValue);
 
-	float timeMultiplier() const;
-	void timeMultiplier( float newValue );
+    float timeMultiplier() const;
+    void  timeMultiplier(float newValue);
 
-	uint state() const;
-	void state( uint newValue );
+    uint state() const;
+    void state(uint newValue);
 
-	float goalApproachRadius() const;
-	void goalApproachRadius( float newValue );
+    float goalApproachRadius() const;
+    void  goalApproachRadius(float newValue);
 
-	float goalStopRadius() const;
-	void goalStopRadius( float newValue );
+    float goalStopRadius() const;
+    void  goalStopRadius(float newValue);
 
-	float radius() const;
-	void radius( float newValue );
+    float radius() const;
+    void  radius(float newValue);
 
-	// Python Interface
-	PY_AUTO_CONSTRUCTOR_FACTORY_DECLARE( PyBoidsFilter, END );
+    // Python Interface
+    PY_AUTO_CONSTRUCTOR_FACTORY_DECLARE(PyBoidsFilter, END);
 
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( float, influenceRadius, influenceRadius );
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( float, collisionFraction,
-		collisionFraction );
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( float, goalApproachRadius,
-		approachRadius );
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( float, goalStopRadius, stopRadius );
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( float, normalSpeed, speed );
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( float, timeMultiplier, timeMultiplier );
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( uint, state, state );
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( float, radius, radius );
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(float, influenceRadius, influenceRadius);
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(float,
+                                     collisionFraction,
+                                     collisionFraction);
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(float, goalApproachRadius, approachRadius);
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(float, goalStopRadius, stopRadius);
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(float, normalSpeed, speed);
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(float, timeMultiplier, timeMultiplier);
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(uint, state, state);
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(float, radius, radius);
 
-	// Implementation of PyFilter
-	virtual BoidsFilter * pAttachedFilter();
-	virtual const BoidsFilter * pAttachedFilter() const;
+    // Implementation of PyFilter
+    virtual BoidsFilter*       pAttachedFilter();
+    virtual const BoidsFilter* pAttachedFilter() const;
 
-protected:
-	// Implementation of PyFilter
-	virtual BoidsFilter * getNewFilter();
-	virtual void onLosingAttachedFilter();
+  protected:
+    // Implementation of PyFilter
+    virtual BoidsFilter* getNewFilter();
+    virtual void         onLosingAttachedFilter();
 
-private:
-	// These attributes are caches of the values in BoidsFilter, but
-	// they are only used if this->pAttachedFilter() is NULL
-	float influenceRadius_;
-	float collisionFraction_;
-	float normalSpeed_;
-	float timeMultiplier_;
-	uint state_;
-	float goalApproachRadius_;
-	float goalStopRadius_;
-	float radius_;
+  private:
+    // These attributes are caches of the values in BoidsFilter, but
+    // they are only used if this->pAttachedFilter() is NULL
+    float influenceRadius_;
+    float collisionFraction_;
+    float normalSpeed_;
+    float timeMultiplier_;
+    uint  state_;
+    float goalApproachRadius_;
+    float goalStopRadius_;
+    float radius_;
 };
 
-PY_SCRIPT_CONVERTERS_DECLARE( PyBoidsFilter );
+PY_SCRIPT_CONVERTERS_DECLARE(PyBoidsFilter);
 
 BW_END_NAMESPACE
 

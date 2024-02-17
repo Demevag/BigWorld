@@ -3,7 +3,6 @@
 
 #include "composite_property_mapping.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class UserDataType;
@@ -14,21 +13,22 @@ class UserDataType;
  */
 class UserTypeMapping : public CompositePropertyMapping
 {
-public:
-	UserTypeMapping( const BW::string & propName );
+  public:
+    UserTypeMapping(const BW::string& propName);
 
-	// Overrides from PropertyMappingPtr
-	virtual void fromStreamToDatabase( StreamToQueryHelper & helper,
-			BinaryIStream & strm,
-			QueryRunner & queryRunner ) const;
+    // Overrides from PropertyMappingPtr
+    virtual void fromStreamToDatabase(StreamToQueryHelper& helper,
+                                      BinaryIStream&       strm,
+                                      QueryRunner&         queryRunner) const;
 
-	virtual void fromDatabaseToStream( ResultToStreamHelper & helper,
-				ResultStream & results,
-				BinaryOStream & strm ) const;
+    virtual void fromDatabaseToStream(ResultToStreamHelper& helper,
+                                      ResultStream&         results,
+                                      BinaryOStream&        strm) const;
 
-	static PropertyMappingPtr create( const Namer & namer,
-			const BW::string & propName, const UserDataType & type,
-			DataSectionPtr pDefaultValue );
+    static PropertyMappingPtr create(const Namer&        namer,
+                                     const BW::string&   propName,
+                                     const UserDataType& type,
+                                     DataSectionPtr      pDefaultValue);
 };
 
 BW_END_NAMESPACE

@@ -7,26 +7,27 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace ScaleformBW
-{
-	class PyMovieView;
+namespace ScaleformBW {
+    class PyMovieView;
 
-	class PyGFxScriptFunction : public GFx::FunctionHandler
-	{
-	public:
-		PyGFxScriptFunction(PyObject *pyScript, PyMovieView *pyMovieView, const BW::string &funcName);
-		~PyGFxScriptFunction() { }
+    class PyGFxScriptFunction : public GFx::FunctionHandler
+    {
+      public:
+        PyGFxScriptFunction(PyObject*         pyScript,
+                            PyMovieView*      pyMovieView,
+                            const BW::string& funcName);
+        ~PyGFxScriptFunction() {}
 
-		void releasePointers();
-		void Call(const GFx::FunctionHandler::Params &params);
-	
-	private:
-		PyObjectPtr pyFunction_;
-		PyMovieView *pyMovieView_;
-		BW::string funcName_;
-	};
+        void releasePointers();
+        void Call(const GFx::FunctionHandler::Params& params);
 
-	typedef SF::Ptr<PyGFxScriptFunction> PyGFxScriptFunctionPtr;
+      private:
+        PyObjectPtr  pyFunction_;
+        PyMovieView* pyMovieView_;
+        BW::string   funcName_;
+    };
+
+    typedef SF::Ptr<PyGFxScriptFunction> PyGFxScriptFunctionPtr;
 }
 
 BW_END_NAMESPACE

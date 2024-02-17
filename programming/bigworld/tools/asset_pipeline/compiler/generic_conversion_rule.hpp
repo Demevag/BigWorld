@@ -5,34 +5,34 @@
 #include "asset_pipeline/conversion/converter_map.hpp"
 #include "resmgr/hierarchical_config.hpp"
 
-BW_BEGIN_NAMESPACE 
+BW_BEGIN_NAMESPACE
 
 class GenericConversionRule : public ConversionRule
 {
-public:
-	GenericConversionRule( ConverterMap & converters );
+  public:
+    GenericConversionRule(ConverterMap& converters);
 
-	void load( const StringRef & rules );
+    void load(const StringRef& rules);
 
-	virtual bool createRootTask( const BW::StringRef & sourceFile,
-							     ConversionTask & task );
+    virtual bool createRootTask(const BW::StringRef& sourceFile,
+                                ConversionTask&      task);
 
-	virtual bool createTask( const BW::StringRef & sourceFile,
-							 ConversionTask & task );
-	
-	virtual bool getSourceFile( const BW::StringRef & file,
-								BW::string & sourcefile ) const;
+    virtual bool createTask(const BW::StringRef& sourceFile,
+                            ConversionTask&      task);
 
-private:
-	bool createTask( const BW::StringRef & sourceFile,
-					 ConversionTask & task,
-					 bool root );
+    virtual bool getSourceFile(const BW::StringRef& file,
+                               BW::string&          sourcefile) const;
 
-private:
-	ConverterMap & converters_;
-	HierarchicalConfig rules_;
+  private:
+    bool createTask(const BW::StringRef& sourceFile,
+                    ConversionTask&      task,
+                    bool                 root);
+
+  private:
+    ConverterMap&      converters_;
+    HierarchicalConfig rules_;
 };
 
 BW_END_NAMESPACE
 
-#endif //ASSET_PIPELINE_GENERIC_CONVERSION_RULE
+#endif // ASSET_PIPELINE_GENERIC_CONVERSION_RULE

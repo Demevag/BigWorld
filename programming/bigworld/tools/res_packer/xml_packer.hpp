@@ -1,14 +1,12 @@
 #ifndef __XML_PACKER_HPP__
 #define __XML_PACKER_HPP__
 
-
 #include "base_packer.hpp"
 #include "packers.hpp"
 
 #include "resmgr/datasection.hpp"
 
 #include <string>
-
 
 BW_BEGIN_NAMESPACE
 
@@ -24,28 +22,25 @@ BW_BEGIN_NAMESPACE
  */
 class XmlPacker : public BasePacker
 {
-public:
-	virtual bool prepare( const BW::string & src, const BW::string & dst );
-	virtual bool print();
-	virtual bool pack();
+  public:
+    virtual bool prepare(const BW::string& src, const BW::string& dst);
+    virtual bool print();
+    virtual bool pack();
 
-	static void shouldEncrypt( bool value ) 
-		{ s_shouldEncrypt = value; }
+    static void shouldEncrypt(bool value) { s_shouldEncrypt = value; }
 
-	static bool shouldEncrypt() 
-		{ return s_shouldEncrypt; }
+    static bool shouldEncrypt() { return s_shouldEncrypt; }
 
-private:
-	void printRecursive( DataSectionPtr pDS, int indent = 0 );
+  private:
+    void printRecursive(DataSectionPtr pDS, int indent = 0);
 
-	DECLARE_PACKER()
+    DECLARE_PACKER()
 
-	DataSectionPtr ds_;
-	BW::string src_;
-	BW::string dst_;
+    DataSectionPtr ds_;
+    BW::string     src_;
+    BW::string     dst_;
 
-	static bool s_shouldEncrypt;
-
+    static bool s_shouldEncrypt;
 };
 
 BW_END_NAMESPACE

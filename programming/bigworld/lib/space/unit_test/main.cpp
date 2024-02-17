@@ -5,18 +5,18 @@
 
 BW_USE_NAMESPACE
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
-	BW_SYSTEMSTAGE_MAIN();
+    BW_SYSTEMSTAGE_MAIN();
 
-	BW::Allocator::setCrashOnLeak( true );
+    BW::Allocator::setCrashOnLeak(true);
 
-	const int result = BWUnitTest::runTest( "space", argc, argv );
+    const int result = BWUnitTest::runTest("space", argc, argv);
 
-	// Prevent memory leak
-	DebugFilter::fini();
+    // Prevent memory leak
+    DebugFilter::fini();
 
-	return result;
+    return result;
 }
 
 // main.cpp

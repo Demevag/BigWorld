@@ -6,24 +6,22 @@
 
 BW_BEGIN_NAMESPACE
 
-void MachineGuardResponseChecker::receivedPacket( uint32 srcAddr,
-		const MGMPacket & packet )
+void MachineGuardResponseChecker::receivedPacket(uint32           srcAddr,
+                                                 const MGMPacket& packet)
 {
-	receivedFrom_.insert( srcAddr );
-	waitingFor_.erase( srcAddr );
+    receivedFrom_.insert(srcAddr);
+    waitingFor_.erase(srcAddr);
 
-	uint32 buddyAddr = packet.buddy_;
+    uint32 buddyAddr = packet.buddy_;
 
-	if ((receivedFrom_.count( buddyAddr ) == 0) && (buddyAddr != 0))
-	{
-		waitingFor_.insert( buddyAddr );
-	}
+    if ((receivedFrom_.count(buddyAddr) == 0) && (buddyAddr != 0)) {
+        waitingFor_.insert(buddyAddr);
+    }
 }
-
 
 bool MachineGuardResponseChecker::isDone() const
 {
-	return !receivedFrom_.empty() && waitingFor_.empty();
+    return !receivedFrom_.empty() && waitingFor_.empty();
 }
 
 BW_END_NAMESPACE

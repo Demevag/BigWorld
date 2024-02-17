@@ -20,25 +20,24 @@ BW_BEGIN_NAMESPACE
  */
 class AccessMonitor
 {
-public:
-	///	@name Constructor.
-	//@{
-	AccessMonitor();
-	//@}
+  public:
+    ///	@name Constructor.
+    //@{
+    AccessMonitor();
+    //@}
 
-	///	@name Control Methods.
-	//@{
-	void record( const BW::string &fileName );
+    ///	@name Control Methods.
+    //@{
+    void record(const BW::string& fileName);
 
-	void active( bool flag );
+    void active(bool flag);
 
-	static AccessMonitor &instance();
-	//@}
+    static AccessMonitor& instance();
+    //@}
 
-private:
-	bool active_;
+  private:
+    bool active_;
 };
-
 
 #ifdef CODE_INLINE
 #include "access_monitor.ipp"
@@ -49,4 +48,3 @@ BW_END_NAMESPACE
 #endif // ACCESS_MONITOR_HPP
 
 // access_monitor.cpp
-

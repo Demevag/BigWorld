@@ -3,13 +3,15 @@
 
 #include "unit_test_lib/base_resmgr_unit_test_harness.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class ResMgrUnitTestHarness : public BaseResMgrUnitTestHarness
 {
-public:
-	ResMgrUnitTestHarness() : BaseResMgrUnitTestHarness( "resmgr" ) {}
+  public:
+    ResMgrUnitTestHarness()
+      : BaseResMgrUnitTestHarness("resmgr")
+    {
+    }
 };
 
 BW_END_NAMESPACE

@@ -16,15 +16,15 @@ BW_BEGIN_NAMESPACE
 //
 class MetaNode : public TreeNode
 {
-public:
+  public:
     //
     // Explicit constructor.
     //
     // @param dir               The directory to load from.
-    // @param filename          The name of the file containing the 
+    // @param filename          The name of the file containing the
     //                          meta-particle system.
     //
-    MetaNode(BW::string const &dir, BW::string const &filename);
+    MetaNode(BW::string const& dir, BW::string const& filename);
 
     //
     // Destructor.
@@ -37,7 +37,7 @@ public:
     // @param label     The new label.  The underlying file is renamed if
     //                  appropriate.
     //
-    /*virtual*/ void SetLabel(BW::string const &label);
+    /*virtual*/ void SetLabel(BW::string const& label);
 
     //
     // MetaNode's labels are editable if the underlying system is a meta
@@ -55,7 +55,7 @@ public:
     /*virtual*/ DROPEFFECT CanDragDrop() const;
 
     //
-    // Get the meta-particle system. 
+    // Get the meta-particle system.
     //
     // @returns                 The meta particle system.
     //
@@ -68,19 +68,19 @@ public:
     //
     void SetMetaParticleSystem(MetaParticleSystemPtr system);
 
-	//
+    //
     // Set the read only state.
     //
     // @param readOnly            The read only state.
     //
     void SetReadOnly(bool readOnly);
 
-	//
-	// Is the meta-particle system read only
-	//
-	// @returns					Whether the meta-particle system is read only.
-	//
-	bool IsReadOnly() const;
+    //
+    // Is the meta-particle system read only
+    //
+    // @returns					Whether the meta-particle system is read only.
+    //
+    bool IsReadOnly() const;
 
     //
     // Make sure that the meta-particle system is in memory.
@@ -100,14 +100,14 @@ public:
     // @param name              The new name.
     // @returns                 The file it would be saved to.
     //
-    static BW::string GetFilename(BW::string const &file);
+    static BW::string GetFilename(BW::string const& file);
 
     //
     // Get the directory.
     //
     // @returns                 The directory.
     //
-    BW::string const &GetDirectory() const;
+    BW::string const& GetDirectory() const;
 
     //
     // Get the fullpath of the underlying file.
@@ -122,7 +122,7 @@ public:
     // point.
     //
     // @returns                 True if the file was deleted.
-    // 
+    //
     bool DeleteFile();
 
     //
@@ -132,7 +132,7 @@ public:
     void FlagChildrenReady();
 
     //
-    // Called when the meta-particle system is saved.  The saving of the 
+    // Called when the meta-particle system is saved.  The saving of the
     // meta-particle system is done elsewhere.  This allows for undoing
     // a rename to work effectively.
     //
@@ -157,21 +157,16 @@ public:
     // @param load      True if loading.
     // @returns         The selected child (can be NULL).
     //
-    /*virtual*/ TreeNode *
-    Serialise
-    (
-        DataSectionPtr  data, 
-        bool            load
-    );
+    /*virtual*/ TreeNode* Serialise(DataSectionPtr data, bool load);
 
     //
     // Is the given file likely to be a meta-particle system?
     //
     // @param filename          The filename to test.
-    // @returns                 True if the filename corresponds with a 
+    // @returns                 True if the filename corresponds with a
     //                          particle system filename.
     //
-    static bool IsMetaParticleFile(BW::StringRef const &filename);
+    static bool IsMetaParticleFile(BW::StringRef const& filename);
 
     //
     // Called when the node is expanded.  If the meta-particle system is not
@@ -180,7 +175,7 @@ public:
     //
     /*virtual*/ void OnExpand();
 
-protected:
+  protected:
     //
     // Nodes are added upon expansion.
     //
@@ -198,23 +193,23 @@ protected:
     //
     // Sync the label with the model.
     //
-    /*virtual*/ void OnEditLabel(BW::string const &newLabel);
+    /*virtual*/ void OnEditLabel(BW::string const& newLabel);
 
     //
-    // Get the full path of the given file, taking into account the 
+    // Get the full path of the given file, taking into account the
     // directory.
     //
     // @param filename          The name of the file to get.
     // @returns                 The full location of filename.
     //
-    BW::string fullpath(BW::string const &filename) const;
+    BW::string fullpath(BW::string const& filename) const;
 
-private:
-    mutable MetaParticleSystemPtr   m_metaParticleSystem;
-    BW::string                     m_directory;
-    bool                            m_createdChildren;
-    BW::string                     m_lastName;
-	mutable bool					m_readOnly;
+  private:
+    mutable MetaParticleSystemPtr m_metaParticleSystem;
+    BW::string                    m_directory;
+    bool                          m_createdChildren;
+    BW::string                    m_lastName;
+    mutable bool                  m_readOnly;
 };
 
 //
@@ -222,7 +217,7 @@ private:
 //
 class PSNode : public TreeNode
 {
-public:
+  public:
     //
     // Default constructor.
     //
@@ -235,7 +230,7 @@ public:
     //
     // @param label             The new name of the particle system.
     //
-    /*virtual*/ void SetLabel(BW::string const &label);
+    /*virtual*/ void SetLabel(BW::string const& label);
 
     //
     // Return the allowed drag-and-drop operations.
@@ -255,7 +250,7 @@ public:
     //
     ParticleSystemPtr getParticleSystem() const;
 
-protected:
+  protected:
     //
     // Deletion does require confirmation.
     //
@@ -263,8 +258,8 @@ protected:
     //
     /*virtual*/ bool DeleteNeedsConfirm() const;
 
-private:
-    ParticleSystemPtr           m_particleSystem;
+  private:
+    ParticleSystemPtr m_particleSystem;
 };
 
 //
@@ -272,14 +267,14 @@ private:
 //
 class ActionNode : public TreeNode
 {
-public:
+  public:
     enum ActionType
     {
-        AT_ACTION,              // This represents an actual action.
-        AT_SYS_PROP,            // This represents system properties.
-        AT_REND_PROP,           // This represents render properties.
-		AT_META_PS,				// This represents meta particle system.
-		AT_PS					// This represents particle system.
+        AT_ACTION,    // This represents an actual action.
+        AT_SYS_PROP,  // This represents system properties.
+        AT_REND_PROP, // This represents render properties.
+        AT_META_PS,   // This represents meta particle system.
+        AT_PS         // This represents particle system.
     };
 
     //
@@ -289,12 +284,9 @@ public:
     // @param name              The action's name.
     // @param type              The type of the node.
     //
-    ActionNode
-    (
-        ParticleSystemActionPtr action, 
-        BW::string             const &name,
-        ActionType              actionType  = AT_ACTION
-    );
+    ActionNode(ParticleSystemActionPtr action,
+               BW::string const&       name,
+               ActionType              actionType = AT_ACTION);
 
     //
     // Return the allowed drag-and-drop operations.
@@ -320,10 +312,10 @@ public:
     //
     /*virtual*/ bool CanEditLabel() const;
 
-private:
-    ParticleSystemActionPtr     m_action;
-    int                         m_id;
-    ActionType                  m_actionType;
+  private:
+    ParticleSystemActionPtr m_action;
+    int                     m_id;
+    ActionType              m_actionType;
 };
 
 BW_END_NAMESPACE

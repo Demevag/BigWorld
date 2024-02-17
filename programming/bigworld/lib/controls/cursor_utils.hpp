@@ -3,14 +3,15 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace controls
-{
+namespace controls {
 
-// IMPORTANT: The caller is responsible for deleting the returned HCURSOR.
-HCURSOR addPlusSignToCursor( HCURSOR origCursor );
+    // IMPORTANT: The caller is responsible for deleting the returned HCURSOR.
+    HCURSOR addPlusSignToCursor(HCURSOR origCursor);
 
-// IMPORTANT: The caller is responsible for deleting the returned HCURSOR.
-HCURSOR addOverlayToCursor( HCURSOR origCursor, unsigned char * bitmap, unsigned char * mask );
+    // IMPORTANT: The caller is responsible for deleting the returned HCURSOR.
+    HCURSOR addOverlayToCursor(HCURSOR        origCursor,
+                               unsigned char* bitmap,
+                               unsigned char* mask);
 
 }; // namespace controls
 

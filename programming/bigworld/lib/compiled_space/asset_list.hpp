@@ -13,52 +13,51 @@
 
 BW_BEGIN_NAMESPACE
 
-	class ReferenceCount;
+class ReferenceCount;
 
 BW_END_NAMESPACE
 
-namespace BW {
-namespace CompiledSpace {
+namespace BW { namespace CompiledSpace {
 
-class StringTable;
+    class StringTable;
 
-class COMPILED_SPACE_API AssetList
-{
-public:
-	AssetList();
-	~AssetList();
+    class COMPILED_SPACE_API AssetList
+    {
+      public:
+        AssetList();
+        ~AssetList();
 
-	bool read( BinaryFormat& reader );
-	void close();
+        bool read(BinaryFormat& reader);
+        void close();
 
-	bool isValid() const;
-	size_t size() const;
-	bool empty() const;
+        bool   isValid() const;
+        size_t size() const;
+        bool   empty() const;
 
-	AssetListTypes::AssetType assetType( size_t idx ) const;
-	size_t stringTableIndex( size_t idx ) const;
+        AssetListTypes::AssetType assetType(size_t idx) const;
+        size_t                    stringTableIndex(size_t idx) const;
 
-	void preloadAssets( const StringTable& stringTable );
-	void releasePreloadedAssets();
+        void preloadAssets(const StringTable& stringTable);
+        void releasePreloadedAssets();
 
-	float percentLoaded() const;
+        float percentLoaded() const;
 
-private:
-	BinaryFormat* pReader_;
-	BinaryFormat::Stream* pStream_;
+      private:
+        BinaryFormat*         pReader_;
+        BinaryFormat::Stream* pStream_;
 
-	ExternalArray<AssetListTypes::Entry> entries_;
+        ExternalArray<AssetListTypes::Entry> entries_;
 
-private:
-	class Detail;
-	class IAssetReference;
-	IAssetReference* preloadAsset( AssetListTypes::AssetType type,
-		const StringRef& resourceID );
-	
-private:
-	BW::vector<SmartPointer<IAssetReference> > preloadedAssets_;
-	size_t numPreloadsProcessed_;
-};
+      private:
+        class Detail;
+        class IAssetReference;
+        IAssetReference* preloadAsset(AssetListTypes::AssetType type,
+                                      const StringRef&          resourceID);
+
+      private:
+        BW::vector<SmartPointer<IAssetReference>> preloadedAssets_;
+        size_t                                    numPreloadsProcessed_;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW

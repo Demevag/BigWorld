@@ -4,7 +4,6 @@
 
 #include "entity.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
@@ -15,16 +14,14 @@ BW_BEGIN_NAMESPACE
  * This is the constructor for the EntityRangeListNode.
  * @param pEntity - entity that is associated with this node
  */
-EntityRangeListNode::EntityRangeListNode( Entity * pEntity ) :
-	RangeListNode( FLAG_NO_TRIGGERS,
-				RangeListFlags(
-					FLAG_ENTITY_TRIGGER |
-					FLAG_LOWER_AOI_TRIGGER |
-					FLAG_UPPER_AOI_TRIGGER |
-					FLAG_IS_ENTITY ),
-			RANGE_LIST_ORDER_ENTITY ),
-	pEntity_( pEntity )
-{}
+EntityRangeListNode::EntityRangeListNode(Entity* pEntity)
+  : RangeListNode(FLAG_NO_TRIGGERS,
+                  RangeListFlags(FLAG_ENTITY_TRIGGER | FLAG_LOWER_AOI_TRIGGER |
+                                 FLAG_UPPER_AOI_TRIGGER | FLAG_IS_ENTITY),
+                  RANGE_LIST_ORDER_ENTITY)
+  , pEntity_(pEntity)
+{
+}
 
 /**
  * This method returns the x position of this node.
@@ -34,7 +31,7 @@ EntityRangeListNode::EntityRangeListNode( Entity * pEntity ) :
  */
 float EntityRangeListNode::x() const
 {
-	return pEntity_->position().x;
+    return pEntity_->position().x;
 }
 
 /**
@@ -45,7 +42,7 @@ float EntityRangeListNode::x() const
  */
 float EntityRangeListNode::z() const
 {
-	return pEntity_->position().z;
+    return pEntity_->position().z;
 }
 
 /**
@@ -55,10 +52,10 @@ float EntityRangeListNode::z() const
  */
 BW::string EntityRangeListNode::debugString() const
 {
-	char buf[80];
-	bw_snprintf( buf, sizeof(buf), "Entity %d", (int)pEntity_->id() );
+    char buf[80];
+    bw_snprintf(buf, sizeof(buf), "Entity %d", (int)pEntity_->id());
 
-	return BW::string( buf );
+    return BW::string(buf);
 }
 
 /**
@@ -68,44 +65,39 @@ BW::string EntityRangeListNode::debugString() const
  */
 Entity* EntityRangeListNode::getEntity() const
 {
-	return pEntity_;
+    return pEntity_;
 }
-
 
 /**
  *	This method moves this node to the maximum z position.
  */
 void EntityRangeListNode::remove()
 {
-	Entity::callbacksPermitted( false );
-	Vector3 pos = pEntity_->position();
-	float oldZ = pos.z;
-	pos.z = FLT_MAX;
-	pEntity_->globalPosition_ = pos;
+    Entity::callbacksPermitted(false);
+    Vector3 pos               = pEntity_->position();
+    float   oldZ              = pos.z;
+    pos.z                     = FLT_MAX;
+    pEntity_->globalPosition_ = pos;
 
-	this->shuffleZ( this->x(), oldZ );
-	this->removeFromRangeList();
-	Entity::callbacksPermitted( true );
+    this->shuffleZ(this->x(), oldZ);
+    this->removeFromRangeList();
+    Entity::callbacksPermitted(true);
 }
-
 
 /**
  *	This method sets whether or not this node is an AoI trigger. An entity node
  *	transitions from being an AoI trigger to not being so if it gets
  *	AppealRadius triggers.
  */
-void EntityRangeListNode::isAoITrigger( bool isAoITrigger )
+void EntityRangeListNode::isAoITrigger(bool isAoITrigger)
 {
-	int changingFlags = FLAG_LOWER_AOI_TRIGGER | FLAG_UPPER_AOI_TRIGGER;
+    int changingFlags = FLAG_LOWER_AOI_TRIGGER | FLAG_UPPER_AOI_TRIGGER;
 
-	if (isAoITrigger)
-	{
-		makesFlags_ = RangeListFlags( makesFlags_ | changingFlags );
-	}
-	else
-	{
-		makesFlags_ = RangeListFlags( makesFlags_ & ~changingFlags );
-	}
+    if (isAoITrigger) {
+        makesFlags_ = RangeListFlags(makesFlags_ | changingFlags);
+    } else {
+        makesFlags_ = RangeListFlags(makesFlags_ & ~changingFlags);
+    }
 }
 
 BW_END_NAMESPACE

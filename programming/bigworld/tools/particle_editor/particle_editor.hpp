@@ -16,29 +16,32 @@ class MenuHelper;
 END_GUI_NAMESPACE
 
 class ParticleEditorApp
-	: public CWinApp
-	, public GUI::OptionMap
-	, public IEditorApp
+  : public CWinApp
+  , public GUI::OptionMap
+  , public IEditorApp
 {
-public:
+  public:
     ParticleEditorApp();
 
     ~ParticleEditorApp();
-    
-	bool InitialiseMF( BW::string &openFile );
+
+    bool             InitialiseMF(BW::string& openFile);
     /*virtual*/ BOOL InitInstance();
 
     /*virtual*/ int ExitInstance();
 
-	/*virtual*/ int Run();
+    /*virtual*/ int Run();
 
-	bool setLanguage( GUI::ItemPtr item );
-	unsigned int updateLanguage( GUI::ItemPtr item );
-	void updateLanguageList();
+    bool         setLanguage(GUI::ItemPtr item);
+    unsigned int updateLanguage(GUI::ItemPtr item);
+    void         updateLanguageList();
 
-    void openDirectory(BW::string const &dir, bool forceRefresh = false);
+    void openDirectory(BW::string const& dir, bool forceRefresh = false);
 
-    void setFrameRate(float rate) { m_desiredFrameRate = rate; }    // No more frame limiting (Bug 4834)
+    void setFrameRate(float rate)
+    {
+        m_desiredFrameRate = rate;
+    } // No more frame limiting (Bug 4834)
 
     void OnDirectoryOpen();
 
@@ -56,51 +59,49 @@ public:
     State getState() const;
 
     void OnAppAbout();
-		
+
     void OnAppShortcuts();
 
-	void OnViewShowSide();
+    void OnViewShowSide();
 
     void OnViewShowUAL();
 
     void OnViewShowMsgs();
 
-    static ParticleEditorApp & instance() { return *s_instance; }
+    static ParticleEditorApp& instance() { return *s_instance; }
 
-	App* mfApp() { return mfApp_; }
+    App* mfApp() { return mfApp_; }
 
-	CWnd* mainWnd() { return m_pMainWnd; }
+    CWnd* mainWnd() { return m_pMainWnd; }
 
-protected:
-
+  protected:
     /*virtual*/ BOOL OnIdle(LONG lCount);
-	BOOL InternalInitInstance();
-	int InternalExitInstance();
-	int InternalRun();
+    BOOL             InternalInitInstance();
+    int              InternalExitInstance();
+    int              InternalRun();
 
     DECLARE_MESSAGE_MAP()
 
-	/*virtual*/ BW::string get(BW::string const &key) const;
-	/*virtual*/ bool exist(BW::string const &key) const;
-	/*virtual*/ void set(BW::string const &key, BW::string const &value);
+    /*virtual*/ BW::string get(BW::string const& key) const;
+    /*virtual*/ bool       exist(BW::string const& key) const;
+    /*virtual*/ void       set(BW::string const& key, BW::string const& value);
 
     void update();
 
     typedef ParticleEditorApp This;
 
     PY_MODULE_STATIC_METHOD_DECLARE(py_update)
-    PY_MODULE_STATIC_METHOD_DECLARE(py_particleSystem)   
-    
-private:
+    PY_MODULE_STATIC_METHOD_DECLARE(py_particleSystem)
 
-private:
-    PeShell                     *m_appShell;
-    PeApp                       *m_peApp;
-    App                         *mfApp_;
-    float                       m_desiredFrameRate;     // No more frame limiting (Bug 4834)
-    State                       m_state;
-    static ParticleEditorApp    *s_instance;
-	std::auto_ptr< GUI::MenuHelper > menuHelper_;
+  private:
+  private:
+    PeShell* m_appShell;
+    PeApp*   m_peApp;
+    App*     mfApp_;
+    float    m_desiredFrameRate; // No more frame limiting (Bug 4834)
+    State    m_state;
+    static ParticleEditorApp*      s_instance;
+    std::auto_ptr<GUI::MenuHelper> menuHelper_;
 };
 
 extern ParticleEditorApp theApp;

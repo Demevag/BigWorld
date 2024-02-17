@@ -8,9 +8,7 @@
 
 #include "server/recording_options.hpp"
 
-
 BW_BEGIN_NAMESPACE
-
 
 /**
  *	This class wraps a ClientEntityMailBox to create client method callers that
@@ -18,27 +16,25 @@ BW_BEGIN_NAMESPACE
  */
 class ClientEntityMailBoxWrapper : public PyObjectPlus
 {
-	Py_Header( ClientEntityMailBoxWrapper, PyObjectPlus );
+    Py_Header(ClientEntityMailBoxWrapper, PyObjectPlus);
 
-public:
-	ClientEntityMailBoxWrapper( ClientEntityMailBox & mailBox, 
-		RecordingOption recordingOption );
-	~ClientEntityMailBoxWrapper();
+  public:
+    ClientEntityMailBoxWrapper(ClientEntityMailBox& mailBox,
+                               RecordingOption      recordingOption);
+    ~ClientEntityMailBoxWrapper();
 
-	ScriptObject pyGetAttribute( const ScriptString & attrObj );
+    ScriptObject pyGetAttribute(const ScriptString& attrObj);
 
-	PY_KEYWORD_METHOD_DECLARE( pyCall )
+    PY_KEYWORD_METHOD_DECLARE(pyCall)
 
-	PyObject * pyRepr() const;
+    PyObject* pyRepr() const;
 
-private:
-	ClientEntityMailBox * pMailBox_;
+  private:
+    ClientEntityMailBox* pMailBox_;
 
-	RecordingOption recordingOption_;
+    RecordingOption recordingOption_;
 };
 
-
 BW_END_NAMESPACE
-
 
 #endif // CLIENT_ENTITY_MAILBOX_WRAPPER_HPP

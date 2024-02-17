@@ -13,24 +13,27 @@ class PsaCollideProperties : public PsaProperties
 {
     DECLARE_DYNCREATE(PsaCollideProperties)
 
-public:
-    enum { IDD = IDD_PSA_COLLIDE_PROPERTIES };
+  public:
+    enum
+    {
+        IDD = IDD_PSA_COLLIDE_PROPERTIES
+    };
 
-    PsaCollideProperties(); 
+    PsaCollideProperties();
 
-    /*virtual*/ ~PsaCollideProperties();  
+    /*virtual*/ ~PsaCollideProperties();
 
     /*virtual*/ void OnInitialUpdate();
 
-    /*virtual*/ void DoDataExchange(CDataExchange* pDX); 
+    /*virtual*/ void DoDataExchange(CDataExchange* pDX);
 
-     CollidePSA *action();
+    CollidePSA* action();
 
     void SetParameters(SetOperation task);
 
-private:
-	controls::EditNumeric	elasticity_;
-	controls::EditNumeric	delay_;
+  private:
+    controls::EditNumeric elasticity_;
+    controls::EditNumeric delay_;
 };
 
 BW_END_NAMESPACE

@@ -5,7 +5,6 @@
 #include "moo/render_target.hpp"
 #include "math/vector3.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class IWaypointView;
@@ -17,27 +16,27 @@ class ChunkSpace;
  */
 class WaypointAnnotator
 {
-public:
-	WaypointAnnotator( IWaypointView * pView, ChunkSpace * pSpace );
-	~WaypointAnnotator();
+  public:
+    WaypointAnnotator(IWaypointView* pView, ChunkSpace* pSpace);
+    ~WaypointAnnotator();
 
-	void annotate( bool slowly = false, float girth = 0.f );
+    void annotate(bool slowly = false, float girth = 0.f);
 
-private:
-	WaypointAnnotator( const WaypointAnnotator& );
-	WaypointAnnotator& operator=( const WaypointAnnotator& );
+  private:
+    WaypointAnnotator(const WaypointAnnotator&);
+    WaypointAnnotator& operator=(const WaypointAnnotator&);
 
-	int annotate( int p, int v, bool slowly );
+    int annotate(int p, int v, bool slowly);
 
-	IWaypointView * pView_;
-	ChunkSpace *	pSpace_;
+    IWaypointView* pView_;
+    ChunkSpace*    pSpace_;
 
-public:
-	BW::vector<Vector3>	colTriDebug_;
+  public:
+    BW::vector<Vector3> colTriDebug_;
 
-	ComObjectWrap<DX::Surface> pSurface_;
-	ComObjectWrap<DX::Surface> pRTSurface_;
-	Moo::RenderTargetPtr pTarget_;
+    ComObjectWrap<DX::Surface> pSurface_;
+    ComObjectWrap<DX::Surface> pRTSurface_;
+    Moo::RenderTargetPtr       pTarget_;
 };
 
 BW_END_NAMESPACE

@@ -5,25 +5,23 @@
 
 #include <scene/scene_object.hpp>
 
-namespace BW
-{
+namespace BW {
 
-class PolyMesh
-{
-public:
-	PolyMesh();
-	void doDraw();
-	bool success() const;
-	int value; // Dummy value used for diagnostics.
-};
+    class PolyMesh
+    {
+      public:
+        PolyMesh();
+        void doDraw();
+        bool success() const;
+        int  value; // Dummy value used for diagnostics.
+    };
 
-class PolyMeshDrawHandler
-	: public IDrawOperationTypeHandler
-{
-public:
-	void doDraw( const SceneObject & object ) const;
-	bool success( const SceneObject & object ) const;
-};
+    class PolyMeshDrawHandler : public IDrawOperationTypeHandler
+    {
+      public:
+        void doDraw(const SceneObject& object) const;
+        bool success(const SceneObject& object) const;
+    };
 
 } // namespace BW
 

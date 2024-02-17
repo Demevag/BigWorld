@@ -1,7 +1,6 @@
 #ifndef ENTITY_USER_DATA_OBJECT_LINK_OPERATION_HPP
 #define ENTITY_USER_DATA_OBJECT_LINK_OPERATION_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "worldeditor/world/items/editor_chunk_entity.hpp"
@@ -17,27 +16,23 @@ BW_BEGIN_NAMESPACE
  */
 class EntityUserDataObjectLinkOperation : public UndoRedo::Operation
 {
-public:
-    explicit EntityUserDataObjectLinkOperation
-    (
-        EditorChunkEntityPtr        entity,
-		const BW::string&					linkName
-    );
+  public:
+    explicit EntityUserDataObjectLinkOperation(EditorChunkEntityPtr entity,
+                                               const BW::string&    linkName);
 
-	/*virtual*/ void undo();
+    /*virtual*/ void undo();
 
-    /*virtual*/ bool iseq(UndoRedo::Operation const &other) const;
+    /*virtual*/ bool iseq(UndoRedo::Operation const& other) const;
 
-private:
-    EntityUserDataObjectLinkOperation(
-		EntityUserDataObjectLinkOperation const & );
-    EntityUserDataObjectLinkOperation & operator=(
-		EntityUserDataObjectLinkOperation const & );
+  private:
+    EntityUserDataObjectLinkOperation(EntityUserDataObjectLinkOperation const&);
+    EntityUserDataObjectLinkOperation& operator=(
+      EntityUserDataObjectLinkOperation const&);
 
-protected:
-    BW::string                 linkName_;
-    BW::string                 entityLink_;
-    EditorChunkEntityPtr        entity_;
+  protected:
+    BW::string           linkName_;
+    BW::string           entityLink_;
+    EditorChunkEntityPtr entity_;
 };
 
 BW_END_NAMESPACE

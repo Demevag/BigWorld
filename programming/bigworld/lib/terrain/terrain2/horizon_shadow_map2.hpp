@@ -4,28 +4,25 @@
 #include "../horizon_shadow_map.hpp"
 #include "moo/texture_lock_wrapper.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Terrain
-{
+namespace Terrain {
     class TerrainBlock2;
 }
 
-namespace Terrain
-{
+namespace Terrain {
     /**
      *  This class implements the HorizonShadowMap interface for the second
      *  generation of terrain.
      */
     class HorizonShadowMap2 : public HorizonShadowMap
     {
-    public:
+      public:
         explicit HorizonShadowMap2(TerrainBlock2* block);
 
-//#ifdef EDITOR_ENABLED
-		bool create( uint32 size, BW::string *error = NULL );
-//#endif
+        // #ifdef EDITOR_ENABLED
+        bool create(uint32 size, BW::string* error = NULL);
+        // #endif
 
         HorizonShadowPixel shadowAt(int32 x, int32 z) const;
 
@@ -34,32 +31,32 @@ namespace Terrain
 
         bool lock(bool readOnly);
 
-        ImageType &image();
-        ImageType const &image() const;
+        ImageType&       image();
+        ImageType const& image() const;
 
         bool unlock();
 
-        bool save( DataSectionPtr ) const;
-        bool load(DataSectionPtr dataSection, BW::string *error = NULL);
+        bool save(DataSectionPtr) const;
+        bool load(DataSectionPtr dataSection, BW::string* error = NULL);
 
-        BaseTerrainBlock &baseTerrainBlock();
-        BaseTerrainBlock const &baseTerrainBlock() const;
+        BaseTerrainBlock&       baseTerrainBlock();
+        BaseTerrainBlock const& baseTerrainBlock() const;
 
-        DX::Texture *texture() const;
+        DX::Texture* texture() const;
 
-    private:
-        TerrainBlock2               *block_;
-        ComObjectWrap<DX::Texture>  texture_;
-		Moo::TextureLockWrapper		textureLock_;
-        uint32                      width_;
-        uint32                      height_;
-        HorizonShadowImage          image_;
-        size_t                      lockCount_;
+      private:
+        TerrainBlock2*             block_;
+        ComObjectWrap<DX::Texture> texture_;
+        Moo::TextureLockWrapper    textureLock_;
+        uint32                     width_;
+        uint32                     height_;
+        HorizonShadowImage         image_;
+        size_t                     lockCount_;
 
-		size_t						sizeInBytes_;
+        size_t sizeInBytes_;
     };
 
-    typedef SmartPointer<HorizonShadowMap2>     HorizonShadowMap2Ptr;
+    typedef SmartPointer<HorizonShadowMap2> HorizonShadowMap2Ptr;
 
 } // namespace Terrain
 

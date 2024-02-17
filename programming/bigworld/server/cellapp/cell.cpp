@@ -3,10 +3,10 @@
 #ifdef _WIN32
 // TODO: Fix these warnings
 // 'conversion' conversion from 'type1' to 'type2', possible loss of data
-#pragma warning( disable: 4244 )
+#pragma warning(disable : 4244)
 
 // 'this' : used in base member initializer list
-#pragma warning (disable: 4355)
+#pragma warning(disable : 4355)
 #endif
 
 #include "cell.hpp"
@@ -40,8 +40,7 @@
 
 #include <stdlib.h>
 
-DECLARE_DEBUG_COMPONENT( 0 )
-
+DECLARE_DEBUG_COMPONENT(0)
 
 BW_BEGIN_NAMESPACE
 
@@ -49,15 +48,12 @@ BW_BEGIN_NAMESPACE
 #include "cell.ipp"
 #endif
 
-namespace
-{
-inline
-const char * asString( bool value )
-{
-	return value ? "True" : "False";
+namespace {
+    inline const char* asString(bool value)
+    {
+        return value ? "True" : "False";
+    }
 }
-}
-
 
 // -----------------------------------------------------------------------------
 // Section: Constructor/Destructor
@@ -69,90 +65,80 @@ const char * asString( bool value )
  *	@param space	The space that this cell is in.
  *	@param cellInfo	The information associated with this cell.
  */
-Cell::Cell( Space & space, const CellInfo & cellInfo ) :
-	realEntities_(),
-	shouldOffload_( true ),
-	lastERTFactor_( 1.f ),
-	lastERTCalcTime_( 0 ),
-	initialTimeOfDay_( 0.f ),
-	gameSecondsPerSecond_( 0.f ),
-	isRetiring_( false ),
-	isRemoved_( false ),
-	space_( space ),
-	backupIndex_( 0 ),
-	pCellInfo_( &cellInfo ),
-	pendingAcks_(),
-	receivedAcks_(),
-	pReplayData_( NULL ),
-	stoppingState_( STOPPING_STATE_NOT_STOPPING )
+Cell::Cell(Space& space, const CellInfo& cellInfo)
+  : realEntities_()
+  , shouldOffload_(true)
+  , lastERTFactor_(1.f)
+  , lastERTCalcTime_(0)
+  , initialTimeOfDay_(0.f)
+  , gameSecondsPerSecond_(0.f)
+  , isRetiring_(false)
+  , isRemoved_(false)
+  , space_(space)
+  , backupIndex_(0)
+  , pCellInfo_(&cellInfo)
+  , pendingAcks_()
+  , receivedAcks_()
+  , pReplayData_(NULL)
+  , stoppingState_(STOPPING_STATE_NOT_STOPPING)
 {
-	// TODO: Add this in once cell app manager is fixed.
-	// MF_ASSERT( space_.pCell() == NULL );
-	space_.pCell( this );
+    // TODO: Add this in once cell app manager is fixed.
+    // MF_ASSERT( space_.pCell() == NULL );
+    space_.pCell(this);
 }
-
 
 /**
  *	The destructor for Cell.
  */
 Cell::~Cell()
 {
-	TRACE_MSG( "Cell::~Cell: for space %u\n", space_.id() );
+    TRACE_MSG("Cell::~Cell: for space %u\n", space_.id());
 
-	while (!realEntities_.empty())
-	{
-		int prevSize = realEntities_.size();
+    while (!realEntities_.empty()) {
+        int prevSize = realEntities_.size();
 
-		realEntities_.front()->destroy();
+        realEntities_.front()->destroy();
 
-		MF_ASSERT( prevSize > (int)realEntities_.size() );
+        MF_ASSERT(prevSize > (int)realEntities_.size());
 
-		if (prevSize <= (int)realEntities_.size())
-		{
-			break;
-		}
-	}
+        if (prevSize <= (int)realEntities_.size()) {
+            break;
+        }
+    }
 
-	bw_safe_delete( pReplayData_ );
+    bw_safe_delete(pReplayData_);
 
-	MF_ASSERT_DEV( space_.pCell() == this );
+    MF_ASSERT_DEV(space_.pCell() == this);
 
-	space_.pCell( NULL );
+    space_.pCell(NULL);
 }
-
 
 /**
  *
  */
 void Cell::shutDown()
 {
-	while (!realEntities_.empty())
-	{
-		realEntities_.front()->destroy();
-	}
+    while (!realEntities_.empty()) {
+        realEntities_.front()->destroy();
+    }
 }
-
 
 /**
  *	This method returns whether this cell is ready to be deleted.
  */
 bool Cell::isReadyForDeletion() const
 {
-	return
-		// Don't delete if there are any possible pending entity creations.
-		CellApp::instance().bufferedEntityMessages().isEmpty() &&		
-		CellApp::instance().bufferedInputMessages().isEmpty() &&		
-		isRemoved_ && 
-		realEntities_.empty() &&
-		space_.spaceEntities().empty() &&
-		pendingAcks_.empty();
+    return
+      // Don't delete if there are any possible pending entity creations.
+      CellApp::instance().bufferedEntityMessages().isEmpty() &&
+      CellApp::instance().bufferedInputMessages().isEmpty() && isRemoved_ &&
+      realEntities_.empty() && space_.spaceEntities().empty() &&
+      pendingAcks_.empty();
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Time slices
 // -----------------------------------------------------------------------------
-
 
 /**
  *	We want to periodically update the CellApps that we have created ghosts
@@ -162,12 +148,11 @@ bool Cell::isReadyForDeletion() const
  */
 bool Cell::checkOffloadsAndGhosts()
 {
-	OffloadChecker offloadChecker( *this );
-	offloadChecker.run();
+    OffloadChecker offloadChecker(*this);
+    offloadChecker.run();
 
-	return this->isReadyForDeletion();
+    return this->isReadyForDeletion();
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Entity Maintenance C++ methods
@@ -180,42 +165,39 @@ bool Cell::checkOffloadsAndGhosts()
  *	@param pChannel The channel to send on.
  *	@param isTeleport Indicates whether this is a teleport
  */
-void Cell::offloadEntity( Entity * pEntity, CellAppChannel * pChannel,
-	   bool isTeleport )
+void Cell::offloadEntity(Entity*         pEntity,
+                         CellAppChannel* pChannel,
+                         bool            isTeleport)
 {
-	AUTO_SCOPED_PROFILE( "offloadEntity" );
-	SCOPED_PROFILE( TRANSIENT_LOAD_PROFILE );
+    AUTO_SCOPED_PROFILE("offloadEntity");
+    SCOPED_PROFILE(TRANSIENT_LOAD_PROFILE);
 
-	// TRACE_MSG( "Cell::offloadEntity: id %d to cell %s\n", pEntity->id(),
-	//		pChannel->address().c_str() );
+    // TRACE_MSG( "Cell::offloadEntity: id %d to cell %s\n", pEntity->id(),
+    //		pChannel->address().c_str() );
 
-	// Make sure it's real.
-	MF_ASSERT( pEntity->pReal() != NULL );
+    // Make sure it's real.
+    MF_ASSERT(pEntity->pReal() != NULL);
 
-	// Make sure the entity doesn't have a zero refcount when between lists.
-	EntityPtr pCopy = pEntity;
+    // Make sure the entity doesn't have a zero refcount when between lists.
+    EntityPtr pCopy = pEntity;
 
-	// If teleporting, this has already been called so that the channel is not
-	// left with a partially streamed message.
-	if (!isTeleport)
-	{
-		pEntity->callback( "onLeavingCell" );
-	}
+    // If teleporting, this has already been called so that the channel is not
+    // left with a partially streamed message.
+    if (!isTeleport) {
+        pEntity->callback("onLeavingCell");
+    }
 
-	// Move the entity from being real to a ghost.
-	if (pEntity->isReal())
-	{
-		if (pReplayData_ && isTeleport)
-		{
-			pReplayData_->deleteEntity( pEntity->id() );
-		}
+    // Move the entity from being real to a ghost.
+    if (pEntity->isReal()) {
+        if (pReplayData_ && isTeleport) {
+            pReplayData_->deleteEntity(pEntity->id());
+        }
 
-		realEntities_.remove( pEntity );
-		pEntity->offload( pChannel, isTeleport );
-		pEntity->callback( "onLeftCell" );
-	}
+        realEntities_.remove(pEntity);
+        pEntity->offload(pChannel, isTeleport);
+        pEntity->callback("onLeftCell");
+    }
 }
-
 
 /**
  *	This method adds the input entity to the cell's internal list of real
@@ -224,21 +206,20 @@ void Cell::offloadEntity( Entity * pEntity, CellAppChannel * pChannel,
  *	It is called from Cell::createEntity and by the Entity itself when it is
  *  onloaded.
  */
-void Cell::addRealEntity( Entity * pEntity, bool shouldSendNow )
+void Cell::addRealEntity(Entity* pEntity, bool shouldSendNow)
 {
-	if (!pEntity->isReal())
-	{
-		ERROR_MSG( "Cell::addRealEntity called on ghost entity id %u!\n",
-			pEntity->id() );
-		return;
-	}
+    if (!pEntity->isReal()) {
+        ERROR_MSG("Cell::addRealEntity called on ghost entity id %u!\n",
+                  pEntity->id());
+        return;
+    }
 
-	pEntity->informBaseOfAddress( CellApp::instance().interface().address(),
-		this->spaceID(), shouldSendNow );
+    pEntity->informBaseOfAddress(CellApp::instance().interface().address(),
+                                 this->spaceID(),
+                                 shouldSendNow);
 
-	realEntities_.add( pEntity );
+    realEntities_.add(pEntity);
 }
-
 
 /**
  *	This method does everything that the cell has to do when a real entity is
@@ -246,32 +227,30 @@ void Cell::addRealEntity( Entity * pEntity, bool shouldSendNow )
  *
  *	It assumes that the entity's internal 'die' method has already been called.
  */
-void Cell::entityDestroyed( Entity * pEntity )
+void Cell::entityDestroyed(Entity* pEntity)
 {
-	if (!pEntity->isDestroyed())
-	{
-		ERROR_MSG( "Cell::entityDestroyed: "
-			"Someone tried to murder living entity id %u!\n", pEntity->id() );
-		return;
-	}
+    if (!pEntity->isDestroyed()) {
+        ERROR_MSG("Cell::entityDestroyed: "
+                  "Someone tried to murder living entity id %u!\n",
+                  pEntity->id());
+        return;
+    }
 
-	if (!pEntity->isReal())
-	{
-		ERROR_MSG( "Cell::entityDestroyed called on ghost entity id %u!\n",
-			pEntity->id() );
-		return;
-	}
+    if (!pEntity->isReal()) {
+        ERROR_MSG("Cell::entityDestroyed called on ghost entity id %u!\n",
+                  pEntity->id());
+        return;
+    }
 
-	if (!realEntities_.remove( pEntity ))
-	{
-		WARNING_MSG( "Cell::entityDestroyed: Failed to remove entity %u\n",
-				pEntity->id() );
-	}
+    if (!realEntities_.remove(pEntity)) {
+        WARNING_MSG("Cell::entityDestroyed: Failed to remove entity %u\n",
+                    pEntity->id());
+    }
 
-	INFO_MSG( "Cell::entityDestroyed: %s %u has been destroyed.\n",
-		pEntity->pType()->name(), pEntity->id() );
+    INFO_MSG("Cell::entityDestroyed: %s %u has been destroyed.\n",
+             pEntity->pType()->name(),
+             pEntity->id());
 }
-
 
 /**
  *	This method creates a new real entity on this cell according to the
@@ -289,143 +268,132 @@ void Cell::entityDestroyed( Entity * pEntity )
  *
  *  @return			A pointer to the entity.
  */
-EntityPtr Cell::createEntityInternal( BinaryIStream & data,
-		const ScriptDict & properties,
-		bool isRestore, Mercury::ChannelVersion channelVersion,
-		EntityPtr pNearbyEntity )
+EntityPtr Cell::createEntityInternal(BinaryIStream&          data,
+                                     const ScriptDict&       properties,
+                                     bool                    isRestore,
+                                     Mercury::ChannelVersion channelVersion,
+                                     EntityPtr               pNearbyEntity)
 {
-	AUTO_SCOPED_PROFILE( "createEntity" );
+    AUTO_SCOPED_PROFILE("createEntity");
 
-	EntityID id;
-	EntityTypeID entityTypeID;
-	data >> id >> entityTypeID;
+    EntityID     id;
+    EntityTypeID entityTypeID;
+    data >> id >> entityTypeID;
 
-	// If the ID is unknown, allocate one.
-	bool shouldAllocateID = (id == 0);
-	if (shouldAllocateID)
-	{
-		id = CellApp::instance().idClient().getID();
+    // If the ID is unknown, allocate one.
+    bool shouldAllocateID = (id == 0);
+    if (shouldAllocateID) {
+        id = CellApp::instance().idClient().getID();
 
-		if (id == 0)
-		{
-			ERROR_MSG( "Cell::createEntityInternal: No free IDs!\n" );
-			return NULL;
-		}
-	}
+        if (id == 0) {
+            ERROR_MSG("Cell::createEntityInternal: No free IDs!\n");
+            return NULL;
+        }
+    }
 
-	// If the (non-destroyed) entity already exists, bail early.
-	EntityPopulation::const_iterator found = Entity::population().find( id );
-	if (found != Entity::population().end() && !found->second->isDestroyed())
-	{
-		EntityPtr pExisting = found->second;
+    // If the (non-destroyed) entity already exists, bail early.
+    EntityPopulation::const_iterator found = Entity::population().find(id);
+    if (found != Entity::population().end() && !found->second->isDestroyed()) {
+        EntityPtr pExisting = found->second;
 
-		// If we are restoring and there is already a ghost here, we can assume
-		// that it is a zombie and the real has been lost (critical channels
-		// guarantee this).  There is still a chance that zombie ghosts may be
-		// left around on other CellApps.  The problem and solution are detailed
-		// in http://bugs.bigworldtech.com/show_bug.cgi?id=14827
-		if (!pExisting->isReal() && isRestore)
-		{
-			WARNING_MSG( "Cell::createEntityInternal: "
-				"Destroying zombie ghost %u "
-				"(expected real on %s) prior to restore\n",
-				pExisting->id(), pExisting->realAddr().c_str() );
+        // If we are restoring and there is already a ghost here, we can assume
+        // that it is a zombie and the real has been lost (critical channels
+        // guarantee this).  There is still a chance that zombie ghosts may be
+        // left around on other CellApps.  The problem and solution are detailed
+        // in http://bugs.bigworldtech.com/show_bug.cgi?id=14827
+        if (!pExisting->isReal() && isRestore) {
+            WARNING_MSG("Cell::createEntityInternal: "
+                        "Destroying zombie ghost %u "
+                        "(expected real on %s) prior to restore\n",
+                        pExisting->id(),
+                        pExisting->realAddr().c_str());
 
-			while (!pExisting->isDestroyed())
-			{
-				// Destroying could trigger buffered ghost messages and this
-				// could trigger recreation of the entity.
+            while (!pExisting->isDestroyed()) {
+                // Destroying could trigger buffered ghost messages and this
+                // could trigger recreation of the entity.
 
-				pExisting->destroyZombie();
-			}
-		}
-		else
-		{
-			WARNING_MSG( "Cell::createEntityInternal: %s %u already exists!\n",
-				found->second->isReal() ? "Real" : "Ghost", found->second->id() );
+                pExisting->destroyZombie();
+            }
+        } else {
+            WARNING_MSG("Cell::createEntityInternal: %s %u already exists!\n",
+                        found->second->isReal() ? "Real" : "Ghost",
+                        found->second->id());
 
-			// You should never be able to hit this branch during a restore
-			// because the critical channel stuff is designed to prevent you
-			// ever restoring an entity that is still alive.
-			MF_ASSERT( !isRestore );
+            // You should never be able to hit this branch during a restore
+            // because the critical channel stuff is designed to prevent you
+            // ever restoring an entity that is still alive.
+            MF_ASSERT(!isRestore);
 
-			data.finish();
+            data.finish();
 
-			return found->second;
-		}
-	}
+            return found->second;
+        }
+    }
 
-	// Build up the Entity structure
-	EntityPtr pNewEntity = space_.newEntity( id, entityTypeID );
+    // Build up the Entity structure
+    EntityPtr pNewEntity = space_.newEntity(id, entityTypeID);
 
-	if (!pNewEntity)
-	{
-		return NULL;
-	}
+    if (!pNewEntity) {
+        return NULL;
+    }
 
-	MF_ASSERT( pNewEntity->nextInChunk() == NULL );
-	MF_ASSERT( pNewEntity->prevInChunk() == NULL );
-	MF_ASSERT( pNewEntity->pChunk() == NULL );
+    MF_ASSERT(pNewEntity->nextInChunk() == NULL);
+    MF_ASSERT(pNewEntity->prevInChunk() == NULL);
+    MF_ASSERT(pNewEntity->pChunk() == NULL);
 
-	Entity::callbacksPermitted( false ); // {
+    Entity::callbacksPermitted(false); // {
 
-	if (!pNewEntity->initReal( data, properties, isRestore, channelVersion,
-				pNearbyEntity ))
-	{
-		pNewEntity->setShouldReturnID( shouldAllocateID );
-		pNewEntity->decRef();
+    if (!pNewEntity->initReal(
+          data, properties, isRestore, channelVersion, pNearbyEntity)) {
+        pNewEntity->setShouldReturnID(shouldAllocateID);
+        pNewEntity->decRef();
 
-		// TODO: Make a callbacksPermitted lock class to help manage the pairing
-		// of these calls
-		Entity::callbacksPermitted( true );
+        // TODO: Make a callbacksPermitted lock class to help manage the pairing
+        // of these calls
+        Entity::callbacksPermitted(true);
 
-		return NULL;
-	}
+        return NULL;
+    }
 
-	// And add it to our list of reals
-	// TODO: If init method destroyed or teleported this entity
-	// then we should not do this (and destroying/offloading
-	// would have caused an assert when it removed the entity anyway)
-	//
-	// Delay sending the currentCell message to the base so that it will be on
-	// the same bundle as the backup. This guarantees that there is no window
-	// between losing cellData and getting the first backup data.
-	this->addRealEntity( pNewEntity.get(), /*shouldSendNow:*/false );
+    // And add it to our list of reals
+    // TODO: If init method destroyed or teleported this entity
+    // then we should not do this (and destroying/offloading
+    // would have caused an assert when it removed the entity anyway)
+    //
+    // Delay sending the currentCell message to the base so that it will be on
+    // the same bundle as the backup. This guarantees that there is no window
+    // between losing cellData and getting the first backup data.
+    this->addRealEntity(pNewEntity.get(), /*shouldSendNow:*/ false);
 
-	INFO_MSG( "Cell::createEntityInternal: %s %-10s (%u)\n",
-			isRestore ? "Restored" : "New",
-			pNewEntity->pType() ?
-				pNewEntity->pType()->name() : "INVALID",
-			pNewEntity->id() );
+    INFO_MSG("Cell::createEntityInternal: %s %-10s (%u)\n",
+             isRestore ? "Restored" : "New",
+             pNewEntity->pType() ? pNewEntity->pType()->name() : "INVALID",
+             pNewEntity->id());
 
-	Entity::population().notifyObservers( *pNewEntity );
+    Entity::population().notifyObservers(*pNewEntity);
 
-	Entity::callbacksPermitted( true ); // }
+    Entity::callbacksPermitted(true); // }
 
-	if (pReplayData_)
-	{
-		if (isRestore)
-		{
-			// If we delete an entity that hasn't been created yet, BWEntities
-			// (and pre-connection_model PC client) will silently ignore it.
-			pReplayData_->deleteEntity( pNewEntity->id() );
-		}
+    if (pReplayData_) {
+        if (isRestore) {
+            // If we delete an entity that hasn't been created yet, BWEntities
+            // (and pre-connection_model PC client) will silently ignore it.
+            pReplayData_->deleteEntity(pNewEntity->id());
+        }
 
-		// This needs to be after Entity::callbacksPermitted( true ) above, so
-		// that any state set in the Python constructor is reflected in the
-		// initial state of the recorded entity.
-		pReplayData_->addEntityState( *pNewEntity );
-	}
+        // This needs to be after Entity::callbacksPermitted( true ) above, so
+        // that any state set in the Python constructor is reflected in the
+        // initial state of the recorded entity.
+        pReplayData_->addEntityState(*pNewEntity);
+    }
 
-	// Note: This causes the currentCell message from above to be sent too.
-	if (pNewEntity->pReal())
-	{
-		pNewEntity->pReal()->backup();	// Send backup to BaseApp immediately.
-	}
+    // Note: This causes the currentCell message from above to be sent too.
+    if (pNewEntity->pReal()) {
+        pNewEntity->pReal()->backup(); // Send backup to BaseApp immediately.
+    }
 
-	return pNewEntity;
+    return pNewEntity;
 }
-
 
 /**
  *	This method is called to write backup data for real entities on this cell.
@@ -435,34 +403,30 @@ EntityPtr Cell::createEntityInternal( BinaryIStream & data,
  *					each call.
  *	@param	period	Indicates what the index can go up to.
  */
-void Cell::backup( int index, int period )
+void Cell::backup(int index, int period)
 {
-	// One thought with this is to have a trigger in the range list. We traverse
-	// from here when we want to back up an entity. If a real entity moves
-	// 'behind' the trigger, we can back it up then also.
-	int newBackupIndex = realEntities_.size() * (index + 1)/ period;
+    // One thought with this is to have a trigger in the range list. We traverse
+    // from here when we want to back up an entity. If a real entity moves
+    // 'behind' the trigger, we can back it up then also.
+    int newBackupIndex = realEntities_.size() * (index + 1) / period;
 
-	if (index == 0)
-	{
-		backupIndex_ = 0;
-	}
+    if (index == 0) {
+        backupIndex_ = 0;
+    }
 
-	if (backupIndex_ < newBackupIndex)
-	{
-		Entities::const_iterator iter = realEntities_.begin() + backupIndex_;
-		Entities::const_iterator end = realEntities_.begin() + newBackupIndex;
+    if (backupIndex_ < newBackupIndex) {
+        Entities::const_iterator iter = realEntities_.begin() + backupIndex_;
+        Entities::const_iterator end  = realEntities_.begin() + newBackupIndex;
 
-		while (iter != end)
-		{
-			(*iter)->pReal()->autoBackup();
+        while (iter != end) {
+            (*iter)->pReal()->autoBackup();
 
-			++iter;
-		}
-	}
+            ++iter;
+        }
+    }
 
-	backupIndex_ = newBackupIndex;
+    backupIndex_ = newBackupIndex;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Communication message handlers concerning entities
@@ -480,71 +444,64 @@ void Cell::backup( int index, int period )
  *
  *	@see createEntityInternal
  */
-void Cell::createEntity( const Mercury::Address& srcAddr,
-		const Mercury::UnpackedMessageHeader& header,
-		BinaryIStream & data,
-		EntityPtr pNearbyEntity )
+void Cell::createEntity(const Mercury::Address&               srcAddr,
+                        const Mercury::UnpackedMessageHeader& header,
+                        BinaryIStream&                        data,
+                        EntityPtr                             pNearbyEntity)
 {
-	Mercury::ChannelVersion channelVersion = Mercury::SEQ_NULL;
-	data >> channelVersion;
+    Mercury::ChannelVersion channelVersion = Mercury::SEQ_NULL;
+    data >> channelVersion;
 
-	bool isRestore;
-	data >> isRestore;
+    bool isRestore;
+    data >> isRestore;
 
-	EntityPtr pEntity = this->createEntityInternal( data, ScriptDict(),
-		isRestore, channelVersion, pNearbyEntity );
+    EntityPtr pEntity = this->createEntityInternal(
+      data, ScriptDict(), isRestore, channelVersion, pNearbyEntity);
 
-	if (isRestore)
-	{
-		return;
-	}
+    if (isRestore) {
+        return;
+    }
 
-	if (header.replyID == Mercury::REPLY_ID_NONE)
-	{
-		WARNING_MSG( "Cell::createEntity: Handling non-request createEntity\n" );
-		return;
-	}
+    if (header.replyID == Mercury::REPLY_ID_NONE) {
+        WARNING_MSG("Cell::createEntity: Handling non-request createEntity\n");
+        return;
+    }
 
-	if (pNearbyEntity == NULL)
-	{
-		// Only CellAppMgr sends without a nearby entity.
-		CellAppMgrGateway & cellAppMgr = CellApp::instance().cellAppMgr();
+    if (pNearbyEntity == NULL) {
+        // Only CellAppMgr sends without a nearby entity.
+        CellAppMgrGateway& cellAppMgr = CellApp::instance().cellAppMgr();
 
-		cellAppMgr.bundle().startReply( header.replyID );
-		cellAppMgr.bundle() << (pEntity ? pEntity->id() : NULL_ENTITY_ID);
-		cellAppMgr.send();
-		return;
-	}
+        cellAppMgr.bundle().startReply(header.replyID);
+        cellAppMgr.bundle() << (pEntity ? pEntity->id() : NULL_ENTITY_ID);
+        cellAppMgr.send();
+        return;
+    }
 
-	Mercury::Channel * pChannel = header.pChannel.get();
-	
-	if (pEntity &&
-			pEntity->isReal() &&
-			pEntity->pReal()->channel().isConnected())
-	{
-		// Use the base entity channel if we have it.
-		pChannel = &(pEntity->pReal()->channel());
-	}
+    Mercury::Channel* pChannel = header.pChannel.get();
 
-	if (pChannel->isDestroyed())
-	{
-		// Our channel object might have been destroyed due to this message
-		// being buffered.
-		WARNING_MSG( "Cell::createEntity: Channel %s has been destroyed, "
-				"cannot send reply\n",
-			pChannel->c_str() );
+    if (pEntity && pEntity->isReal() &&
+        pEntity->pReal()->channel().isConnected()) {
+        // Use the base entity channel if we have it.
+        pChannel = &(pEntity->pReal()->channel());
+    }
 
-		return;
-	}
+    if (pChannel->isDestroyed()) {
+        // Our channel object might have been destroyed due to this message
+        // being buffered.
+        WARNING_MSG("Cell::createEntity: Channel %s has been destroyed, "
+                    "cannot send reply\n",
+                    pChannel->c_str());
 
-	Mercury::Bundle & bundle = pChannel->bundle();
+        return;
+    }
 
-	bundle.startReply( header.replyID );
-	bundle << (pEntity ? pEntity->id() : NULL_ENTITY_ID);
+    Mercury::Bundle& bundle = pChannel->bundle();
 
-	pChannel->send();
+    bundle.startReply(header.replyID);
+    bundle << (pEntity ? pEntity->id() : NULL_ENTITY_ID);
+
+    pChannel->send();
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Instrumentation
@@ -555,40 +512,35 @@ void Cell::createEntity( const Mercury::Address& srcAddr,
  */
 WatcherPtr Cell::pWatcher()
 {
-	static DirectoryWatcherPtr pWatcher = NULL;
+    static DirectoryWatcherPtr pWatcher = NULL;
 
-	if (pWatcher == NULL)
-	{
-		pWatcher = new DirectoryWatcher();
+    if (pWatcher == NULL) {
+        pWatcher = new DirectoryWatcher();
 
-		Cell * pNull = NULL;
+        Cell* pNull = NULL;
 
-		pWatcher->addChild( "numReals",
-				makeWatcher( pNull->realEntities_, &Entities::size ) );
+        pWatcher->addChild("numReals",
+                           makeWatcher(pNull->realEntities_, &Entities::size));
 
-		pWatcher->addChild( "spaceID", makeWatcher( &Cell::spaceID ) );
+        pWatcher->addChild("spaceID", makeWatcher(&Cell::spaceID));
 
-		pWatcher->addChild( "rect", makeWatcher( &Cell::rect ) );
+        pWatcher->addChild("rect", makeWatcher(&Cell::rect));
 
-		Watcher * watchREntities =
-			new SequenceWatcher< Entities >( pNull->realEntities_ );
-		watchREntities->addChild( "*",
-				new BaseDereferenceWatcher( Entity::pWatcher() ) );
-		pWatcher->addChild( "reals", watchREntities );
+        Watcher* watchREntities =
+          new SequenceWatcher<Entities>(pNull->realEntities_);
+        watchREntities->addChild(
+          "*", new BaseDereferenceWatcher(Entity::pWatcher()));
+        pWatcher->addChild("reals", watchREntities);
 
-		// misc
-		pWatcher->addChild( "shouldOffload",
-				makeWatcher( &Cell::shouldOffload_ ) );
+        // misc
+        pWatcher->addChild("shouldOffload", makeWatcher(&Cell::shouldOffload_));
 
-		pWatcher->addChild( "profile",
-							CellProfiler::pWatcher(),
-							&pNull->profiler_ );
+        pWatcher->addChild(
+          "profile", CellProfiler::pWatcher(), &pNull->profiler_);
+    }
 
-	}
-
-	return pWatcher;
+    return pWatcher;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Communication message handlers concerning load balancing
@@ -600,47 +552,45 @@ WatcherPtr Cell::pWatcher()
  */
 bool Cell::shouldOffload() const
 {
-	return shouldOffload_ && CellApp::instance().shouldOffload();
+    return shouldOffload_ && CellApp::instance().shouldOffload();
 }
-
 
 /**
  *	This method enables or disables offloading of entities.
  */
-void Cell::shouldOffload( bool shouldOffload )
+void Cell::shouldOffload(bool shouldOffload)
 {
-	shouldOffload_ = shouldOffload;
+    shouldOffload_ = shouldOffload;
 }
-
 
 /**
  *	This method enables or disables offloading of entities.
  */
-void Cell::shouldOffload( BinaryIStream & data )
+void Cell::shouldOffload(BinaryIStream& data)
 {
-	data >> shouldOffload_;
+    data >> shouldOffload_;
 }
-
 
 /**
  *	This method tells us to remove this cell from the application.
  */
-void Cell::retireCell( BinaryIStream & data )
+void Cell::retireCell(BinaryIStream& data)
 {
-	bool isRetiring;
+    bool isRetiring;
 
-	data >> isRetiring;
+    data >> isRetiring;
 
-	INFO_MSG( "Cell::retireCell: "
-				"space = %u. isRetiring = %d. isRemoved = %d\n",
-			this->spaceID(), isRetiring, isRemoved_ );
+    INFO_MSG("Cell::retireCell: "
+             "space = %u. isRetiring = %d. isRemoved = %d\n",
+             this->spaceID(),
+             isRetiring,
+             isRemoved_);
 
-	MF_ASSERT( !isRemoved_ );
-	MF_ASSERT( isRetiring == !isRetiring_ );
+    MF_ASSERT(!isRemoved_);
+    MF_ASSERT(isRetiring == !isRetiring_);
 
-	isRetiring_ = isRetiring;
+    isRetiring_ = isRetiring;
 }
-
 
 /**
  *	This method is called by the CellAppMgr to inform us that this cell should
@@ -648,32 +598,27 @@ void Cell::retireCell( BinaryIStream & data )
  *	be deleted until all these CellApps have confirmed that no more entities
  *	are on their way.
  */
-void Cell::removeCell( BinaryIStream & data )
+void Cell::removeCell(BinaryIStream& data)
 {
-	INFO_MSG( "Cell::removeCell(%u)\n", this->spaceID() );
+    INFO_MSG("Cell::removeCell(%u)\n", this->spaceID());
 
-	MF_ASSERT( !isRemoved_ );
+    MF_ASSERT(!isRemoved_);
 
-	isRemoved_ = true;
+    isRemoved_ = true;
 
-	while (data.remainingLength())
-	{
-		Mercury::Address addr;
-		data >> addr;
+    while (data.remainingLength()) {
+        Mercury::Address addr;
+        data >> addr;
 
-		RemovalAcks::iterator iAck = receivedAcks_.find( addr );
+        RemovalAcks::iterator iAck = receivedAcks_.find(addr);
 
-		if (iAck != receivedAcks_.end())
-		{
-			receivedAcks_.erase( iAck );
-		}
-		else
-		{
-			pendingAcks_.insert( addr );
-		}
-	}
+        if (iAck != receivedAcks_.end()) {
+            receivedAcks_.erase(iAck);
+        } else {
+            pendingAcks_.insert(addr);
+        }
+    }
 }
-
 
 /**
  *	This method handles a message from the CellAppMgr telling us that a
@@ -681,82 +626,77 @@ void Cell::removeCell( BinaryIStream & data )
  *	being removed to inform it that no more entities will be created on it from
  *	this app and it is safe to remove.
  */
-void Cell::notifyOfCellRemoval( BinaryIStream & data )
+void Cell::notifyOfCellRemoval(BinaryIStream& data)
 {
-	Mercury::Address removedAddress;
-	data >> removedAddress;
-	CellAppChannel & channel =
-		*CellAppChannels::instance().get( removedAddress );
-	Mercury::Bundle & bundle = channel.bundle();
-	bundle.startMessage( CellAppInterface::ackCellRemoval );
-	bundle << this->spaceID();
+    Mercury::Address removedAddress;
+    data >> removedAddress;
+    CellAppChannel&  channel = *CellAppChannels::instance().get(removedAddress);
+    Mercury::Bundle& bundle  = channel.bundle();
+    bundle.startMessage(CellAppInterface::ackCellRemoval);
+    bundle << this->spaceID();
 
-	this->space().setPendingCellDelete( removedAddress );
+    this->space().setPendingCellDelete(removedAddress);
 
-	channel.send();
+    channel.send();
 }
-
 
 /**
  *	This method is call by neighbouring CellApps to inform us that it will no
  *	longer create any entities in this cell and so it is safe to remove.
  */
-void Cell::ackCellRemoval( const Mercury::Address & srcAddr,
-		const Mercury::UnpackedMessageHeader & header,
-		BinaryIStream & data )
+void Cell::ackCellRemoval(const Mercury::Address&               srcAddr,
+                          const Mercury::UnpackedMessageHeader& header,
+                          BinaryIStream&                        data)
 {
-	RemovalAcks::iterator iAck = pendingAcks_.find( srcAddr );
+    RemovalAcks::iterator iAck = pendingAcks_.find(srcAddr);
 
-	if (iAck != pendingAcks_.end())
-	{
-		pendingAcks_.erase( iAck );
+    if (iAck != pendingAcks_.end()) {
+        pendingAcks_.erase(iAck);
 
-		INFO_MSG( "Cell::ackCellRemoval(%u): Got removal ack from %s,"
-				"have %zu left, with %zu total pending\n",
-			this->spaceID(), srcAddr.c_str(),
-			pendingAcks_.count( srcAddr ), pendingAcks_.size() );
-	}
-	else
-	{
-		receivedAcks_.insert( srcAddr );
+        INFO_MSG("Cell::ackCellRemoval(%u): Got removal ack from %s,"
+                 "have %zu left, with %zu total pending\n",
+                 this->spaceID(),
+                 srcAddr.c_str(),
+                 pendingAcks_.count(srcAddr),
+                 pendingAcks_.size());
+    } else {
+        receivedAcks_.insert(srcAddr);
 
-		WARNING_MSG( "Cell::ackCellRemoval(%u): "
-				"%s not in pendingAcks_, have now received %zu acks\n",
-			this->spaceID(),
-			srcAddr.c_str(),
-			receivedAcks_.count( srcAddr ) );
-	}
+        WARNING_MSG("Cell::ackCellRemoval(%u): "
+                    "%s not in pendingAcks_, have now received %zu acks\n",
+                    this->spaceID(),
+                    srcAddr.c_str(),
+                    receivedAcks_.count(srcAddr));
+    }
 }
-
 
 /**
  *	This method causes this cell to come back from the dead.
  */
 bool Cell::reuse()
 {
-	WARNING_MSG( "Cell::reuse: isRetiring_ = %d. isRemoved_ = %d\n",
-			isRetiring_, isRemoved_ );
+    WARNING_MSG("Cell::reuse: isRetiring_ = %d. isRemoved_ = %d\n",
+                isRetiring_,
+                isRemoved_);
 
-	bool isOkay = isRetiring_ && isRemoved_;
+    bool isOkay = isRetiring_ && isRemoved_;
 
-	isRetiring_ = isRemoved_ = false;
+    isRetiring_ = isRemoved_ = false;
 
-	return isOkay;
+    return isOkay;
 }
-
 
 /**
  *	This method is used to notify this cell that a cell application has died
  *	unexpectedly.
  */
-void Cell::handleCellAppDeath( const Mercury::Address & addr )
+void Cell::handleCellAppDeath(const Mercury::Address& addr)
 {
-	// TODO:Balance Remove CellInfo from space! (probably)
+    // TODO:Balance Remove CellInfo from space! (probably)
 
-	pendingAcks_.erase( addr );
-	receivedAcks_.erase( addr );
+    pendingAcks_.erase(addr);
+    receivedAcks_.erase(addr);
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Miscellaneous
@@ -765,99 +705,89 @@ void Cell::handleCellAppDeath( const Mercury::Address & addr )
 /**
  *	This method sends this entity positions to the cell app manager.
  */
-void Cell::sendEntityPositions( Mercury::Bundle & bundle ) const
+void Cell::sendEntityPositions(Mercury::Bundle& bundle) const
 {
-	if (realEntities_.empty())
-	{
-		return;
-	}
+    if (realEntities_.empty()) {
+        return;
+    }
 
-	float xMin = realEntities_.front()->position().x;
-	float zMin = realEntities_.front()->position().z;
-	float xMax = xMin + 1.f; // Add a bit so that width is non-zero.
-	float zMax = zMin + 1.f;
+    float xMin = realEntities_.front()->position().x;
+    float zMin = realEntities_.front()->position().z;
+    float xMax = xMin + 1.f; // Add a bit so that width is non-zero.
+    float zMax = zMin + 1.f;
 
-	Entities::const_iterator iter = realEntities_.begin();
+    Entities::const_iterator iter = realEntities_.begin();
 
-	while (iter != realEntities_.end())
-	{
-		const Position3D & pos = (*iter)->position();
+    while (iter != realEntities_.end()) {
+        const Position3D& pos = (*iter)->position();
 
-		xMin = std::min( xMin, pos.x );
-		xMax = std::max( xMax, pos.x );
+        xMin = std::min(xMin, pos.x);
+        xMax = std::max(xMax, pos.x);
 
-		zMin = std::min( zMin, pos.z );
-		zMax = std::max( zMax, pos.z );
+        zMin = std::min(zMin, pos.z);
+        zMax = std::max(zMax, pos.z);
 
-		iter++;
-	}
+        iter++;
+    }
 
-	bundle << xMin << xMax << zMin << zMax;
+    bundle << xMin << xMax << zMin << zMax;
 
-	const float xRange = xMax - xMin;
-	const float zRange = zMax - zMin;
+    const float xRange = xMax - xMin;
+    const float zRange = zMax - zMin;
 
-	iter = realEntities_.begin();
+    iter = realEntities_.begin();
 
-	while (iter != realEntities_.end())
-	{
-		const Position3D & pos = (*iter)->position();
-		uint8 x = uint8((pos.x - xMin) / xRange * 255.f);
-		uint8 z = uint8((pos.z - zMin) / zRange * 255.f);
+    while (iter != realEntities_.end()) {
+        const Position3D& pos = (*iter)->position();
+        uint8             x   = uint8((pos.x - xMin) / xRange * 255.f);
+        uint8             z   = uint8((pos.z - zMin) / zRange * 255.f);
 
-		bundle << x << z;
+        bundle << x << z;
 
-		iter++;
-	}
+        iter++;
+    }
 }
-
 
 /**
  *	This method returns the id of this cell. This id is unique between cells.
  */
 SpaceID Cell::spaceID() const
 {
-	return this->space().id();
+    return this->space().id();
 }
-
 
 /**
  *	This method is called when this space wants to be destroyed.
  */
 void Cell::onSpaceGone()
 {
-	BW::vector< EntityPtr > entities( realEntities_.size() );
-	std::copy( realEntities_.begin(), realEntities_.end(), entities.begin() );
+    BW::vector<EntityPtr> entities(realEntities_.size());
+    std::copy(realEntities_.begin(), realEntities_.end(), entities.begin());
 
-	BW::vector< EntityPtr >::iterator iter = entities.begin();
+    BW::vector<EntityPtr>::iterator iter = entities.begin();
 
-	while (iter != entities.end())
-	{
-		EntityPtr pEntity = *iter;
+    while (iter != entities.end()) {
+        EntityPtr pEntity = *iter;
 
-		if (!pEntity->isDestroyed())
-		{
-			Entity::nominateRealEntity( *pEntity );
+        if (!pEntity->isDestroyed()) {
+            Entity::nominateRealEntity(*pEntity);
 
-			PyObject * pMethod =
-				PyObject_GetAttrString( pEntity.get(), "onSpaceGone" );
-			Script::call( pMethod, PyTuple_New( 0 ),
-					"onSpaceGone", true/*okIfFnNull*/ );
+            PyObject* pMethod =
+              PyObject_GetAttrString(pEntity.get(), "onSpaceGone");
+            Script::call(
+              pMethod, PyTuple_New(0), "onSpaceGone", true /*okIfFnNull*/);
 
-			if (!pEntity->isDestroyed() &&
-					pEntity->isReal() &&
-					&pEntity->space() == &this->space())
-			{
-				pEntity->destroy();
-			}
+            if (!pEntity->isDestroyed() && pEntity->isReal() &&
+                &pEntity->space() == &this->space()) {
+                pEntity->destroy();
+            }
 
-			Entity::nominateRealEntityPop();
-		}
+            Entity::nominateRealEntityPop();
+        }
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Debugging
@@ -865,20 +795,18 @@ void Cell::onSpaceGone()
 
 void Cell::debugDump()
 {
-	DEBUG_MSG( "Cell - spaceID = %u\n", this->spaceID() );
-	DEBUG_MSG( "Reals (%" PRIzu "):\n", realEntities_.size() );
+    DEBUG_MSG("Cell - spaceID = %u\n", this->spaceID());
+    DEBUG_MSG("Reals (%" PRIzu "):\n", realEntities_.size());
 
-	Entities::iterator iter = realEntities_.begin();
-	while (iter != realEntities_.end())
-	{
-		(*iter)->debugDump();
+    Entities::iterator iter = realEntities_.begin();
+    while (iter != realEntities_.end()) {
+        (*iter)->debugDump();
 
-		iter++;
-	}
+        iter++;
+    }
 
-	space_.debugRangeList();
+    space_.debugRangeList();
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Cell::Entities
@@ -887,100 +815,90 @@ void Cell::debugDump()
 /**
  *	This method adds the input entity to this collection.
  */
-bool Cell::Entities::add( Entity * pEntity )
+bool Cell::Entities::add(Entity* pEntity)
 {
-	MF_ASSERT( pEntity->pReal() != NULL );
-	MF_ASSERT( pEntity->pReal()->removalHandle() == NO_ENTITY_REMOVAL_HANDLE );
+    MF_ASSERT(pEntity->pReal() != NULL);
+    MF_ASSERT(pEntity->pReal()->removalHandle() == NO_ENTITY_REMOVAL_HANDLE);
 
-	if (!pEntity->pReal() &&
-		pEntity->pReal()->removalHandle() != NO_ENTITY_REMOVAL_HANDLE)
-	{
-		ERROR_MSG( "Cell::Entities::add: Failed to add %u\n", pEntity->id() );
+    if (!pEntity->pReal() &&
+        pEntity->pReal()->removalHandle() != NO_ENTITY_REMOVAL_HANDLE) {
+        ERROR_MSG("Cell::Entities::add: Failed to add %u\n", pEntity->id());
 
-		return false;
-	}
+        return false;
+    }
 
-	pEntity->pReal()->removalHandle( this->size() );
-	collection_.push_back( pEntity );
+    pEntity->pReal()->removalHandle(this->size());
+    collection_.push_back(pEntity);
 
-	// Choose random existing entity to swap with to randomise the list.
-	// Processes iterating through this collection (such as entity backup)
-	// will be effectively randomised.
-	EntityPtr pSwapEntity = collection_[random() % collection_.size()];
-	this->swapWithBack( pSwapEntity.get() );
+    // Choose random existing entity to swap with to randomise the list.
+    // Processes iterating through this collection (such as entity backup)
+    // will be effectively randomised.
+    EntityPtr pSwapEntity = collection_[random() % collection_.size()];
+    this->swapWithBack(pSwapEntity.get());
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method swaps the current entity (assumed to be in the collection) with
  *	the entity at the back of the vector.
  */
-void Cell::Entities::swapWithBack( Entity * pEntity )
+void Cell::Entities::swapWithBack(Entity* pEntity)
 {
-	SpaceRemovalHandle swapHandle = pEntity->pReal()->removalHandle();
-	EntityPtr pBackEntity = collection_.back();
+    SpaceRemovalHandle swapHandle  = pEntity->pReal()->removalHandle();
+    EntityPtr          pBackEntity = collection_.back();
 
-	collection_[collection_.size() - 1] = pEntity;
-	pEntity->pReal()->removalHandle( collection_.size() - 1 );
+    collection_[collection_.size() - 1] = pEntity;
+    pEntity->pReal()->removalHandle(collection_.size() - 1);
 
-	collection_[swapHandle] = pBackEntity;
-	pBackEntity->pReal()->removalHandle( swapHandle );
+    collection_[swapHandle] = pBackEntity;
+    pBackEntity->pReal()->removalHandle(swapHandle);
 }
-
 
 /**
  *	This method removes the input entity from this collection.
  */
-bool Cell::Entities::remove( Entity * pEntity )
+bool Cell::Entities::remove(Entity* pEntity)
 {
-	if (!pEntity->isReal())
-	{
-		CRITICAL_MSG( "Cell::Entities::remove: Entity %u is not real\n",
-			pEntity->id() );
-		return false;
-	}
+    if (!pEntity->isReal()) {
+        CRITICAL_MSG("Cell::Entities::remove: Entity %u is not real\n",
+                     pEntity->id());
+        return false;
+    }
 
-	EntityRemovalHandle handle = pEntity->pReal()->removalHandle();
+    EntityRemovalHandle handle = pEntity->pReal()->removalHandle();
 
-	if (handle >= collection_.size())
-	{
-		// This can actually happen if you call Entity.destroy in __init__.
-		return false;
-	}
+    if (handle >= collection_.size()) {
+        // This can actually happen if you call Entity.destroy in __init__.
+        return false;
+    }
 
-	MF_ASSERT( collection_[ handle ] == pEntity );
+    MF_ASSERT(collection_[handle] == pEntity);
 
-	if (handle >= collection_.size() ||
-		collection_[ handle ] != pEntity )
-	{
-		WARNING_MSG( "Cell::Entities::remove: Failed to remove %u\n",
-						pEntity->id() );
-		return false;
-	}
+    if (handle >= collection_.size() || collection_[handle] != pEntity) {
+        WARNING_MSG("Cell::Entities::remove: Failed to remove %u\n",
+                    pEntity->id());
+        return false;
+    }
 
-	this->swapWithBack( pEntity );
-	collection_.pop_back();
+    this->swapWithBack(pEntity);
+    collection_.pop_back();
 
-	pEntity->pReal()->removalHandle( NO_ENTITY_REMOVAL_HANDLE );
+    pEntity->pReal()->removalHandle(NO_ENTITY_REMOVAL_HANDLE);
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method streams on various boundaries to inform the CellAppMgr for the
  *	purposes of load balancing.
  */
-void Cell::writeBounds( BinaryOStream & stream ) const
+void Cell::writeBounds(BinaryOStream& stream) const
 {
-	if (!this->isRemoved())
-	{
-		this->space().writeBounds( stream );
-	}
+    if (!this->isRemoved()) {
+        this->space().writeBounds(stream);
+    }
 }
-
 
 /**
  *	This method starts the collection of replay data for this space.
@@ -989,172 +907,172 @@ void Cell::writeBounds( BinaryOStream & stream ) const
  *								recording space data key.
  *	@param name 				The name to give to the recorder to use to
  *								identify this replay data.
- *	@param shouldRecordAoIEvents 
-								If true, then AoI events will be recorded, otherwise they will not be.
- *	@param isInitial 			If true, indicates that this is the initial
- *								script call from the originating CellApp.
- *								Otherwise, this is being called in response
- *								from space data change.
+ *	@param shouldRecordAoIEvents
+                                If true, then AoI events will be recorded,
+ otherwise they will not be. *	@param isInitial 			If true, indicates
+ that this is the initial *								script call from the
+ originating CellApp. *								Otherwise, this is being
+ called in response *								from space data change.
  *
  *	@return 					true on success, false otherwise.
  */
-bool Cell::startRecording( const SpaceEntryID & entryID, 
-		const BW::string & name, bool shouldRecordAoIEvents, bool isInitial )
+bool Cell::startRecording(const SpaceEntryID& entryID,
+                          const BW::string&   name,
+                          bool                shouldRecordAoIEvents,
+                          bool                isInitial)
 {
-	if (pReplayData_ != NULL)
-	{
-		WARNING_MSG( "Cell::startRecording: "
-				"space %d, already recording with name \"%s\", "
-				"got request to start for \"%s\"\n",
-			this->spaceID(), pReplayData_->name().c_str(), name.c_str() );
+    if (pReplayData_ != NULL) {
+        WARNING_MSG("Cell::startRecording: "
+                    "space %d, already recording with name \"%s\", "
+                    "got request to start for \"%s\"\n",
+                    this->spaceID(),
+                    pReplayData_->name().c_str(),
+                    name.c_str());
 
-		return false;
-	}
+        return false;
+    }
 
-	pReplayData_ = new ReplayDataCollector( name, shouldRecordAoIEvents );
-	pReplayData_->recordingSpaceEntryID( entryID );
+    pReplayData_ = new ReplayDataCollector(name, shouldRecordAoIEvents);
+    pReplayData_->recordingSpaceEntryID(entryID);
 
-	if (isInitial)
-	{
-		// Initial space data.
-		for (SpaceDataMapping::const_iterator it =
-					space_.spaceDataMapping().begin();
-				it != space_.spaceDataMapping().end();
-				it++)
-		{
-			const SpaceDataMapping::DataValue & value = it->second;
-			if (value.key() >= SPACE_DATA_FIRST_CELL_ONLY_KEY)
-			{
-				continue;	// but don't record cell-only data
-			}
+    if (isInitial) {
+        // Initial space data.
+        for (SpaceDataMapping::const_iterator it =
+               space_.spaceDataMapping().begin();
+             it != space_.spaceDataMapping().end();
+             it++) {
+            const SpaceDataMapping::DataValue& value = it->second;
+            if (value.key() >= SPACE_DATA_FIRST_CELL_ONLY_KEY) {
+                continue; // but don't record cell-only data
+            }
 
-			pReplayData_->addSpaceData( it->first, value.key(), value.data() );
-		}
-	}
+            pReplayData_->addSpaceData(it->first, value.key(), value.data());
+        }
+    }
 
-	// Entity initial states.
-	Entities::const_iterator ipEntity = realEntities_.begin();
-	while (ipEntity != realEntities_.end())
-	{
-		const Entity & entity = **ipEntity;
+    // Entity initial states.
+    Entities::const_iterator ipEntity = realEntities_.begin();
+    while (ipEntity != realEntities_.end()) {
+        const Entity& entity = **ipEntity;
 
-		pReplayData_->addEntityState( entity );
+        pReplayData_->addEntityState(entity);
 
-		++ipEntity;
-	}
+        ++ipEntity;
+    }
 
-	if (isInitial)
-	{
-		ScriptEvents & scriptEvents = CellApp::instance().scriptEvents();
-		scriptEvents.triggerEvent( "onRecordingStarted",
-			Py_BuildValue( "(is#)",
-				this->spaceID(),
-				pReplayData_->name().data(), pReplayData_->name().size() ) );
+    if (isInitial) {
+        ScriptEvents& scriptEvents = CellApp::instance().scriptEvents();
+        scriptEvents.triggerEvent("onRecordingStarted",
+                                  Py_BuildValue("(is#)",
+                                                this->spaceID(),
+                                                pReplayData_->name().data(),
+                                                pReplayData_->name().size()));
 
-		MemoryOStream spaceDataStream;
-		spaceDataStream << name << uint8( shouldRecordAoIEvents );
-		BW::string spaceDataString( 
-			(char *)(spaceDataStream.retrieve( spaceDataStream.size() )),
-			spaceDataStream.size() );
+        MemoryOStream spaceDataStream;
+        spaceDataStream << name << uint8(shouldRecordAoIEvents);
+        BW::string spaceDataString(
+          (char*)(spaceDataStream.retrieve(spaceDataStream.size())),
+          spaceDataStream.size());
 
-		space_.spaceDataEntry( entryID, SPACE_DATA_RECORDING, 
-			spaceDataString, Space::UPDATE_CELL_APP_MGR,
-			Space::ALREADY_EFFECTED );
-	}
+        space_.spaceDataEntry(entryID,
+                              SPACE_DATA_RECORDING,
+                              spaceDataString,
+                              Space::UPDATE_CELL_APP_MGR,
+                              Space::ALREADY_EFFECTED);
+    }
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method collects this tick's worth of replay data.
  */
 void Cell::tickRecording()
 {
-	if (pReplayData_ == NULL)
-	{
-		return;
-	}
+    if (pReplayData_ == NULL) {
+        return;
+    }
 
-	pReplayData_->addVolatileDataForQueuedEntities();
+    pReplayData_->addVolatileDataForQueuedEntities();
 
-	GameTime gameTime = CellApp::instance().time();
+    GameTime gameTime = CellApp::instance().time();
 
-	ScriptEvents & scriptEvents = CellApp::instance().scriptEvents();
+    ScriptEvents& scriptEvents = CellApp::instance().scriptEvents();
 
-	BinaryIStream & data = pReplayData_->data();
-	int size = data.remainingLength();
+    BinaryIStream& data = pReplayData_->data();
+    int            size = data.remainingLength();
 
-	scriptEvents.triggerEvent( "onRecordingTickData", 
-		Py_BuildValue( "(iIs#ls#)", 
-			this->spaceID(),
-			gameTime,
-			pReplayData_->name().data(), pReplayData_->name().size(),
-			this->space().numCells(),
-			reinterpret_cast< const char * >( data.retrieve( size ) ), size ) );
+    scriptEvents.triggerEvent(
+      "onRecordingTickData",
+      Py_BuildValue("(iIs#ls#)",
+                    this->spaceID(),
+                    gameTime,
+                    pReplayData_->name().data(),
+                    pReplayData_->name().size(),
+                    this->space().numCells(),
+                    reinterpret_cast<const char*>(data.retrieve(size)),
+                    size));
 
-	pReplayData_->clear();
+    pReplayData_->clear();
 
-	if (stoppingState_ != STOPPING_STATE_NOT_STOPPING)
-	{
-		if (stoppingState_ == STOPPING_STATE_STOPPING_SHOULD_USE_CALLBACKS)
-		{
-			BW::string emptyString;
-			space_.spaceDataEntry( pReplayData_->recordingSpaceEntryID(), 
-				uint16(-1), emptyString, Space::UPDATE_CELL_APP_MGR,
-				Space::ALREADY_EFFECTED );
+    if (stoppingState_ != STOPPING_STATE_NOT_STOPPING) {
+        if (stoppingState_ == STOPPING_STATE_STOPPING_SHOULD_USE_CALLBACKS) {
+            BW::string emptyString;
+            space_.spaceDataEntry(pReplayData_->recordingSpaceEntryID(),
+                                  uint16(-1),
+                                  emptyString,
+                                  Space::UPDATE_CELL_APP_MGR,
+                                  Space::ALREADY_EFFECTED);
 
-			ScriptEvents & scriptEvents = CellApp::instance().scriptEvents();
+            ScriptEvents& scriptEvents = CellApp::instance().scriptEvents();
 
-			scriptEvents.triggerEvent( "onRecordingStopped", 
-				Py_BuildValue( "(is#)", 
-					this->spaceID(),
-					pReplayData_->name().data(), 
-					pReplayData_->name().size() ) );
-		}
+            scriptEvents.triggerEvent(
+              "onRecordingStopped",
+              Py_BuildValue("(is#)",
+                            this->spaceID(),
+                            pReplayData_->name().data(),
+                            pReplayData_->name().size()));
+        }
 
-		stoppingState_ = STOPPING_STATE_NOT_STOPPING;
+        stoppingState_ = STOPPING_STATE_NOT_STOPPING;
 
-		bw_safe_delete( pReplayData_ );
-	}
+        bw_safe_delete(pReplayData_);
+    }
 }
-
 
 /**
  *	This method stops the collection of replay data for this space.
  */
-void Cell::stopRecording( bool isInitial )
+void Cell::stopRecording(bool isInitial)
 {
-	if (pReplayData_ == NULL)
-	{
-		return;
-	}
+    if (pReplayData_ == NULL) {
+        return;
+    }
 
-	pReplayData_->addFinish();
-	stoppingState_ = isInitial ? 
-		STOPPING_STATE_STOPPING_SHOULD_USE_CALLBACKS :
-		STOPPING_STATE_STOPPING_SHOULD_NOT_USE_CALLBACKS;
+    pReplayData_->addFinish();
+    stoppingState_ = isInitial
+                       ? STOPPING_STATE_STOPPING_SHOULD_USE_CALLBACKS
+                       : STOPPING_STATE_STOPPING_SHOULD_NOT_USE_CALLBACKS;
 }
 
 /**
  * This method ticks profilers on the real entities on a Cell instance.
  */
-void Cell::tickProfilers( uint64 tickDtInStamps, float smoothingFactor )
+void Cell::tickProfilers(uint64 tickDtInStamps, float smoothingFactor)
 {
-	Cell::Entities::iterator iEntity = realEntities_.begin();
-	while (iEntity != realEntities_.end())
-	{
-		EntityProfiler & profiler = (*iEntity)->profiler();
-		EntityTypeProfiler & typeProfiler = (*iEntity)->pType()->profiler();
+    Cell::Entities::iterator iEntity = realEntities_.begin();
+    while (iEntity != realEntities_.end()) {
+        EntityProfiler&     profiler     = (*iEntity)->profiler();
+        EntityTypeProfiler& typeProfiler = (*iEntity)->pType()->profiler();
 
-		profiler.tick( tickDtInStamps, smoothingFactor, typeProfiler );
+        profiler.tick(tickDtInStamps, smoothingFactor, typeProfiler);
 
-		profiler_.addEntityLoad( profiler.load(), profiler.rawLoad() );
+        profiler_.addEntityLoad(profiler.load(), profiler.rawLoad());
 
-		++iEntity;
-	}
+        ++iEntity;
+    }
 
-	profiler_.tick();
+    profiler_.tick();
 }
 
 BW_END_NAMESPACE

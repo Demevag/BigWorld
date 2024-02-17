@@ -3,7 +3,6 @@
 
 #include "server_app_option.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,30 +10,30 @@ BW_BEGIN_NAMESPACE
  */
 class BalanceConfig
 {
-public:
-	static ServerAppOption< float > maxCPUOffload;
-	static ServerAppOption< int > numCPUOffloadLevels;
-	static ServerAppOption< float > minCPUOffload;
+  public:
+    static ServerAppOption<float> maxCPUOffload;
+    static ServerAppOption<int>   numCPUOffloadLevels;
+    static ServerAppOption<float> minCPUOffload;
 
-	static ServerAppOption< float > aggressionDecrease;
-	static ServerAppOption< float > aggressionIncrease;
+    static ServerAppOption<float> aggressionDecrease;
+    static ServerAppOption<float> aggressionIncrease;
 
-	static ServerAppOption< float > aggressionIncreasePeriod;
-	static ServerAppOption< float > maxAggressionIncreasePeriod;
+    static ServerAppOption<float> aggressionIncreasePeriod;
+    static ServerAppOption<float> maxAggressionIncreasePeriod;
 
-	static ServerAppOption< float > maxAggression;
-	static ServerAppOption< float > minAggression;
+    static ServerAppOption<float> maxAggression;
+    static ServerAppOption<float> minAggression;
 
-	static ServerAppOption< bool > demo;
-	static ServerAppOption< float > demoNumEntitiesPerCell;
+    static ServerAppOption<bool>  demo;
+    static ServerAppOption<float> demoNumEntitiesPerCell;
 
-	static float cpuOffloadForLevel( int level );
-	static int levelForCPUOffload( float loadToOffload );
+    static float cpuOffloadForLevel(int level);
+    static int   levelForCPUOffload(float loadToOffload);
 
-	static int clampedOffloadLevel( int level );
-	static float clampedAggression( float aggression );
+    static int   clampedOffloadLevel(int level);
+    static float clampedAggression(float aggression);
 
-	static bool postInit( float balancePeriod );
+    static bool postInit(float balancePeriod);
 };
 
 BW_END_NAMESPACE

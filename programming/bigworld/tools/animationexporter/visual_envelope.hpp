@@ -17,58 +17,58 @@ typedef SmartPointer<class VisualEnvelope> VisualEnvelopePtr;
  */
 class VisualEnvelope : public VisualMesh
 {
-public:
-	VisualEnvelope();
-	~VisualEnvelope();
+  public:
+    VisualEnvelope();
+    ~VisualEnvelope();
 
-	bool init( INode* node, MFXNode* root );
-	void save( DataSectionPtr spVisualSection, const BW::string& primitiveFile );
+    bool init(INode* node, MFXNode* root);
+    void save(DataSectionPtr spVisualSection, const BW::string& primitiveFile);
 
-private:
-	struct VertexXYZNUVI
-	{
-		float pos[3];
-		float normal[3];
-		float uv[2];
-		float index;
-	};
+  private:
+    struct VertexXYZNUVI
+    {
+        float pos[3];
+        float normal[3];
+        float uv[2];
+        float index;
+    };
 
-	typedef BW::vector<VertexXYZNUVI> VertexVector;
+    typedef BW::vector<VertexXYZNUVI> VertexVector;
 
-	int			boneIndex( INode* node );
-	void		createVertexList( VertexVector& vertices );
+    int  boneIndex(INode* node);
+    void createVertexList(VertexVector& vertices);
 
-	void		getScaleValues( BW::vector< Point3 > & scales );
-	void		scaleBoneVertices( BW::vector< Point3 >& scales );
-	bool		collectInitialTransforms(IPhysiqueExport* phyExport);
-	void		normaliseInitialTransforms();
-	void		initialPoseVertices();
-	void		relaxedPoseVertices();
+    void getScaleValues(BW::vector<Point3>& scales);
+    void scaleBoneVertices(BW::vector<Point3>& scales);
+    bool collectInitialTransforms(IPhysiqueExport* phyExport);
+    void normaliseInitialTransforms();
+    void initialPoseVertices();
+    void relaxedPoseVertices();
 
-	typedef BW::vector< INode* > NodeVector;
-	NodeVector	boneNodes_;
+    typedef BW::vector<INode*> NodeVector;
+    NodeVector                 boneNodes_;
 
-	struct BoneVertex
-	{
-		BoneVertex( const Point3& position, int index )
-		: position_( position ),
-		  boneIndex_( index )
-		{ }
-		Point3	position_;
-		int		boneIndex_;
-	};
+    struct BoneVertex
+    {
+        BoneVertex(const Point3& position, int index)
+          : position_(position)
+          , boneIndex_(index)
+        {
+        }
+        Point3 position_;
+        int    boneIndex_;
+    };
 
-	typedef BW::vector< BoneVertex > BoneVVector;
-	BoneVVector		boneVertices_;
+    typedef BW::vector<BoneVertex> BoneVVector;
+    BoneVVector                    boneVertices_;
 
-	typedef BW::vector< Matrix3 >	MatrixVector;
-	MatrixVector	initialTransforms_;
+    typedef BW::vector<Matrix3> MatrixVector;
+    MatrixVector                initialTransforms_;
 
-	Matrix3			initialObjectTransform_;
+    Matrix3 initialObjectTransform_;
 
-
-	VisualEnvelope( const VisualEnvelope& );
-	VisualEnvelope& operator=( const VisualEnvelope& );
+    VisualEnvelope(const VisualEnvelope&);
+    VisualEnvelope& operator=(const VisualEnvelope&);
 };
 
 BW_END_NAMESPACE

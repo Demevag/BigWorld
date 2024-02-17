@@ -5,7 +5,6 @@
 #include "moo/effect_constant_value.hpp"
 #include "romp/py_render_target.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /*~ class GUI.GoboComponent
@@ -34,8 +33,8 @@ BW_BEGIN_NAMESPACE
  *	@}
  *
  *	This example will display a binocular gobo, and where the alpha channel is
- *	relatively opaque in the binocular texture map, a blurred version of the scene
- *	is drawn. 
+ *	relatively opaque in the binocular texture map, a blurred version of the
+ *scene is drawn.
  */
 /**
  *	This class is a GUI component that blends between the given texture and a
@@ -43,45 +42,46 @@ BW_BEGIN_NAMESPACE
  */
 class GoboComponent : public SimpleGUIComponent
 {
-	Py_Header( GoboComponent, SimpleGUIComponent )
+    Py_Header(GoboComponent, SimpleGUIComponent)
 
-public:
-	GoboComponent( const BW::string& textureName,
-		PyTypeObject * pType = &s_type_ );
-	virtual ~GoboComponent();
+      public
+      : GoboComponent(const BW::string& textureName,
+                      PyTypeObject*     pType = &s_type_);
+    virtual ~GoboComponent();
 
-	//-------------------------------------------------
-	//Simple GUI component methods
-	//-------------------------------------------------
-	virtual void		draw( Moo::DrawContext& drawContext, bool reallyDraw, bool overlay = true );
-	void				freeze( void );
-	void				unfreeze( void );
+    //-------------------------------------------------
+    // Simple GUI component methods
+    //-------------------------------------------------
+    virtual void draw(Moo::DrawContext& drawContext,
+                      bool              reallyDraw,
+                      bool              overlay = true);
+    void         freeze(void);
+    void         unfreeze(void);
 
-	//-------------------------------------------------
-	//Python Interface
-	//-------------------------------------------------
+    //-------------------------------------------------
+    // Python Interface
+    //-------------------------------------------------
 
-	PyObject *			pyGet_freeze();
-	void				freeze( PyRenderTargetPtr pRT );
+    PyObject* pyGet_freeze();
+    void      freeze(PyRenderTargetPtr pRT);
 
-	PY_RW_ATTRIBUTE_DECLARE( secondaryTexture_, secondaryTexture )
-	PY_WRITABLE_ACCESSOR_ATTRIBUTE_SET( PyRenderTargetPtr, freeze, freeze )
-	PY_FACTORY_DECLARE()
+    PY_RW_ATTRIBUTE_DECLARE(secondaryTexture_, secondaryTexture)
+    PY_WRITABLE_ACCESSOR_ATTRIBUTE_SET(PyRenderTargetPtr, freeze, freeze)
+    PY_FACTORY_DECLARE()
 
-protected:
+  protected:
+    /// setup the material.
+    virtual bool buildMaterial();
+    void         setConstants();
 
-	///setup the material.
-	virtual bool	buildMaterial();
-	void			setConstants();
+  private:
+    GoboComponent(const GoboComponent&);
+    GoboComponent& operator=(const GoboComponent&);
 
-private:
-	GoboComponent(const GoboComponent&);
-	GoboComponent& operator=(const GoboComponent&);
+    PyRenderTargetPtr    freezeRenderTarget_;
+    PyTextureProviderPtr secondaryTexture_;
 
-	PyRenderTargetPtr		freezeRenderTarget_;
-	PyTextureProviderPtr	secondaryTexture_;
-
-	COMPONENT_FACTORY_DECLARE( GoboComponent("") )
+    COMPONENT_FACTORY_DECLARE(GoboComponent(""))
 };
 
 BW_END_NAMESPACE

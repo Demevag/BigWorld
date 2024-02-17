@@ -5,7 +5,6 @@
 
 #include "locked_chunks.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class Chunk;
@@ -19,46 +18,46 @@ typedef BW::set<Chunk*> ChunkSet;
  */
 class ScopedLockedChunkHolder
 {
-public:
-	ScopedLockedChunkHolder( ChunkProcessorManager* manager );
-	virtual ~ScopedLockedChunkHolder();
+  public:
+    ScopedLockedChunkHolder(ChunkProcessorManager* manager);
+    virtual ~ScopedLockedChunkHolder();
 
-	ChunkSet::iterator begin();
-	ChunkSet::const_iterator begin() const;
+    ChunkSet::iterator       begin();
+    ChunkSet::const_iterator begin() const;
 
-	ChunkSet::iterator end();
-	ChunkSet::const_iterator end() const;
+    ChunkSet::iterator       end();
+    ChunkSet::const_iterator end() const;
 
-	ChunkSet::reverse_iterator rbegin();
-	ChunkSet::const_reverse_iterator rbegin() const;
+    ChunkSet::reverse_iterator       rbegin();
+    ChunkSet::const_reverse_iterator rbegin() const;
 
-	ChunkSet::reverse_iterator rend();
-	ChunkSet::const_reverse_iterator rend() const;
+    ChunkSet::reverse_iterator       rend();
+    ChunkSet::const_reverse_iterator rend() const;
 
-	bool empty() const;
-	ChunkSet::size_type size() const;
-	ChunkSet::size_type max_size() const;
+    bool                empty() const;
+    ChunkSet::size_type size() const;
+    ChunkSet::size_type max_size() const;
 
-	void lock( Chunk* pChunk );
-	void lock( Chunk* pChunk, int expandOnGridX, int expandOnGridZ );
-	void lock( Chunk* pChunk, int portalDepth );
+    void lock(Chunk* pChunk);
+    void lock(Chunk* pChunk, int expandOnGridX, int expandOnGridZ);
+    void lock(Chunk* pChunk, int portalDepth);
 
-	ChunkSet::iterator erase( ChunkSet::iterator position );
-	void clear();
+    ChunkSet::iterator erase(ChunkSet::iterator position);
+    void               clear();
 
-	ChunkSet::iterator find( Chunk* pChunk );
-	ChunkSet::const_iterator find( Chunk* pChunk ) const;
+    ChunkSet::iterator       find(Chunk* pChunk);
+    ChunkSet::const_iterator find(Chunk* pChunk) const;
 
-	ChunkSet::size_type count( Chunk* pChunk ) const;
+    ChunkSet::size_type count(Chunk* pChunk) const;
 
-private:
-	void insert( Chunk* pChunk );
+  private:
+    void insert(Chunk* pChunk);
 
-	/// List of my locked chunks
-	ChunkSet chunks_;
+    /// List of my locked chunks
+    ChunkSet chunks_;
 
-	/// Stores global list of locked chunks and space to expand for neighbours
-	ChunkProcessorManager* manager_;
+    /// Stores global list of locked chunks and space to expand for neighbours
+    ChunkProcessorManager* manager_;
 };
 
 BW_END_NAMESPACE

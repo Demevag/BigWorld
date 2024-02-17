@@ -11,27 +11,26 @@
 #include "cstdmf/bw_string.hpp"
 #include "cstdmf/bw_vector.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class LogStorageMLDB;
 
 class UserSegmentWriter : public UserSegment
 {
-public:
-	UserSegmentWriter( const BW::string userLogPath, const char *suffix );
-	//~UserSegmentWriter();
+  public:
+    UserSegmentWriter(const BW::string userLogPath, const char* suffix);
+    //~UserSegmentWriter();
 
-	bool init();
+    bool init();
 
-	bool addEntry( LoggingComponent * component, UserLogWriter * pUserLog,
-		LogEntry & entry, LogStringInterpolator & handler,
-		MemoryIStream & inputStream,
-		MessageLogger::NetworkVersion version );
+    bool addEntry(LoggingComponent*             component,
+                  UserLogWriter*                pUserLog,
+                  LogEntry&                     entry,
+                  LogStringInterpolator&        handler,
+                  MemoryIStream&                inputStream,
+                  MessageLogger::NetworkVersion version);
 
-	bool isFull( const LogStorageMLDB * pLogStorage ) const;
-
-
+    bool isFull(const LogStorageMLDB* pLogStorage) const;
 };
 
 BW_END_NAMESPACE

@@ -1,11 +1,9 @@
 #ifndef ENTITY_FLARE_COLLIDER_HPP
 #define ENTITY_FLARE_COLLIDER_HPP
 
-
 #include <iostream>
 #include "romp/photon_occluder.hpp"
 #include "entity.hpp"
-
 
 BW_BEGIN_NAMESPACE
 
@@ -16,30 +14,25 @@ BW_BEGIN_NAMESPACE
  */
 class EntityPhotonOccluder : public PhotonOccluder
 {
-public:
-	EntityPhotonOccluder( Entity & ent );
-	~EntityPhotonOccluder();
+  public:
+    EntityPhotonOccluder(Entity& ent);
+    ~EntityPhotonOccluder();
 
-	float collides(
-			const Vector3 & lightSourcePosition,
-			const Vector3 & cameraPosition,
-			const LensEffect& le );
+    float collides(const Vector3&    lightSourcePosition,
+                   const Vector3&    cameraPosition,
+                   const LensEffect& le);
 
-private:
-	float checkTorso(
-		const Matrix & objectToClip,
-		const Matrix & sunToClip );
+  private:
+    float checkTorso(const Matrix& objectToClip, const Matrix& sunToClip);
 
-	float checkHead(
-		const Matrix & objectToClip,
-		const Matrix & sunToClip );
+    float checkHead(const Matrix& objectToClip, const Matrix& sunToClip);
 
-	EntityPhotonOccluder(const EntityPhotonOccluder&);
-	EntityPhotonOccluder& operator=(const EntityPhotonOccluder&);
+    EntityPhotonOccluder(const EntityPhotonOccluder&);
+    EntityPhotonOccluder& operator=(const EntityPhotonOccluder&);
 
-	friend std::ostream& operator<<(std::ostream&, const EntityPhotonOccluder&);
+    friend std::ostream& operator<<(std::ostream&, const EntityPhotonOccluder&);
 
-	Entity * entity_;
+    Entity* entity_;
 };
 
 #ifdef CODE_INLINE
@@ -47,7 +40,6 @@ private:
 #endif
 
 BW_END_NAMESPACE
-
 
 #endif
 /*entity_flare_collider.hpp*/

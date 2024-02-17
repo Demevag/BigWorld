@@ -10,22 +10,22 @@ class EntityCreator;
 
 class ServiceStarter : public MachineGuardMessage::ReplyHandler
 {
-public:
-	ServiceStarter();
-	bool init();
-	bool finishInit( int layoutId );
+  public:
+    ServiceStarter();
+    bool init();
+    bool finishInit(int layoutId);
 
-	bool run( EntityCreator & entityCreator ) const;
+    bool run(EntityCreator& entityCreator) const;
 
-private:
-	bool onTagsMessage( TagsMessage &tm, uint32 addr );
+  private:
+    bool onTagsMessage(TagsMessage& tm, uint32 addr);
 
-	bool shouldStartService( const EntityTypePtr & pType ) const;
+    bool shouldStartService(const EntityTypePtr& pType) const;
 
-	void readFragmentsFromLayout( DataSectionPtr pLayout, Tags &fragments );
+    void readFragmentsFromLayout(DataSectionPtr pLayout, Tags& fragments);
 
-	Tags tags_;
-	bool hasTags_;
+    Tags tags_;
+    bool hasTags_;
 };
 
 BW_END_NAMESPACE

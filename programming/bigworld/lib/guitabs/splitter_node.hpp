@@ -4,79 +4,86 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace GUITABS
-{
+namespace GUITABS {
 
-/**
- *  This class represents a splitter window in the dock tree. It mantains a
- *	splitter window, its orientation (vertical or horizontal), and pointers to
- *  the child nodes, which can be of any class inherited from DockNode.
- *  Additionally, this class switches from a splitter window to a single
- *  container window when one of the children is not visible.
- */
-class SplitterNode : public DockNode, public SplitterEventHandler
-{
-public:
-	SplitterNode();
-	SplitterNode( Orientation dir, CWnd* parent, int wndID );
-	void init( Orientation dir, CWnd* parent, int wndID );
-	~SplitterNode();
+    /**
+     *  This class represents a splitter window in the dock tree. It mantains a
+     *	splitter window, its orientation (vertical or horizontal), and pointers
+     *to the child nodes, which can be of any class inherited from DockNode.
+     *  Additionally, this class switches from a splitter window to a single
+     *  container window when one of the children is not visible.
+     */
+    class SplitterNode
+      : public DockNode
+      , public SplitterEventHandler
+    {
+      public:
+        SplitterNode();
+        SplitterNode(Orientation dir, CWnd* parent, int wndID);
+        void init(Orientation dir, CWnd* parent, int wndID);
+        ~SplitterNode();
 
-	void setLeftChild( DockNodePtr child );
-	void setRightChild( DockNodePtr child );
+        void setLeftChild(DockNodePtr child);
+        void setRightChild(DockNodePtr child);
 
-	void finishInsert( const CRect* destRect, int leftChildSize, int rightChildSize );
+        void finishInsert(const CRect* destRect,
+                          int          leftChildSize,
+                          int          rightChildSize);
 
-	DockNodePtr getLeftChild();
-	DockNodePtr getRightChild();
+        DockNodePtr getLeftChild();
+        DockNodePtr getRightChild();
 
-	bool isLeaf();
+        bool isLeaf();
 
-	bool isExpanded();
+        bool isExpanded();
 
-	CWnd* getCWnd();
-	
-	bool adjustSizeToNode( DockNodePtr newNode, bool nodeIsNew );
+        CWnd* getCWnd();
 
-	void recalcLayout();
+        bool adjustSizeToNode(DockNodePtr newNode, bool nodeIsNew);
 
-	bool load( DataSectionPtr section, CWnd* parent, int wndID );
-	bool save( DataSectionPtr section );
+        void recalcLayout();
 
-	Orientation getSplitOrientation();
+        bool load(DataSectionPtr section, CWnd* parent, int wndID);
+        bool save(DataSectionPtr section);
 
-	void setParentWnd( CWnd* parent );
+        Orientation getSplitOrientation();
 
-	void getPreferredSize( int& w, int& h );
+        void setParentWnd(CWnd* parent);
 
-	bool getNodeByWnd( CWnd* ptr, DockNodePtr& childNode, DockNodePtr& parentNode );
-	DockNodePtr getNodeByPoint( int x, int y );
+        void getPreferredSize(int& w, int& h);
 
-	void destroy();
+        bool        getNodeByWnd(CWnd*        ptr,
+                                 DockNodePtr& childNode,
+                                 DockNodePtr& parentNode);
+        DockNodePtr getNodeByPoint(int x, int y);
 
-	// Event handler methods
-	void resizeSplitter( int lastWidth, int lastHeight, int width, int height );
+        void destroy();
 
-private:
-	NiceSplitterWnd splitterWnd_;
+        // Event handler methods
+        void resizeSplitter(int lastWidth,
+                            int lastHeight,
+                            int width,
+                            int height);
 
-	DockNodePtr leftChild_;
-	DockNodePtr rightChild_;
+      private:
+        NiceSplitterWnd splitterWnd_;
 
-	Orientation dir_;
+        DockNodePtr leftChild_;
+        DockNodePtr rightChild_;
 
-	// These members are used to better resize panes by delaying the resize.
-	int delayedLeftSize_;
-	int delayedRightSize_;
+        Orientation dir_;
 
-	int getLeftSize();
-	int getRightSize();
-	void setLeftSize( int size );
-	void setRightSize( int size );
+        // These members are used to better resize panes by delaying the resize.
+        int delayedLeftSize_;
+        int delayedRightSize_;
 
-	void resizeTreeDimension( Orientation dir, int lastSize, int size );
-};
+        int  getLeftSize();
+        int  getRightSize();
+        void setLeftSize(int size);
+        void setRightSize(int size);
 
+        void resizeTreeDimension(Orientation dir, int lastSize, int size);
+    };
 
 } // namespace
 BW_END_NAMESPACE

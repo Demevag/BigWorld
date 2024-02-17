@@ -4,26 +4,23 @@
 #include "query.hpp"
 #include "result_set.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace
-{
-const Query getEntityTypeIDQuery(
-			"SELECT bigworldID FROM bigworldEntityTypes WHERE name=?" );
+namespace {
+    const Query getEntityTypeIDQuery(
+      "SELECT bigworldID FROM bigworldEntityTypes WHERE name=?");
 
-const Query setEntityTypeIDQuery(
-			"UPDATE bigworldEntityTypes SET bigworldID=? WHERE name=?" );
+    const Query setEntityTypeIDQuery(
+      "UPDATE bigworldEntityTypes SET bigworldID=? WHERE name=?");
 
-const Query addEntityTypeQuery(
-			"INSERT INTO bigworldEntityTypes (typeID, bigworldID, name) "
-			"VALUES (NULL, ?, ?)" );
+    const Query addEntityTypeQuery(
+      "INSERT INTO bigworldEntityTypes (typeID, bigworldID, name) "
+      "VALUES (NULL, ?, ?)");
 
-const Query removeEntityTypeQuery(
-			"DELETE FROM bigworldEntityTypes WHERE name=?" );
+    const Query removeEntityTypeQuery(
+      "DELETE FROM bigworldEntityTypes WHERE name=?");
 
 } // anonymous namespace
-
 
 // -----------------------------------------------------------------------------
 // Section: BigWorld meta data
@@ -34,11 +31,10 @@ const Query removeEntityTypeQuery(
  *
  * 	@param	connection	The connection to MySQL server.
  */
-BigWorldMetaData::BigWorldMetaData( MySql & connection ) :
-	connection_( connection )
+BigWorldMetaData::BigWorldMetaData(MySql& connection)
+  : connection_(connection)
 {
 }
-
 
 /**
  * 	This method retrieves the EntityTypeID associated with the entity name
@@ -46,18 +42,17 @@ BigWorldMetaData::BigWorldMetaData( MySql & connection ) :
  *
  *  @param	entityName	The entity type name.
  */
-EntityTypeID BigWorldMetaData::getEntityTypeID( const BW::string & entityName )
+EntityTypeID BigWorldMetaData::getEntityTypeID(const BW::string& entityName)
 {
-	ResultSet resultSet;
-	getEntityTypeIDQuery.execute( connection_, entityName, &resultSet );
+    ResultSet resultSet;
+    getEntityTypeIDQuery.execute(connection_, entityName, &resultSet);
 
-	EntityTypeID typeID = INVALID_ENTITY_TYPE_ID;
+    EntityTypeID typeID = INVALID_ENTITY_TYPE_ID;
 
-	resultSet.getResult( typeID );
+    resultSet.getResult(typeID);
 
-	return typeID;
+    return typeID;
 }
-
 
 /**
  * 	This method sets the EntityTypeID associated with the entity name
@@ -66,12 +61,11 @@ EntityTypeID BigWorldMetaData::getEntityTypeID( const BW::string & entityName )
  *  @param	entityName	The entity type name.
  * 	@param	typeID		The entity type ID.
  */
-void BigWorldMetaData::setEntityTypeID( const BW::string & entityName,
-		EntityTypeID typeID	)
+void BigWorldMetaData::setEntityTypeID(const BW::string& entityName,
+                                       EntityTypeID      typeID)
 {
-	setEntityTypeIDQuery.execute( connection_, typeID, entityName, NULL );
+    setEntityTypeIDQuery.execute(connection_, typeID, entityName, NULL);
 }
-
 
 /**
  * 	This method adds an EntityTypeID-entity name mapping into
@@ -80,12 +74,11 @@ void BigWorldMetaData::setEntityTypeID( const BW::string & entityName,
  *  @param	entityName	The entity type name.
  * 	@param	typeID		The entity type ID.
  */
-void BigWorldMetaData::addEntityType( const BW::string & entityName,
-		EntityTypeID typeID )
+void BigWorldMetaData::addEntityType(const BW::string& entityName,
+                                     EntityTypeID      typeID)
 {
-	addEntityTypeQuery.execute( connection_, typeID, entityName, NULL );
+    addEntityTypeQuery.execute(connection_, typeID, entityName, NULL);
 }
-
 
 /**
  * 	This method removes an EntityTypeID-entity name mapping from
@@ -93,9 +86,9 @@ void BigWorldMetaData::addEntityType( const BW::string & entityName,
  *
  *  @param	entityName	The entity type name.
  */
-void BigWorldMetaData::removeEntityType( const BW::string & entityName )
+void BigWorldMetaData::removeEntityType(const BW::string& entityName)
 {
-	removeEntityTypeQuery.execute( connection_, entityName, NULL );
+    removeEntityTypeQuery.execute(connection_, entityName, NULL);
 }
 
 BW_END_NAMESPACE

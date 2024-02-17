@@ -16,15 +16,16 @@ BW_BEGIN_NAMESPACE
  */
 class ScriptInstance : public PyObjectPlus
 {
-public:
-	ScriptInstance( PyTypeObject * pType );
+  public:
+    ScriptInstance(PyTypeObject* pType);
 
-	bool init( DataSectionPtr pSection,
-		const char * moduleName, const char * defaultTypeName );
+    bool init(DataSectionPtr pSection,
+              const char*    moduleName,
+              const char*    defaultTypeName);
 
-private:
-	ScriptInstance( const ScriptInstance& );
-	ScriptInstance& operator=( const ScriptInstance& );
+  private:
+    ScriptInstance(const ScriptInstance&);
+    ScriptInstance& operator=(const ScriptInstance&);
 };
 
 BW_END_NAMESPACE

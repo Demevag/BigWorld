@@ -9,7 +9,6 @@
 #include "photon_occluder.hpp"
 #include "moo/device_callback.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class LensEffect;
@@ -17,39 +16,40 @@ class LensEffect;
 /**
  * TODO: to be documented.
  */
-class ZBufferOccluder : public PhotonOccluder, public Moo::DeviceCallback
+class ZBufferOccluder
+  : public PhotonOccluder
+  , public Moo::DeviceCallback
 {
-public:
-	ZBufferOccluder();
-	~ZBufferOccluder();
+  public:
+    ZBufferOccluder();
+    ~ZBufferOccluder();
 
-	static bool isAvailable();
-	static void init();
-	static void fini();
+    static bool isAvailable();
+    static void init();
+    static void fini();
 
-	virtual float collides(
-			const Vector3 & photonSourcePosition,
-			const Vector3 & cameraPosition,
-			const LensEffect& le );
-	virtual void beginOcclusionTests();
-	virtual void endOcclusionTests();
+    virtual float collides(const Vector3&    photonSourcePosition,
+                           const Vector3&    cameraPosition,
+                           const LensEffect& le);
+    virtual void  beginOcclusionTests();
+    virtual void  endOcclusionTests();
 
-protected:
-	//our own interface
-	virtual void writePixel( const Vector3& source );
-	virtual void writeArea( const Vector3& source, float size );
+  protected:
+    // our own interface
+    virtual void writePixel(const Vector3& source);
+    virtual void writeArea(const Vector3& source, float size);
 
-private:
-	ZBufferOccluder(const ZBufferOccluder&);
-	ZBufferOccluder& operator=(const ZBufferOccluder&);	
+  private:
+    ZBufferOccluder(const ZBufferOccluder&);
+    ZBufferOccluder& operator=(const ZBufferOccluder&);
 
-	OcclusionQueryHelper	helper_;
-	OcclusionQueryHelper	helperZBuffer_;
+    OcclusionQueryHelper helper_;
+    OcclusionQueryHelper helperZBuffer_;
 
-	Moo::EffectMaterialPtr	mat_;
-	void setDeviceState();
+    Moo::EffectMaterialPtr mat_;
+    void                   setDeviceState();
 
-	friend std::ostream& operator<<(std::ostream&, const ZBufferOccluder&);
+    friend std::ostream& operator<<(std::ostream&, const ZBufferOccluder&);
 };
 
 #ifdef CODE_INLINE
@@ -58,4 +58,4 @@ private:
 
 BW_END_NAMESPACE
 
-#endif //Z_BUFFER_OCCLUDER_HPP
+#endif // Z_BUFFER_OCCLUDER_HPP

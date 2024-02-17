@@ -2,7 +2,6 @@
 
 #include <sstream>
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -10,16 +9,15 @@ BW_BEGIN_NAMESPACE
  */
 void ConsolidationProgressReporter::reportProgressNow()
 {
-	// Generate string
-	BW::stringstream ss;
-	ss << "Consolidating " << curDBName_ << " (" << doneEntitiesInCurDB_
-		<< '/' << numEntitiesInCurDB_ << " entities)"
-		<< " (" << doneDBs_ << '/' << numDBs_ << " databases)";
+    // Generate string
+    BW::stringstream ss;
+    ss << "Consolidating " << curDBName_ << " (" << doneEntitiesInCurDB_ << '/'
+       << numEntitiesInCurDB_ << " entities)"
+       << " (" << doneDBs_ << '/' << numDBs_ << " databases)";
 
-	this->reporter().onStatus( ss.str() );
+    this->reporter().onStatus(ss.str());
 }
 
 BW_END_NAMESPACE
 
 // consolidation_progress_reporter.cpp
-

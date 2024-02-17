@@ -10,58 +10,57 @@
 
 namespace BW {
 
-namespace Moo{
-	class ModelTextureUsage;
-}
+    namespace Moo {
+        class ModelTextureUsage;
+    }
 
-typedef SmartPointer<class DataSection> DataSectionPtr;
+    typedef SmartPointer<class DataSection> DataSectionPtr;
 
-namespace CompiledSpace {
+    namespace CompiledSpace {
 
-class BinaryFormatWriter;
-class StringTableWriter;
+        class BinaryFormatWriter;
+        class StringTableWriter;
 
-class StaticTextureStreamingWriter :
-	public ISpaceWriter
-{
-public:
-	StaticTextureStreamingWriter();
-	~StaticTextureStreamingWriter();
-	
-	virtual bool initialize( const DataSectionPtr & pSpaceSettings,
-		const CommandLine & commandLine );
-	virtual void postProcess();
-	virtual bool write( BinaryFormatWriter & writer );
+        class StaticTextureStreamingWriter : public ISpaceWriter
+        {
+          public:
+            StaticTextureStreamingWriter();
+            ~StaticTextureStreamingWriter();
 
-	void convertModel( const ConversionContext & ctx,
-		const DataSectionPtr & pItemDS, const BW::string & uid );
-	void convertShell( const ConversionContext& ctx,
-		const DataSectionPtr & pItemDS, const BW::string & uid );
-	void convertSpeedTree( const ConversionContext& ctx,
-		const DataSectionPtr & pItemDS, const BW::string & uid );
+            virtual bool initialize(const DataSectionPtr& pSpaceSettings,
+                                    const CommandLine&    commandLine);
+            virtual void postProcess();
+            virtual bool write(BinaryFormatWriter& writer);
 
-	bool addFromChunkModel( 
-		const DataSectionPtr & pItemDS,
-		const Matrix & chunkTransform,
-		bool isShell,
-		StringTableWriter & stringTable,
-		AssetListWriter & assetList );
+            void convertModel(const ConversionContext& ctx,
+                              const DataSectionPtr&    pItemDS,
+                              const BW::string&        uid);
+            void convertShell(const ConversionContext& ctx,
+                              const DataSectionPtr&    pItemDS,
+                              const BW::string&        uid);
+            void convertSpeedTree(const ConversionContext& ctx,
+                                  const DataSectionPtr&    pItemDS,
+                                  const BW::string&        uid);
 
-	bool addFromChunkTree( 
-		const DataSectionPtr & pItemDS,
-		const Matrix & chunkTransform,
-		StringTableWriter & stringTable,
-		AssetListWriter & assetList );
+            bool addFromChunkModel(const DataSectionPtr& pItemDS,
+                                   const Matrix&         chunkTransform,
+                                   bool                  isShell,
+                                   StringTableWriter&    stringTable,
+                                   AssetListWriter&      assetList);
 
-private:
-	class Detail;
-	std::auto_ptr<Detail> detail_;
+            bool addFromChunkTree(const DataSectionPtr& pItemDS,
+                                  const Matrix&         chunkTransform,
+                                  StringTableWriter&    stringTable,
+                                  AssetListWriter&      assetList);
 
-	BW::vector<StaticTextureStreamingTypes::Usage> usages_;
-};
+          private:
+            class Detail;
+            std::auto_ptr<Detail> detail_;
 
-} // namespace CompiledSpace
+            BW::vector<StaticTextureStreamingTypes::Usage> usages_;
+        };
+
+    } // namespace CompiledSpace
 } // namespace BW
-
 
 #endif // STATIC_TEXTURE_STREAMING_BINARY_WRITER_HPP

@@ -4,7 +4,6 @@
 #include "db_storage/idatabase.hpp"
 #include "background_task.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -12,18 +11,18 @@ BW_BEGIN_NAMESPACE
  */
 class GetBaseAppMgrInitDataTask : public MySqlBackgroundTask
 {
-public:
-	GetBaseAppMgrInitDataTask(
-			IDatabase::IGetBaseAppMgrInitDataHandler & handler );
+  public:
+    GetBaseAppMgrInitDataTask(
+      IDatabase::IGetBaseAppMgrInitDataHandler& handler);
 
-	virtual void performBackgroundTask( MySql & conn );
-	virtual void performMainThreadTask( bool succeeded );
+    virtual void performBackgroundTask(MySql& conn);
+    virtual void performMainThreadTask(bool succeeded);
 
-private:
-	static bool getGameTime( MySql & connection, GameTime & gameTime );
+  private:
+    static bool getGameTime(MySql& connection, GameTime& gameTime);
 
-	IDatabase::IGetBaseAppMgrInitDataHandler & 	handler_;
-	GameTime	gameTime_;
+    IDatabase::IGetBaseAppMgrInitDataHandler& handler_;
+    GameTime                                  gameTime_;
 };
 
 BW_END_NAMESPACE

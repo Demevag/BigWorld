@@ -3,11 +3,9 @@
 
 #include "entity_extra.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class PassengerController;
-
 
 /// This macro defines the attribute function for a method
 
@@ -16,37 +14,35 @@ class PassengerController;
  */
 class PassengerExtra : public EntityExtra
 {
-	Py_EntityExtraHeader( PassengerExtra )
+    Py_EntityExtraHeader(PassengerExtra)
 
-public:
-	PassengerExtra( Entity & e );
-	~PassengerExtra();
+      public : PassengerExtra(Entity& e);
+    ~PassengerExtra();
 
-	void setController( PassengerController * pController );
+    void setController(PassengerController* pController);
 
-	void onVehicleGone();
+    void onVehicleGone();
 
-	static const Instance<PassengerExtra> instance;
+    static const Instance<PassengerExtra> instance;
 
-	bool boardVehicle( EntityID vehicleID, bool shouldUpdateClient = true );
-	bool alightVehicle( bool shouldUpdateClient = true );
+    bool boardVehicle(EntityID vehicleID, bool shouldUpdateClient = true);
+    bool alightVehicle(bool shouldUpdateClient = true);
 
-	static bool isInLimbo( Entity & e );
+    static bool isInLimbo(Entity& e);
 
-	virtual void relocated();
+    virtual void relocated();
 
-protected:
-	PY_AUTO_METHOD_DECLARE( RETOK, boardVehicle, ARG( EntityID, END ) );
-	PY_AUTO_METHOD_DECLARE( RETOK, alightVehicle, END );
+  protected:
+    PY_AUTO_METHOD_DECLARE(RETOK, boardVehicle, ARG(EntityID, END));
+    PY_AUTO_METHOD_DECLARE(RETOK, alightVehicle, END);
 
-private:
-	PassengerExtra( const PassengerExtra& );
-	PassengerExtra& operator=( const PassengerExtra& );
+  private:
+    PassengerExtra(const PassengerExtra&);
+    PassengerExtra& operator=(const PassengerExtra&);
 
-	PassengerController * pController_;
+    PassengerController* pController_;
 };
 
 BW_END_NAMESPACE
-
 
 #endif // PASSENGER_EXTRA_HPP

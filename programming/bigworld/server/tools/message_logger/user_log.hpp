@@ -6,7 +6,6 @@
 #include "user_segment.hpp"
 #include "unary_integer_file.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -16,47 +15,47 @@ BW_BEGIN_NAMESPACE
  */
 class UserLog : public SafeReferenceCount
 {
-public:
-	UserLog( uint16 uid, const BW::string &username );
-	virtual ~UserLog();
+  public:
+    UserLog(uint16 uid, const BW::string& username);
+    virtual ~UserLog();
 
-	virtual bool init( const BW::string rootPath );
+    virtual bool init(const BW::string rootPath);
 
-	bool isGood() const;
+    bool isGood() const;
 
-	uint16 getUID() const;
-	BW::string getUsername() const;
+    uint16     getUID() const;
+    BW::string getUsername() const;
 
-	bool hasActiveSegments() const;
-	BW::string activeSegmentSuffix() const;
+    bool       hasActiveSegments() const;
+    BW::string activeSegmentSuffix() const;
 
-	int maxHostnameLen() const;
-	void maxHostnameLen( int len );
+    int  maxHostnameLen() const;
+    void maxHostnameLen(int len);
 
-protected:
-	// The unix UID associated to the user being referenced by this UserLog.
-	uint16 uid_;
+  protected:
+    // The unix UID associated to the user being referenced by this UserLog.
+    uint16 uid_;
 
-	// The name of the user being reference by this UserLog.
-	BW::string username_;
+    // The name of the user being reference by this UserLog.
+    BW::string username_;
 
-	// Full path to the UserLog being referenced.
-	BW::string path_;
+    // Full path to the UserLog being referenced.
+    BW::string path_;
 
-	// Is the UserLog initialised and ready to use.
-	bool isGood_;
+    // Is the UserLog initialised and ready to use.
+    bool isGood_;
 
-	// List of UserSegments currently available for the owning user.
-	UserSegments userSegments_;
+    // List of UserSegments currently available for the owning user.
+    UserSegments userSegments_;
 
-	// List of UserComponents this user has logged.
-	UserComponents userComponents_;
+    // List of UserComponents this user has logged.
+    UserComponents userComponents_;
 
-	// The file containing the UID associated to this user.
-	UnaryIntegerFile uidFile_;
+    // The file containing the UID associated to this user.
+    UnaryIntegerFile uidFile_;
 
-	// Maximum hostname length
-	int maxHostnameLen_;
+    // Maximum hostname length
+    int maxHostnameLen_;
 };
 
 BW_END_NAMESPACE

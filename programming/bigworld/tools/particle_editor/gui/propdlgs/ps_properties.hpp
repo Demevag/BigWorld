@@ -13,42 +13,43 @@ class ParticleSystem;
 
 class PsProperties : public CFormView
 {
-	DECLARE_DYNCREATE(PsProperties)
+    DECLARE_DYNCREATE(PsProperties)
 
-public:
-    enum { IDD = IDD_PS_PROPERTIES };
+  public:
+    enum
+    {
+        IDD = IDD_PS_PROPERTIES
+    };
 
-	PsProperties();  
+    PsProperties();
 
-	/*virtual*/ ~PsProperties();
+    /*virtual*/ ~PsProperties();
 
-	virtual void DoDataExchange(CDataExchange* pDX); 
+    virtual void DoDataExchange(CDataExchange* pDX);
 
-	afx_msg LRESULT OnUpdatePsProperties(WPARAM mParam, LPARAM lParam);
+    afx_msg LRESULT OnUpdatePsProperties(WPARAM mParam, LPARAM lParam);
 
     ParticleSystemPtr action();
 
-	void SetParameters(SetOperation task);
+    void SetParameters(SetOperation task);
 
-	void OnUpdatePsProperties();
+    void OnUpdatePsProperties();
 
-	virtual void OnInitialUpdate();
+    virtual void OnInitialUpdate();
 
-	afx_msg void OnBnClickedPsButton();    
+    afx_msg void OnBnClickedPsButton();
 
     DECLARE_MESSAGE_MAP()
 
     DECLARE_AUTO_TOOLTIP(PsProperties, CFormView)
 
-private:
-	bool                initialised_;
-    CStatic             nameInvalidMessage_;
-	controls::EditNumeric        capacity_;
-	controls::EditNumeric        windFactor_;
-	controls::EditNumeric        maxLod_;
-    CToolTipCtrl        tooltips_;
+  private:
+    bool                  initialised_;
+    CStatic               nameInvalidMessage_;
+    controls::EditNumeric capacity_;
+    controls::EditNumeric windFactor_;
+    controls::EditNumeric maxLod_;
+    CToolTipCtrl          tooltips_;
 };
 
-
 BW_END_NAMESPACE
-

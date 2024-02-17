@@ -19,12 +19,10 @@
 
 #include "umbra_config.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Moo
-{
-	class ModelTextureUsageGroup;
+namespace Moo {
+    class ModelTextureUsageGroup;
 }
 
 class SuperModel;
@@ -39,127 +37,134 @@ typedef SmartPointer<class SuperModelAnimation> SuperModelAnimationPtr;
  *	that is to play, by specifying an &lt;animation&gt; tag
  *	and a &lt;name&gt; sub-tag.
  */
-class ChunkModel : 
-	public ChunkItem, 
-	/*
-	*	Note: ChunkModel is always listening if pSuperModel_ has 
-	*	been reloaded, if you are pulling info out from the pSuperModel_
-	*	then please update it again in onReloaderReloaded which is 
-	*	called when pSuperModel_ is reloaded so that related data
-	*	will need be update again.and you might want to do something
-	*	in onReloaderPriorReloaded which happen right before the pSuperModel_ reloaded.
-	*/
-	public ReloadListener
+class ChunkModel
+  : public ChunkItem
+  ,
+    /*
+     *	Note: ChunkModel is always listening if pSuperModel_ has
+     *	been reloaded, if you are pulling info out from the pSuperModel_
+     *	then please update it again in onReloaderReloaded which is
+     *	called when pSuperModel_ is reloaded so that related data
+     *	will need be update again.and you might want to do something
+     *	in onReloaderPriorReloaded which happen right before the pSuperModel_
+     *reloaded.
+     */
+    public ReloadListener
 #if ENABLE_BSP_MODEL_RENDERING
-	, public ChunkBspHolder
+  , public ChunkBspHolder
 #endif // ENABLE_BSP_MODEL_RENDERING
 {
-	DECLARE_CHUNK_ITEM( ChunkModel )
-	DECLARE_CHUNK_ITEM_ALIAS( ChunkModel, shell )
-public:
-	static const BW::string & getSectionName();
+    DECLARE_CHUNK_ITEM(ChunkModel)
+    DECLARE_CHUNK_ITEM_ALIAS(ChunkModel, shell)
+  public:
+    static const BW::string& getSectionName();
 
-	ChunkModel();
-	~ChunkModel();
+    ChunkModel();
+    ~ChunkModel();
 
-	virtual bool load( DataSectionPtr pSection, Chunk * pChunk = NULL,
-		BW::string* pErrorString = NULL  );
+    virtual bool load(DataSectionPtr pSection,
+                      Chunk*         pChunk       = NULL,
+                      BW::string*    pErrorString = NULL);
 
-	virtual void toss( Chunk * pChunk );
-	void tossWithExtra( Chunk * pChunk, SuperModel * extraModel );
-	
-	virtual CollisionSceneProviderPtr getCollisionSceneProvider( Chunk* ) const;
-	virtual void updateAnimations();
-	virtual void draw( Moo::DrawContext& drawContext );
-	virtual void lend( Chunk * pLender );
-	bool isModelNodeless() const { return pSuperModel_ ? pSuperModel_->nodeless() : false; }
+    virtual void toss(Chunk* pChunk);
+    void         tossWithExtra(Chunk* pChunk, SuperModel* extraModel);
 
-	virtual const char * label() const;
+    virtual CollisionSceneProviderPtr getCollisionSceneProvider(Chunk*) const;
+    virtual void                      updateAnimations();
+    virtual void                      draw(Moo::DrawContext& drawContext);
+    virtual void                      lend(Chunk* pLender);
+    bool                              isModelNodeless() const
+    {
+        return pSuperModel_ ? pSuperModel_->nodeless() : false;
+    }
 
-	virtual bool reflectionVisible() { return reflectionVisible_; }
-	virtual bool affectShadow() const;
+    virtual const char* label() const;
 
-	bool hasBSP() const;
+    virtual bool reflectionVisible() { return reflectionVisible_; }
+    virtual bool affectShadow() const;
 
-	bool getReflectionVis() const { return reflectionVisible_; }
-	bool setReflectionVis( const bool& reflVis ) { reflectionVisible_=reflVis; return true; }
-	BoundingBox localBB() const
-	{
-		BoundingBox bb;
-		if( pSuperModel_ )
-			pSuperModel_->localBoundingBox( bb );
-		return bb;
-	}
-	void generateTextureUsage( Moo::ModelTextureUsageGroup& usageGroup );
+    bool hasBSP() const;
 
-	virtual void onReloaderPreReload( Reloader* pReloader);
-	virtual void onReloaderReloaded( Reloader* pReloader );
+    bool getReflectionVis() const { return reflectionVisible_; }
+    bool setReflectionVis(const bool& reflVis)
+    {
+        reflectionVisible_ = reflVis;
+        return true;
+    }
+    BoundingBox localBB() const
+    {
+        BoundingBox bb;
+        if (pSuperModel_)
+            pSuperModel_->localBoundingBox(bb);
+        return bb;
+    }
+    void generateTextureUsage(Moo::ModelTextureUsageGroup& usageGroup);
 
-	void transform( const Matrix& newTransform );
-	const Matrix& transform() const;
-	const Matrix& worldTransform() const;
+    virtual void onReloaderPreReload(Reloader* pReloader);
+    virtual void onReloaderReloaded(Reloader* pReloader);
 
-	SuperModel * getSuperModel() { return pSuperModel_; }
+    void          transform(const Matrix& newTransform);
+    const Matrix& transform() const;
+    const Matrix& worldTransform() const;
 
-	virtual void syncInit();
+    SuperModel* getSuperModel() { return pSuperModel_; }
 
-protected:
-	
+    virtual void syncInit();
+
+  protected:
 #if ENABLE_BSP_MODEL_RENDERING
-	virtual bool drawBspInternal();
+    virtual bool drawBspInternal();
 #endif // ENABLE_BSP_MODEL_bsRENDERING
 
-	SuperModel					* pSuperModel_;
+    SuperModel* pSuperModel_;
 
-	SuperModelAnimationPtr		pAnimation_;
+    SuperModelAnimationPtr pAnimation_;
 
-	uint32						tickMark_;
-	uint64						lastTickTimeInMS_;
+    uint32 tickMark_;
+    uint64 lastTickTimeInMS_;
 
-	bool						castsShadow_;
+    bool castsShadow_;
 
-	float						animRateMultiplier_;
+    float animRateMultiplier_;
 
-	MaterialFashionVector		materialFashions_;
+    MaterialFashionVector materialFashions_;
 
-	Matrix						transform_;
-	Matrix						worldTransform_;
+    Matrix transform_;
+    Matrix worldTransform_;
 
-	BW::string					label_;
+    BW::string label_;
 
-	bool						reflectionVisible_;
+    bool reflectionVisible_;
 
-	mutable bool				calculateIsShellModel_;
-	mutable bool				cachedIsShellModel_;
+    mutable bool calculateIsShellModel_;
+    mutable bool cachedIsShellModel_;
 
-	virtual void				syncShadowCaster();
-	void						refreshWantsUpdate( bool wantsUpdate );
+    virtual void syncShadowCaster();
+    void         refreshWantsUpdate(bool wantsUpdate);
 
-	void						updateWorldTransform( const Chunk* pChunk );
-
+    void updateWorldTransform(const Chunk* pChunk);
 
 #if UMBRA_ENABLE
-	void						syncUmbra();
-	BW::string					umbraModelName_;
+    void       syncUmbra();
+    BW::string umbraModelName_;
 #endif
 
 #if FMOD_SUPPORT
     SoundOccluder soundOccluder_;
 #endif
 
-	virtual bool addYBounds( BoundingBox& bb ) const;
+    virtual bool addYBounds(BoundingBox& bb) const;
 
-	bool isShellModel() const;
+    bool isShellModel() const;
 
-	void tickAnimation();
+    void tickAnimation();
 
-private:
-	ChunkModel( const ChunkModel & other );
-	ChunkModel& operator=( const ChunkModel & other );
+  private:
+    ChunkModel(const ChunkModel& other);
+    ChunkModel& operator=(const ChunkModel& other);
 
-	bool pullInfoFromSuperModel( Chunk* pChunk, bool reload = false );
-	Chunk* pChunkBeforeReload_;
-
+    bool   pullInfoFromSuperModel(Chunk* pChunk, bool reload = false);
+    Chunk* pChunkBeforeReload_;
 };
 
 BW_END_NAMESPACE

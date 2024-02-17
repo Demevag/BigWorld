@@ -9,44 +9,43 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class LogStringWriter
 {
-public:
-	LogStringWriter( FileStream &blobFile );
+  public:
+    LogStringWriter(FileStream& blobFile);
 
-	bool isGood() const;
+    bool isGood() const;
 
-	void onFmtStringSection( const BW::string &fmt, int start, int end );
+    void onFmtStringSection(const BW::string& fmt, int start, int end);
 
-	void onParseComplete();
-	void onError();
+    void onParseComplete();
+    void onError();
 
-	void onMinWidth( WidthType w, FormatData &fd );
-	void onMaxWidth( WidthType w, FormatData &fd );
+    void onMinWidth(WidthType w, FormatData& fd);
+    void onMaxWidth(WidthType w, FormatData& fd);
 
-	void onChar( char c, const FormatData &fd );
-	void onString( const char *s, const FormatData &fd );
-	void onPointer( int64 ptr, const FormatData &fd );
+    void onChar(char c, const FormatData& fd);
+    void onString(const char* s, const FormatData& fd);
+    void onPointer(int64 ptr, const FormatData& fd);
 
-	template < class IntType >
-	void onInt( IntType i, const FormatData & /* fd */ )
-	{
-		blobFile_ << i;
-	}
+    template <class IntType>
+    void onInt(IntType i, const FormatData& /* fd */)
+    {
+        blobFile_ << i;
+    }
 
-	template < class FloatType >
-	void onFloat( FloatType f, const FormatData & /* fd */ )
-	{
-		blobFile_ << f;
-	}
+    template <class FloatType>
+    void onFloat(FloatType f, const FormatData& /* fd */)
+    {
+        blobFile_ << f;
+    }
 
-private:
-	bool isGood_;
+  private:
+    bool isGood_;
 
-	FileStream &blobFile_;
+    FileStream& blobFile_;
 };
 
 BW_END_NAMESPACE

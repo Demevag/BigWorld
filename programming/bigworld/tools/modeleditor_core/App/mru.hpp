@@ -9,19 +9,21 @@ BW_BEGIN_NAMESPACE
 
 class MRU
 {
-public:
-	
-	MRU();
+  public:
+    MRU();
 
-	static MRU& instance();
+    static MRU& instance();
 
-	void update( const BW::string& mruName, const BW::string& file, bool add = true );
-	void read( const BW::string& mruName, BW::vector<BW::string>& files );
-	void getDir( const BW::string& mruName, BW::string& dir, const BW::string& defaultDir = "" );
+    void update(const BW::string& mruName,
+                const BW::string& file,
+                bool              add = true);
+    void read(const BW::string& mruName, BW::vector<BW::string>& files);
+    void getDir(const BW::string& mruName,
+                BW::string&       dir,
+                const BW::string& defaultDir = "");
 
-private:
-
-	unsigned maxMRUs_;
+  private:
+    unsigned maxMRUs_;
 };
 
 BW_END_NAMESPACE

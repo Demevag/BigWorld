@@ -2,9 +2,9 @@
 #define AWESOMIUM_PROVIDER_HPP
 
 #ifdef _WIN64
-#define ENABLE_AWESOMIUM	0
+#define ENABLE_AWESOMIUM 0
 #else
-#define ENABLE_AWESOMIUM	BW_AWESOMIUM_SUPPORT
+#define ENABLE_AWESOMIUM BW_AWESOMIUM_SUPPORT
 #endif
 
 /////
@@ -17,7 +17,7 @@
 #include "cstdmf/bw_set.hpp"
 
 namespace Awesomium {
-	class WebView;
+    class WebView;
 }
 
 BW_BEGIN_NAMESPACE
@@ -39,88 +39,98 @@ class BWResourceInterceptor;
  */
 class PyAwesomiumProvider : public PyTextureProvider
 {
-public:
-	Py_Header( PyAwesomiumProvider, PyTextureProvider )
+  public:
+    Py_Header(PyAwesomiumProvider, PyTextureProvider)
 
-public:
-	PyAwesomiumProvider( int width, int height, PyTypePlus * pType = &s_type_ );
-	~PyAwesomiumProvider();
+      public
+      : PyAwesomiumProvider(int         width,
+                            int         height,
+                            PyTypePlus* pType = &s_type_);
+    ~PyAwesomiumProvider();
 
-	void updateTexture();
+    void updateTexture();
 
-	void goBack();
-	void goForward();
-	void stop();
-	void focus();
-	void unfocus();
-	void loadURL( const BW::string& url );
-	void reload( bool ignoreCache );
-	void resize( int width, int height );
-	void cleanup();
+    void goBack();
+    void goForward();
+    void stop();
+    void focus();
+    void unfocus();
+    void loadURL(const BW::string& url);
+    void reload(bool ignoreCache);
+    void resize(int width, int height);
+    void cleanup();
 
-	bool isLoading();
-	BW::string url();
-	uint32 width();
-	uint32 height();
-	
-	void injectKeyEvent( const KeyEvent& event );
-	void injectMouseMoveEvent( int x, int y );
-	void injectMouseWheelEvent( int dz );
+    bool       isLoading();
+    BW::string url();
+    uint32     width();
+    uint32     height();
 
-	void executeJavascript( const BW::string& script, const BW::string& frameXPath );
-	BW::string executeJavascriptWithResult( const BW::string& script, const BW::string& frameXPath );
+    void injectKeyEvent(const KeyEvent& event);
+    void injectMouseMoveEvent(int x, int y);
+    void injectMouseWheelEvent(int dz);
 
-	void script( const PyObjectPtr& object );
-	PyObjectPtr script();
+    void       executeJavascript(const BW::string& script,
+                                 const BW::string& frameXPath);
+    BW::string executeJavascriptWithResult(const BW::string& script,
+                                           const BW::string& frameXPath);
 
-	PY_FACTORY_DECLARE()
+    void        script(const PyObjectPtr& object);
+    PyObjectPtr script();
 
-	PY_RO_ATTRIBUTE_DECLARE( this->isLoading(), isLoading )
-	PY_RO_ATTRIBUTE_DECLARE( this->url(), url )
-	PY_RO_ATTRIBUTE_DECLARE( this->width(), width )
-	PY_RO_ATTRIBUTE_DECLARE( this->height(), height )
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( PyObjectPtr, script, script )
+    PY_FACTORY_DECLARE()
 
-	PY_AUTO_METHOD_DECLARE( RETVOID, updateTexture, END );
-	PY_AUTO_METHOD_DECLARE( RETVOID, goBack, END );
-	PY_AUTO_METHOD_DECLARE( RETVOID, goForward, END );
-	PY_AUTO_METHOD_DECLARE( RETVOID, stop, END );
-	PY_AUTO_METHOD_DECLARE( RETVOID, focus, END );
-	PY_AUTO_METHOD_DECLARE( RETVOID, unfocus, END );
-	PY_AUTO_METHOD_DECLARE( RETVOID, loadURL, ARG( BW::string, END ) );
-	PY_AUTO_METHOD_DECLARE( RETVOID, reload, ARG( bool, END ) );
-	PY_AUTO_METHOD_DECLARE( RETVOID, resize, ARG( int, ARG( int, END ) ) );
-	PY_AUTO_METHOD_DECLARE( RETVOID, cleanup, END );
-	PY_AUTO_METHOD_DECLARE( RETVOID, injectKeyEvent, ARG( KeyEvent, END ) );
-	PY_AUTO_METHOD_DECLARE( RETVOID, injectMouseWheelEvent, ARG( int, END ) );
-	PY_AUTO_METHOD_DECLARE( RETVOID, injectMouseMoveEvent, ARG( int, ARG( int, END ) ) );
+    PY_RO_ATTRIBUTE_DECLARE(this->isLoading(), isLoading)
+    PY_RO_ATTRIBUTE_DECLARE(this->url(), url)
+    PY_RO_ATTRIBUTE_DECLARE(this->width(), width)
+    PY_RO_ATTRIBUTE_DECLARE(this->height(), height)
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(PyObjectPtr, script, script)
 
-	PY_AUTO_METHOD_DECLARE( RETVOID, executeJavascript, ARG( BW::string, ARG( BW::string, END ) ) );
-	PY_AUTO_METHOD_DECLARE( RETDATA, executeJavascriptWithResult, ARG( BW::string, ARG( BW::string, END ) ) );
+    PY_AUTO_METHOD_DECLARE(RETVOID, updateTexture, END);
+    PY_AUTO_METHOD_DECLARE(RETVOID, goBack, END);
+    PY_AUTO_METHOD_DECLARE(RETVOID, goForward, END);
+    PY_AUTO_METHOD_DECLARE(RETVOID, stop, END);
+    PY_AUTO_METHOD_DECLARE(RETVOID, focus, END);
+    PY_AUTO_METHOD_DECLARE(RETVOID, unfocus, END);
+    PY_AUTO_METHOD_DECLARE(RETVOID, loadURL, ARG(BW::string, END));
+    PY_AUTO_METHOD_DECLARE(RETVOID, reload, ARG(bool, END));
+    PY_AUTO_METHOD_DECLARE(RETVOID, resize, ARG(int, ARG(int, END)));
+    PY_AUTO_METHOD_DECLARE(RETVOID, cleanup, END);
+    PY_AUTO_METHOD_DECLARE(RETVOID, injectKeyEvent, ARG(KeyEvent, END));
+    PY_AUTO_METHOD_DECLARE(RETVOID, injectMouseWheelEvent, ARG(int, END));
+    PY_AUTO_METHOD_DECLARE(RETVOID,
+                           injectMouseMoveEvent,
+                           ARG(int, ARG(int, END)));
 
-	virtual Moo::BaseTexturePtr texture();
+    PY_AUTO_METHOD_DECLARE(RETVOID,
+                           executeJavascript,
+                           ARG(BW::string, ARG(BW::string, END)));
+    PY_AUTO_METHOD_DECLARE(RETDATA,
+                           executeJavascriptWithResult,
+                           ARG(BW::string, ARG(BW::string, END)));
 
-public:
-	static void init();
-	static void fini();
-	static void tick();
+    virtual Moo::BaseTexturePtr texture();
 
-private:
-	static bool checkWebCore();
-	static bool checkWebCoreImpl( const BW::string& basePath );
+  public:
+    static void init();
+    static void fini();
+    static void tick();
 
-	static HMODULE s_awesomiumModule_;
-	static bool s_webCoreInitialised_;
-	static BWResourceInterceptor* pResourceInterceptor_;
+  private:
+    static bool checkWebCore();
+    static bool checkWebCoreImpl(const BW::string& basePath);
 
-	typedef BW::set<PyAwesomiumProvider*> ProviderSet;
-	static ProviderSet s_providers_;
+    static HMODULE                s_awesomiumModule_;
+    static bool                   s_webCoreInitialised_;
+    static BWResourceInterceptor* pResourceInterceptor_;
 
-private:
-	Awesomium::WebView* pWebView_;
+    typedef BW::set<PyAwesomiumProvider*> ProviderSet;
+    static ProviderSet                    s_providers_;
 
-	class Listener;
-	Listener* pListener_;
+  private:
+    Awesomium::WebView* pWebView_;
+
+    class Listener;
+    Listener* pListener_;
 };
 
 BW_END_NAMESPACE

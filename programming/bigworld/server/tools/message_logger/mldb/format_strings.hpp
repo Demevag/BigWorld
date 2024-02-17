@@ -8,39 +8,39 @@
 
 #include "cstdmf/bw_map.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-typedef BW::vector< BW::string > FormatStringList;
+typedef BW::vector<BW::string> FormatStringList;
 
 /**
  * Handles the global format strings mapping and file.
  */
-class FormatStringsMLDB : public BinaryFileHandler, public FormatStrings
+class FormatStringsMLDB
+  : public BinaryFileHandler
+  , public FormatStrings
 {
-public:
-	virtual ~FormatStringsMLDB();
-	bool init( const char *logLocation, const char *mode );
-	const LogStringInterpolator * getHandlerForLogEntry(
-			const LogEntry & entry );
+  public:
+    virtual ~FormatStringsMLDB();
+    bool init(const char* logLocation, const char* mode);
+    const LogStringInterpolator* getHandlerForLogEntry(const LogEntry& entry);
 
-protected:
-	virtual bool read();
-	virtual void flush();
+  protected:
+    virtual bool read();
+    virtual void flush();
 
-	virtual void clear();
+    virtual void clear();
 
-	bool canAppendToDB();
-	bool writeFormatStringToDB( LogStringInterpolator *pHandler );
+    bool canAppendToDB();
+    bool writeFormatStringToDB(LogStringInterpolator* pHandler);
 
-	void addFormatStringToMap( const BW::string & fmt,
-		LogStringInterpolator *pHandler );
+    void addFormatStringToMap(const BW::string&      fmt,
+                              LogStringInterpolator* pHandler);
 
-private:
-	// Mapping from strings offset -> handler (for reading)
-	typedef BW::map<
-		MessageLogger::FormatStringOffsetId, LogStringInterpolator * > OffsetMap;
-	OffsetMap offsetMap_;
+  private:
+    // Mapping from strings offset -> handler (for reading)
+    typedef BW::map<MessageLogger::FormatStringOffsetId, LogStringInterpolator*>
+              OffsetMap;
+    OffsetMap offsetMap_;
 };
 
 BW_END_NAMESPACE

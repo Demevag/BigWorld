@@ -4,7 +4,6 @@
 #include "cstdmf/debug_message_callbacks.hpp"
 #include "cstdmf/dprintf.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -12,7 +11,7 @@ BW_BEGIN_NAMESPACE
  */
 struct CriticalHandler : public CriticalMessageCallback
 {
-	void handleCritical( const char * msg );
+    void handleCritical(const char* msg);
 };
 
 BW_END_NAMESPACE

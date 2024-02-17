@@ -10,17 +10,16 @@ BW_BEGIN_NAMESPACE
 /**
  *	This namespace manages the personality script.
  */
-namespace Personality
-{
+namespace Personality {
 
-extern const char *DEFAULT_NAME;
-ScriptModule import( const BW::string &name );
-ScriptModule instance();
+    extern const char* DEFAULT_NAME;
+    ScriptModule       import(const BW::string& name);
+    ScriptModule       instance();
 
-bool callOnInit( bool isReload = false );
+    bool callOnInit(bool isReload = false);
 
-ScriptObject getMember( const char * name );
-ScriptObject getMember( const char * currentName, const char * deprecatedName );
+    ScriptObject getMember(const char* name);
+    ScriptObject getMember(const char* currentName, const char* deprecatedName);
 
 } // namespace Personality
 

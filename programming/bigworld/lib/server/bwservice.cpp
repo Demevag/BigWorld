@@ -3,18 +3,15 @@
 
 BW_BEGIN_NAMESPACE
 
-void bwParseCommandLine( int argc, char **argv )
+void bwParseCommandLine(int argc, char** argv)
 {
-	MF_WATCH( "config/shouldWriteToConsole",
-		DebugFilter::shouldWriteToConsole );
+    MF_WATCH("config/shouldWriteToConsole", DebugFilter::shouldWriteToConsole);
 
-	for (int i=1; i < argc; i++)
-	{
-		if (strcmp( argv[i], "-machined" ) == 0)
-		{
-			DebugFilter::shouldWriteToConsole( false );
-		}
-	}
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-machined") == 0) {
+            DebugFilter::shouldWriteToConsole(false);
+        }
+    }
 }
 
 BW_END_NAMESPACE

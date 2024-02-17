@@ -3,21 +3,17 @@
 
 #include "cstdmf/bw_namespace.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class IDatabase;
 
-namespace Mercury
-{
-class EventDispatcher;
-class NetworkInterface;
+namespace Mercury {
+    class EventDispatcher;
+    class NetworkInterface;
 }
 
-
-IDatabase * createMySqlDatabase(
-		Mercury::NetworkInterface & interface,
-		Mercury::EventDispatcher & dispatcher );
+IDatabase* createMySqlDatabase(Mercury::NetworkInterface& interface,
+                               Mercury::EventDispatcher&  dispatcher);
 
 BW_END_NAMESPACE
 

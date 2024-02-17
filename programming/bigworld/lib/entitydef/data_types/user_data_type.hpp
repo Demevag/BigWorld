@@ -3,7 +3,6 @@
 
 #include "entitydef/data_type.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -49,84 +48,90 @@ BW_BEGIN_NAMESPACE
  */
 class UserDataType : public DataType
 {
-	public:
-		/**
-		 *	Constructor.
-		 *
-		 *	@param pMeta			The meta data type.
-		 *	@param moduleName		The name of the module to find the instance.
-		 *	@param instanceName	The name of the instance that implements the
-		 *							data type.
-		 */
-		UserDataType( MetaDataType * pMeta,
-				const BW::string & moduleName,
-				const BW::string & instanceName ) :
-			DataType( pMeta, /*isConst:*/false ), // = do not reuse default
-			moduleName_( moduleName ),
-			instanceName_( instanceName ),
-			isInited_( false )
-		{
-		}
+  public:
+    /**
+     *	Constructor.
+     *
+     *	@param pMeta			The meta data type.
+     *	@param moduleName		The name of the module to find the instance.
+     *	@param instanceName	The name of the instance that implements the
+     *							data type.
+     */
+    UserDataType(MetaDataType*     pMeta,
+                 const BW::string& moduleName,
+                 const BW::string& instanceName)
+      : DataType(pMeta, /*isConst:*/ false)
+      , // = do not reuse default
+      moduleName_(moduleName)
+      , instanceName_(instanceName)
+      , isInited_(false)
+    {
+    }
 
-		~UserDataType();
+    ~UserDataType();
 
-		const BW::string& moduleName() const { return moduleName_; }
-		const BW::string& instanceName() const { return instanceName_; }
+    const BW::string& moduleName() const { return moduleName_; }
+    const BW::string& instanceName() const { return instanceName_; }
 
-		bool addObjectToStream( const ScriptObject & object,
-			BinaryOStream & stream, bool isPersistentOnly ) const;
-		bool createObjectFromStream( ScriptObject & object,
-			BinaryIStream & stream, bool isPersistentOnly ) const;
+    bool addObjectToStream(const ScriptObject& object,
+                           BinaryOStream&      stream,
+                           bool                isPersistentOnly) const;
+    bool createObjectFromStream(ScriptObject&  object,
+                                BinaryIStream& stream,
+                                bool           isPersistentOnly) const;
 
-		bool addObjectToSection( const ScriptObject & object,
-			DataSectionPtr pSection ) const;
-		bool createObjectFromSection( ScriptObject & object,
-			DataSectionPtr pSection ) const;
+    bool addObjectToSection(const ScriptObject& object,
+                            DataSectionPtr      pSection) const;
+    bool createObjectFromSection(ScriptObject&  object,
+                                 DataSectionPtr pSection) const;
 
-	protected:
-		// Overrides the DataType method.
-		virtual bool isSameType( ScriptObject /*pValue*/ );
-		virtual void reloadScript();
-		virtual void clearScript();
-		virtual void setDefaultValue( DataSectionPtr pSection );
-		virtual bool getDefaultValue( DataSink & output ) const;
-		virtual DataSectionPtr pDefaultSection() const { return pDefaultSection_; }
-		virtual int streamSize() const;
-		virtual bool addToSection( DataSource & source,
-				DataSectionPtr pSection ) const;
-		virtual bool createFromSection( DataSectionPtr pSection,
-				DataSink & sink ) const;
-		virtual bool fromStreamToSection( BinaryIStream & stream,
-				DataSectionPtr pSection, bool isPersistentOnly ) const;
-		virtual bool fromSectionToStream( DataSectionPtr pSection,
-				BinaryOStream & stream, bool isPersistentOnly ) const;
-		virtual void addToMD5( MD5 & md5 ) const;
-		virtual StreamElementPtr getStreamElement( size_t index,
-			size_t & size, bool & isNone, bool isPersistentOnly ) const;
-		virtual bool operator<( const DataType & other ) const;
-		virtual BW::string typeName() const;
+  protected:
+    // Overrides the DataType method.
+    virtual bool           isSameType(ScriptObject /*pValue*/);
+    virtual void           reloadScript();
+    virtual void           clearScript();
+    virtual void           setDefaultValue(DataSectionPtr pSection);
+    virtual bool           getDefaultValue(DataSink& output) const;
+    virtual DataSectionPtr pDefaultSection() const { return pDefaultSection_; }
+    virtual int            streamSize() const;
+    virtual bool           addToSection(DataSource&    source,
+                                        DataSectionPtr pSection) const;
+    virtual bool           createFromSection(DataSectionPtr pSection,
+                                             DataSink&      sink) const;
+    virtual bool           fromStreamToSection(BinaryIStream& stream,
+                                               DataSectionPtr pSection,
+                                               bool           isPersistentOnly) const;
+    virtual bool           fromSectionToStream(DataSectionPtr pSection,
+                                               BinaryOStream& stream,
+                                               bool           isPersistentOnly) const;
+    virtual void           addToMD5(MD5& md5) const;
+    virtual StreamElementPtr getStreamElement(size_t  index,
+                                              size_t& size,
+                                              bool&   isNone,
+                                              bool    isPersistentOnly) const;
+    virtual bool             operator<(const DataType& other) const;
+    virtual BW::string       typeName() const;
 
-	private:
-		void init();
+  private:
+    void init();
 
-		ScriptObject pObject() const
-		{
-			if (!isInited_)
-			{
-				const_cast< UserDataType * >( this )->init();
-			}
+    ScriptObject pObject() const
+    {
+        if (!isInited_) {
+            const_cast<UserDataType*>(this)->init();
+        }
 
-			return pObject_;
-		}
+        return pObject_;
+    }
 
-		ScriptObject method( const char * name ) const;
+    ScriptObject method(const char* name) const;
 
-		BW::string moduleName_;
-		BW::string instanceName_;
+    BW::string moduleName_;
+    BW::string instanceName_;
 
-		bool isInited_;
-		ScriptObject pObject_;
-		DataSectionPtr pDefaultSection_;
+    bool           isInited_;
+    ScriptObject   pObject_;
+    DataSectionPtr pDefaultSection_;
 };
 
 BW_END_NAMESPACE

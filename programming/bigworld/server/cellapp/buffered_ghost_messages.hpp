@@ -8,16 +8,13 @@
 #include "network/misc.hpp"
 #include "cstdmf/bw_map.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
-class Address;
+namespace Mercury {
+    class Address;
 }
 
 class BufferedGhostMessage;
-
 
 /**
  *	This class is used to buffer ghost messages that have arrived out of order.
@@ -32,42 +29,42 @@ class BufferedGhostMessage;
  */
 class BufferedGhostMessages
 {
-public:
-	void playSubsequenceFor( EntityID id, const Mercury::Address & srcAddr );
-	void playNewLifespanFor( EntityID id );
+  public:
+    void playSubsequenceFor(EntityID id, const Mercury::Address& srcAddr);
+    void playNewLifespanFor(EntityID id);
 
-	bool hasMessagesFor( EntityID entityID, 
-		const Mercury::Address & addr ) const;
+    bool hasMessagesFor(EntityID entityID, const Mercury::Address& addr) const;
 
-	bool isDelayingMessagesFor( EntityID entityID,
-			const Mercury::Address & addr ) const;
+    bool isDelayingMessagesFor(EntityID                entityID,
+                               const Mercury::Address& addr) const;
 
-	void delaySubsequence( EntityID entityID,
-			const Mercury::Address & srcAddr,
-			BufferedGhostMessage * pFirstMessage );
+    void delaySubsequence(EntityID                entityID,
+                          const Mercury::Address& srcAddr,
+                          BufferedGhostMessage*   pFirstMessage);
 
-	void add( EntityID entityID, const Mercury::Address & srcAddr,
-				   BufferedGhostMessage * pMessage );
+    void add(EntityID                entityID,
+             const Mercury::Address& srcAddr,
+             BufferedGhostMessage*   pMessage);
 
-	bool isEmpty() const	{ return map_.empty(); }
+    bool isEmpty() const { return map_.empty(); }
 
-	static BufferedGhostMessages & instance();
+    static BufferedGhostMessages& instance();
 
-	static bool isSubsequenceStart( Mercury::MessageID id )
-	{
-		return id == CellAppInterface::ghostSetReal.id();
-	}
+    static bool isSubsequenceStart(Mercury::MessageID id)
+    {
+        return id == CellAppInterface::ghostSetReal.id();
+    }
 
-	static bool isSubsequenceEnd( Mercury::MessageID id )
-	{
-		return id == CellAppInterface::delGhost.id() ||
-			id == CellAppInterface::ghostSetNextReal.id();
-	}
+    static bool isSubsequenceEnd(Mercury::MessageID id)
+    {
+        return id == CellAppInterface::delGhost.id() ||
+               id == CellAppInterface::ghostSetNextReal.id();
+    }
 
-private:
-	typedef BW::map< EntityID, BufferedGhostMessagesForEntity > Map;
+  private:
+    typedef BW::map<EntityID, BufferedGhostMessagesForEntity> Map;
 
-	Map map_;
+    Map map_;
 };
 
 BW_END_NAMESPACE

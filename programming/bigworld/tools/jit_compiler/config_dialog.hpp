@@ -11,47 +11,49 @@ BW_BEGIN_NAMESPACE
 class AssetCompiler;
 class PluginLoader;
 
-class ConfigDialog : 
-	public ATL::CDialogImpl<ConfigDialog>,
-	public WTL::CDialogResize<ConfigDialog>
+class ConfigDialog
+  : public ATL::CDialogImpl<ConfigDialog>
+  , public WTL::CDialogResize<ConfigDialog>
 {
-public:
-	enum { IDD = IDR_CONFIG_DIALOG };
+  public:
+    enum
+    {
+        IDD = IDR_CONFIG_DIALOG
+    };
 
-public:
-	explicit ConfigDialog( const AssetCompiler & compiler, const PluginLoader & loader );
+  public:
+    explicit ConfigDialog(const AssetCompiler& compiler,
+                          const PluginLoader&  loader);
 
-	void run();
+    void run();
 
-	BEGIN_MSG_MAP_EX(ConfigDialog)
-		MSG_WM_INITDIALOG(onInitDialog)
-		MSG_WM_CLOSE(onClose)
-		COMMAND_HANDLER_EX(IDOK, BN_CLICKED, onOk)
-		CHAIN_MSG_MAP(WTL::CDialogResize<ConfigDialog>)
-	END_MSG_MAP()
+    BEGIN_MSG_MAP_EX(ConfigDialog)
+    MSG_WM_INITDIALOG(onInitDialog)
+    MSG_WM_CLOSE(onClose)
+    COMMAND_HANDLER_EX(IDOK, BN_CLICKED, onOk)
+    CHAIN_MSG_MAP(WTL::CDialogResize<ConfigDialog>)
+    END_MSG_MAP()
 
-	BEGIN_DLGRESIZE_MAP(ConfigDialog)
-		DLGRESIZE_CONTROL(IDC_CONFIG_TEXT, DLSZ_SIZE_X|DLSZ_SIZE_Y)
-		DLGRESIZE_CONTROL(IDOK, DLSZ_MOVE_X|DLSZ_MOVE_Y)
-	END_DLGRESIZE_MAP()
+    BEGIN_DLGRESIZE_MAP(ConfigDialog)
+    DLGRESIZE_CONTROL(IDC_CONFIG_TEXT, DLSZ_SIZE_X | DLSZ_SIZE_Y)
+    DLGRESIZE_CONTROL(IDOK, DLSZ_MOVE_X | DLSZ_MOVE_Y)
+    END_DLGRESIZE_MAP()
 
-private:
+  private:
+    // Message Map Functions
+    int  onInitDialog(ATL::CWindow handle, LPARAM data);
+    void onClose();
+    void onOk(UINT notifyCode, int controlID, CWindow handle);
 
-	// Message Map Functions
-	int onInitDialog(ATL::CWindow handle, LPARAM data);
-	void onClose();
-	void onOk(UINT notifyCode, int controlID, CWindow handle);
+    const BW::string& presentBoolean(bool value) const;
+    const BW::string& presentPath(const BW::string& path) const;
+    BW::string        generateConfigString() const;
 
-	const BW::string & presentBoolean( bool value ) const;
-	const BW::string & presentPath( const BW::string & path ) const;
-	BW::string generateConfigString() const;
+  private:
+    const AssetCompiler& compiler_;
+    const PluginLoader&  loader_;
 
-private:
-
-	const AssetCompiler & compiler_;
-	const PluginLoader & loader_;
-
-	WTL::CEdit textbox_;
+    WTL::CEdit textbox_;
 };
 
 BW_END_NAMESPACE

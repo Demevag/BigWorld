@@ -6,7 +6,6 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // this file contains hook functions you can use to customise the
@@ -17,7 +16,7 @@ BW_BEGIN_NAMESPACE
 // database; if this function returns NULL, then the IDatabase
 // implementation should fail gracefully
 // (function in IDatabase concerned is readOrCreateEntity)
-DataSectionPtr createNewEntity( EntityTypeID, const BW::string & name );
+DataSectionPtr createNewEntity(EntityTypeID, const BW::string& name);
 
 BW_END_NAMESPACE
 

@@ -2,17 +2,17 @@
  * cocos2d for iPhone: http://www.cocos2d-iphone.org
  *
  * Copyright (c) 2008-2010 Ricardo Quesada
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,7 +29,8 @@
  * @section intro Introduction
  * This is cocos2d API reference
  *
- * The programming guide is hosted here: http://www.cocos2d-iphone.org/wiki/doku.php/prog_guide:index
+ * The programming guide is hosted here:
+ * http://www.cocos2d-iphone.org/wiki/doku.php/prog_guide:index
  *
  * <hr>
  *
@@ -46,7 +47,7 @@
 //
 // all cocos2d include files
 //
-#import "ccConfig.h"	// should be included first
+#import "ccConfig.h" // should be included first
 
 #import "CCActionManager.h"
 #import "CCAction.h"
@@ -119,7 +120,6 @@
 #import "ccTypes.h"
 #import "ccMacros.h"
 
-
 // Platform common
 #import "Platforms/CCGL.h"
 #import "Platforms/CCNS.h"
@@ -150,16 +150,15 @@
 #import "Support/CCProfiling.h"
 #endif // CC_ENABLE_PROFILERS
 
-
 // compatibility with v0.8
 #import "CCCompatibility.h"
 
-
 // free functions
-NSString * cocos2dVersion(void);
+NSString* cocos2dVersion(void);
 
 #ifdef __IPHONE_OS_VERSION_MAX_ALLOWED
 #ifndef __IPHONE_4_0
-#error "If you are targeting iPad, you should set BASE SDK = 4.0 (or 4.1, or 4.2), and set the 'iOS deploy target' = 3.2"
+#error                                                                         \
+  "If you are targeting iPad, you should set BASE SDK = 4.0 (or 4.1, or 4.2), and set the 'iOS deploy target' = 3.2"
 #endif
 #endif

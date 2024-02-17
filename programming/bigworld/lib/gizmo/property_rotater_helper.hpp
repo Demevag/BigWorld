@@ -18,51 +18,50 @@ typedef SmartPointer<MatrixProxy> MatrixProxyPtr;
  * It also listens to the currently selected coordinate system
  * this means that if you are working in local coordinates the
  * rotations will be appplied relative to their origin, otherwise
- * the rotations are applied relative to the weighted centre of 
+ * the rotations are applied relative to the weighted centre of
  * the current rotation properties
  */
 class PropertyRotaterHelper
 {
-public:
-	PropertyRotaterHelper();
+  public:
+    PropertyRotaterHelper();
 
-	void init( const Matrix& gizmoTransform );
-	void updateRotation( float angle, const Vector3& axis );
-	void fini( bool success );
+    void init(const Matrix& gizmoTransform);
+    void updateRotation(float angle, const Vector3& axis);
+    void fini(bool success);
 
-private:
+  private:
+    struct PropInfo
+    {
+        GenRotationProperty* prop_;
+        Matrix               initialMatrix_;
+    };
 
-	struct PropInfo
-	{
-		GenRotationProperty* prop_;
-		Matrix			initialMatrix_;
-	};
+    BW::vector<PropInfo> props_;
 
-	BW::vector<PropInfo> props_;
+    struct PositionOnlyPropInfo
+    {
+        GenPositionProperty* prop_;
+        Matrix               initialMatrix_;
+    };
 
-	struct PositionOnlyPropInfo
-	{
-		GenPositionProperty* prop_;
-		Matrix			initialMatrix_;
-	};
+    BW::vector<PositionOnlyPropInfo> positionOnlyProps_;
 
-	BW::vector<PositionOnlyPropInfo> positionOnlyProps_;
+    Vector3 groupOrigin_;
+    Matrix  groupFrame_;
+    Matrix  invGroupFrame_;
 
-	Vector3				groupOrigin_;
-	Matrix				groupFrame_;
-	Matrix				invGroupFrame_;
+    // Helper class to find a Propinfo structure
+    // by its MatrixProxyPtr
+    class PropFinder
+    {
+      public:
+        PropFinder(MatrixProxyPtr pMatrix);
+        bool operator()(PropInfo& prop);
 
-	// Helper class to find a Propinfo structure
-	// by its MatrixProxyPtr
-	class PropFinder
-	{
-	public:
-		PropFinder( MatrixProxyPtr pMatrix );
-		bool operator () ( PropInfo& prop );
-	private:
-		MatrixProxyPtr pMatrix_;
-
-	};
+      private:
+        MatrixProxyPtr pMatrix_;
+    };
 };
 
 BW_END_NAMESPACE

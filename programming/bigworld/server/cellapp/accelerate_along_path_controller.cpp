@@ -8,33 +8,27 @@
 
 DECLARE_DEBUG_COMPONENT(0)
 
-
 BW_BEGIN_NAMESPACE
 
-IMPLEMENT_EXCLUSIVE_CONTROLLER_TYPE(
-		AccelerateAlongPathController, DOMAIN_REAL, "Movement");
-
-
-
+IMPLEMENT_EXCLUSIVE_CONTROLLER_TYPE(AccelerateAlongPathController,
+                                    DOMAIN_REAL,
+                                    "Movement");
 
 /**
  *	Default constructor for AccelerateAlongPathController
  */
-AccelerateAlongPathController::AccelerateAlongPathController() :
-	BaseAccelerationController(	0.0f,
-								0.0f,
-								FACING_NONE),
-	progress_(0)
+AccelerateAlongPathController::AccelerateAlongPathController()
+  : BaseAccelerationController(0.0f, 0.0f, FACING_NONE)
+  , progress_(0)
 {
-	waypoints_.clear();
+    waypoints_.clear();
 }
-
 
 /**
  *	Constructor for AccelerateAlongPathController.
  *
  *	@param waypoints		The list of waypoints to traverse. NOTE:
- *							They are in local spaces, and the given vector 
+ *							They are in local spaces, and the given vector
  *							will be empty after this function call.
  *	@param acceleration		The amount of acceleration to apply.
  *							(units/second^2)
@@ -46,32 +40,28 @@ AccelerateAlongPathController::AccelerateAlongPathController() :
  *			const reference and will be empty after the function completes.
  */
 AccelerateAlongPathController::AccelerateAlongPathController(
-										BW::vector< Position3D > & waypoints,
-										float acceleration,
-										float maxSpeed,
-										Facing facing) :
-	BaseAccelerationController(	acceleration,
-								maxSpeed,
-								facing),
-	progress_(0)
+  BW::vector<Position3D>& waypoints,
+  float                   acceleration,
+  float                   maxSpeed,
+  Facing                  facing)
+  : BaseAccelerationController(acceleration, maxSpeed, facing)
+  , progress_(0)
 {
-	std::swap(waypoints, waypoints_);
+    std::swap(waypoints, waypoints_);
 
-	MF_ASSERT( !waypoints_.empty() );
+    MF_ASSERT(!waypoints_.empty());
 }
-
 
 /**
  *	This method writes our state to a stream.
  *
  *	@param stream		Stream to which we should write
  */
-void AccelerateAlongPathController::writeRealToStream( BinaryOStream & stream )
+void AccelerateAlongPathController::writeRealToStream(BinaryOStream& stream)
 {
-	this->BaseAccelerationController::writeRealToStream( stream );
-	stream << waypoints_ << progress_;
+    this->BaseAccelerationController::writeRealToStream(stream);
+    stream << waypoints_ << progress_;
 }
-
 
 /**
  *	This method reads our state from a stream.
@@ -80,13 +70,12 @@ void AccelerateAlongPathController::writeRealToStream( BinaryOStream & stream )
  *
  *	@return				true if successful, false otherwise
  */
-bool AccelerateAlongPathController::readRealFromStream( BinaryIStream & stream )
+bool AccelerateAlongPathController::readRealFromStream(BinaryIStream& stream)
 {
-	this->BaseAccelerationController::readRealFromStream( stream );
-	stream >> waypoints_ >> progress_;
-	return true;
+    this->BaseAccelerationController::readRealFromStream(stream);
+    stream >> waypoints_ >> progress_;
+    return true;
 }
-
 
 /**
  *	This is the update function of the AccelerateAlongPathController
@@ -100,35 +89,31 @@ bool AccelerateAlongPathController::readRealFromStream( BinaryIStream & stream )
  */
 void AccelerateAlongPathController::update()
 {
-	bool isLastWaypoint = (progress_ == waypoints_.size() - 1);
+    bool isLastWaypoint = (progress_ == waypoints_.size() - 1);
 
-	bool waypointReached = this->move( waypoints_[ progress_ ],
-										isLastWaypoint );
+    bool waypointReached = this->move(waypoints_[progress_], isLastWaypoint);
 
-	if (!waypointReached)
-	{
-		return;
-	}
+    if (!waypointReached) {
+        return;
+    }
 
-	progress_++;
+    progress_++;
 
-	if (isLastWaypoint)
-	{
-		// Keep ourselves alive until we have finished cleaning up,
-		// with an extra reference count from a smart pointer.
-		ControllerPtr pController = this;
+    if (isLastWaypoint) {
+        // Keep ourselves alive until we have finished cleaning up,
+        // with an extra reference count from a smart pointer.
+        ControllerPtr pController = this;
 
-		{
-			SCOPED_PROFILE( ON_MOVE_PROFILE );
+        {
+            SCOPED_PROFILE(ON_MOVE_PROFILE);
 
-			this->standardCallback( "onMove" );
-		}
+            this->standardCallback("onMove");
+        }
 
-		if (this->isAttached())
-		{
-			this->cancel();
-		}
-	}
+        if (this->isAttached()) {
+            this->cancel();
+        }
+    }
 }
 
 BW_END_NAMESPACE

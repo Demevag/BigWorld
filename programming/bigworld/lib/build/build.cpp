@@ -6,7 +6,7 @@ BW_BEGIN_NAMESPACE
 
 Build::Revision Build::revision()
 {
-	return REVISION_NUMBER;
+    return REVISION_NUMBER;
 }
 
 BW_END_NAMESPACE

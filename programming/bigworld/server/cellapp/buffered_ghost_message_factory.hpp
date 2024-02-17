@@ -3,40 +3,39 @@
 
 #include "network/basictypes.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BinaryIStream;
 class BufferedGhostMessage;
 
-namespace Mercury
-{
-class Address;
-class InputMessageHandler;
-class UnpackedMessageHeader;
+namespace Mercury {
+    class Address;
+    class InputMessageHandler;
+    class UnpackedMessageHeader;
 }
 
-namespace CellAppInterface
-{
-	struct ghostSetRealArgs;
+namespace CellAppInterface {
+    struct ghostSetRealArgs;
 }
 
-namespace BufferedGhostMessageFactory
-{
+namespace BufferedGhostMessageFactory {
 
-BufferedGhostMessage * createBufferedMessage(
-		const Mercury::Address & srcAddr,
-		const Mercury::UnpackedMessageHeader & header,
-		BinaryIStream & data,
-		EntityID entityID,
-		Mercury::InputMessageHandler * pHandler );
+    BufferedGhostMessage* createBufferedMessage(
+      const Mercury::Address&               srcAddr,
+      const Mercury::UnpackedMessageHeader& header,
+      BinaryIStream&                        data,
+      EntityID                              entityID,
+      Mercury::InputMessageHandler*         pHandler);
 
-BufferedGhostMessage * createBufferedCreateGhostMessage(
-		const Mercury::Address & srcAddr, EntityID entityID,
-		SpaceID spaceID, BinaryIStream & data );
+    BufferedGhostMessage* createBufferedCreateGhostMessage(
+      const Mercury::Address& srcAddr,
+      EntityID                entityID,
+      SpaceID                 spaceID,
+      BinaryIStream&          data);
 
-BufferedGhostMessage * createGhostSetRealMessage(
-		EntityID entityID, const CellAppInterface::ghostSetRealArgs & args );
+    BufferedGhostMessage* createGhostSetRealMessage(
+      EntityID                                  entityID,
+      const CellAppInterface::ghostSetRealArgs& args);
 
 } // namespace BufferedGhostMessageFactory
 

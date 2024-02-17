@@ -10,45 +10,45 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-class TransferDB : public Singleton< TransferDB >
+class TransferDB : public Singleton<TransferDB>
 {
-public:
-	TransferDB();
-	~TransferDB();
+  public:
+    TransferDB();
+    ~TransferDB();
 
-	bool init( bool isVerbose );
+    bool init(bool isVerbose);
 
-	// Command methods
-	bool consolidate( BW::string secondaryDB, BW::string sendToAddr );
+    // Command methods
+    bool consolidate(BW::string secondaryDB, BW::string sendToAddr);
 
-	bool snapshotPrimary( BW::string destinationIP,
-			BW::string destinationPath, BW::string limitKbps );
+    bool snapshotPrimary(BW::string destinationIP,
+                         BW::string destinationPath,
+                         BW::string limitKbps);
 
-	bool snapshotSecondary( BW::string secondaryDB, BW::string destinationIP,
-			BW::string destinationPath, BW::string limitKbps );
+    bool snapshotSecondary(BW::string secondaryDB,
+                           BW::string destinationIP,
+                           BW::string destinationPath,
+                           BW::string limitKbps);
 
-	// General accessors
+    // General accessors
 
-	Mercury::EventDispatcher & dispatcher()
-		{ return *pEventDispatcher_; }
+    Mercury::EventDispatcher& dispatcher() { return *pEventDispatcher_; }
 
+    // Methods called from a child process after fork()
+    void onChildAboutToExec();
 
-	// Methods called from a child process after fork()
-	void onChildAboutToExec();
+  private:
+    bool initLogger(const char*       appName,
+                    const BW::string& loggerID,
+                    bool              isVerbose);
 
-private:
-	bool initLogger( const char * appName, 
-		const BW::string & loggerID, bool isVerbose );
+    std::auto_ptr<Mercury::EventDispatcher> pEventDispatcher_;
 
+    std::auto_ptr<WatcherNub> pWatcherNub_;
 
-	std::auto_ptr< Mercury::EventDispatcher > pEventDispatcher_;
-
-	std::auto_ptr< WatcherNub > pWatcherNub_;
-
-	std::auto_ptr< LoggerMessageForwarder > pLoggerMessageForwarder_;
+    std::auto_ptr<LoggerMessageForwarder> pLoggerMessageForwarder_;
 };
 
 BW_END_NAMESPACE

@@ -15,10 +15,9 @@
 BW_BEGIN_NAMESPACE
 
 #ifdef MF_SERVER
-typedef ServerChunkTerrain ChunkTerrain;
+typedef ServerChunkTerrain      ChunkTerrain;
 typedef ServerChunkTerrainCache ChunkTerrainCache;
 #endif
-
 
 /*~ function BigWorld.getHeightAtPos
  *	@components{ bots, cell }
@@ -31,47 +30,49 @@ typedef ServerChunkTerrainCache ChunkTerrainCache;
  *	@return		The terrain height at the given position and space,
  *				None if terrain chunk at the position is loaded.
  */
-PyObject * getHeightAtPos( ChunkSpaceID spaceID, Vector3 point )
+PyObject* getHeightAtPos(ChunkSpaceID spaceID, Vector3 point)
 {
-	ChunkSpacePtr pSpace =
-		ChunkManager::instance().space( spaceID, false/*createIfMissing*/ );
-	if (!pSpace)
-	{
-		PyErr_Format( PyExc_ValueError, "BigWorld.getHeightAtPos: "
-			"No space ID %d", int(spaceID) );
-		return NULL;
-	}
+    ChunkSpacePtr pSpace =
+      ChunkManager::instance().space(spaceID, false /*createIfMissing*/);
+    if (!pSpace) {
+        PyErr_Format(PyExc_ValueError,
+                     "BigWorld.getHeightAtPos: "
+                     "No space ID %d",
+                     int(spaceID));
+        return NULL;
+    }
 
-	ChunkSpace::Column * pColumn = pSpace->column( point, false/*canCreate*/ );
-	if (!pColumn)
-	{
-		PyErr_Format( PyExc_ValueError, "BigWorld.getHeightAtPos: "
-			"Point %s is not within boundry of space %d\n",
-			point.desc().c_str(), int(spaceID) );
-		return NULL;
-	}
+    ChunkSpace::Column* pColumn = pSpace->column(point, false /*canCreate*/);
+    if (!pColumn) {
+        PyErr_Format(PyExc_ValueError,
+                     "BigWorld.getHeightAtPos: "
+                     "Point %s is not within boundry of space %d\n",
+                     point.desc().c_str(),
+                     int(spaceID));
+        return NULL;
+    }
 
-	Chunk * pChunk = pColumn->pOutsideChunk();
-	if (!pChunk)
-	{
-		Py_RETURN_NONE;
-	}
+    Chunk* pChunk = pColumn->pOutsideChunk();
+    if (!pChunk) {
+        Py_RETURN_NONE;
+    }
 
-	ChunkTerrain * pTerrain = ChunkTerrainCache::instance( *pChunk ).pTerrain();
-	if (pTerrain)
-	{
-		const Matrix & inv = pChunk->transformInverse();
-		Vector3 terrainPos = inv.applyPoint( point );
-		float height =
-			pTerrain->block()->heightAt( terrainPos[0], terrainPos[2] );
-		height -= inv.applyToOrigin()[1];
+    ChunkTerrain* pTerrain = ChunkTerrainCache::instance(*pChunk).pTerrain();
+    if (pTerrain) {
+        const Matrix& inv        = pChunk->transformInverse();
+        Vector3       terrainPos = inv.applyPoint(point);
+        float         height =
+          pTerrain->block()->heightAt(terrainPos[0], terrainPos[2]);
+        height -= inv.applyToOrigin()[1];
 
-		return PyFloat_FromDouble( height );
-	}
+        return PyFloat_FromDouble(height);
+    }
 
-	Py_RETURN_NONE;
+    Py_RETURN_NONE;
 }
-PY_AUTO_MODULE_FUNCTION( RETOWN, getHeightAtPos,
-	ARG( ChunkSpaceID, ARG( Vector3, END ) ), BigWorld )
+PY_AUTO_MODULE_FUNCTION(RETOWN,
+                        getHeightAtPos,
+                        ARG(ChunkSpaceID, ARG(Vector3, END)),
+                        BigWorld)
 
 BW_END_NAMESPACE

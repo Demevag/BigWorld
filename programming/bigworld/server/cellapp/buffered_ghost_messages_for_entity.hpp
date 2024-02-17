@@ -5,7 +5,6 @@
 
 #include "cstdmf/bw_map.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -19,27 +18,26 @@ BW_BEGIN_NAMESPACE
  */
 class BufferedGhostMessagesForEntity
 {
-public:
-	BufferedGhostMessagesForEntity() {}
+  public:
+    BufferedGhostMessagesForEntity() {}
 
-	void add( const Mercury::Address & addr,
-		BufferedGhostMessage * pMessage );
+    void add(const Mercury::Address& addr, BufferedGhostMessage* pMessage);
 
-	bool playSubsequence( const Mercury::Address & srcAddr );
-	bool playNewLifespan();
+    bool playSubsequence(const Mercury::Address& srcAddr);
+    bool playNewLifespan();
 
-	void delaySubsequence( const Mercury::Address & addr,
-			BufferedGhostMessage * pFirstMessage );
+    void delaySubsequence(const Mercury::Address& addr,
+                          BufferedGhostMessage*   pFirstMessage);
 
-	bool hasMessagesFrom( const Mercury::Address & addr ) const;
-	bool isDelayingMessagesFor( const Mercury::Address & addr ) const;
+    bool hasMessagesFrom(const Mercury::Address& addr) const;
+    bool isDelayingMessagesFor(const Mercury::Address& addr) const;
 
-private:
-	BufferedGhostMessageQueuePtr find( const Mercury::Address & addr ) const;
-	BufferedGhostMessageQueuePtr findOrCreate( const Mercury::Address & addr );
+  private:
+    BufferedGhostMessageQueuePtr find(const Mercury::Address& addr) const;
+    BufferedGhostMessageQueuePtr findOrCreate(const Mercury::Address& addr);
 
-	typedef BW::map< Mercury::Address, BufferedGhostMessageQueuePtr > Queues;
-	Queues queues_;
+    typedef BW::map<Mercury::Address, BufferedGhostMessageQueuePtr> Queues;
+    Queues                                                          queues_;
 };
 
 BW_END_NAMESPACE

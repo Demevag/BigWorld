@@ -5,7 +5,6 @@ BW_BEGIN_NAMESPACE
 
 GENPROPERTY_VIEW_FACTORY(LinkProperty)
 
-
 /**
  *  LinkProperty constructor.
  *
@@ -14,57 +13,47 @@ GENPROPERTY_VIEW_FACTORY(LinkProperty)
  *                      linkages etc.
  *  @param matrix       The position/orientation of the item being linked.
  */
-LinkProperty::LinkProperty
-(
-	const Name&			name,
-    LinkProxyPtr        linkProxy,
-    MatrixProxyPtr      matrix,
-	bool				alwaysShow /*= true*/
-)
-:
-GeneralProperty(name),
-linkProxy_(linkProxy),
-matrix_(matrix),
-alwaysShow_(alwaysShow)
+LinkProperty::LinkProperty(const Name&    name,
+                           LinkProxyPtr   linkProxy,
+                           MatrixProxyPtr matrix,
+                           bool           alwaysShow /*= true*/
+                           )
+  : GeneralProperty(name)
+  , linkProxy_(linkProxy)
+  , matrix_(matrix)
+  , alwaysShow_(alwaysShow)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     GENPROPERTY_MAKE_VIEWS()
 }
 
-
 /**
  *  Not implemented.
  */
-/*virtual*/ PyObject * LinkProperty::pyGet()
+/*virtual*/ PyObject* LinkProperty::pyGet()
 {
     return NULL;
 }
 
-
 /**
  *  Not implemented.
  */
-/*virtual*/ int LinkProperty::pySet
-(
-    PyObject        *value, 
-    bool            transient   /*= false*/
+/*virtual*/ int LinkProperty::pySet(PyObject* value, bool transient /*= false*/
 )
 {
     return 0;
 }
-
 
 /**
  *  Get the position/orientation proxy for the item being linked.
  *
  *  @returns        The position/orientation proxy for the item being linked.
  */
-MatrixProxyPtr LinkProperty::matrix() const 
-{ 
-    return matrix_; 
+MatrixProxyPtr LinkProperty::matrix() const
+{
+    return matrix_;
 }
-
 
 /**
  *  Get the link proxy for the item being linked.
@@ -75,7 +64,6 @@ LinkProxyPtr LinkProperty::link() const
 {
     return linkProxy_;
 }
-
 
 /**
  *  This method returns true if the link gizmo should be displayed always, or
@@ -90,4 +78,3 @@ bool LinkProperty::alwaysShow() const
     return alwaysShow_;
 }
 BW_END_NAMESPACE
-

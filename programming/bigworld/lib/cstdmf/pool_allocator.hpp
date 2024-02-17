@@ -19,165 +19,161 @@ BW_BEGIN_NAMESPACE
 template <class MUTEX = DummyMutex>
 class PoolAllocator
 {
-	struct FreeList
-	{
-		FreeList * next;
-	};
-public:
-	/**
-	 *  Initialise a new empty Pool.
-	 */
-	PoolAllocator( size_t size, const char * watcherPath = NULL ) :
-		pHead_( NULL ),
-		numInPoolUsed_( 0 ),
-		numInPoolTotal_( 0 ),
-		numAllocatesEver_( 0 ),
-		size_( size )
-	{
-		MF_ASSERT( size >= sizeof (FreeList) );
+    struct FreeList
+    {
+        FreeList* next;
+    };
+
+  public:
+    /**
+     *  Initialise a new empty Pool.
+     */
+    PoolAllocator(size_t size, const char* watcherPath = NULL)
+      : pHead_(NULL)
+      , numInPoolUsed_(0)
+      , numInPoolTotal_(0)
+      , numAllocatesEver_(0)
+      , size_(size)
+    {
+        MF_ASSERT(size >= sizeof(FreeList));
 #if ENABLE_WATCHERS
-		if (watcherPath)
-		{
-			Watcher::rootWatcher().addChild( watcherPath,
-					this->pWatcher(), this );
-		}
+        if (watcherPath) {
+            Watcher::rootWatcher().addChild(
+              watcherPath, this->pWatcher(), this);
+        }
 #endif
-}
+    }
 
-	/**
-	 *  This method frees all memory used in this pool.  This is just for
-	 *  completeness, as typically this should only be called on exit.
-	 */
-	~PoolAllocator()
-	{
-		while (pHead_)
-		{
-			FreeList * pNext = pHead_->next;
-			delete [] (char*)pHead_;
-			pHead_ = pNext;
-			--numInPoolTotal_;
-		}
-	}
+    /**
+     *  This method frees all memory used in this pool.  This is just for
+     *  completeness, as typically this should only be called on exit.
+     */
+    ~PoolAllocator()
+    {
+        while (pHead_) {
+            FreeList* pNext = pHead_->next;
+            delete[] (char*)pHead_;
+            pHead_ = pNext;
+            --numInPoolTotal_;
+        }
+    }
 
+    /**
+     *  This method returns a pointer to an available PooledObject instance,
+     *  allocating memory for a new one if necessary.
+     */
+    void* allocate(size_t size)
+    {
+        MF_ASSERT(size == size_);
 
-	/**
-	 *  This method returns a pointer to an available PooledObject instance,
-	 *  allocating memory for a new one if necessary.
-	 */
-	void * allocate( size_t size )
-	{
-		MF_ASSERT( size == size_ );
+        void* ret;
 
-		void * ret;
+        mutex_.grab();
+        {
+            // Grab an instance from the pool if there's one available.
+            if (pHead_) {
+                ret    = (void*)pHead_;
+                pHead_ = pHead_->next;
+            }
 
-		mutex_.grab();
-		{
-			// Grab an instance from the pool if there's one available.
-			if (pHead_)
-			{
-				ret = (void*)pHead_;
-				pHead_ = pHead_->next;
-			}
+            // Otherwise just allocate new memory and return that instead.
+            else {
+                ret = (void*)new char[size];
+                ++numInPoolTotal_;
+            }
 
-			// Otherwise just allocate new memory and return that instead.
-			else
-			{
-				ret = (void*)new char[ size ];
-				++numInPoolTotal_;
-			}
+            ++numInPoolUsed_;
+            ++numAllocatesEver_;
+        }
+        mutex_.give();
 
-			++numInPoolUsed_;
-			++numAllocatesEver_;
-		}
-		mutex_.give();
+        return ret;
+    }
 
-		return ret;
-	}
+    /**
+     *  This method returns a deleted instance of PooledObject to the pool.
+     */
+    void deallocate(void* pInstance)
+    {
+        mutex_.grab();
+        {
+            FreeList* pNewHead = (FreeList*)pInstance;
+            pNewHead->next     = pHead_;
+            pHead_             = pNewHead;
+        }
+        --numInPoolUsed_;
+        mutex_.give();
+    }
 
-	/**
-	 *  This method returns a deleted instance of PooledObject to the pool.
-	 */
-	void deallocate( void * pInstance )
-	{
-		mutex_.grab();
-		{
-			FreeList * pNewHead = (FreeList *)pInstance;
-			pNewHead->next = pHead_;
-			pHead_ = pNewHead;
-		}
-		--numInPoolUsed_;
-		mutex_.give();
-	}
+    /**
+     *	This method returns the total number of instances in the pool being used
+     *	currently.
+     */
+    uint numInPoolUsed() const { return numInPoolUsed_; }
 
-	/**
-	 *	This method returns the total number of instances in the pool being used
-	 *	currently.
-	 */
-	uint	numInPoolUsed() const { return numInPoolUsed_; }
+    /**
+     *	This method returns the total number of instances in the pool not being
+     *	used currently.
+     */
+    uint numInPoolUnused() const { return numInPoolTotal_ - numInPoolUsed_; }
 
-	/**
-	 *	This method returns the total number of instances in the pool not being
-	 *	used currently.
-	 */
-	uint	numInPoolUnused() const { return numInPoolTotal_ - numInPoolUsed_; }
+    /**
+     *	This method returns the total number of instances in the pool, allocated
+     *	or not.
+     */
+    uint numInPoolTotal() const { return numInPoolTotal_; }
 
-	/**
-	 *	This method returns the total number of instances in the pool, allocated
-	 *	or not.
-	 */
-	uint	numInPoolTotal() const { return numInPoolTotal_; }
+    /**
+     *	This method returns the total number of calls to allocate ever.
+     */
+    uint numAllocatesEver() const { return numAllocatesEver_; }
 
-	/**
-	 *	This method returns the total number of calls to allocate ever.
-	 */
-	uint	numAllocatesEver() const { return numAllocatesEver_; }
-
-	/**
-	 *	This method returns the expected allocation size.
-	 */
-	size_t	size() const { return size_; }
+    /**
+     *	This method returns the expected allocation size.
+     */
+    size_t size() const { return size_; }
 
 #if ENABLE_WATCHERS
-	static WatcherPtr pWatcher()
-	{
-		DirectoryWatcherPtr pWatcher = new DirectoryWatcher();
+    static WatcherPtr pWatcher()
+    {
+        DirectoryWatcherPtr pWatcher = new DirectoryWatcher();
 
-		PoolAllocator< MUTEX > * pNull = NULL;
+        PoolAllocator<MUTEX>* pNull = NULL;
 
-		pWatcher->addChild( "numInPoolUsed",
-				makeWatcher( pNull->numInPoolUsed_ ) );
-		pWatcher->addChild( "numInPoolUnused",
-				makeWatcher( *pNull, &PoolAllocator< MUTEX >::numInPoolUnused ) );
+        pWatcher->addChild("numInPoolUsed", makeWatcher(pNull->numInPoolUsed_));
+        pWatcher->addChild(
+          "numInPoolUnused",
+          makeWatcher(*pNull, &PoolAllocator<MUTEX>::numInPoolUnused));
 
-		pWatcher->addChild( "numInPoolTotal",
-				makeWatcher( pNull->numInPoolTotal_ ) );
-		pWatcher->addChild( "numAllocatesEver",
-				makeWatcher( pNull->numAllocatesEver_ ) );
+        pWatcher->addChild("numInPoolTotal",
+                           makeWatcher(pNull->numInPoolTotal_));
+        pWatcher->addChild("numAllocatesEver",
+                           makeWatcher(pNull->numAllocatesEver_));
 
-		pWatcher->addChild( "size", makeWatcher( pNull->size_ ) );
+        pWatcher->addChild("size", makeWatcher(pNull->size_));
 
-		return pWatcher;
-	}
+        return pWatcher;
+    }
 #endif
 
-private:
-	/// The linked-list of memory chunks in the pool.
-	FreeList * pHead_;
+  private:
+    /// The linked-list of memory chunks in the pool.
+    FreeList* pHead_;
 
-	/// The total number of instances in the pool being used currently.
-	uint	numInPoolUsed_;
+    /// The total number of instances in the pool being used currently.
+    uint numInPoolUsed_;
 
-	/// The total number of instances in the pool, allocated or not.
-	uint	numInPoolTotal_;
+    /// The total number of instances in the pool, allocated or not.
+    uint numInPoolTotal_;
 
-	/// The total number of calls to allocate ever.
-	uint	numAllocatesEver_;
+    /// The total number of calls to allocate ever.
+    uint numAllocatesEver_;
 
-	/// The expected allocation size.
-	size_t	size_;
+    /// The expected allocation size.
+    size_t size_;
 
-	/// A lock to guarantee thread-safety.
-	MUTEX mutex_;
+    /// A lock to guarantee thread-safety.
+    MUTEX mutex_;
 };
 
 BW_END_NAMESPACE

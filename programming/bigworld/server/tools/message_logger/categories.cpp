@@ -5,37 +5,32 @@
 #include "constants.hpp"
 #include "types.hpp"
 
-
 BW_BEGIN_NAMESPACE
-
 
 /**
  *	Constructor.
  */
-Categories::Categories() :
-	maxCategoryID_( 0 )
+Categories::Categories()
+  : maxCategoryID_(0)
 {
 }
-
 
 /**
  *
  */
 void Categories::clear()
 {
-	idMap_.clear();
-	nameMap_.clear();
+    idMap_.clear();
+    nameMap_.clear();
 }
-
 
 /**
  *
  */
 MessageLogger::CategoryID Categories::getNextAvailableCategoryID()
 {
-	return ++maxCategoryID_;
+    return ++maxCategoryID_;
 }
-
 
 /**
  *	This method resolves the provided category name into a category ID, or
@@ -46,28 +41,25 @@ MessageLogger::CategoryID Categories::getNextAvailableCategoryID()
  *	@return A category ID that uniquely maps to the category name.
  */
 MessageLogger::CategoryID Categories::resolveOrCreateNameToID(
-	const BW::string & categoryName )
+  const BW::string& categoryName)
 {
 
-	NameToIdMap::const_iterator iter = nameMap_.find( categoryName );
+    NameToIdMap::const_iterator iter = nameMap_.find(categoryName);
 
-	if (iter != nameMap_.end())
-	{
-		return iter->second;
-	}
+    if (iter != nameMap_.end()) {
+        return iter->second;
+    }
 
-	MessageLogger::CategoryID newCategoryID =
-			this->getNextAvailableCategoryID();
+    MessageLogger::CategoryID newCategoryID =
+      this->getNextAvailableCategoryID();
 
+    idMap_[newCategoryID]  = categoryName;
+    nameMap_[categoryName] = newCategoryID;
 
-	idMap_[ newCategoryID ] = categoryName;
-	nameMap_[ categoryName ] = newCategoryID;
+    this->writeCategoryToDB(newCategoryID, categoryName);
 
-	this->writeCategoryToDB( newCategoryID, categoryName );
-
-	return newCategoryID;
+    return newCategoryID;
 }
-
 
 /**
  *	This method obtains the ID associated with a categoryName (if one exists).
@@ -78,20 +70,18 @@ MessageLogger::CategoryID Categories::resolveOrCreateNameToID(
  *
  *	@return true if a category name to ID mapping exists, false otherwise.
  */
-bool Categories::resolveNameToID( const BW::string & categoryName,
-	MessageLogger::CategoryID & categoryID ) const
+bool Categories::resolveNameToID(const BW::string&          categoryName,
+                                 MessageLogger::CategoryID& categoryID) const
 {
-	NameToIdMap::const_iterator iter = nameMap_.find( categoryName );
+    NameToIdMap::const_iterator iter = nameMap_.find(categoryName);
 
-	if (iter != nameMap_.end())
-	{
-		categoryID = iter->second;
-		return true;
-	}
+    if (iter != nameMap_.end()) {
+        categoryID = iter->second;
+        return true;
+    }
 
-	return false;
+    return false;
 }
-
 
 /**
  *	This method resolves the provided category ID into a category name.
@@ -100,22 +90,20 @@ bool Categories::resolveNameToID( const BW::string & categoryName,
  *
  *	@return A category name that uniquely mapped to the category ID.
  */
-const char * Categories::resolveIDToName(
-	MessageLogger::CategoryID categoryID ) const
+const char* Categories::resolveIDToName(
+  MessageLogger::CategoryID categoryID) const
 {
-	IDToNameMap::const_iterator iter = idMap_.find( categoryID );
+    IDToNameMap::const_iterator iter = idMap_.find(categoryID);
 
-	if (iter == idMap_.end())
-	{
-		WARNING_MSG( "Categories::resolveIDToName: "
-				"Unknown category ID requested for resolution: %d\n",
-			categoryID );
-		return NULL;
-	}
+    if (iter == idMap_.end()) {
+        WARNING_MSG("Categories::resolveIDToName: "
+                    "Unknown category ID requested for resolution: %d\n",
+                    categoryID);
+        return NULL;
+    }
 
-	return iter->second.c_str();
+    return iter->second.c_str();
 }
-
 
 /**
  *	This method invokes onCategory on the visitor for all the known category
@@ -123,33 +111,30 @@ const char * Categories::resolveIDToName(
  *
  *	@returns true on success, false on error.
  */
-bool Categories::visitAllWith( CategoriesVisitor & visitor ) const
+bool Categories::visitAllWith(CategoriesVisitor& visitor) const
 {
-	NameToIdMap::const_iterator iter = nameMap_.begin();
-	bool status = true;
+    NameToIdMap::const_iterator iter   = nameMap_.begin();
+    bool                        status = true;
 
-	while ((iter != nameMap_.end()) && (status == true))
-	{
-		status = visitor.onCategory( iter->first );
-		++iter;
-	}
+    while ((iter != nameMap_.end()) && (status == true)) {
+        status = visitor.onCategory(iter->first);
+        ++iter;
+    }
 
-	return status;
+    return status;
 }
-
 
 /**
  *	This method add the new category to the map.
  */
-void Categories::addCategoryToMap( MessageLogger::CategoryID categoryID,
-		BW::string & categoryString )
+void Categories::addCategoryToMap(MessageLogger::CategoryID categoryID,
+                                  BW::string&               categoryString)
 {
-	maxCategoryID_ = std::max( maxCategoryID_, categoryID );
+    maxCategoryID_ = std::max(maxCategoryID_, categoryID);
 
-	idMap_[ categoryID ] = categoryString;
-	nameMap_[ categoryString ] = categoryID;
+    idMap_[categoryID]       = categoryString;
+    nameMap_[categoryString] = categoryID;
 }
-
 
 BW_END_NAMESPACE
 

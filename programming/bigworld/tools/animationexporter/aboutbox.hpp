@@ -2,7 +2,7 @@
 #ifndef ABOUTBOX_HPP
 #define ABOUTBOX_HPP
 
-#pragma warning ( disable : 4530 )
+#pragma warning(disable : 4530)
 
 #include <iostream>
 
@@ -12,19 +12,22 @@ BW_BEGIN_NAMESPACE
 
 class AboutBox
 {
-public:
-	AboutBox();
-	~AboutBox();
+  public:
+    AboutBox();
+    ~AboutBox();
 
-	void display( HWND hWnd );
+    void display(HWND hWnd);
 
-private:
-	static INT_PTR CALLBACK dialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+  private:
+    static INT_PTR CALLBACK dialogProc(HWND   hWnd,
+                                       UINT   msg,
+                                       WPARAM wParam,
+                                       LPARAM lParam);
 
-	AboutBox(const AboutBox&);
-	AboutBox& operator=(const AboutBox&);
+    AboutBox(const AboutBox&);
+    AboutBox& operator=(const AboutBox&);
 
-	friend std::ostream& operator<<(std::ostream&, const AboutBox&);
+    friend std::ostream& operator<<(std::ostream&, const AboutBox&);
 };
 
 BW_END_NAMESPACE

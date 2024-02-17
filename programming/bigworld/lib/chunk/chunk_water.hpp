@@ -16,45 +16,47 @@ BW_BEGIN_NAMESPACE
  */
 class ChunkWater : public VeryLargeObject
 {
-public:
-	ChunkWater( );
-	ChunkWater( BW::string uid );
-	~ChunkWater();
+  public:
+    ChunkWater();
+    ChunkWater(BW::string uid);
+    ~ChunkWater();
 
-	bool load( DataSectionPtr pSection, Chunk * pChunk );
+    bool load(DataSectionPtr pSection, Chunk* pChunk);
 
-	virtual void updateAnimations() {}
-	virtual void draw( Moo::DrawContext& drawContext ) {}
-	virtual void drawInChunk( Moo::DrawContext& drawContext, Chunk* pChunk );
-	virtual void sway( const Vector3 & src, const Vector3 & dst, const float diameter );
-	static void simpleDraw( bool state );
+    virtual void updateAnimations() {}
+    virtual void draw(Moo::DrawContext& drawContext) {}
+    virtual void drawInChunk(Moo::DrawContext& drawContext, Chunk* pChunk);
+    virtual void sway(const Vector3& src,
+                      const Vector3& dst,
+                      const float    diameter);
+    static void  simpleDraw(bool state);
 
 #ifdef EDITOR_ENABLED
-	virtual void dirty();
-	virtual void edCommonChanged() {}
-#endif //EDITOR_ENABLED
+    virtual void dirty();
+    virtual void edCommonChanged() {}
+#endif // EDITOR_ENABLED
 
-	virtual BoundingBox chunkBB( Chunk* pChunk );
+    virtual BoundingBox chunkBB(Chunk* pChunk);
 
-	virtual void syncInit(ChunkVLO* pVLO);
+    virtual void syncInit(ChunkVLO* pVLO);
 
-	Chunk * chunk() const;
-	void chunk( Chunk * pChunk );
+    Chunk* chunk() const;
+    void   chunk(Chunk* pChunk);
 
-protected:
-	Water *				pWater_;
-	Chunk*	pChunk_;
+  protected:
+    Water* pWater_;
+    Chunk* pChunk_;
 
-	Water::WaterState		state_;
-	Water::WaterResources	resources_;
+    Water::WaterState     state_;
+    Water::WaterResources resources_;
 
-private:
-
-	static bool create(
-		Chunk * pChunk, DataSectionPtr pSection, const BW::string & uid );
-	static VLOFactory	factory_;
-	static bool s_simpleDraw;
-	virtual bool addYBounds( BoundingBox& bb ) const;
+  private:
+    static bool       create(Chunk*            pChunk,
+                             DataSectionPtr    pSection,
+                             const BW::string& uid);
+    static VLOFactory factory_;
+    static bool       s_simpleDraw;
+    virtual bool      addYBounds(BoundingBox& bb) const;
 };
 
 BW_END_NAMESPACE

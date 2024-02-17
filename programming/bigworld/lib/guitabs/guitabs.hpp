@@ -46,6 +46,4 @@
 
 #include "manager.hpp"
 
-
-
 #endif // GUITABS_GUITABS_HPP

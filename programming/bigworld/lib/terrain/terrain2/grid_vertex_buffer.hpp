@@ -3,47 +3,44 @@
 
 #include "moo/vertex_buffer.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Terrain
-{
+namespace Terrain {
 
-/**
- *	This class implements the grid vertex buffer.
- *	The grid vertex buffer contains vertices containing of two
- *	elements laid out on a grid, the values range from 0 to 1 on
- *	each axis spread over the dimensions of the grid.
- */
-class GridVertexBuffer : public SafeReferenceCount
-{
-public:
-	~GridVertexBuffer();
+    /**
+     *	This class implements the grid vertex buffer.
+     *	The grid vertex buffer contains vertices containing of two
+     *	elements laid out on a grid, the values range from 0 to 1 on
+     *	each axis spread over the dimensions of the grid.
+     */
+    class GridVertexBuffer : public SafeReferenceCount
+    {
+      public:
+        ~GridVertexBuffer();
 
-	Moo::VertexBuffer pBuffer() const { return pVertexBuffer_; };
+        Moo::VertexBuffer pBuffer() const { return pVertexBuffer_; };
 
-	static GridVertexBuffer* get( uint16 resolutionX, uint16 resolutionZ );
+        static GridVertexBuffer* get(uint16 resolutionX, uint16 resolutionZ);
 
-private:
+      private:
+        static uint32 token(uint16 resolutionX, uint16 resolutionZ);
+        static void   del(GridVertexBuffer* pBuf);
 
-	static uint32 token( uint16 resolutionX, uint16 resolutionZ );
-	static void del( GridVertexBuffer* pBuf );
+        GridVertexBuffer();
+        bool init(uint16 resolutionX, uint16 resolutionZ);
 
-	GridVertexBuffer();
-	bool init( uint16 resolutionX, uint16 resolutionZ );
+        Moo::VertexBuffer pVertexBuffer_;
+        uint16            resolutionX_;
+        uint16            resolutionZ_;
 
-	Moo::VertexBuffer pVertexBuffer_;
-	uint16 resolutionX_;
-	uint16 resolutionZ_;
+        GridVertexBuffer(const GridVertexBuffer&);
+        GridVertexBuffer& operator=(const GridVertexBuffer&);
 
-	GridVertexBuffer( const GridVertexBuffer& );
-	GridVertexBuffer& operator=( const GridVertexBuffer& );
+        static BW::map<uint32, GridVertexBuffer*> s_gridVertexBuffers_;
+        static SimpleMutex                        s_mutex_;
+    };
 
-	static BW::map< uint32, GridVertexBuffer* > s_gridVertexBuffers_;
-	static SimpleMutex s_mutex_;
-};
-
-typedef SmartPointer<GridVertexBuffer> GridVertexBufferPtr;
+    typedef SmartPointer<GridVertexBuffer> GridVertexBufferPtr;
 
 } // namespace Terrain
 

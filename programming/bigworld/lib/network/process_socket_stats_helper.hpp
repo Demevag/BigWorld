@@ -5,32 +5,30 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
-class PacketReceiverStats;
+namespace Mercury {
+    class PacketReceiverStats;
 
+    /**
+     *	This class is used to help collect statistics from the
+     *	PacketReceiver::processSocket method.
+     */
+    class ProcessSocketStatsHelper
+    {
+      public:
+        ProcessSocketStatsHelper(PacketReceiverStats& stats);
+        ~ProcessSocketStatsHelper();
 
-/**
- *	This class is used to help collect statistics from the
- *	PacketReceiver::processSocket method.
- */
-class ProcessSocketStatsHelper
-{
-public:
-	ProcessSocketStatsHelper( PacketReceiverStats & stats );
-	~ProcessSocketStatsHelper();
+        void startMessageHandling(int messageLength);
+        void stopMessageHandling();
 
-	void startMessageHandling( int messageLength );
-	void stopMessageHandling();
+        void socketReadFinished(int length);
 
-	void socketReadFinished( int length );
+        void onBundleFinished();
+        void onCorruptedBundle();
 
-	void onBundleFinished();
-	void onCorruptedBundle();
-
-private:
-	PacketReceiverStats & stats_;
-};
+      private:
+        PacketReceiverStats& stats_;
+    };
 
 } // namespace Mercury
 

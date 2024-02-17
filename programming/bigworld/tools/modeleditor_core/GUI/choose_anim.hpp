@@ -5,40 +5,42 @@
 
 BW_BEGIN_NAMESPACE
 
-typedef std::pair < BW::string , BW::string > StringPair;
+typedef std::pair<BW::string, BW::string> StringPair;
 
 class CChooseAnim : public TreeListDlg
 {
-public:
-	CChooseAnim( int dialogID, bool withName, const BW::string& currentModel = "" );
-	virtual BOOL OnInitDialog();
+  public:
+    CChooseAnim(int               dialogID,
+                bool              withName,
+                const BW::string& currentModel = "");
+    virtual BOOL OnInitDialog();
 
-	virtual void selChange( const StringPair& animId );
-	afx_msg void OnEnChangeActName();
+    virtual void selChange(const StringPair& animId);
+    afx_msg void OnEnChangeActName();
 
-	BW::string& actName() { return actName_; };
-	BW::string& animName() { return animName_; }
+    BW::string& actName() { return actName_; };
+    BW::string& animName() { return animName_; }
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 
-// Implementation
-protected:
-	DECLARE_MESSAGE_MAP()
-private:
-	CEdit name_;
-	CButton ok_;
+    // Implementation
+  protected:
+    DECLARE_MESSAGE_MAP()
+  private:
+    CEdit   name_;
+    CButton ok_;
 
-	BW::string actName_;
-	BW::string animName_;
+    BW::string actName_;
+    BW::string animName_;
 
-	bool withName_;
+    bool withName_;
 
-	bool defaultName_;
-	bool defaultNameChange_;
-	
-public:
-	afx_msg void OnNMDblclkSearchTree(NMHDR *pNMHDR, LRESULT *pResult);
+    bool defaultName_;
+    bool defaultNameChange_;
+
+  public:
+    afx_msg void OnNMDblclkSearchTree(NMHDR* pNMHDR, LRESULT* pResult);
 };
 BW_END_NAMESPACE
 

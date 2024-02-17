@@ -3,31 +3,29 @@
 
 //-----------------------------------------------------------------------------
 // System headers
-#if !defined( _MSC_VER )
+#if !defined(_MSC_VER)
 #include <tr1/functional>
 #endif // !defined( _MSC_VER )
 
 //-----------------------------------------------------------------------------
 // Library Forward declarations
 
-namespace BW
-{
-class SceneObject;
-class SceneProvider;
-class Scene;
-class ISceneView;
-class ISceneObjectOperation;
-class SceneListener;
-class IntersectionSet;
+namespace BW {
+    class SceneObject;
+    class SceneProvider;
+    class Scene;
+    class ISceneView;
+    class ISceneObjectOperation;
+    class SceneListener;
+    class IntersectionSet;
 
+    typedef std::tr1::function<void(const SceneObject&)>
+                                                   ConstSceneObjectCallback;
+    typedef std::tr1::function<void(SceneObject&)> SceneObjectCallback;
 
-typedef std::tr1::function< void(const SceneObject&) > ConstSceneObjectCallback;
-typedef std::tr1::function< void(SceneObject&) > SceneObjectCallback;
+    namespace SceneTypeSystem {
 
-namespace SceneTypeSystem
-{
-
-}
+    }
 
 } // namespace BW
 

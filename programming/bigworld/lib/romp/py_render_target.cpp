@@ -4,8 +4,7 @@
 #include "romp/py_texture_provider.hpp"
 #include "py_d3d_enums.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Romp", 0 )
-
+DECLARE_DEBUG_COMPONENT2("Romp", 0)
 
 BW_BEGIN_NAMESPACE
 
@@ -14,58 +13,58 @@ BW_BEGIN_NAMESPACE
 #endif
 
 // Python statics
-PY_TYPEOBJECT( PyRenderTarget )
+PY_TYPEOBJECT(PyRenderTarget)
 
-PY_BEGIN_METHODS( PyRenderTarget )
-	/*~ attribute PyRenderTarget.release
-	 *	@components{ client,  tools }
-	 *	Release the render target memory.  The render target memory will
-	 *	be automatically re-alloacted when next used for rendering.
-	 */
-	PY_METHOD( release )
+PY_BEGIN_METHODS(PyRenderTarget)
+/*~ attribute PyRenderTarget.release
+ *	@components{ client,  tools }
+ *	Release the render target memory.  The render target memory will
+ *	be automatically re-alloacted when next used for rendering.
+ */
+PY_METHOD(release)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( PyRenderTarget )
-	/*~ attribute PyRenderTarget.width
-	 *	@components{ client,  tools }
-	 *	Read-only width of the render target, in pixels.
-	 *	@type Integer.
-	 */
-	PY_ATTRIBUTE( width )
-	/*~ attribute PyRenderTarget.height
-	 *	@components{ client,  tools }
-	 *	Read-only height of the render target, in pixels.
-	 *	@type Integer.
-	 */
-	PY_ATTRIBUTE( height )
-	/*~ attribute PyRenderTarget.format
-	 *	@components{ client,  tools }
-	 *	Read-only D3DFormat of the render target.
-	 *	@type Integer.
-	 */
-	PY_ATTRIBUTE( format )
-	/*~ attribute PyRenderTarget.textureMemoryUsed
-	 *	@components{ client,  tools }
-	 *	Read-only number of bytes used by the render target.
-	 *	@type Integer.
-	 */
-	PY_ATTRIBUTE( textureMemoryUsed )
-	/*~ attribute PyRenderTarget.name
-	 *	@components{ client,  tools }
-	 *	Read-only name of the render target.
-	 *	@type String.
-	 */
-	PY_ATTRIBUTE( name )
-	/*~ attribute PyRenderTarget.texture
-	 *	@components{ client,  tools }
-	 *	Read-only texture of the render target.  As this is
-	 *	a PyTextureProvider it will always provide the latest
-	 *	version of the render target contents.  Use this to
-	 *	hook up to other objects taking PyTextureProviders, for
-	 *	example GUI components, PostProcessing FilterQuads etc.
-	 *	@type PyTextureProvider.
-	 */
-	PY_ATTRIBUTE( texture )
+PY_BEGIN_ATTRIBUTES(PyRenderTarget)
+/*~ attribute PyRenderTarget.width
+ *	@components{ client,  tools }
+ *	Read-only width of the render target, in pixels.
+ *	@type Integer.
+ */
+PY_ATTRIBUTE(width)
+/*~ attribute PyRenderTarget.height
+ *	@components{ client,  tools }
+ *	Read-only height of the render target, in pixels.
+ *	@type Integer.
+ */
+PY_ATTRIBUTE(height)
+/*~ attribute PyRenderTarget.format
+ *	@components{ client,  tools }
+ *	Read-only D3DFormat of the render target.
+ *	@type Integer.
+ */
+PY_ATTRIBUTE(format)
+/*~ attribute PyRenderTarget.textureMemoryUsed
+ *	@components{ client,  tools }
+ *	Read-only number of bytes used by the render target.
+ *	@type Integer.
+ */
+PY_ATTRIBUTE(textureMemoryUsed)
+/*~ attribute PyRenderTarget.name
+ *	@components{ client,  tools }
+ *	Read-only name of the render target.
+ *	@type String.
+ */
+PY_ATTRIBUTE(name)
+/*~ attribute PyRenderTarget.texture
+ *	@components{ client,  tools }
+ *	Read-only texture of the render target.  As this is
+ *	a PyTextureProvider it will always provide the latest
+ *	version of the render target contents.  Use this to
+ *	hook up to other objects taking PyTextureProviders, for
+ *	example GUI components, PostProcessing FilterQuads etc.
+ *	@type PyTextureProvider.
+ */
+PY_ATTRIBUTE(texture)
 PY_END_ATTRIBUTES()
 
 /*~ function BigWorld.RenderTarget
@@ -90,75 +89,68 @@ PY_END_ATTRIBUTES()
  *
  *	@return A new PyRenderTarget object.
  */
-PY_FACTORY_NAMED( PyRenderTarget, "RenderTarget", BigWorld )
+PY_FACTORY_NAMED(PyRenderTarget, "RenderTarget", BigWorld)
 
-
-PyRenderTarget::PyRenderTarget( Moo::RenderTargetPtr pRT, PyTypeObject *pType ):
-	PyObjectPlusWithWeakReference( pType ),
-	pRenderTarget_( pRT )
+PyRenderTarget::PyRenderTarget(Moo::RenderTargetPtr pRT, PyTypeObject* pType)
+  : PyObjectPlusWithWeakReference(pType)
+  , pRenderTarget_(pRT)
 {
-	BW_GUARD;
-
+    BW_GUARD;
 }
-
 
 PyRenderTarget::~PyRenderTarget()
 {
-	BW_GUARD;
+    BW_GUARD;
 }
-
 
 PyObject* PyRenderTarget::pyNew(PyObject* args)
 {
-	BW_GUARD;
-	PyObject * pObj = NULL;
-	char * name;
-	int width, height;
-	bool reuseZ = false;
-	D3DFORMAT fmt = D3DFMT_A8R8G8B8;
-	PyObject* poFMT = Py_None;
-	Moo::RenderTargetPtr rt = NULL;
+    BW_GUARD;
+    PyObject*            pObj = NULL;
+    char*                name;
+    int                  width, height;
+    bool                 reuseZ = false;
+    D3DFORMAT            fmt    = D3DFMT_A8R8G8B8;
+    PyObject*            poFMT  = Py_None;
+    Moo::RenderTargetPtr rt     = NULL;
 
+    if (PyArg_ParseTuple(
+          args, "sii|bO", &name, &width, &height, &reuseZ, &poFMT)) {
+        // If our optional format property has been set,
+        // interpret it as a D3DFORMAT value
+        if (poFMT != Py_None) {
+            if (Script::setData(poFMT, fmt, "format") != 0) {
+                // Not setting error string, as setData does this
+                return NULL;
+            }
+        }
 
-	if (PyArg_ParseTuple( args, "sii|bO", &name, &width, &height, &reuseZ, &poFMT ))
-	{
-		// If our optional format property has been set, 
-		// interpret it as a D3DFORMAT value
-		if (poFMT != Py_None)
-		{
-			if (Script::setData( poFMT, fmt, "format" ) != 0)
-			{
-				// Not setting error string, as setData does this
-				return NULL;
-			}
-		}
+        Moo::BaseTexturePtr pTex =
+          Moo::TextureManager::instance()->get(name, false, true, false);
+        if (pTex.hasObject()) {
+            rt = dynamic_cast<Moo::RenderTarget*>(pTex.getObject());
+        }
 
-		Moo::BaseTexturePtr pTex = Moo::TextureManager::instance()->get( name, false, true, false );
-		if ( pTex.hasObject() )
-		{
-			rt = dynamic_cast<Moo::RenderTarget*>(pTex.getObject());
-		}
+        if (!rt) {
+            rt = new Moo::RenderTarget(name);
+        }
 
-		if ( !rt )
-		{
-			rt = new Moo::RenderTarget( name );
-		}
+        rt->create(width, height, reuseZ, fmt);
+    }
 
-		rt->create( width, height, reuseZ, fmt );
-	}
+    if (!rt) {
+        PyErr_SetString(
+          PyExc_TypeError,
+          "BigWorld.PyRenderTarget: "
+          "Argument parsing error: Expected a  name, width and height. "
+          "You may also specify reuseZ(boolean) and format(D3DFORMAT).");
+        return NULL;
+    }
 
-	if (!rt)
-	{
-		PyErr_SetString( PyExc_TypeError, "BigWorld.PyRenderTarget: "
-			"Argument parsing error: Expected a  name, width and height. "
-			"You may also specify reuseZ(boolean) and format(D3DFORMAT)." );
-		return NULL;
-	}
-
-	return new PyRenderTarget( rt );
+    return new PyRenderTarget(rt);
 }
 
-PY_SCRIPT_CONVERTERS( PyRenderTarget )
+PY_SCRIPT_CONVERTERS(PyRenderTarget)
 
 BW_END_NAMESPACE
 

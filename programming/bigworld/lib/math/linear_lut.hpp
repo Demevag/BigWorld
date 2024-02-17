@@ -12,33 +12,33 @@ BW_BEGIN_NAMESPACE
  */
 class LinearLUT
 {
-public:
-	enum BoundaryCondition
-	{
-		BC_ZERO,				// values outside of table are 0.0
-		BC_CONSTANT_EXTEND,		// values outside of table take end values
-		BC_WRAP,				// values outside of table are wrapped back into table
-		BC_LINEAR_EXTEND		// values outside of table are linearly extended
-	};
+  public:
+    enum BoundaryCondition
+    {
+        BC_ZERO,            // values outside of table are 0.0
+        BC_CONSTANT_EXTEND, // values outside of table take end values
+        BC_WRAP,         // values outside of table are wrapped back into table
+        BC_LINEAR_EXTEND // values outside of table are linearly extended
+    };
 
-	LinearLUT();
+    LinearLUT();
 
-	float operator()(float x) const;
+    float operator()(float x) const;
 
-	void data(BW::vector<Vector2> const &d);
-	BW::vector<Vector2> const &data() const;
+    void                       data(BW::vector<Vector2> const& d);
+    BW::vector<Vector2> const& data() const;
 
-	void lowerBoundaryCondition(BoundaryCondition bc);
-	BoundaryCondition lowerBoundaryCondition() const;
+    void              lowerBoundaryCondition(BoundaryCondition bc);
+    BoundaryCondition lowerBoundaryCondition() const;
 
-	void upperBoundaryCondition(BoundaryCondition bc);
-	BoundaryCondition upperBoundaryCondition() const;
+    void              upperBoundaryCondition(BoundaryCondition bc);
+    BoundaryCondition upperBoundaryCondition() const;
 
-private:
-	BW::vector<Vector2>			data_;
-	BoundaryCondition				lowerBC_;
-	BoundaryCondition				upperBC_;
-	mutable size_t					cachedPos_;
+  private:
+    BW::vector<Vector2> data_;
+    BoundaryCondition   lowerBC_;
+    BoundaryCondition   upperBC_;
+    mutable size_t      cachedPos_;
 };
 
 BW_END_NAMESPACE

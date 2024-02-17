@@ -9,24 +9,22 @@
 
 #include "cstdmf/guard.hpp"
 
-namespace BW
-{
+namespace BW {
 
-TEST( Scene_Construction )
-{
-	StaticSceneProvider provider;
+    TEST(Scene_Construction)
+    {
+        StaticSceneProvider provider;
 
-	Scene scene;
-	scene.addProvider( &provider );
+        Scene scene;
+        scene.addProvider(&provider);
 
-	TestSceneView* pTestScene = 
-		scene.getView< TestSceneView >();
-	pTestScene->helloWorld();
-	CHECK( pTestScene->success() == true );
+        TestSceneView* pTestScene = scene.getView<TestSceneView>();
+        pTestScene->helloWorld();
+        CHECK(pTestScene->success() == true);
 
-	DrawOperation* pDrawInterface =
-		scene.getObjectOperation<DrawOperation>();
-	pDrawInterface->addHandler<PolyMesh, PolyMeshDrawHandler>();
-}
+        DrawOperation* pDrawInterface =
+          scene.getObjectOperation<DrawOperation>();
+        pDrawInterface->addHandler<PolyMesh, PolyMeshDrawHandler>();
+    }
 
 } // namespace BW

@@ -12,104 +12,100 @@
 
 #include "resmgr/datasection.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Moo
-{
+namespace Moo {
 
-class Node;
+    class Node;
 
-typedef SmartPointer< Node > NodePtr;
-typedef ConstSmartPointer< Node > ConstNodePtr;
-typedef BW::vector< NodePtr > NodePtrVector;
+    typedef SmartPointer<Node>      NodePtr;
+    typedef ConstSmartPointer<Node> ConstNodePtr;
+    typedef BW::vector<NodePtr>     NodePtrVector;
 
-/**
- *	This class maintains the transform at a node.
- *	It is used by visuals to make their skeletons of nodes.
- */
-class Node : public SafeReferenceCount
-{
-public:
-	static const char* SCENE_ROOT_NAME;
+    /**
+     *	This class maintains the transform at a node.
+     *	It is used by visuals to make their skeletons of nodes.
+     */
+    class Node : public SafeReferenceCount
+    {
+      public:
+        static const char* SCENE_ROOT_NAME;
 
-	Node();
-	~Node();
+        Node();
+        ~Node();
 
 #ifndef MF_SERVER
-	void				traverse( );
-	void				loadIntoCatalogue( );
+        void traverse();
+        void loadIntoCatalogue();
 #endif
-	void				visitSelf( const Matrix& parent );
+        void visitSelf(const Matrix& parent);
 
-	void				addChild( NodePtr node );
-	void				removeFromParent( );
-	void				removeChild( NodePtr node );
+        void addChild(NodePtr node);
+        void removeFromParent();
+        void removeChild(NodePtr node);
 
-	Matrix&				transform( );
-	const Matrix&		transform( ) const;
-	void				transform( const Matrix& m );
+        Matrix&       transform();
+        const Matrix& transform() const;
+        void          transform(const Matrix& m);
 
-	const Matrix&		worldTransform( ) const;
-	void				worldTransform( const Matrix& );
+        const Matrix& worldTransform() const;
+        void          worldTransform(const Matrix&);
 
-	NodePtr				parent( ) const;
+        NodePtr parent() const;
 
-	uint32				nChildren( ) const;
-	NodePtr				child( uint32 i );
-	ConstNodePtr		child( uint32 i ) const;
+        uint32       nChildren() const;
+        NodePtr      child(uint32 i);
+        ConstNodePtr child(uint32 i) const;
 
-	const BW::string&	identifier( ) const;
-	void				identifier( const BW::string& identifier );
+        const BW::string& identifier() const;
+        void              identifier(const BW::string& identifier);
 
-	bool				isSceneRoot() const;
-	
-	NodePtr				find( const BW::string& identifier );
-	uint32				countDescendants( ) const;
+        bool isSceneRoot() const;
 
-	void				loadRecursive( DataSectionPtr nodeSection );
+        NodePtr find(const BW::string& identifier);
+        uint32  countDescendants() const;
 
-	bool				needsReset( int blendCookie ) const;
-	float				blend( int blendCookie ) const;
-	void				blend( int blendCookie, float blendRatio );
-	void				blendClobber( int blendCookie, const Matrix & transform );
+        void loadRecursive(DataSectionPtr nodeSection);
+
+        bool  needsReset(int blendCookie) const;
+        float blend(int blendCookie) const;
+        void  blend(int blendCookie, float blendRatio);
+        void  blendClobber(int blendCookie, const Matrix& transform);
 
 #ifdef _WIN32
-	BlendTransform &	blendTransform();
+        BlendTransform& blendTransform();
 #endif
 
 #ifdef _WIN32
-	bool compareNodeData( const Node & other ) const;
+        bool compareNodeData(const Node& other) const;
 #endif
 
-private:
+      private:
+        Matrix transform_;
+        Matrix worldTransform_;
 
-	Matrix				transform_;
-	Matrix				worldTransform_;
-
-	int					blendCookie_;
-	float				blendRatio_;
+        int   blendCookie_;
+        float blendRatio_;
 
 #ifdef _WIN32
-	BlendTransform		blendTransform_;
+        BlendTransform blendTransform_;
 #endif
-	bool				transformInBlended_;
+        bool transformInBlended_;
 
-	// parent is not a smart pointer, this is to ensure that the whole tree
-	// will be destructed if the parent's reference count reaches 0
-	Node*				parent_;
-	NodePtrVector		children_;
+        // parent is not a smart pointer, this is to ensure that the whole tree
+        // will be destructed if the parent's reference count reaches 0
+        Node*         parent_;
+        NodePtrVector children_;
 
-	BW::string			identifier_;
-	bool				isSceneRoot_;
+        BW::string identifier_;
+        bool       isSceneRoot_;
 
+        Node(const Node&);
+        Node& operator=(const Node&);
 
-	Node(const Node&);
-	Node& operator=(const Node&);
-
-public:
-	static int			s_blendCookie_;
-};
+      public:
+        static int s_blendCookie_;
+    };
 
 } // namespace Moo
 
@@ -118,6 +114,5 @@ public:
 #endif
 
 BW_END_NAMESPACE
-
 
 #endif // MOO_NODE_HPP

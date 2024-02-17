@@ -4,7 +4,6 @@
 #include "network/basictypes.hpp"
 #include "server/watcher_forwarding.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BaseApp;
@@ -16,19 +15,18 @@ class ForwardingCollector;
  */
 class BAForwardingWatcher : public ForwardingWatcher
 {
-public:
-	ForwardingCollector *newCollector(
-		WatcherPathRequestV2 & pathRequest,
-		const BW::string & destWatcher, const BW::string & targetInfo );
+  public:
+    ForwardingCollector* newCollector(WatcherPathRequestV2& pathRequest,
+                                      const BW::string&     destWatcher,
+                                      const BW::string&     targetInfo);
 
+    AddressList* getComponentAddressList(const BW::string& targetInfo);
 
-	AddressList * getComponentAddressList( const BW::string & targetInfo );
+  private:
+    AddressPair addressPair(const BaseApp& baseApp) const;
 
-private:
-	AddressPair addressPair( const BaseApp & baseApp ) const;
-
-	AddressList * listLeastLoaded( bool useBaseApp, bool useServiceApp ) const;
-	AddressList * listAll( bool useBaseApp, bool useServiceApp ) const;
+    AddressList* listLeastLoaded(bool useBaseApp, bool useServiceApp) const;
+    AddressList* listAll(bool useBaseApp, bool useServiceApp) const;
 };
 
 BW_END_NAMESPACE

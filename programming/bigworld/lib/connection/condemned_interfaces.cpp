@@ -9,34 +9,31 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor.
  */
-CondemnedInterfaces::CondemnedInterfaces():
-	container_(),
-	dispatcher_()
+CondemnedInterfaces::CondemnedInterfaces()
+  : container_()
+  , dispatcher_()
 {
 }
-
 
 /**
  *	Destructor.
  */
 CondemnedInterfaces::~CondemnedInterfaces()
 {
-	this->removeAll();
+    this->removeAll();
 }
-
 
 /**
  *	This method adds a condemned network interface.
  *
  *	@param pInterface 	The condemned network interface to add.
  */
-void CondemnedInterfaces::add( Mercury::NetworkInterface * pInterface )
+void CondemnedInterfaces::add(Mercury::NetworkInterface* pInterface)
 {
-	pInterface->attach( dispatcher_ );
+    pInterface->attach(dispatcher_);
 
-	container_.push_back( CondemnedInterfaceRemovalRecord( *pInterface, 0 ) );
+    container_.push_back(CondemnedInterfaceRemovalRecord(*pInterface, 0));
 }
-
 
 /**
  *	This method registers a condemned network interface to be deleted when
@@ -47,18 +44,16 @@ void CondemnedInterfaces::add( Mercury::NetworkInterface * pInterface )
  *	@param timeout 		The maximum amount of time (in seconds) to wait for the
  *						network interface's channels to be cleared.
  */
-void CondemnedInterfaces::removeWhenAcked( 
-		Mercury::NetworkInterface * pInterface, float timeout )
+void CondemnedInterfaces::removeWhenAcked(Mercury::NetworkInterface* pInterface,
+                                          float                      timeout)
 {
-	pInterface->attach( dispatcher_ );
+    pInterface->attach(dispatcher_);
 
-	uint64 timeoutStamps = timestamp() +
-		uint64( timeout * stampsPerSecond() );
+    uint64 timeoutStamps = timestamp() + uint64(timeout * stampsPerSecond());
 
-	container_.push_back( CondemnedInterfaceRemovalRecord( *pInterface, 
-		timeoutStamps ) );
+    container_.push_back(
+      CondemnedInterfaceRemovalRecord(*pInterface, timeoutStamps));
 }
-
 
 /**
  *	This method clears all registered condemned network interfaces, including
@@ -66,16 +61,14 @@ void CondemnedInterfaces::removeWhenAcked(
  */
 void CondemnedInterfaces::removeAll()
 {
-	Container::iterator iRecord = container_.begin();
-	while (iRecord != container_.end())
-	{
-		iRecord->deleteInterface();
-		++iRecord;
-	}
+    Container::iterator iRecord = container_.begin();
+    while (iRecord != container_.end()) {
+        iRecord->deleteInterface();
+        ++iRecord;
+    }
 
-	container_.clear();
+    container_.clear();
 }
-
 
 /**
  *	This method process once and removes all eligible condemned network
@@ -83,32 +76,28 @@ void CondemnedInterfaces::removeAll()
  */
 void CondemnedInterfaces::processOnce()
 {
-	dispatcher_.processOnce();
+    dispatcher_.processOnce();
 
-	Container::iterator iRecord = container_.begin();
-	while (iRecord != container_.end())
-	{
-		Container::iterator iThisRecord = iRecord;
-		++iRecord;
+    Container::iterator iRecord = container_.begin();
+    while (iRecord != container_.end()) {
+        Container::iterator iThisRecord = iRecord;
+        ++iRecord;
 
-		if (!iThisRecord->interfaceHasUnackedPackets() || 
-				iThisRecord->hasTimedOut())
-		{
-			iThisRecord->deleteInterface();
-			container_.erase( iThisRecord );
-		}
-	}
+        if (!iThisRecord->interfaceHasUnackedPackets() ||
+            iThisRecord->hasTimedOut()) {
+            iThisRecord->deleteInterface();
+            container_.erase(iThisRecord);
+        }
+    }
 }
-
 
 /**
  *	This method returns the interface.
  */
-Mercury::NetworkInterface * CondemnedInterfaceRemovalRecord::pInterface() const
+Mercury::NetworkInterface* CondemnedInterfaceRemovalRecord::pInterface() const
 {
-	return pInterface_;
+    return pInterface_;
 }
-
 
 /**
  *	This method returns whether the record's interface has any outstanding
@@ -116,9 +105,8 @@ Mercury::NetworkInterface * CondemnedInterfaceRemovalRecord::pInterface() const
  */
 bool CondemnedInterfaceRemovalRecord::interfaceHasUnackedPackets() const
 {
-	return pInterface_->hasUnackedPackets();
+    return pInterface_->hasUnackedPackets();
 }
-
 
 /**
  *	This method returns whether the unacked wait timeout period has been
@@ -126,20 +114,17 @@ bool CondemnedInterfaceRemovalRecord::interfaceHasUnackedPackets() const
  */
 bool CondemnedInterfaceRemovalRecord::hasTimedOut() const
 {
-	return (unackedCheckTimeout_ == 0) ||
-		(timestamp() > unackedCheckTimeout_);
+    return (unackedCheckTimeout_ == 0) || (timestamp() > unackedCheckTimeout_);
 }
-
 
 /**
  *	This method deletes the associated condemned network interface.
  */
 void CondemnedInterfaceRemovalRecord::deleteInterface()
 {
-	bw_safe_delete( pInterface_ );
+    bw_safe_delete(pInterface_);
 }
 
 BW_END_NAMESPACE
 
 // condemned_interface.cpp
-

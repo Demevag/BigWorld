@@ -10,171 +10,158 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace
-{
+namespace {
 
-class MyUpdatable;
+    class MyUpdatable;
 
-class Tester
-{
-public:
-	virtual void visit( MyUpdatable * pObj ) = 0;
-	virtual bool isOkay() const	= 0;
-};
+    class Tester
+    {
+      public:
+        virtual void visit(MyUpdatable* pObj) = 0;
+        virtual bool isOkay() const           = 0;
+    };
 
-Tester * g_pCurrentTester = NULL;
+    Tester* g_pCurrentTester = NULL;
 
+    class MyUpdatable : public Updatable
+    {
+      public:
+        MyUpdatable(int index)
+          : index_(index)
+        {
+            s_selfDelete.insert(shared_ptr<MyUpdatable>(this));
+        }
 
-class MyUpdatable : public Updatable
-{
-public:
-	MyUpdatable( int index ) :
-		index_( index )
-	{
-		s_selfDelete.insert( shared_ptr< MyUpdatable >( this ) );
-	}
+        int index() const { return index_; }
 
-	int index() const	{ return index_; }
+      private:
+        virtual void update() { g_pCurrentTester->visit(this); }
 
-private:
-	virtual void update()
-	{
-		g_pCurrentTester->visit( this );
-	}
+        int index_;
 
-	int index_;
+        static BW::set<shared_ptr<MyUpdatable>> s_selfDelete;
+    };
 
-	static BW::set< shared_ptr< MyUpdatable > > s_selfDelete;
-};
+    BW::set<shared_ptr<MyUpdatable>> MyUpdatable::s_selfDelete;
 
-BW::set< shared_ptr< MyUpdatable > > MyUpdatable::s_selfDelete;
+    // -----------------------------------------------------------------------------
+    // Section: Testers
+    // -----------------------------------------------------------------------------
 
+    class SimpleTester : public Tester
+    {
+      public:
+        SimpleTester()
+          : isOkay_(true)
+          , lastVisit_(-1)
+          , numCalls_(0)
+        {
+        }
 
-// -----------------------------------------------------------------------------
-// Section: Testers
-// -----------------------------------------------------------------------------
+        virtual bool isOkay() const { return isOkay_; }
 
-class SimpleTester : public Tester
-{
-public:
-	SimpleTester() :
-		isOkay_( true ),
-		lastVisit_( -1 ),
-		numCalls_( 0 )
-	{
-	}
+        virtual void visit(MyUpdatable* pObj)
+        {
+            isOkay_ &= (lastVisit_ <= pObj->index());
+            lastVisit_ = pObj->index();
+            ++numCalls_;
+        }
 
-	virtual bool isOkay() const
-	{
-		return isOkay_;
-	}
+        int numCalls() const { return numCalls_; }
 
-	virtual void visit( MyUpdatable * pObj )
-	{
-		isOkay_ &= (lastVisit_ <= pObj->index());
-		lastVisit_ = pObj->index();
-		++numCalls_;
-	}
+      private:
+        bool isOkay_;
+        int  lastVisit_;
+        int  numCalls_;
+    };
 
-	int numCalls() const	{ return numCalls_; }
+    class AddTester : public SimpleTester
+    {
+      public:
+        AddTester(Updatables& updatables)
+          : updatables_(updatables)
+          , shouldAdd_(false)
+        {
+        }
 
-private:
-	bool isOkay_;
-	int lastVisit_;
-	int numCalls_;
-};
+      private:
+        virtual void visit(MyUpdatable* pObj)
+        {
+            if (shouldAdd_) {
+                updatables_.add(new MyUpdatable(pObj->index()), pObj->index());
+            }
 
+            shouldAdd_ = !shouldAdd_;
 
-class AddTester : public SimpleTester
-{
-public:
-	AddTester( Updatables & updatables ) :
-		updatables_( updatables ),
-		shouldAdd_( false )
-	{
-	}
+            SimpleTester::visit(pObj);
+        }
 
-private:
-	virtual void visit( MyUpdatable * pObj )
-	{
-		if (shouldAdd_)
-		{
-			updatables_.add( new MyUpdatable( pObj->index() ), pObj->index() );
-		}
+        Updatables& updatables_;
+        bool        shouldAdd_;
+    };
 
-		shouldAdd_ = !shouldAdd_;
+    class DelTester : public SimpleTester
+    {
+      public:
+        DelTester(Updatables& updatables)
+          : updatables_(updatables)
+          , shouldRemove_(true)
+        {
+        }
 
-		SimpleTester::visit( pObj );
-	}
+      private:
+        virtual void visit(MyUpdatable* pObj)
+        {
+            if (shouldRemove_) {
+                updatables_.remove(pObj);
+            }
 
-	Updatables & updatables_;
-	bool shouldAdd_;
-};
+            shouldRemove_ = !shouldRemove_;
 
-class DelTester : public SimpleTester
-{
-public:
-	DelTester( Updatables & updatables ) :
-		updatables_( updatables ),
-		shouldRemove_( true )
-	{
-	}
+            SimpleTester::visit(pObj);
+        }
 
-private:
-	virtual void visit( MyUpdatable * pObj )
-	{
-		if (shouldRemove_)
-		{
-			updatables_.remove( pObj );
-		}
+        Updatables& updatables_;
+        bool        shouldRemove_;
+    };
 
-		shouldRemove_ = !shouldRemove_;
+    TEST(Updatables)
+    {
+        const int NUM_TO_TEST = 21;
+        const int NUM_LEVELS  = 3;
 
-		SimpleTester::visit( pObj );
-	}
+        Updatables updatables(NUM_LEVELS);
 
-	Updatables & updatables_;
-	bool shouldRemove_;
-};
+        for (int i = 0; i < NUM_TO_TEST; ++i) {
+            int level = i % NUM_LEVELS;
+            updatables.add(new MyUpdatable(level), level);
+        }
 
-TEST( Updatables )
-{
-	const int NUM_TO_TEST = 21;
-	const int NUM_LEVELS = 3;
+        SimpleTester simpleTester;
+        g_pCurrentTester = &simpleTester;
 
-	Updatables updatables( NUM_LEVELS );
+        updatables.call();
+        CHECK(simpleTester.isOkay());
+        CHECK_EQUAL(size_t(simpleTester.numCalls()), updatables.size());
 
-	for (int i = 0; i < NUM_TO_TEST; ++i)
-	{
-		int level = i % NUM_LEVELS;
-		updatables.add( new MyUpdatable( level ), level );
-	}
+        AddTester addTester(updatables);
+        g_pCurrentTester = &addTester;
 
-	SimpleTester simpleTester;
-	g_pCurrentTester = &simpleTester;
+        int origSize = updatables.size();
+        updatables.call();
+        CHECK(addTester.isOkay());
+        CHECK_EQUAL(addTester.numCalls(), origSize);
+        CHECK_EQUAL(3 * origSize / 2, (int)updatables.size());
 
-	updatables.call();
-	CHECK( simpleTester.isOkay() );
-	CHECK_EQUAL( size_t( simpleTester.numCalls() ), updatables.size() );
+        DelTester delTester(updatables);
+        g_pCurrentTester = &delTester;
+        origSize         = updatables.size();
+        updatables.call();
 
-	AddTester addTester( updatables );
-	g_pCurrentTester = &addTester;
-
-	int origSize = updatables.size();
-	updatables.call();
-	CHECK( addTester.isOkay() );
-	CHECK_EQUAL( addTester.numCalls(), origSize );
-	CHECK_EQUAL( 3 * origSize / 2, (int) updatables.size() );
-
-	DelTester delTester( updatables );
-	g_pCurrentTester = &delTester;
-	origSize = updatables.size();
-	updatables.call();
-
-	CHECK( delTester.isOkay() );
-	CHECK_EQUAL( delTester.numCalls(), origSize );
-	CHECK_EQUAL( origSize / 2, (int) updatables.size() );
-}
+        CHECK(delTester.isOkay());
+        CHECK_EQUAL(delTester.numCalls(), origSize);
+        CHECK_EQUAL(origSize / 2, (int)updatables.size());
+    }
 
 } // unnamed namespace
 

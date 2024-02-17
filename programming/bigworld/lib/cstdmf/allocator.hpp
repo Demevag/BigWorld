@@ -14,178 +14,186 @@
 #if !ENABLE_MEMORY_DEBUG
 #define BW_SYSTEMSTAGE_MAIN()
 #else
-#define BW_SYSTEMSTAGE_MAIN() \
-	BW::Allocator::ScopedSystemStage _scopedStage( BW::Allocator::SS_MAIN, BW::Allocator::SS_POST_MAIN )
+#define BW_SYSTEMSTAGE_MAIN()                                                  \
+    BW::Allocator::ScopedSystemStage _scopedStage(BW::Allocator::SS_MAIN,      \
+                                                  BW::Allocator::SS_POST_MAIN)
 #endif
 
 #if !ENABLE_SMARTPOINTER_TRACKING
 #define BW_MEMORYDEBUG_SMARTPOINTER_ASSIGN(ptr, obj)
 #else
-#define BW_MEMORYDEBUG_SMARTPOINTER_ASSIGN(ptr, obj) \
-	BW::Allocator::trackSmartPointerAssignment(ptr, obj)
+#define BW_MEMORYDEBUG_SMARTPOINTER_ASSIGN(ptr, obj)                           \
+    BW::Allocator::trackSmartPointerAssignment(ptr, obj)
 #endif
 
 // Called by memHook to make sure Allocator is initailised
 CSTDMF_DLL void memHookInitFunc();
 
-namespace BW
-{
-class StringBuilder;
- 
-/// This is the concrete interface to underlying memory allocators
-namespace Allocator
-{
-	enum SystemStage
-	{
-		SS_PRE_MAIN,
-		SS_MAIN,
-		SS_POST_MAIN
-	};
+namespace BW {
+    class StringBuilder;
 
-	enum InfoFlags
-	{
-		IF_POOL_ALLOC     = 1, ///< Allocation came from a fixed size pool
-		IF_NOTRACK_ALLOC  = 2, ///< Don't register this alloc with MemoryDebug (usually because it's already been tracked elsewhere)
-		IF_INTERNAL_ALLOC = 4, ///< Allocation was an internal allocation made by fixed sized pool
-		IF_DEBUG_ALLOC    = 8  ///< Allocation was from a debug allocator
-	};
+    /// This is the concrete interface to underlying memory allocators
+    namespace Allocator {
+        enum SystemStage
+        {
+            SS_PRE_MAIN,
+            SS_MAIN,
+            SS_POST_MAIN
+        };
 
-	/// Used for reporting current allocations for profiling display
-	struct AllocationStats
-	{
-		size_t currentAllocs_;
-		size_t currentBytes_;
-	};
+        enum InfoFlags
+        {
+            IF_POOL_ALLOC = 1, ///< Allocation came from a fixed size pool
+            IF_NOTRACK_ALLOC =
+              2, ///< Don't register this alloc with MemoryDebug (usually
+                 ///< because it's already been tracked elsewhere)
+            IF_INTERNAL_ALLOC = 4, ///< Allocation was an internal allocation
+                                   ///< made by fixed sized pool
+            IF_DEBUG_ALLOC = 8     ///< Allocation was from a debug allocator
+        };
 
-	// Used for reporting currently tracked smart pointers for testing and reporting
-	struct SmartPointerStats
-	{
-		size_t totalAssigns_;
-		size_t currentAssigns_;
-	};
+        /// Used for reporting current allocations for profiling display
+        struct AllocationStats
+        {
+            size_t currentAllocs_;
+            size_t currentBytes_;
+        };
 
-	// patterns to fill memory on alloc/free, different from heap values
-	static const int CleanLandFill  = 0xCD;
-	static const int DeadLandFill   = 0xDD;
-	static const int NoMansLandFill = 0xFE;
-	static const int AlignLandFill  = 0xFD;
+        // Used for reporting currently tracked smart pointers for testing and
+        // reporting
+        struct SmartPointerStats
+        {
+            size_t totalAssigns_;
+            size_t currentAssigns_;
+        };
 
-	/// inform the memory debugger of the stage of initialisation
-	CSTDMF_DLL void setSystemStage( SystemStage stage );
+        // patterns to fill memory on alloc/free, different from heap values
+        static const int CleanLandFill  = 0xCD;
+        static const int DeadLandFill   = 0xDD;
+        static const int NoMansLandFill = 0xFE;
+        static const int AlignLandFill  = 0xFD;
 
-	/// Report leaks and memory stats on exit (default false)
-	CSTDMF_DLL void setReportOnExit( bool reportOnExit );
+        /// inform the memory debugger of the stage of initialisation
+        CSTDMF_DLL void setSystemStage(SystemStage stage);
 
-	/// Force crash if memory leaks found on exit (default false)
-	/// Requires report on exit
-	CSTDMF_DLL void setCrashOnLeak( bool crashOnLeak );
-    
-	/// Report memory stats to file on exit (default false)
-	void setReportStatsToFile( bool reportStatsToFile );
+        /// Report leaks and memory stats on exit (default false)
+        CSTDMF_DLL void setReportOnExit(bool reportOnExit);
 
-	/// allocate some memory
-	CSTDMF_DLL void* allocate( size_t size );
+        /// Force crash if memory leaks found on exit (default false)
+        /// Requires report on exit
+        CSTDMF_DLL void setCrashOnLeak(bool crashOnLeak);
 
-	/// free some memory
-	CSTDMF_DLL void deallocate( void* ptr );
+        /// Report memory stats to file on exit (default false)
+        void setReportStatsToFile(bool reportStatsToFile);
 
-	/// reallocate some memory
-	void* reallocate( void* ptr, size_t size );
+        /// allocate some memory
+        CSTDMF_DLL void* allocate(size_t size);
 
-	/// \returns size of allocated block
-	size_t memorySize( void* ptr );
+        /// free some memory
+        CSTDMF_DLL void deallocate(void* ptr);
 
-    /// Full debug report information
-	/// \returns the number of live main allocations (requires ENABLE_MEMORY_DEBUG)
-    size_t debugReport();
+        /// reallocate some memory
+        void* reallocate(void* ptr, size_t size);
 
-	/// Prints current allocation stats
-	void debugAllocStatsReport();
+        /// \returns size of allocated block
+        size_t memorySize(void* ptr);
 
-	/// save allocations to file
-	void saveAllocationsToFile( const char* filename );
+        /// Full debug report information
+        /// \returns the number of live main allocations (requires
+        /// ENABLE_MEMORY_DEBUG)
+        size_t debugReport();
 
-	/// save allocations to cachegrind file
-	void saveAllocationsToCacheGrindFile( const char* filename );
+        /// Prints current allocation stats
+        void debugAllocStatsReport();
 
-	/// save stats to file
-	void saveStatsToFile( const char* filename );
+        /// save allocations to file
+        void saveAllocationsToFile(const char* filename);
 
-	void init();
-	void fini();
+        /// save allocations to cachegrind file
+        void saveAllocationsToCacheGrindFile(const char* filename);
 
-	// These functions all allocate directly from the heap and will not get
-	// routed through fixed sized allocator if present
+        /// save stats to file
+        void saveStatsToFile(const char* filename);
 
-	/// allocate some aligned memory from heap
-	void* heapAllocateAligned( size_t size, size_t alignment, 
-		unsigned int heapAllocFlags = 0 );
+        void init();
+        void fini();
 
-	/// free some aligned memory from heap
-	void  heapDeallocateAligned( void* ptr, unsigned int heapAllocFlags = 0 );
+        // These functions all allocate directly from the heap and will not get
+        // routed through fixed sized allocator if present
 
-	/// Allocator from heap
-	/// \param size requested allocation size
-	/// \param heapAllocFlags Allocator::InfoFlags describing the allocation
-	void* heapAllocate( size_t size, unsigned int heapAllocFlags = 0 );
+        /// allocate some aligned memory from heap
+        void* heapAllocateAligned(size_t       size,
+                                  size_t       alignment,
+                                  unsigned int heapAllocFlags = 0);
 
-	/// Free a heap allocation
-	/// \param ptr pointer to heap allocated memory to free
-	/// \param heapAllocFlags Allocator::InfoFlags describing the allocation
-	void  heapDeallocate( void* ptr, unsigned int heapAllocFlags = 0 );
+        /// free some aligned memory from heap
+        void heapDeallocateAligned(void* ptr, unsigned int heapAllocFlags = 0);
 
-	/// Reallocate a heap allocation
-	/// \param ptr pointer to heap allocated memory to reallocate
-	/// \param size requested allocation size
-	/// \param heapAllocFlags Allocator::InfoFlags describing the allocation
-	void* heapReallocate( void* ptr, size_t size, unsigned int heapAllocFlags = 0 );
+        /// Allocator from heap
+        /// \param size requested allocation size
+        /// \param heapAllocFlags Allocator::InfoFlags describing the allocation
+        void* heapAllocate(size_t size, unsigned int heapAllocFlags = 0);
 
-	/// \param ptr pointer to heap allocated memory
-	/// \returns the size used for the allocation
-	size_t heapMemorySize( void* ptr );
+        /// Free a heap allocation
+        /// \param ptr pointer to heap allocated memory to free
+        /// \param heapAllocFlags Allocator::InfoFlags describing the allocation
+        void heapDeallocate(void* ptr, unsigned int heapAllocFlags = 0);
+
+        /// Reallocate a heap allocation
+        /// \param ptr pointer to heap allocated memory to reallocate
+        /// \param size requested allocation size
+        /// \param heapAllocFlags Allocator::InfoFlags describing the allocation
+        void* heapReallocate(void*        ptr,
+                             size_t       size,
+                             unsigned int heapAllocFlags = 0);
+
+        /// \param ptr pointer to heap allocated memory
+        /// \returns the size used for the allocation
+        size_t heapMemorySize(void* ptr);
 
 #if ENABLE_MEMORY_DEBUG
-	/// Populates the given struct with current global allocation stats
-	CSTDMF_DLL void readAllocationStats( AllocationStats& stats );
+        /// Populates the given struct with current global allocation stats
+        CSTDMF_DLL void readAllocationStats(AllocationStats& stats);
 
-	/// Populates the given struct with current smart pointer tracking stats
-	void readSmartPointerStats( SmartPointerStats& stats );
+        /// Populates the given struct with current smart pointer tracking stats
+        void readSmartPointerStats(SmartPointerStats& stats);
 #endif
 
 #if ENABLE_WATCHERS
-	void addWatchers();
+        void addWatchers();
 #endif
 
-	CSTDMF_DLL void onThreadFinish();
+        CSTDMF_DLL void onThreadFinish();
 
-	/// Begin ignoring allocations between begin and end. (For leaky third party libraries)
-	CSTDMF_DLL void allocTrackingIgnoreBegin();
+        /// Begin ignoring allocations between begin and end. (For leaky third
+        /// party libraries)
+        CSTDMF_DLL void allocTrackingIgnoreBegin();
 
-	/// Begin ignoring allocations between begin and end. (For leaky third party libraries)
-	CSTDMF_DLL void allocTrackingIgnoreEnd();
-	
-	CSTDMF_DLL void trackSmartPointerAssignment( const void * smartPointer, const void * object );
+        /// Begin ignoring allocations between begin and end. (For leaky third
+        /// party libraries)
+        CSTDMF_DLL void allocTrackingIgnoreEnd();
 
-	CSTDMF_DLL void debugSmartPointerReport( const void * object );
-	
-	// Scoped stage setter than can change the system stage on stack unwind
-	class ScopedSystemStage
-	{
-		SystemStage popStage_;
-	public:
-		ScopedSystemStage( SystemStage pushStage, SystemStage popStage )
-			: popStage_( popStage )
-		{
-			setSystemStage( pushStage );
-		}
+        CSTDMF_DLL void trackSmartPointerAssignment(const void* smartPointer,
+                                                    const void* object);
 
-		~ScopedSystemStage()
-		{
-			setSystemStage( popStage_ );
-		}
-	};
+        CSTDMF_DLL void debugSmartPointerReport(const void* object);
 
-} // namespace Allocator
+        // Scoped stage setter than can change the system stage on stack unwind
+        class ScopedSystemStage
+        {
+            SystemStage popStage_;
+
+          public:
+            ScopedSystemStage(SystemStage pushStage, SystemStage popStage)
+              : popStage_(popStage)
+            {
+                setSystemStage(pushStage);
+            }
+
+            ~ScopedSystemStage() { setSystemStage(popStage_); }
+        };
+
+    } // namespace Allocator
 
 } // end namespace
 

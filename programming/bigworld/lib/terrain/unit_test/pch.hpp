@@ -14,19 +14,18 @@
 #include <stdlib.h>
 #endif // _WIN32
 
-
 // TODO: reference additional headers your program requires here
 #include "CppUnitLite2/src/Test.h"
 
 #include "unit_test_lib/unit_test.hpp"
 
 // TODO: Move this to cstdmf
-inline void mySleep( int milliseconds )
+inline void mySleep(int milliseconds)
 {
 #ifdef _WIN32
-	Sleep( milliseconds );
+    Sleep(milliseconds);
 #else
-	usleep( milliseconds * 1000 );
+    usleep(milliseconds * 1000);
 #endif
 }
 

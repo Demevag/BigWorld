@@ -20,126 +20,125 @@
 
 BW_BEGIN_NAMESPACE
 
-
 /**
  *	This class is for visualising the BSP scene.
  */
 class ChunkBspHolder
 {
-public:
-	static const size_t NO_BSP_MODEL;
+  public:
+    static const size_t NO_BSP_MODEL;
 
-	ChunkBspHolder();
-	~ChunkBspHolder();
+    ChunkBspHolder();
+    ~ChunkBspHolder();
 
-	bool isBspCreated() const;
-	void drawBsp( Moo::RenderContext& rc,
-		const Matrix& world,
-		bool renderSelection,
-		bool setStates = true ) const;
-	void batchBsp( const Matrix& world ) const;
-	void addBsp( const BW::vector< Moo::VertexXYZL >& verts,
-		const BW::string& name );
-	void delBsp();
-	static void drawBsps( Moo::RenderContext& rc );
+    bool        isBspCreated() const;
+    void        drawBsp(Moo::RenderContext& rc,
+                        const Matrix&       world,
+                        bool                renderSelection,
+                        bool                setStates = true) const;
+    void        batchBsp(const Matrix& world) const;
+    void        addBsp(const BW::vector<Moo::VertexXYZL>& verts,
+                       const BW::string&                  name);
+    void        delBsp();
+    static void drawBsps(Moo::RenderContext& rc);
 
 #ifdef EDITOR_ENABLED
-	void postClone();
+    void postClone();
 #endif // EDITOR_ENABLED
 
-	static const bool getDrawBsp();
-	const int& getDrawBspAsInt() const;
-	void setDrawBspAsInt( const int& value );
+    static const bool getDrawBsp();
+    const int&        getDrawBspAsInt() const;
+    void              setDrawBspAsInt(const int& value);
 
-	static const bool getDrawBspSpeedTrees();
-	const int& getDrawBspSpeedTreesAsInt() const;
-	void setDrawBspSpeedTreesAsInt( const int& value );
+    static const bool getDrawBspSpeedTrees();
+    const int&        getDrawBspSpeedTreesAsInt() const;
+    void              setDrawBspSpeedTreesAsInt(const int& value);
 
-	static const bool getDrawBspOtherModels();
-	const int& getDrawBspOtherModelsAsInt() const;
-	void setDrawBspOtherModelsAsInt( const int& value );
+    static const bool getDrawBspOtherModels();
+    const int&        getDrawBspOtherModelsAsInt() const;
+    void              setDrawBspOtherModelsAsInt(const int& value);
 
-protected:
-	size_t getBspIndex( const BW::string& name );
-	void getRandomBspColour( Moo::Colour& colour ) const;
+  protected:
+    size_t getBspIndex(const BW::string& name);
+    void   getRandomBspColour(Moo::Colour& colour) const;
 
-private:
-	struct Info
-	{
-		UINT primitiveCount_;
-		Moo::VertexBuffer vb_;
-	};
-	typedef BW::map<size_t, ChunkBspHolder::Info> Infos;
+  private:
+    struct Info
+    {
+        UINT              primitiveCount_;
+        Moo::VertexBuffer vb_;
+    };
+    typedef BW::map<size_t, ChunkBspHolder::Info> Infos;
 
-	struct BspPrimitive
-	{
-		size_t index_;
-		Matrix world_;
-		Moo::Colour colour_;
-	};
-	typedef BW::vector<BspPrimitive> BspPrimitives;
+    struct BspPrimitive
+    {
+        size_t      index_;
+        Matrix      world_;
+        Moo::Colour colour_;
+    };
+    typedef BW::vector<BspPrimitive> BspPrimitives;
 
-	struct BspStatics
-	{
-		BspStatics()
-			: s_nextBspModelIndex_( 0 )
-			, chunkBspHolderCount_( 0 )
-			, drawBsp_( false )
-			, drawBspInt_( 0 )
-			, bspCount_( 0 )
-			, drawBspSpeedTrees_( false )
-			, drawBspSpeedTreesInt_( 0 )
-			, drawBspOtherModels_( false )
-			, drawBspOtherModelsInt_( 0 )
+    struct BspStatics
+    {
+        BspStatics()
+          : s_nextBspModelIndex_(0)
+          , chunkBspHolderCount_(0)
+          , drawBsp_(false)
+          , drawBspInt_(0)
+          , bspCount_(0)
+          , drawBspSpeedTrees_(false)
+          , drawBspSpeedTreesInt_(0)
+          , drawBspOtherModels_(false)
+          , drawBspOtherModelsInt_(0)
 #ifdef EDITOR_ENABLED
-			, settingsMark_( -16 )
+          , settingsMark_(-16)
 #endif
-		{
-			REGISTER_SINGLETON( BspStatics )
-		}
+        {
+            REGISTER_SINGLETON(BspStatics)
+        }
 
-		volatile uint32 s_nextBspModelIndex_;
+        volatile uint32 s_nextBspModelIndex_;
 
-		BspPrimitives bspPrimitives_;
+        BspPrimitives bspPrimitives_;
 
-		SimpleMutex infoMutex_;
-		Infos infos_;
+        SimpleMutex infoMutex_;
+        Infos       infos_;
 
-		bw_atomic32_t chunkBspHolderCount_;
+        bw_atomic32_t chunkBspHolderCount_;
 
-		bool drawBsp_;
-		int drawBspInt_;
-		size_t bspCount_;
+        bool   drawBsp_;
+        int    drawBspInt_;
+        size_t bspCount_;
 
-		bool drawBspSpeedTrees_;
-		bool drawBspOtherModels_;
-		int drawBspSpeedTreesInt_;
-		int drawBspOtherModelsInt_;
+        bool drawBspSpeedTrees_;
+        bool drawBspOtherModels_;
+        int  drawBspSpeedTreesInt_;
+        int  drawBspOtherModelsInt_;
 #ifdef EDITOR_ENABLED
-		uint32 settingsMark_;
+        uint32 settingsMark_;
 #endif
 
-		static BspStatics & instance()
-		{
-			SINGLETON_MANAGER_WRAPPER( BspStatics )
-			static BspStatics s_BspStatics;
-			return s_BspStatics;
-		}
-	};
+        static BspStatics& instance()
+        {
+            SINGLETON_MANAGER_WRAPPER(BspStatics)
+            static BspStatics s_BspStatics;
+            return s_BspStatics;
+        }
+    };
 
 #ifdef EDITOR_ENABLED
-	static void readSettings( BspStatics& statics );
+    static void readSettings(BspStatics& statics);
 #endif
-	static void setRenderStates( Moo::RenderContext& rc, bool renderSelection );
-	static void drawColourBsp( Moo::RenderContext& rc,
-		const size_t& index,
-		const Matrix& world,
-		const Moo::Colour& colour,
-		bool renderSelection,
-		bool setStates );
+    static void setRenderStates(Moo::RenderContext& rc, bool renderSelection);
+    static void drawColourBsp(Moo::RenderContext& rc,
+                              const size_t&       index,
+                              const Matrix&       world,
+                              const Moo::Colour&  colour,
+                              bool                renderSelection,
+                              bool                setStates);
 
-	Moo::Colour colour_;
-	size_t bspModelIndex_;
+    Moo::Colour colour_;
+    size_t      bspModelIndex_;
 };
 
 BW_END_NAMESPACE

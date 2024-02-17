@@ -5,7 +5,6 @@
 #include "server/bwconfig.hpp"
 #include "pyscript/py_data_section.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /*~ module BWConfig
@@ -24,29 +23,25 @@ BW_BEGIN_NAMESPACE
  *
  *	@param	sectionName	The name of the section to get.
  */
-static PyObject * getSections( const BW::string & sectionName )
+static PyObject* getSections(const BW::string& sectionName)
 {
-	BWConfig::SearchIterator iSectionConfig =
-		BWConfig::beginSearchSections( sectionName.c_str() );
+    BWConfig::SearchIterator iSectionConfig =
+      BWConfig::beginSearchSections(sectionName.c_str());
 
-	ScriptList scriptList = ScriptList::create();
+    ScriptList scriptList = ScriptList::create();
 
-	while (iSectionConfig != BWConfig::endSearch())
-	{
-		ScriptObject ds( new PyDataSection( *iSectionConfig ),
-			ScriptObject::STEAL_REFERENCE );
-		scriptList.append( ds );
+    while (iSectionConfig != BWConfig::endSearch()) {
+        ScriptObject ds(new PyDataSection(*iSectionConfig),
+                        ScriptObject::STEAL_REFERENCE);
+        scriptList.append(ds);
 
-		++iSectionConfig;
-	}
+        ++iSectionConfig;
+    }
 
-	return scriptList.newRef();
+    return scriptList.newRef();
 }
-PY_AUTO_MODULE_FUNCTION( RETOWN, getSections,
-		ARG( BW::string, END ), BWConfig )
+PY_AUTO_MODULE_FUNCTION(RETOWN, getSections, ARG(BW::string, END), BWConfig)
 
-
-		
 /*~ function BWConfig.getSection
  *	@components{ base, cell, db, bots }
  *
@@ -55,20 +50,17 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, getSections,
  *
  *	@param	sectionName	The path of the section to get.
  */
-static PyObject * getSection( const BW::string & sectionPath )
+static PyObject* getSection(const BW::string& sectionPath)
 {
-	DataSectionPtr pDataSection = BWConfig::getSection( sectionPath.c_str() );
-	if ( !pDataSection )
-	{
-		PyErr_Format( PyExc_ValueError,
-			"Section %s not found", sectionPath.c_str() );
+    DataSectionPtr pDataSection = BWConfig::getSection(sectionPath.c_str());
+    if (!pDataSection) {
+        PyErr_Format(
+          PyExc_ValueError, "Section %s not found", sectionPath.c_str());
         return NULL;
-	}
-	return new PyDataSection( pDataSection );
+    }
+    return new PyDataSection(pDataSection);
 }
-PY_AUTO_MODULE_FUNCTION( RETOWN, getSection,
-		ARG( BW::string, END ), BWConfig )
-
+PY_AUTO_MODULE_FUNCTION(RETOWN, getSection, ARG(BW::string, END), BWConfig)
 
 /*~ function BWConfig.readString
  *	@components{ base, cell, db, bots }
@@ -77,15 +69,15 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, getSection,
  *
  *	@param	configOption	The path of the option to get.
  */
-static PyObject * readString( const BW::string & configOption,
-		const BW::string & defaultValue )
+static PyObject* readString(const BW::string& configOption,
+                            const BW::string& defaultValue)
 {
-	return Script::getData( BWConfig::get( configOption.c_str(),
-				defaultValue ) );
+    return Script::getData(BWConfig::get(configOption.c_str(), defaultValue));
 }
-PY_AUTO_MODULE_FUNCTION( RETOWN, readString,
-		ARG( BW::string, OPTARG( BW::string, "", END ) ), BWConfig )
-
+PY_AUTO_MODULE_FUNCTION(RETOWN,
+                        readString,
+                        ARG(BW::string, OPTARG(BW::string, "", END)),
+                        BWConfig)
 
 /*~ function BWConfig.readInt
  *	@components{ base, cell, db, bots }
@@ -94,15 +86,14 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, readString,
  *
  *	@param	configOption	The path of the option to get.
  */
-static PyObject * readInt( const BW::string & configOption,
-		int defaultValue )
+static PyObject* readInt(const BW::string& configOption, int defaultValue)
 {
-	return Script::getData( BWConfig::get( configOption.c_str(),
-				defaultValue ) );
+    return Script::getData(BWConfig::get(configOption.c_str(), defaultValue));
 }
-PY_AUTO_MODULE_FUNCTION( RETOWN, readInt,
-		ARG( BW::string, OPTARG( int, 0, END ) ), BWConfig )
-
+PY_AUTO_MODULE_FUNCTION(RETOWN,
+                        readInt,
+                        ARG(BW::string, OPTARG(int, 0, END)),
+                        BWConfig)
 
 /*~ function BWConfig.readFloat
  *	@components{ base, cell, db, bots }
@@ -111,15 +102,14 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, readInt,
  *
  *	@param	configOption	The path of the option to get.
  */
-static PyObject * readFloat( const BW::string & configOption,
-		double defaultValue )
+static PyObject* readFloat(const BW::string& configOption, double defaultValue)
 {
-	return Script::getData( BWConfig::get( configOption.c_str(),
-				defaultValue ) );
+    return Script::getData(BWConfig::get(configOption.c_str(), defaultValue));
 }
-PY_AUTO_MODULE_FUNCTION( RETOWN, readFloat,
-		ARG( BW::string, OPTARG( double, 0.0, END ) ), BWConfig )
-
+PY_AUTO_MODULE_FUNCTION(RETOWN,
+                        readFloat,
+                        ARG(BW::string, OPTARG(double, 0.0, END)),
+                        BWConfig)
 
 /*~ function BWConfig.readBool
  *	@components{ base, cell, db, bots }
@@ -128,15 +118,14 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, readFloat,
  *
  *	@param	configOption	The path of the option to get.
  */
-static PyObject * readBool( const BW::string & configOption,
-		bool defaultValue )
+static PyObject* readBool(const BW::string& configOption, bool defaultValue)
 {
-	return Script::getData( BWConfig::get( configOption.c_str(),
-				defaultValue ) );
+    return Script::getData(BWConfig::get(configOption.c_str(), defaultValue));
 }
-PY_AUTO_MODULE_FUNCTION( RETOWN, readBool,
-		ARG( BW::string, OPTARG( bool, false, END ) ), BWConfig )
-
+PY_AUTO_MODULE_FUNCTION(RETOWN,
+                        readBool,
+                        ARG(BW::string, OPTARG(bool, false, END)),
+                        BWConfig)
 
 BW_END_NAMESPACE
 

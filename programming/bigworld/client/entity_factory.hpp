@@ -16,9 +16,8 @@ class BWConnection;
  */
 class EntityFactory : public BWEntityFactory
 {
-private:
-	BWEntity * doCreate( EntityTypeID entityTypeID,
-		BWConnection * pConnection );
+  private:
+    BWEntity* doCreate(EntityTypeID entityTypeID, BWConnection* pConnection);
 };
 
 BW_END_NAMESPACE

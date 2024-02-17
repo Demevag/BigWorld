@@ -4,26 +4,17 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Graph
-{
+namespace Graph {
 
+    /**
+     *	Constructor.
+     */
+    Node::Node() {}
 
-/**
- *	Constructor.
- */
-Node::Node()
-{
-}
-
-
-/**
- *	Destructor.
- */
-Node::~Node()
-{
-}
-
+    /**
+     *	Destructor.
+     */
+    Node::~Node() {}
 
 } // namespace Graph
 BW_END_NAMESPACE
-

@@ -1,7 +1,6 @@
 #ifndef TIME_GLOBALS_HPP
 #define TIME_GLOBALS_HPP
 
-
 BW_BEGIN_NAMESPACE
 
 /*
@@ -11,17 +10,17 @@ BW_BEGIN_NAMESPACE
  */
 class TimeGlobals
 {
-private:
-	TimeGlobals();
+  private:
+    TimeGlobals();
 
-public:
-	static TimeGlobals & instance();
-	void setupWatchersFirstTimeOnly();
-	TimeOfDay * getTimeOfDay() const;
-	BW::string timeOfDayAsString() const;
-	void timeOfDayAsString( BW::string newTime );
-	float secondsPerGameHour() const;
-	void secondsPerGameHour( float t );
+  public:
+    static TimeGlobals& instance();
+    void                setupWatchersFirstTimeOnly();
+    TimeOfDay*          getTimeOfDay() const;
+    BW::string          timeOfDayAsString() const;
+    void                timeOfDayAsString(BW::string newTime);
+    float               secondsPerGameHour() const;
+    void                secondsPerGameHour(float t);
 };
 
 BW_END_NAMESPACE

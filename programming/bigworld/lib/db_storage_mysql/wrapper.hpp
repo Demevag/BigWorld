@@ -15,7 +15,6 @@
 #include <string.h>
 #include <stdexcept>
 
-
 BW_BEGIN_NAMESPACE
 
 // Forward declarations.
@@ -23,99 +22,89 @@ class BinaryOStream;
 class BinaryIStream;
 class ResultSet;
 
-namespace DBConfig
-{
-	class ConnectionInfo;
+namespace DBConfig {
+    class ConnectionInfo;
 }
 
 // Constants
 #define MYSQL_ENGINE_TYPE "InnoDB"
 
-time_t convertMySqlTimeToEpoch(  const MYSQL_TIME& mysqlTime );
-
-
-
-
+time_t convertMySqlTimeToEpoch(const MYSQL_TIME& mysqlTime);
 
 // represents a MySQL server connection
 class MySql
 {
-public:
-	enum EngineSupportState
-	{
-		DEFAULT,
-		SUPPORTED,
-		NOT_SUPPORTED
-	};
+  public:
+    enum EngineSupportState
+    {
+        DEFAULT,
+        SUPPORTED,
+        NOT_SUPPORTED
+    };
 
+    MySql(const DBConfig::ConnectionInfo& connectInfo);
+    virtual ~MySql();
 
-	MySql( const DBConfig::ConnectionInfo & connectInfo );
-	virtual ~MySql();
+    MYSQL* get() { return sql_; }
 
-	MYSQL * get() { return sql_; }
+    virtual void execute(const BW::string& statement,
+                         BinaryOStream*    pResData = NULL);
+    virtual void execute(const BW::string& queryStr, MYSQL_RES*& pMySqlResult);
+    virtual void execute(const BW::string& queryStr, ResultSet* pResultSet);
+    virtual int  query(const BW::string& statement);
 
-	virtual void execute( const BW::string & statement,
-		BinaryOStream * pResData = NULL );
-	virtual void execute( const BW::string & queryStr, MYSQL_RES *& pMySqlResult );
-	virtual void execute( const BW::string & queryStr, ResultSet * pResultSet );
-	virtual int query( const BW::string & statement );
+    void close();
+    bool reconnectTo(const DBConfig::ConnectionInfo& connectInfo);
+    bool reconnect() { return this->reconnectTo(connectInfo_); }
 
-	void close();
-	bool reconnectTo( const DBConfig::ConnectionInfo & connectInfo );
-	bool reconnect()
-	{
-		return this->reconnectTo( connectInfo_ );
-	}
+    bool ping() { return mysql_ping(sql_) == 0; }
+    void getTableNames(BW::vector<BW::string>& tableNames, const char* pattern);
+    EngineSupportState checkEngineSupportState();
+    bool               checkTableEngines();
+    my_ulonglong       insertID() { return mysql_insert_id(sql_); }
+    my_ulonglong       affectedRows() { return mysql_affected_rows(sql_); }
+    const char*        info() { return mysql_info(sql_); }
+    const char*        getLastError() { return mysql_error(sql_); }
+    unsigned int       getLastErrorNum() { return mysql_errno(sql_); }
+    bool               nextResult(ResultSet* pResultSet);
+    uint               fieldCount() { return mysql_field_count(sql_); }
 
-	bool ping()					{ return mysql_ping( sql_ ) == 0; }
-	void getTableNames( BW::vector< BW::string > & tableNames,
-						const char * pattern );
-	EngineSupportState checkEngineSupportState();
-	bool checkTableEngines();
-	my_ulonglong insertID()		{ return mysql_insert_id( sql_ ); }
-	my_ulonglong affectedRows()	{ return mysql_affected_rows( sql_ ); }
-	const char* info()			{ return mysql_info( sql_ ); }
-	const char* getLastError()	{ return mysql_error( sql_ ); }
-	unsigned int getLastErrorNum() { return mysql_errno( sql_ ); }
-	bool nextResult( ResultSet * pResultSet );
-	uint fieldCount() 			{ return mysql_field_count( sql_ ); }
+    void inTransaction(bool value)
+    {
+        MF_ASSERT(inTransaction_ != value);
+        inTransaction_ = value;
+    }
 
-	void inTransaction( bool value )
-	{
-		MF_ASSERT( inTransaction_ != value );
-		inTransaction_ = value;
-	}
+    bool hasLostConnection() const { return hasLostConnection_; }
+    void hasLostConnection(bool v) { hasLostConnection_ = v; }
 
-	bool hasLostConnection() const		{ return hasLostConnection_; }
-	void hasLostConnection( bool v )	{ hasLostConnection_ = v; }
+    static uint charsetWidth(unsigned int charsetnr);
 
-	static uint charsetWidth( unsigned int charsetnr );
+  private:
+    int  realQuery(const BW::string& query);
+    void storeResultInto(ResultSet* pResultSet);
+    void throwError();
 
-private:
-	int realQuery( const BW::string & query );
-	void storeResultInto( ResultSet * pResultSet );
-	void throwError();
+    void connect(const DBConfig::ConnectionInfo& connectInfo);
 
-	void connect( const DBConfig::ConnectionInfo & connectInfo );
+    void                        queryCharsetLengths();
+    typedef BW::map<uint, uint> CollationLengths;
 
-	void queryCharsetLengths();
-	typedef BW::map<uint, uint> CollationLengths;
+    MySql(const MySql&);
+    void operator=(const MySql&);
 
-	MySql( const MySql& );
-	void operator=( const MySql& );
+    MYSQL* sql_;
+    bool   inTransaction_;
+    bool   hasLostConnection_;
 
-	MYSQL * sql_;
-	bool inTransaction_;
-	bool hasLostConnection_;
+    DBConfig::ConnectionInfo connectInfo_;
 
-	DBConfig::ConnectionInfo connectInfo_;
-
-	static uint32 s_connect_timeout_;
-	static bool s_hasInitedCollationLengths_;
-	static CollationLengths s_collationLengths_;
-	static bool s_hasMaxAllowedPacket_;
-	static uint32 s_maxAllowedPacket_;
-	static uint32 s_maxAllowedPacketWarnLevel_;
+    static uint32           s_connect_timeout_;
+    static bool             s_hasInitedCollationLengths_;
+    static CollationLengths s_collationLengths_;
+    static bool             s_hasMaxAllowedPacket_;
+    static uint32           s_maxAllowedPacket_;
+    static uint32           s_maxAllowedPacketWarnLevel_;
 };
 
 BW_END_NAMESPACE

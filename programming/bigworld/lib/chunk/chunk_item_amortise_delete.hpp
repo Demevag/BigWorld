@@ -1,7 +1,6 @@
 #ifndef _AMORTISE_CHUNK_ITEM_DELETE_HPP_
 #define _AMORTISE_CHUNK_ITEM_DELETE_HPP_
 
-
 #include "cstdmf/singleton.hpp"
 #include "chunk_item.hpp"
 #include "cstdmf/bw_list.hpp"
@@ -40,40 +39,40 @@ BW_BEGIN_NAMESPACE
  *	based on the following factor:
  *		List size - curbAt = 5000.
  *		The ratio of this value to the difference in count between curbAt and
- *		maxChunkItemCount is 5000 / 10000 = 0.5.  We use the one minus this value
- *		1.0 - 0.5 = 0.5.
- *		The inverse square of this value is 1 / 0.5^2 = 1 / 0.25 = 4.0.
- *		Therefore baseTimeSlice * 4.0 = 15000.0 * 4.0 = 60000.0.
+ *		maxChunkItemCount is 5000 / 10000 = 0.5.  We use the one minus this
+ *value 1.0 - 0.5 = 0.5. The inverse square of this value is 1 / 0.5^2 = 1 /
+ *0.25 = 4.0. Therefore baseTimeSlice * 4.0 = 15000.0 * 4.0 = 60000.0.
  */
-class AmortiseChunkItemDelete : public Singleton< AmortiseChunkItemDelete >
+class AmortiseChunkItemDelete : public Singleton<AmortiseChunkItemDelete>
 {
-public:
-	AmortiseChunkItemDelete(
-			double baseTimeSlice = 15000.0,
-			uint32 maxChunkItemCount = 10000,
-			uint32 curbAt = 4000 );
-	~AmortiseChunkItemDelete();
+  public:
+    AmortiseChunkItemDelete(double baseTimeSlice     = 15000.0,
+                            uint32 maxChunkItemCount = 10000,
+                            uint32 curbAt            = 4000);
+    ~AmortiseChunkItemDelete();
 
-	void add( ChunkItemPtr pItem );
-	void purge();
-	void tick();
+    void add(ChunkItemPtr pItem);
+    void purge();
+    void tick();
 
-private:
-	/// Unscaled time slice allotted to clear chunk items each tick.
-	double baseTimeSlice_;
-	/// The maximum number of chunk items we can hold open.
-	uint32 maxChunkItemCount_;
-	/// The number of chunk items after which we start ramping the time slice to infinity.	
-	uint32 curbAt_;
-	/// The number of chunk items being held onto at the end of the previous tick.
-	uint32 chunkItemListSizePreviousFrame_;
-	/// The time slice used for the previous frame.
-	double timeSlicePreviousFrame_;
+  private:
+    /// Unscaled time slice allotted to clear chunk items each tick.
+    double baseTimeSlice_;
+    /// The maximum number of chunk items we can hold open.
+    uint32 maxChunkItemCount_;
+    /// The number of chunk items after which we start ramping the time slice to
+    /// infinity.
+    uint32 curbAt_;
+    /// The number of chunk items being held onto at the end of the previous
+    /// tick.
+    uint32 chunkItemListSizePreviousFrame_;
+    /// The time slice used for the previous frame.
+    double timeSlicePreviousFrame_;
 
-	/// Mutex used to control access to the list of chunk items
-	SimpleMutex chunkItemListMutex_;
-	/// The list of chunk items to be deleted
-	BW::list< ChunkItemPtr > chunkItemList_;
+    /// Mutex used to control access to the list of chunk items
+    SimpleMutex chunkItemListMutex_;
+    /// The list of chunk items to be deleted
+    BW::list<ChunkItemPtr> chunkItemList_;
 };
 
 BW_END_NAMESPACE

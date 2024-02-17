@@ -24,101 +24,102 @@ class OutsideLighting;
 
 BW_END_NAMESPACE
 
-namespace BW {
-namespace CompiledSpace {
+namespace BW { namespace CompiledSpace {
 
-class CompiledSpaceMapping;
-class IEntityUDOFactory;
+    class CompiledSpaceMapping;
+    class IEntityUDOFactory;
 
-class COMPILED_SPACE_API CompiledSpace : public ClientSpace
-{
-public:
-	static bool init( const DataSectionPtr& pConfigDS,
-		IEntityUDOFactory* pEntityFactory,
-		AssetClient* pAssetClient );
+    class COMPILED_SPACE_API CompiledSpace : public ClientSpace
+    {
+      public:
+        static bool init(const DataSectionPtr& pConfigDS,
+                         IEntityUDOFactory*    pEntityFactory,
+                         AssetClient*          pAssetClient);
 
-	static IEntityUDOFactory* entityUDOFactory();
+        static IEntityUDOFactory* entityUDOFactory();
 
-	typedef CompiledSpaceMapping* (*MappingCreator)( 
-		const BW::string& path,
-		const Matrix& transform,
-		const DataSectionPtr& pSettings,
-		CompiledSpace& space,
-		AssetClient* pAssetClient );
+        typedef CompiledSpaceMapping* (*MappingCreator)(
+          const BW::string&     path,
+          const Matrix&         transform,
+          const DataSectionPtr& pSettings,
+          CompiledSpace&        space,
+          AssetClient*          pAssetClient);
 
-public:
-	CompiledSpace( SpaceID id, AssetClient* pAssetClient );
-	virtual ~CompiledSpace();
-	
-	DynamicSceneProvider& dynamicScene();
-	DynamicLightSceneProvider& dynamicLightScene();
+      public:
+        CompiledSpace(SpaceID id, AssetClient* pAssetClient);
+        virtual ~CompiledSpace();
 
-	void mappingCreator( MappingCreator func );
+        DynamicSceneProvider&      dynamicScene();
+        DynamicLightSceneProvider& dynamicLightScene();
 
-private:
-	virtual bool doAddMapping( GeometryMappingID mappingID,
-		Matrix& transform, const BW::string & path, 
-		const SmartPointer< DataSection >& pSettings );
-	virtual void doDelMapping( GeometryMappingID mappingID );
-	
-	virtual float doGetLoadStatus( float /* distance */ ) const;
+        void mappingCreator(MappingCreator func);
 
-	// Space interface
-	virtual void doClear();
-	virtual EnviroMinder & doEnviro();
-	virtual void doTick( float dTime );
-	virtual void doUpdateAnimations( float dTime );
+      private:
+        virtual bool doAddMapping(GeometryMappingID                mappingID,
+                                  Matrix&                          transform,
+                                  const BW::string&                path,
+                                  const SmartPointer<DataSection>& pSettings);
+        virtual void doDelMapping(GeometryMappingID mappingID);
 
-	// Collision Scene View Interface
-	virtual AABB doGetBounds() const;
-	virtual Vector3 doClampToBounds( const Vector3& position ) const;
-	virtual float doCollide( const Vector3 & start, const Vector3 & end,
-		CollisionCallback & cc ) const;
-	virtual float doCollide( const WorldTriangle & triangle, 
-		const Vector3 & translation, 
-		CollisionCallback & cc = CollisionCallback_s_default ) const;
-	virtual float doFindTerrainHeight( const Vector3 & position ) const;
+        virtual float doGetLoadStatus(float /* distance */) const;
 
-	// Light scene view interface
-	virtual const Moo::DirectionalLightPtr & doGetSunLight() const;
-	virtual const Moo::Colour & doGetAmbientLight() const;
-	virtual const Moo::LightContainerPtr & doGetLights() const;
-	virtual bool doGetLightsInArea( const AABB& worldBB, 
-		Moo::LightContainerPtr* allLights );
+        // Space interface
+        virtual void          doClear();
+        virtual EnviroMinder& doEnviro();
+        virtual void          doTick(float dTime);
+        virtual void          doUpdateAnimations(float dTime);
 
-private:
-	size_t mappingIDToIndex( GeometryMappingID id );
+        // Collision Scene View Interface
+        virtual AABB    doGetBounds() const;
+        virtual Vector3 doClampToBounds(const Vector3& position) const;
+        virtual float   doCollide(const Vector3&     start,
+                                  const Vector3&     end,
+                                  CollisionCallback& cc) const;
+        virtual float   doCollide(
+            const WorldTriangle& triangle,
+            const Vector3&       translation,
+            CollisionCallback&   cc = CollisionCallback_s_default) const;
+        virtual float doFindTerrainHeight(const Vector3& position) const;
 
-	friend class CompiledSpaceMapping;
-	void mappingLoadedBG( CompiledSpaceMapping* pLoader );
-	void mappingLoaded( CompiledSpaceMapping* pLoader );
-	void mappingUnloaded( CompiledSpaceMapping* pLoader );
+        // Light scene view interface
+        virtual const Moo::DirectionalLightPtr& doGetSunLight() const;
+        virtual const Moo::Colour&              doGetAmbientLight() const;
+        virtual const Moo::LightContainerPtr&   doGetLights() const;
+        virtual bool doGetLightsInArea(const AABB&             worldBB,
+                                       Moo::LightContainerPtr* allLights);
 
-	void updateSpaceBounds();
+      private:
+        size_t mappingIDToIndex(GeometryMappingID id);
 
-protected:
-	AssetClient * pAssetClient_;
+        friend class CompiledSpaceMapping;
+        void mappingLoadedBG(CompiledSpaceMapping* pLoader);
+        void mappingLoaded(CompiledSpaceMapping* pLoader);
+        void mappingUnloaded(CompiledSpaceMapping* pLoader);
 
-	struct Mapping
-	{
-		GeometryMappingID mappingID_;
-		CompiledSpaceMapping* pLoader_;
-	};
+        void updateSpaceBounds();
 
-	typedef BW::vector<Mapping> Mappings;
-	Mappings mappings_;
-	MappingCreator mappingCreator_;
+      protected:
+        AssetClient* pAssetClient_;
 
-	AABB bounds_;
+        struct Mapping
+        {
+            GeometryMappingID     mappingID_;
+            CompiledSpaceMapping* pLoader_;
+        };
 
-	DynamicSceneProvider dynamicScene_;
-	DynamicLightSceneProvider dynamicLightScene_;
-	EnviroMinderSceneProvider enviroMinderScene_;
-	CachedSemiDynamicShadowSceneProvider shadowScene_;
-};
+        typedef BW::vector<Mapping> Mappings;
+        Mappings                    mappings_;
+        MappingCreator              mappingCreator_;
+
+        AABB bounds_;
+
+        DynamicSceneProvider                 dynamicScene_;
+        DynamicLightSceneProvider            dynamicLightScene_;
+        EnviroMinderSceneProvider            enviroMinderScene_;
+        CachedSemiDynamicShadowSceneProvider shadowScene_;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW
-
 
 #endif // COMPILED_SPACE_HPP

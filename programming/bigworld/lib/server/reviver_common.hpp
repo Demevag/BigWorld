@@ -6,14 +6,13 @@
 
 #include "cstdmf/stdmf.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-typedef uint8 ReviverPriority;
-const ReviverPriority REVIVER_PING_NO  = 0;
-const ReviverPriority REVIVER_PING_YES = 1;
-const float REVIVER_DEFAULT_SUBJECT_TIMEOUT = 0.2f;
-const float REVIVER_DEFAULT_PING_PERIOD = 0.1f;
+typedef uint8         ReviverPriority;
+const ReviverPriority REVIVER_PING_NO                 = 0;
+const ReviverPriority REVIVER_PING_YES                = 1;
+const float           REVIVER_DEFAULT_SUBJECT_TIMEOUT = 0.2f;
+const float           REVIVER_DEFAULT_PING_PERIOD     = 0.1f;
 
 BW_END_NAMESPACE
 

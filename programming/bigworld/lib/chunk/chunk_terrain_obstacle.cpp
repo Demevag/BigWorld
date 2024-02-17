@@ -15,17 +15,16 @@
 
 #include "cstdmf/guard.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-ChunkTerrainObstacle::ChunkTerrainObstacle( const Terrain::BaseTerrainBlock & tb,
-		const Matrix & transform, const BoundingBox* bb,
-		ChunkItemPtr pItem ) :
-	ChunkObstacle( transform, bb, pItem ),
-	tb_( tb )
+ChunkTerrainObstacle::ChunkTerrainObstacle(const Terrain::BaseTerrainBlock& tb,
+                                           const Matrix&      transform,
+                                           const BoundingBox* bb,
+                                           ChunkItemPtr       pItem)
+  : ChunkObstacle(transform, bb, pItem)
+  , tb_(tb)
 {
 }
-
 
 /**
  *	This method collides the input ray with the terrain block.
@@ -37,48 +36,55 @@ ChunkTerrainObstacle::ChunkTerrainObstacle( const Terrain::BaseTerrainBlock & tb
  *	@param cs		Collision state holder.
  */
 
-bool ChunkTerrainObstacle::collide( const Vector3 & start,
-	const Vector3 & end, CollisionState & cs ) const
+bool ChunkTerrainObstacle::collide(const Vector3&  start,
+                                   const Vector3&  end,
+                                   CollisionState& cs) const
 {
-	BW_GUARD;
-	Terrain::TerrainRayCollisionCallback toc( cs, transform_,
-		transformInverse_, tb_,
-		this->pItem()->sceneObject(),
-		start, end );
+    BW_GUARD;
+    Terrain::TerrainRayCollisionCallback toc(cs,
+                                             transform_,
+                                             transformInverse_,
+                                             tb_,
+                                             this->pItem()->sceneObject(),
+                                             start,
+                                             end);
 
 #ifdef BW_WORLDTRIANGLE_DEBUG
-	WorldTriangle::BeginDraw( transform_, 100, 500 );
+    WorldTriangle::BeginDraw(transform_, 100, 500);
 #endif
 
-	tb_.collide( start, end, &toc ); 
+    tb_.collide(start, end, &toc);
 
-#ifdef BW_WORLDTRIANGLE_DEBUG	
-	WorldTriangle::EndDraw();
+#ifdef BW_WORLDTRIANGLE_DEBUG
+    WorldTriangle::EndDraw();
 #endif
 
-	return toc.finishedColliding();
+    return toc.finishedColliding();
 }
-
 
 /**
  *	This method collides the input prism with the terrain block.
- * 
+ *
  *	@param start	The start triangle of prism.
  *	@param end		The position of the first vertex on end triangle.
  *	@param cs		Collision state holder.
  *
  *	@see collide
  */
-bool ChunkTerrainObstacle::collide( const WorldTriangle & start,
-	const Vector3 & end, CollisionState & cs ) const
+bool ChunkTerrainObstacle::collide(const WorldTriangle& start,
+                                   const Vector3&       end,
+                                   CollisionState&      cs) const
 {
     BW_GUARD;
-	Terrain::TerrainPrismCollisionCallback toc( cs, transform_,
-		transformInverse_, tb_,
-		this->pItem()->sceneObject(),
-		start, end );
+    Terrain::TerrainPrismCollisionCallback toc(cs,
+                                               transform_,
+                                               transformInverse_,
+                                               tb_,
+                                               this->pItem()->sceneObject(),
+                                               start,
+                                               end);
 
-    return tb_.collide( start, end, &toc );
+    return tb_.collide(start, end, &toc);
 }
 
 BW_END_NAMESPACE

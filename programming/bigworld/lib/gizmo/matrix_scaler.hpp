@@ -20,34 +20,33 @@ typedef SmartPointer<FloatProxy> FloatProxyPtr;
  */
 class MatrixScaler : public AlwaysApplyingFunctor
 {
-	Py_Header( MatrixScaler, AlwaysApplyingFunctor )
-public:
-	MatrixScaler( MatrixProxyPtr pMatrix,
-		float scaleSpeedFactor = 1.f,
-		FloatProxyPtr scaleX = NULL,
-		FloatProxyPtr scaleY = NULL,
-		FloatProxyPtr scaleZ = NULL,
-		bool allowedToDiscardChanges = true,
-		PyTypeObject * pType = &s_type_ );
+    Py_Header(MatrixScaler, AlwaysApplyingFunctor) public
+      : MatrixScaler(MatrixProxyPtr pMatrix,
+                     float          scaleSpeedFactor        = 1.f,
+                     FloatProxyPtr  scaleX                  = NULL,
+                     FloatProxyPtr  scaleY                  = NULL,
+                     FloatProxyPtr  scaleZ                  = NULL,
+                     bool           allowedToDiscardChanges = true,
+                     PyTypeObject*  pType                   = &s_type_);
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-protected:
-	virtual void doApply( float dTime, Tool& tool );
-	virtual void stopApplyCommitChanges( Tool& tool, bool addUndoBarrier );
-	virtual void stopApplyDiscardChanges( Tool& tool );
+  protected:
+    virtual void doApply(float dTime, Tool& tool);
+    virtual void stopApplyCommitChanges(Tool& tool, bool addUndoBarrier);
+    virtual void stopApplyDiscardChanges(Tool& tool);
 
-private:
-	MatrixProxyPtr	pMatrix_;
-	Matrix			initialMatrix_;
-	Matrix			invInitialMatrix_;
-	Vector3			initialScale_;
-	Vector3			grabOffset_;
-	bool			grabOffsetSet_;
-	float			scaleSpeedFactor_;
-	FloatProxyPtr	scaleX_;
-	FloatProxyPtr	scaleY_;
-	FloatProxyPtr	scaleZ_;
+  private:
+    MatrixProxyPtr pMatrix_;
+    Matrix         initialMatrix_;
+    Matrix         invInitialMatrix_;
+    Vector3        initialScale_;
+    Vector3        grabOffset_;
+    bool           grabOffsetSet_;
+    float          scaleSpeedFactor_;
+    FloatProxyPtr  scaleX_;
+    FloatProxyPtr  scaleY_;
+    FloatProxyPtr  scaleZ_;
 };
 
 BW_END_NAMESPACE

@@ -7,99 +7,94 @@
 #include "unpacked_message_header.hpp"
 #include "interface_element.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
+namespace Mercury {
 
-namespace Mercury
-{
+    class UDPChannel;
+    class InterfaceTable;
+    class NetworkInterface;
+    class Packet;
+    class ProcessSocketStatsHelper;
 
-class UDPChannel;
-class InterfaceTable;
-class NetworkInterface;
-class Packet;
-class ProcessSocketStatsHelper;
+    /**
+     *	This class is used to process a sequence of received packets that
+     *represent a Bundle of messages.
+     */
+    class UDPBundleProcessor
+    {
+      public:
+        UDPBundleProcessor(Packet* packetChain, bool isEarly = false);
 
+        Reason dispatchMessages(InterfaceTable&           interfaceTable,
+                                const Address&            addr,
+                                UDPChannel*               pChannel,
+                                NetworkInterface&         networkInterface,
+                                ProcessSocketStatsHelper* pStatsHelper) const;
 
-/**
- *	This class is used to process a sequence of received packets that represent
- *	a Bundle of messages.
- */
-class UDPBundleProcessor
-{
-public:
-	UDPBundleProcessor( Packet * packetChain, bool isEarly = false );
+        void dumpMessages(const InterfaceTable& interfaceTable) const;
 
-	Reason dispatchMessages( InterfaceTable & interfaceTable,
-			const Address & addr, UDPChannel * pChannel,
-			NetworkInterface & networkInterface,
-			ProcessSocketStatsHelper * pStatsHelper ) const;
+        /**
+         *	@internal
+         *	This class is used to iterate over the messages in a bundle.
+         *	Mercury uses this internally when unpacking a bundle and
+         *	delivering messages to the client.
+         */
+        class iterator
+        {
+          public:
+            iterator(Packet* first);
+            iterator(const iterator& i);
+            ~iterator();
 
-	void dumpMessages( const InterfaceTable & interfaceTable ) const;
+            const iterator& operator=(iterator i);
 
-	/**
-	 *	@internal
-	 *	This class is used to iterate over the messages in a bundle.
-	 *	Mercury uses this internally when unpacking a bundle and
-	 *	delivering messages to the client.
-	 */
-	class iterator
-	{
-	public:
-		iterator(Packet * first);
-		iterator(const iterator & i);
-		~iterator();
+            MessageID msgID() const;
 
-		const iterator & operator=( iterator i );
+            // Note: You have to unpack before you can call
+            // 'data' or 'operator++'
 
-		MessageID msgID() const;
+            UnpackedMessageHeader& unpack(const InterfaceElement& ie);
+            const char*            data();
 
-		// Note: You have to unpack before you can call
-		// 'data' or 'operator++'
+            bool isUnpacked() const { return isUnpacked_; }
 
-		UnpackedMessageHeader & unpack( const InterfaceElement & ie );
-		const char * data();
+            void operator++(int);
+            bool operator==(const iterator& x) const;
+            bool operator!=(const iterator& x) const;
 
-		bool isUnpacked() const { return isUnpacked_; }
+            friend void swap(iterator& a, iterator& b);
 
-		void operator++(int);
-		bool operator==(const iterator & x) const;
-		bool operator!=(const iterator & x) const;
+          private:
+            void nextPacket();
 
-		friend void swap( iterator & a, iterator & b );
+            Packet* cursor_;
+            bool    isUnpacked_;
+            uint16  bodyEndOffset_;
+            uint16  offset_;
+            uint16  dataOffset_;
+            int     dataLength_;
+            char*   dataBuffer_;
 
-	private:
-		void nextPacket();
+            uint16 nextRequestOffset_;
 
-		Packet *	cursor_;
-		bool		isUnpacked_;
-		uint16		bodyEndOffset_;
-		uint16		offset_;
-		uint16		dataOffset_;
-		int			dataLength_;
-		char *		dataBuffer_;
+            UnpackedMessageHeader curHeader_;
+            InterfaceElement      updatedIE_;
+        };
 
-		uint16	nextRequestOffset_;
+        /**
+         * Get some iterators
+         */
+        iterator begin() const;
+        iterator end() const;
 
-		UnpackedMessageHeader	curHeader_;
-		InterfaceElement updatedIE_;
-	};
-
-	/**
-	 * Get some iterators
-	 */
-	iterator begin() const;
-	iterator end() const;
-
-private:
-	PacketPtr pFirstPacket_;		///< The first packet in the bundle
-	const bool isEarly_;
-};
+      private:
+        PacketPtr  pFirstPacket_; ///< The first packet in the bundle
+        const bool isEarly_;
+    };
 
 } // namespace Mercury
 
-
 BW_END_NAMESPACE
-
 
 #endif // UDP_BUNDLE_PROCESSOR_HPP

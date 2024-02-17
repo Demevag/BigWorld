@@ -7,58 +7,56 @@
 
 #include "visual.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Moo
-{
+namespace Moo {
 
-/**
- *	This singleton class keeps track of and loads Visuals.
- */
-class VisualManager:
-	public ResourceModificationListener
-{
-public:
-	typedef StringRefMap< Visual* > VisualMap;
+    /**
+     *	This singleton class keeps track of and loads Visuals.
+     */
+    class VisualManager : public ResourceModificationListener
+    {
+      public:
+        typedef StringRefMap<Visual*> VisualMap;
 
-	~VisualManager();
+        ~VisualManager();
 
-	static VisualManager* instance();
+        static VisualManager* instance();
 
-	static void init();
-	static void fini();
+        static void init();
+        static void fini();
 
-	VisualPtr get( const BW::StringRef& resourceID, bool loadIfMissing = true );
+        VisualPtr get(const BW::StringRef& resourceID,
+                      bool                 loadIfMissing = true);
 
-	void fullHouse( bool noMoreEntries = true );
+        void fullHouse(bool noMoreEntries = true);
 
-	void add( Visual * pVisual, const BW::StringRef & resourceID );
-protected:
-	void onResourceModified(
-		const BW::StringRef& basePath,
-		const BW::StringRef& resourceID,
-		ResourceModificationListener::Action action);
+        void add(Visual* pVisual, const BW::StringRef& resourceID);
 
-private:
-	VisualManager();
-	VisualManager(const VisualManager&);
-	VisualManager& operator=(const VisualManager&);
+      protected:
+        void onResourceModified(const BW::StringRef&                 basePath,
+                                const BW::StringRef&                 resourceID,
+                                ResourceModificationListener::Action action);
 
-	static void del( Visual* pVisual );
-	void delInternal( Visual* pVisual );
+      private:
+        VisualManager();
+        VisualManager(const VisualManager&);
+        VisualManager& operator=(const VisualManager&);
 
-	VisualPtr find( const BW::StringRef & resourceID );
+        static void del(Visual* pVisual);
+        void        delInternal(Visual* pVisual);
 
-	VisualMap visuals_;
-	SimpleMutex	visualsLock_;
+        VisualPtr find(const BW::StringRef& resourceID);
 
-	bool fullHouse_;
+        VisualMap   visuals_;
+        SimpleMutex visualsLock_;
 
-	static VisualManager* pInstance_;
+        bool fullHouse_;
 
-	friend Visual::~Visual();
-};
+        static VisualManager* pInstance_;
+
+        friend Visual::~Visual();
+    };
 
 } // namespace Moo
 
@@ -67,6 +65,5 @@ private:
 #endif
 
 BW_END_NAMESPACE
-
 
 #endif // VISUAL_MANAGER_HPP

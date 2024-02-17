@@ -8,4 +8,4 @@ CSTDMF_DLL void startNewInstance();
 
 BW_END_NAMESPACE
 
-#endif//RESTART_HPP
+#endif // RESTART_HPP

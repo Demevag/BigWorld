@@ -10,12 +10,13 @@ BW_BEGIN_NAMESPACE
  */
 class DelayRedraw
 {
-public:
-	DelayRedraw( CWnd* wnd );
-	~DelayRedraw();
-private:
-	CWnd* wnd_;
-	static BW::map< CWnd*, int > s_counter_;
+  public:
+    DelayRedraw(CWnd* wnd);
+    ~DelayRedraw();
+
+  private:
+    CWnd*                      wnd_;
+    static BW::map<CWnd*, int> s_counter_;
 };
 
 BW_END_NAMESPACE

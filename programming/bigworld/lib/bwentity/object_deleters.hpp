@@ -7,7 +7,7 @@ BWENTITY_BEGIN_NAMESPACE
 
 class EntityDescriptionMap;
 
-void BWENTITY_API destroyObject( EntityDescriptionMap * ptr );
+void BWENTITY_API destroyObject(EntityDescriptionMap* ptr);
 
 BWENTITY_END_NAMESPACE
 

@@ -5,7 +5,7 @@
 BW_BEGIN_NAMESPACE
 
 CoordModeProvider* CoordModeProvider::s_instance_ = NULL;
-bool CoordModeProvider::s_internal_ = true;
+bool               CoordModeProvider::s_internal_ = true;
 
 BW_END_NAMESPACE
 // coord_mode_provider.cpp

@@ -10,15 +10,12 @@
 #include <netdb.h>
 #include <string.h>
 
-
 BW_BEGIN_NAMESPACE
-
 
 void Hostnames::clear()
 {
-	hostnames_.clear();
+    hostnames_.clear();
 }
-
 
 /**
  * This method attempts to discover the hostname associated with the provided
@@ -32,61 +29,59 @@ void Hostnames::clear()
  *
  * @returns GetHostResult status (Found in cache; Added to cache; or Error)
  */
-GetHostResult Hostnames::getHostByAddr( MessageLogger::IPAddress addr,
-	BW::string & hostname )
+GetHostResult Hostnames::getHostByAddr(MessageLogger::IPAddress addr,
+                                       BW::string&              hostname)
 {
-	HostnamesMap::iterator it = hostnames_.find( addr );
-	if (it != hostnames_.end())
-	{
-		hostname = it->second;
-		return BW_GET_HOST_FOUND;
-	}
+    HostnamesMap::iterator it = hostnames_.find(addr);
+    if (it != hostnames_.end()) {
+        hostname = it->second;
+        return BW_GET_HOST_FOUND;
+    }
 
-	struct hostent *ent = gethostbyaddr( &addr, sizeof( addr ), AF_INET );
+    struct hostent* ent = gethostbyaddr(&addr, sizeof(addr), AF_INET);
 
-	// Unable to resolve the hostname, store the IP address as a string
-	if (ent == NULL)
-	{
-		const char *reason = NULL;
-		hostname = inet_ntoa( (in_addr&)addr );
+    // Unable to resolve the hostname, store the IP address as a string
+    if (ent == NULL) {
+        const char* reason = NULL;
+        hostname           = inet_ntoa((in_addr&)addr);
 
-		switch (h_errno)
-		{
-			case HOST_NOT_FOUND:
-				reason = "HOST_NOT_FOUND"; break;
-			case NO_DATA:
-				reason = "NO_DATA"; break;
-			case NO_RECOVERY:
-				reason = "NO_RECOVERY"; break;
-			case TRY_AGAIN:
-				reason = "TRY_AGAIN"; break;
-			default:
-				reason = "Unknown reason";
-		}
+        switch (h_errno) {
+            case HOST_NOT_FOUND:
+                reason = "HOST_NOT_FOUND";
+                break;
+            case NO_DATA:
+                reason = "NO_DATA";
+                break;
+            case NO_RECOVERY:
+                reason = "NO_RECOVERY";
+                break;
+            case TRY_AGAIN:
+                reason = "TRY_AGAIN";
+                break;
+            default:
+                reason = "Unknown reason";
+        }
 
-		WARNING_MSG( "Hostnames::getHostByAddr: Unable to resolve hostname "
-			"of %s (%s)\n", hostname.c_str(), reason );
-	}
-	else
-	{
-		char *firstdot = strstr( ent->h_name, "." );
-		if (firstdot != NULL)
-		{
-			*firstdot = '\0';
-		}
-		hostname = ent->h_name;
-	}
+        WARNING_MSG("Hostnames::getHostByAddr: Unable to resolve hostname "
+                    "of %s (%s)\n",
+                    hostname.c_str(),
+                    reason);
+    } else {
+        char* firstdot = strstr(ent->h_name, ".");
+        if (firstdot != NULL) {
+            *firstdot = '\0';
+        }
+        hostname = ent->h_name;
+    }
 
-	if (!this->writeHostnameToDB( addr, hostname ))
-	{
-		hostname.clear();
-		return BW_GET_HOST_ERROR;
-	}
+    if (!this->writeHostnameToDB(addr, hostname)) {
+        hostname.clear();
+        return BW_GET_HOST_ERROR;
+    }
 
-	hostnames_[ addr ] = hostname;
-	return BW_GET_HOST_ADDED;
+    hostnames_[addr] = hostname;
+    return BW_GET_HOST_ADDED;
 }
-
 
 /**
  * This method retrieves the address associated with the specified hostname
@@ -94,24 +89,21 @@ GetHostResult Hostnames::getHostByAddr( MessageLogger::IPAddress addr,
  *
  * @returns IP address of the hostname on success, 0 if not known.
  */
-MessageLogger::IPAddress Hostnames::getHostByName( const char *hostname ) const
+MessageLogger::IPAddress Hostnames::getHostByName(const char* hostname) const
 {
-	BW::string hostString = hostname;
-	HostnamesMap::const_iterator it = hostnames_.begin();
+    BW::string                   hostString = hostname;
+    HostnamesMap::const_iterator it         = hostnames_.begin();
 
-	while (it != hostnames_.end())
-	{
-		if (it->second == hostString)
-		{
-			return it->first;
-		}
+    while (it != hostnames_.end()) {
+        if (it->second == hostString) {
+            return it->first;
+        }
 
-		++it;
-	}
+        ++it;
+    }
 
-	return 0;
+    return 0;
 }
-
 
 /**
  * This method invokes onHost on the visitor for all the hostname entries
@@ -119,20 +111,18 @@ MessageLogger::IPAddress Hostnames::getHostByName( const char *hostname ) const
  *
  * @returns true on success, false on error.
  */
-bool Hostnames::visitAllWith( HostnameVisitor & visitor ) const
+bool Hostnames::visitAllWith(HostnameVisitor& visitor) const
 {
-	HostnamesMap::const_iterator iter = hostnames_.begin();
-	bool status = true;
+    HostnamesMap::const_iterator iter   = hostnames_.begin();
+    bool                         status = true;
 
-	while ((iter != hostnames_.end()) && (status == true))
-	{
-		status = visitor.onHost( iter->first, iter->second );
-		++iter;
-	}
+    while ((iter != hostnames_.end()) && (status == true)) {
+        status = visitor.onHost(iter->first, iter->second);
+        ++iter;
+    }
 
-	return status;
+    return status;
 }
-
 
 BW_END_NAMESPACE
 

@@ -11,11 +11,9 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
-	class NetworkInterface;
+namespace Mercury {
+    class NetworkInterface;
 } // end namespace Mercury
-
 
 /**
  *	This class is used to store a condemned interface, and optionally its
@@ -23,25 +21,24 @@ namespace Mercury
  */
 class CondemnedInterfaceRemovalRecord
 {
-public:
-	CondemnedInterfaceRemovalRecord( 
-			Mercury::NetworkInterface & networkInterface, 
-			uint64 unackedCheckTimeout ):
-		pInterface_( &networkInterface ),
-		unackedCheckTimeout_( unackedCheckTimeout )
-	{}
+  public:
+    CondemnedInterfaceRemovalRecord(Mercury::NetworkInterface& networkInterface,
+                                    uint64 unackedCheckTimeout)
+      : pInterface_(&networkInterface)
+      , unackedCheckTimeout_(unackedCheckTimeout)
+    {
+    }
 
-	Mercury::NetworkInterface * pInterface() const;
-	bool interfaceHasUnackedPackets() const;
-	bool hasTimedOut() const;
+    Mercury::NetworkInterface* pInterface() const;
+    bool                       interfaceHasUnackedPackets() const;
+    bool                       hasTimedOut() const;
 
-	void deleteInterface();
+    void deleteInterface();
 
-private:
-	Mercury::NetworkInterface * pInterface_;
-	uint64 unackedCheckTimeout_;
+  private:
+    Mercury::NetworkInterface* pInterface_;
+    uint64                     unackedCheckTimeout_;
 };
-
 
 /**
  *	This class is used to store condemned network interfaces that have their
@@ -49,26 +46,24 @@ private:
  */
 class CondemnedInterfaces : public SafeAllocatable
 {
-public:
-	BWENTITY_API CondemnedInterfaces();
-	BWENTITY_API ~CondemnedInterfaces();
+  public:
+    BWENTITY_API CondemnedInterfaces();
+    BWENTITY_API ~CondemnedInterfaces();
 
-	void add( Mercury::NetworkInterface * pInterface );
-	void removeWhenAcked( Mercury::NetworkInterface * pInterface, 
-		float timeout = 10.f );
-	void removeAll();
+    void add(Mercury::NetworkInterface* pInterface);
+    void removeWhenAcked(Mercury::NetworkInterface* pInterface,
+                         float                      timeout = 10.f);
+    void removeAll();
 
-	BWENTITY_API void processOnce();
+    BWENTITY_API void processOnce();
 
-private:
+  private:
+    typedef BW::list<CondemnedInterfaceRemovalRecord> Container;
+    Container                                         container_;
 
-	typedef BW::list< CondemnedInterfaceRemovalRecord > Container;
-	Container container_;
-
-	Mercury::EventDispatcher dispatcher_;
+    Mercury::EventDispatcher dispatcher_;
 };
 
 BW_END_NAMESPACE
 
 #endif // CONDEMNED_INTERFACES_HPP
-

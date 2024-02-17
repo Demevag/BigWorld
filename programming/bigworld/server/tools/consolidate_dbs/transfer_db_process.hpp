@@ -4,7 +4,6 @@
 #include "network/basictypes.hpp"
 #include "network/machine_guard.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -12,19 +11,18 @@ BW_BEGIN_NAMESPACE
  */
 class TransferDBProcess : public MachineGuardMessage::ReplyHandler
 {
-public:
-	TransferDBProcess( const Mercury::Address & listeningAddr );
+  public:
+    TransferDBProcess(const Mercury::Address& listeningAddr);
 
-	bool transfer( uint32 remoteIP, const BW::string & path );
+    bool transfer(uint32 remoteIP, const BW::string& path);
 
+  private:
+    // MachineGuardMessage::ReplyHandler interface
+    bool onPidMessage(PidMessage& pm, uint32 addr);
 
-private:
-	// MachineGuardMessage::ReplyHandler interface
-	bool onPidMessage( PidMessage & pm, uint32 addr );
-
-// Member data
-	bool shouldAbort_;
-	Mercury::Address listeningAddr_;
+    // Member data
+    bool             shouldAbort_;
+    Mercury::Address listeningAddr_;
 };
 
 BW_END_NAMESPACE

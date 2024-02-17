@@ -8,8 +8,7 @@
 
 #include "connection/avatar_filter_helper.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Entity", 0 )
-
+DECLARE_DEBUG_COMPONENT2("Entity", 0)
 
 BW_BEGIN_NAMESPACE
 
@@ -41,50 +40,45 @@ BW_BEGIN_NAMESPACE
  *	@see	AvatarFilter::getStoredInput()
  */
 
-
 ///////////////////////////////////////////////////////////////////////////////
 /// End Member Documentation for AvatarFilter
 ///////////////////////////////////////////////////////////////////////////////
 
-
 /**
  *	Constructor
  *
- *	@param	pType	The python object defining the type of the filter. 
+ *	@param	pType	The python object defining the type of the filter.
  *					The default is 'AvatarFilter' but it may be overridden by
  *					derived types like AvatarDropFilter.
  */
-AvatarFilter::AvatarFilter( PyAvatarFilter * pOwner ) :
-	Filter( pOwner ),
-	helper_( this->environment() ),
-	callbackListHead_()
+AvatarFilter::AvatarFilter(PyAvatarFilter* pOwner)
+  : Filter(pOwner)
+  , helper_(this->environment())
+  , callbackListHead_()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	callbackListHead_.setAsRoot();
+    callbackListHead_.setAsRoot();
 }
-
 
 /**
  *	Destructor
  */
 AvatarFilter::~AvatarFilter()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	while (callbackListHead_.getNext() != &callbackListHead_)
-	{
-		ListNode * pFirstNode = callbackListHead_.getNext();
+    while (callbackListHead_.getNext() != &callbackListHead_) {
+        ListNode* pFirstNode = callbackListHead_.getNext();
 
-		AvatarFilterCallback * pFirstCallback =
-			AvatarFilterCallback::getFromListNode( pFirstNode );
+        AvatarFilterCallback* pFirstCallback =
+          AvatarFilterCallback::getFromListNode(pFirstNode);
 
-		pFirstCallback->removeFromList();
+        pFirstCallback->removeFromList();
 
-		bw_safe_delete( pFirstCallback );
-	}
+        bw_safe_delete(pFirstCallback);
+    }
 }
-
 
 /**
  *	This method invalidates all previously collected inputs. They will
@@ -92,11 +86,10 @@ AvatarFilter::~AvatarFilter()
  *
  *	@param	time	This value is ignored.
  */
-void AvatarFilter::reset( double time )
+void AvatarFilter::reset(double time)
 {
-	helper_.reset( time );
+    helper_.reset(time);
 }
-
 
 /**
  *	This method gives the filter a new set of inputs will most likely have
@@ -117,19 +110,16 @@ void AvatarFilter::reset( double time )
  *	@param	dir				The direction of the entity, in the same
  *							coordinates as pos.
  */
-void AvatarFilter::input(	double time,
-							SpaceID spaceID,
-							EntityID vehicleID,
-							const Position3D & position,
-							const Vector3 & positionError,
-							const Direction3D & direction )
+void AvatarFilter::input(double             time,
+                         SpaceID            spaceID,
+                         EntityID           vehicleID,
+                         const Position3D&  position,
+                         const Vector3&     positionError,
+                         const Direction3D& direction)
 {
-	BW_GUARD;
-	helper_.input( time, spaceID, vehicleID, position, positionError,
-		direction );
+    BW_GUARD;
+    helper_.input(time, spaceID, vehicleID, position, positionError, direction);
 }
-
-
 
 /**
  *	This method updates an entity's position, velocity, yaw, pitch and
@@ -142,78 +132,80 @@ void AvatarFilter::input(	double time,
  *
  *	@see	AvatarFilter::extract()
  */
-void AvatarFilter::output( double time, MovementFilterTarget & target )
+void AvatarFilter::output(double time, MovementFilterTarget& target)
 {
-	BW_GUARD;
-	static DogWatch dwAvatarFilterOutput("AvatarFilter");
-	dwAvatarFilterOutput.start();
+    BW_GUARD;
+    static DogWatch dwAvatarFilterOutput("AvatarFilter");
+    dwAvatarFilterOutput.start();
 
-	Entity & entity = static_cast< Entity & >( target );
+    Entity& entity = static_cast<Entity&>(target);
 
-	SpaceID		resultSpaceID;
-	EntityID	resultVehicleID;
-	Position3D	resultPosition;
-	Vector3		resultVelocity;
-	Direction3D	resultDirection;
+    SpaceID     resultSpaceID;
+    EntityID    resultVehicleID;
+    Position3D  resultPosition;
+    Vector3     resultVelocity;
+    Direction3D resultDirection;
 
-	double outputTime = helper_.output( time, resultSpaceID, resultVehicleID,
-		resultPosition, resultVelocity, resultDirection );
+    double outputTime = helper_.output(time,
+                                       resultSpaceID,
+                                       resultVehicleID,
+                                       resultPosition,
+                                       resultVelocity,
+                                       resultDirection);
 
-	target.setSpaceVehiclePositionAndDirection( resultSpaceID,
-		resultVehicleID, resultPosition, resultDirection );
-	entity.localVelocity( resultVelocity );
+    target.setSpaceVehiclePositionAndDirection(
+      resultSpaceID, resultVehicleID, resultPosition, resultDirection);
+    entity.localVelocity(resultVelocity);
 
-	if (entity.waitingForVehicle())
-	{
-		dwAvatarFilterOutput.stop();
-		return;
-	}
+    if (entity.waitingForVehicle()) {
+        dwAvatarFilterOutput.stop();
+        return;
+    }
 
-	// This may override the values set above.
-	this->onEntityPositionUpdated( entity );
+    // This may override the values set above.
+    this->onEntityPositionUpdated(entity);
 
-	dwAvatarFilterOutput.stop();
+    dwAvatarFilterOutput.stop();
 
-	// also call any timers that have gone off
-	while (callbackListHead_.getNext() != &callbackListHead_)
-	{
-		ListNode * pFirstNode = callbackListHead_.getNext();
+    // also call any timers that have gone off
+    while (callbackListHead_.getNext() != &callbackListHead_) {
+        ListNode* pFirstNode = callbackListHead_.getNext();
 
-		AvatarFilterCallback * pFirstCallback =
-			AvatarFilterCallback::getFromListNode( pFirstNode );
+        AvatarFilterCallback* pFirstCallback =
+          AvatarFilterCallback::getFromListNode(pFirstNode);
 
-		if (pFirstCallback->targetTime() > outputTime)
-		{
-			break;
-		}
+        if (pFirstCallback->targetTime() > outputTime) {
+            break;
+        }
 
-		if ( pFirstCallback->triggerCallback( outputTime ) )
-		{
-			// TODO: Should we also change outputTime to be targetTime?
-			// Otherwise, we'll keep calling future callbacks even though
-			// we've popped backwards.
-			// Also, perhaps we should adjust filter latency so that it _would_
-			// have output this time, since helper_.output( time ) is
-			// helper_.extract( time - latency_ ) (and that's what it returns)
-			// Also, this pop will only last until next output() call anyway.
-			helper_.extract( pFirstCallback->targetTime(), resultSpaceID,
-				resultVehicleID, resultPosition, resultVelocity,
-				resultDirection );
+        if (pFirstCallback->triggerCallback(outputTime)) {
+            // TODO: Should we also change outputTime to be targetTime?
+            // Otherwise, we'll keep calling future callbacks even though
+            // we've popped backwards.
+            // Also, perhaps we should adjust filter latency so that it _would_
+            // have output this time, since helper_.output( time ) is
+            // helper_.extract( time - latency_ ) (and that's what it returns)
+            // Also, this pop will only last until next output() call anyway.
+            helper_.extract(pFirstCallback->targetTime(),
+                            resultSpaceID,
+                            resultVehicleID,
+                            resultPosition,
+                            resultVelocity,
+                            resultDirection);
 
-			target.setSpaceVehiclePositionAndDirection( resultSpaceID,
-				resultVehicleID, resultPosition, resultDirection );
+            target.setSpaceVehiclePositionAndDirection(
+              resultSpaceID, resultVehicleID, resultPosition, resultDirection);
 
-			entity.localVelocity( resultVelocity );
+            entity.localVelocity(resultVelocity);
 
-			this->onEntityPositionUpdated( entity );
-		}
+            this->onEntityPositionUpdated(entity);
+        }
 
-		pFirstCallback->removeFromList();
+        pFirstCallback->removeFromList();
 
-		bw_safe_delete( pFirstCallback );
-	}
+        bw_safe_delete(pFirstCallback);
+    }
 }
-
 
 /**
  *	This function gets the last input received by the filter.
@@ -231,83 +223,77 @@ void AvatarFilter::output( double time, MovementFilterTarget & target )
  *	@return				Returns true if an input existed and the values in the
  *						parameters were set.
  */
-bool AvatarFilter::getLastInput(	double & time,
-									SpaceID & spaceID,
-									EntityID & vehicleID,
-									Position3D & pos,
-									Vector3 & posError,
-									Direction3D & dir ) const
+bool AvatarFilter::getLastInput(double&      time,
+                                SpaceID&     spaceID,
+                                EntityID&    vehicleID,
+                                Position3D&  pos,
+                                Vector3&     posError,
+                                Direction3D& dir) const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return helper_.getLastInput( time, spaceID, vehicleID, pos, posError, dir );
+    return helper_.getLastInput(time, spaceID, vehicleID, pos, posError, dir);
 }
-
 
 /**
  *	Add the given AvatarFilterCallback to our callback list. After this, the
  *	callback pointer belongs to this AvatarFilter, and will be deleted when it
  *	is no longer needed.
  */
-void AvatarFilter::addCallback( AvatarFilterCallback * pCallback )
+void AvatarFilter::addCallback(AvatarFilterCallback* pCallback)
 {
-	// This takes care of inserting in time-order
-	pCallback->insertIntoList( &callbackListHead_ );
+    // This takes care of inserting in time-order
+    pCallback->insertIntoList(&callbackListHead_);
 }
-
 
 /**
  *	This method will grab the history from another AvatarFilter if one is
  *	so provided
  */
-bool AvatarFilter::tryCopyState( const MovementFilter & rOtherFilter )
+bool AvatarFilter::tryCopyState(const MovementFilter& rOtherFilter)
 {
-	const AvatarFilter * pOtherAvatarFilter =
-		dynamic_cast< const AvatarFilter * >( &rOtherFilter );
+    const AvatarFilter* pOtherAvatarFilter =
+      dynamic_cast<const AvatarFilter*>(&rOtherFilter);
 
-	if (pOtherAvatarFilter == NULL)
-	{
-		return false;
-	}
+    if (pOtherAvatarFilter == NULL) {
+        return false;
+    }
 
-	helper_ = pOtherAvatarFilter->helper_;
+    helper_ = pOtherAvatarFilter->helper_;
 
-	// Clear any existing callbacks
-	while (callbackListHead_.getNext() != &callbackListHead_)
-	{
-		ListNode * pFirstNode = callbackListHead_.getNext();
+    // Clear any existing callbacks
+    while (callbackListHead_.getNext() != &callbackListHead_) {
+        ListNode* pFirstNode = callbackListHead_.getNext();
 
-		AvatarFilterCallback * pFirstCallback =
-			AvatarFilterCallback::getFromListNode( pFirstNode );
+        AvatarFilterCallback* pFirstCallback =
+          AvatarFilterCallback::getFromListNode(pFirstNode);
 
-		pFirstCallback->removeFromList();
+        pFirstCallback->removeFromList();
 
-		bw_safe_delete( pFirstCallback );
-	}
+        bw_safe_delete(pFirstCallback);
+    }
 
-	// Steal the callbacks from pOtherAvatarFilter
-	// We assume the other filter is going away and we want to take over its
-	// callbacks. This holds as the only current caller of this code is
-	// BWEntity::pFilter() which immediately deletes pOtherAvatarFilter
-	ListNode * pNode = pOtherAvatarFilter->callbackListHead_.getNext();
+    // Steal the callbacks from pOtherAvatarFilter
+    // We assume the other filter is going away and we want to take over its
+    // callbacks. This holds as the only current caller of this code is
+    // BWEntity::pFilter() which immediately deletes pOtherAvatarFilter
+    ListNode* pNode = pOtherAvatarFilter->callbackListHead_.getNext();
 
-	while (pNode != &pOtherAvatarFilter->callbackListHead_)
-	{
-		AvatarFilterCallback * pCallback =
-			AvatarFilterCallback::getFromListNode( pNode );
+    while (pNode != &pOtherAvatarFilter->callbackListHead_) {
+        AvatarFilterCallback* pCallback =
+          AvatarFilterCallback::getFromListNode(pNode);
 
-		pNode = pNode->getNext();
+        pNode = pNode->getNext();
 
-		pCallback->removeFromList();
+        pCallback->removeFromList();
 
-		MF_ASSERT( pNode->getPrev() == &pOtherAvatarFilter->callbackListHead_ );
+        MF_ASSERT(pNode->getPrev() == &pOtherAvatarFilter->callbackListHead_);
 
-		this->addCallback( pCallback );
-	}
+        this->addCallback(pCallback);
+    }
 
-	return true;
+    return true;
 }
-
 
 BW_END_NAMESPACE
 

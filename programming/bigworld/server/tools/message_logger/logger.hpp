@@ -10,7 +10,6 @@
 #include "network/machine_guard.hpp"
 #include "network/watcher_nub.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class LogStorage;
@@ -24,181 +23,184 @@ class TagsHandler;
  *	receiving log messages from other components.
  */
 
-class Logger : public WatcherRequestHandler, 
-	public TimerHandler
+class Logger
+  : public WatcherRequestHandler
+  , public TimerHandler
 {
-	friend class FindHandler;
-	friend class TagsHandler;
+    friend class FindHandler;
+    friend class TagsHandler;
 
-public:
-	Logger();
-	virtual ~Logger();
+  public:
+    Logger();
+    virtual ~Logger();
 
-	bool init( int argc, char * argv[] );
-	bool handleNextMessage();
+    bool init(int argc, char* argv[]);
+    bool handleNextMessage();
 
-	void shouldRoll( bool status ) { shouldRoll_ = status; }
+    void shouldRoll(bool status) { shouldRoll_ = status; }
 
-	bool shouldLogPriority(
-		MessageLogger::NetworkMessagePriority messagePriority );
+    bool shouldLogPriority(
+      MessageLogger::NetworkMessagePriority messagePriority);
 
-	void shouldValidateHostnames( bool status )
-		{ shouldValidateHostnames_ = status; }
+    void shouldValidateHostnames(bool status)
+    {
+        shouldValidateHostnames_ = status;
+    }
 
-	Mercury::EventDispatcher * getDispatcher (){ return &dispatcher_; };
+    Mercury::EventDispatcher* getDispatcher() { return &dispatcher_; };
 
-	const BW::string & getLoggerID(){ return loggerID_; }
+    const BW::string& getLoggerID() { return loggerID_; }
 
-protected:
-	virtual void processExtensionMessage( int messageID,
-			char * data, int dataLen, WatcherEndpoint & watcherEndpoint );
+  protected:
+    virtual void processExtensionMessage(int              messageID,
+                                         char*            data,
+                                         int              dataLen,
+                                         WatcherEndpoint& watcherEndpoint);
 
-	virtual void processDisconnect( WatcherEndpoint & watcherEndpoint );
+    virtual void processDisconnect(WatcherEndpoint& watcherEndpoint);
 
-public:
-	class Component : public LoggerComponentMessage
-	{
-	public:
+  public:
+    class Component : public LoggerComponentMessage
+    {
+      public:
+        Component(WatcherEndpoint& watcherEndpoint)
+          : watcherEndpoint_(watcherEndpoint)
+        {
+        }
 
-		Component( WatcherEndpoint & watcherEndpoint ) :
-			watcherEndpoint_( watcherEndpoint )
-		{
-		}
+        static WatcherPtr pWatcher();
+        const char*       name() const { return componentName_.c_str(); }
 
-		static WatcherPtr pWatcher();
-		const char *name() const { return componentName_.c_str(); }
+        // TODO: Fix this
+        bool commandAttached() const { return true; }
+        void commandAttached(bool value);
 
-		// TODO: Fix this
-		bool commandAttached() const	{ return true; }
-		void commandAttached( bool value );
+        WatcherEndpoint& watcherEndpoint() { return watcherEndpoint_; }
 
-		WatcherEndpoint & watcherEndpoint()
-		{
-			return watcherEndpoint_;
-		}
+        const WatcherEndpoint& watcherEndpoint() const
+        {
+            return watcherEndpoint_;
+        }
 
-		const WatcherEndpoint & watcherEndpoint() const
-		{
-			return watcherEndpoint_;
-		}
+      private:
+        Component(const Component& other);
+        Component& operator=(const Component& other);
 
-	private:
-		Component( const Component & other );
-		Component & operator=( const Component & other );
+        WatcherEndpoint watcherEndpoint_;
+    };
 
-		WatcherEndpoint watcherEndpoint_;
-	};
+  private:
+    bool parseCommandLine(int argc, char* argv[]);
 
-private:
+    void initClusterGroups();
+    void initComponents();
 
-	bool parseCommandLine( int argc, char * argv[] );
+    void handleBirth(const Mercury::Address& addr);
+    void handleDeath(const Mercury::Address& addr);
 
-	void initClusterGroups();
-	void initComponents();
+    void handleLogMessage(MemoryIStream&          is,
+                          const Mercury::Address& addr,
+                          WatcherEndpoint&        watcherEndpoint);
+    void handleRegisterRequest(char*                   data,
+                               int                     dataLen,
+                               const Mercury::Address& addr,
+                               WatcherEndpoint&        watcherEndpoint);
 
-	void handleBirth( const Mercury::Address & addr );
-	void handleDeath( const Mercury::Address & addr );
+    bool shouldConnect(const Component& component) const;
 
-	void handleLogMessage( MemoryIStream &is, const Mercury::Address & addr,
-		WatcherEndpoint & watcherEndpoint );
-	void handleRegisterRequest( char * data, int dataLen,
-		const Mercury::Address & addr, WatcherEndpoint & watcherEndpoint );
+    bool sendAdd(const Mercury::Address& addr, const int sendType);
+    void sendDel(WatcherEndpoint& watcherEndpoint);
 
-	bool shouldConnect( const Component & component ) const;
+    void delComponent(const Mercury::Address& addr, bool send = true);
+    void delComponent(Component* pComponent);
 
-	bool sendAdd( const Mercury::Address & addr, const int sendType );
-	void sendDel( WatcherEndpoint & watcherEndpoint );
+    bool commandReattachAll() const { return true; }
+    void commandReattachAll(bool value);
 
-	void delComponent( const Mercury::Address & addr, bool send = true );
-	void delComponent( Component * pComponent );
+    bool resetFileDescriptors();
 
-	bool commandReattachAll() const { return true; }
-	void commandReattachAll( bool value );
+    Endpoint& socket() { return watcherNub_.udpSocket(); }
 
-	bool resetFileDescriptors();
+    // Watcher
+    int size() const { return components_.size(); }
 
-	Endpoint & socket()		{ return watcherNub_.udpSocket(); }
+    enum TimeOutType
+    {
+        TIMEOUT_PROFILER_UPDATE,
+    };
+    void startProfilerUpdateTimer();
+    // Override from TimerHandler
+    virtual void handleTimeout(TimerHandle handle, void* arg);
+    TimerHandle  profilerTimer_;
 
-	// Watcher
-	int size() const	{ return components_.size(); }
+    BW::string               interfaceName_;
+    WatcherNub               watcherNub_;
+    Mercury::EventDispatcher dispatcher_;
 
-	enum TimeOutType
-	{
-		TIMEOUT_PROFILER_UPDATE,
-	};
-	void startProfilerUpdateTimer();
-	// Override from TimerHandler
-	virtual void handleTimeout( TimerHandle handle, void * arg );
-	TimerHandle profilerTimer_;
+    // ID of the processes whose messages should be logged. The default is the
+    // empty string, a special value that causes logging all processes,
+    // regardless of loggerID.
+    LoggerID loggerID_;
 
-	BW::string interfaceName_;
-	WatcherNub watcherNub_;
-	Mercury::EventDispatcher dispatcher_;
+    uint                   logUser_;
+    bool                   logAllUsers_;
+    BW::vector<BW::string> logNames_;
+    BW::vector<BW::string> doNotLogNames_;
+    bool                   quietMode_;
+    bool                   daemonMode_;
+    bool                   shouldRoll_;
+    bool                   shouldValidateHostnames_;
+    bool                   shouldWriteToStdout_;
 
-	// ID of the processes whose messages should be logged. The default is the
-	// empty string, a special value that causes logging all processes,
-	// regardless of loggerID.
-	LoggerID loggerID_;
+    bool createEndpointAndQueryMsg(MachineGuardMessage&               mgm,
+                                   MessageLogger::IPAddress           ipAddress,
+                                   MachineGuardMessage::ReplyHandler& handler);
 
-	uint logUser_;
-	bool logAllUsers_;
-	BW::vector< BW::string > logNames_;
-	BW::vector< BW::string > doNotLogNames_;
-	bool quietMode_;
-	bool daemonMode_;
-	bool shouldRoll_;
-	bool shouldValidateHostnames_;
-	bool shouldWriteToStdout_;
+    bool shouldLogFromGroup(const Mercury::Address& addr);
 
-	bool createEndpointAndQueryMsg(
-		MachineGuardMessage &mgm, MessageLogger::IPAddress ipAddress,
-		MachineGuardMessage::ReplyHandler &handler );
+    class MachineGroups
+    {
+      public:
+        // Groups that have been defined for the current machine
+        MessageLogger::StringList groups_;
 
-	bool shouldLogFromGroup( const Mercury::Address &addr );
+        // Last time we asked the machine for it's updated list
+        // of groups.
+        uint64 lastPollTime_;
+    };
 
-	class MachineGroups
-	{
-	public:
-		// Groups that have been defined for the current machine
-		MessageLogger::StringList groups_;
+    typedef BW::map<uint32, MachineGroups*> MachineGroupsMap;
+    MachineGroupsMap                        machineGroups_;
 
-		// Last time we asked the machine for it's updated list
-		// of groups.
-		uint64 lastPollTime_;
-	};
+    // The list of group names this MessageLogger process should service.
+    MessageLogger::StringList groupNames_;
 
-	typedef BW::map< uint32, MachineGroups * > MachineGroupsMap;
-	MachineGroupsMap machineGroups_;
+    BW::string configFile_;
 
-	// The list of group names this MessageLogger process should service.
-	MessageLogger::StringList groupNames_;
+    BW::string outputFilename_;
+    BW::string errorFilename_;
 
-	BW::string configFile_;
+    BW::string addLoggerData_;
+    BW::string addLoggerDataTCP_;
+    BW::string addLoggerDataTCPWithMetaDataV2_9_;
+    BW::string addLoggerDataTCPWithMetaDataV14_4_;
+    BW::string delLoggerData_;
 
-	BW::string outputFilename_;
-	BW::string errorFilename_;
+    BW::string storageType_;
 
-	BW::string addLoggerData_;
-	BW::string addLoggerDataTCP_;
-	BW::string addLoggerDataTCPWithMetaDataV2_9_;
-	BW::string addLoggerDataTCPWithMetaDataV14_4_;
-	BW::string delLoggerData_;
+    UnaryIntegerFile pid_;
+    BW::string       pidPath_;
 
-	BW::string storageType_;
-	
-	UnaryIntegerFile pid_;
-	BW::string pidPath_;
+    typedef BW::map<Mercury::Address, Component*> Components;
+    Components                                    components_;
 
-	typedef BW::map< Mercury::Address, Component* > Components;
-	Components components_;
+    bool shouldLogMessagePriority_[NUM_MESSAGE_PRIORITY];
 
-	bool shouldLogMessagePriority_[ NUM_MESSAGE_PRIORITY ];
+    LogStorage* pLogStorage_;
 
-	LogStorage *pLogStorage_;
-
-	BW::string workingDirectory_;
-	BW::string rootLogDirectory_;
-	bool isMongoDBDriverInitialised_;
+    BW::string workingDirectory_;
+    BW::string rootLogDirectory_;
+    bool       isMongoDBDriverInitialised_;
 };
 
 BW_END_NAMESPACE

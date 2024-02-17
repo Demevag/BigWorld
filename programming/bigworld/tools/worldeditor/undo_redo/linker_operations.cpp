@@ -7,7 +7,6 @@
 
 BW_BEGIN_NAMESPACE
 
-
 /**
  *  This is the LinkerUndoChangeLinkOperation constructor.
  *
@@ -17,58 +16,52 @@ BW_BEGIN_NAMESPACE
  *  @param propIdx		The property index.
  */
 LinkerUndoChangeLinkOperation::LinkerUndoChangeLinkOperation(
-		const EditorChunkItemLinkable * startEcil,
-		const EditorChunkItemLinkable * oldEcil,
-		const EditorChunkItemLinkable * newEcil,
-		PropertyIndex propIdx) :
-	UndoRedo::Operation(size_t(typeid(LinkerUndoChangeLinkOperation).name())),
-	propIdx_(propIdx)
+  const EditorChunkItemLinkable* startEcil,
+  const EditorChunkItemLinkable* oldEcil,
+  const EditorChunkItemLinkable* newEcil,
+  PropertyIndex                  propIdx)
+  : UndoRedo::Operation(size_t(typeid(LinkerUndoChangeLinkOperation).name()))
+  , propIdx_(propIdx)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	startUID_ = startEcil->guid();
-	startCID_ = startEcil->getOutsideChunkId();
+    startUID_ = startEcil->guid();
+    startCID_ = startEcil->getOutsideChunkId();
 
-	oldUID_ = oldEcil->guid();
-	oldCID_ = oldEcil->getOutsideChunkId();
+    oldUID_ = oldEcil->guid();
+    oldCID_ = oldEcil->getOutsideChunkId();
 
-	newUID_ = newEcil->guid();
-	newCID_ = newEcil->getOutsideChunkId();
+    newUID_ = newEcil->guid();
+    newCID_ = newEcil->getOutsideChunkId();
 }
-
 
 /**
  *  This restores the link information.
  */
 /*virtual*/ void LinkerUndoChangeLinkOperation::undo()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	EditorChunkItemLinkable * startEcil =
-		WorldManager::instance().linkerManager().forceLoad( startUID_, startCID_ );
-	EditorChunkItemLinkable * oldEcil =
-		WorldManager::instance().linkerManager().forceLoad( oldUID_, oldCID_ );
-	EditorChunkItemLinkable * newEcil =
-		WorldManager::instance().linkerManager().forceLoad( newUID_, newCID_ );
-	
-	// The force load should be successful for all cases
-	if (!startEcil || !oldEcil || !newEcil)
-	{
-		ERROR_MSG( "LinkerUndoChangeLinkOperation::undo: "
-					"One or more linker objects failed to force load\n" );
-		return;
-	}
+    EditorChunkItemLinkable* startEcil =
+      WorldManager::instance().linkerManager().forceLoad(startUID_, startCID_);
+    EditorChunkItemLinkable* oldEcil =
+      WorldManager::instance().linkerManager().forceLoad(oldUID_, oldCID_);
+    EditorChunkItemLinkable* newEcil =
+      WorldManager::instance().linkerManager().forceLoad(newUID_, newCID_);
 
-	UndoRedo::instance().add(new LinkerUndoChangeLinkOperation(startEcil, newEcil, oldEcil, propIdx_));
+    // The force load should be successful for all cases
+    if (!startEcil || !oldEcil || !newEcil) {
+        ERROR_MSG("LinkerUndoChangeLinkOperation::undo: "
+                  "One or more linker objects failed to force load\n");
+        return;
+    }
 
-	WorldManager::instance().linkerManager().addLinkInternal
-		(
-			startEcil,
-			oldEcil,
-			propIdx_
-		);
+    UndoRedo::instance().add(
+      new LinkerUndoChangeLinkOperation(startEcil, newEcil, oldEcil, propIdx_));
+
+    WorldManager::instance().linkerManager().addLinkInternal(
+      startEcil, oldEcil, propIdx_);
 }
-
 
 /**
  *  This compares this operation with another.
@@ -77,11 +70,10 @@ LinkerUndoChangeLinkOperation::LinkerUndoChangeLinkOperation(
  *  @returns            false.
  */
 /*virtual*/ bool LinkerUndoChangeLinkOperation::iseq(
-	UndoRedo::Operation const &other) const
+  UndoRedo::Operation const& other) const
 {
     return false;
 }
-
 
 /**
  *  This is the LinkerUndoAddLinkOperation constructor.
@@ -91,50 +83,49 @@ LinkerUndoChangeLinkOperation::LinkerUndoChangeLinkOperation(
  *  @param propIdx		The property index.
  */
 LinkerUndoAddLinkOperation::LinkerUndoAddLinkOperation(
-		const EditorChunkItemLinkable * startEcil,
-		const EditorChunkItemLinkable * endEcil,
-		PropertyIndex propIdx) :
-	UndoRedo::Operation(size_t(typeid(LinkerUndoAddLinkOperation).name())),
-	propIdx_(propIdx)
+  const EditorChunkItemLinkable* startEcil,
+  const EditorChunkItemLinkable* endEcil,
+  PropertyIndex                  propIdx)
+  : UndoRedo::Operation(size_t(typeid(LinkerUndoAddLinkOperation).name()))
+  , propIdx_(propIdx)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	startUID_ = startEcil->guid();
-	startCID_ = startEcil->getOutsideChunkId();
+    startUID_ = startEcil->guid();
+    startCID_ = startEcil->getOutsideChunkId();
 
-	endUID_ = endEcil->guid();
-	endCID_ = endEcil->getOutsideChunkId();
+    endUID_ = endEcil->guid();
+    endCID_ = endEcil->getOutsideChunkId();
 }
-
 
 /**
  *  This deletes the link information.
  */
 /*virtual*/ void LinkerUndoAddLinkOperation::undo()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	EditorChunkItemLinkable * startEcil =
-		WorldManager::instance().linkerManager().forceLoad( startUID_, startCID_ );
-	EditorChunkItemLinkable * endEcil =
-		WorldManager::instance().linkerManager().forceLoad( endUID_, endCID_ );
-	
-	// The force load should be successful for all cases
-	if (!startEcil || !endEcil)
-	{
-		ERROR_MSG( "LinkerUndoAddLinkOperation::undo: "
-					"One or more linker objects failed to force load\n" );
-		return;
-	}
+    EditorChunkItemLinkable* startEcil =
+      WorldManager::instance().linkerManager().forceLoad(startUID_, startCID_);
+    EditorChunkItemLinkable* endEcil =
+      WorldManager::instance().linkerManager().forceLoad(endUID_, endCID_);
 
-	DataSectionPtr data = startEcil->propHelper()->propGet(propIdx_.valueAt(0));
-	
-	UndoRedo::instance().add(new LinkerUndoDeleteLinkOperation(startEcil, endEcil, data, propIdx_));
+    // The force load should be successful for all cases
+    if (!startEcil || !endEcil) {
+        ERROR_MSG("LinkerUndoAddLinkOperation::undo: "
+                  "One or more linker objects failed to force load\n");
+        return;
+    }
 
-	// Need to delete the link here
-	WorldManager::instance().linkerManager().deleteLinkInternal( startEcil, endEcil, propIdx_ );
+    DataSectionPtr data = startEcil->propHelper()->propGet(propIdx_.valueAt(0));
+
+    UndoRedo::instance().add(
+      new LinkerUndoDeleteLinkOperation(startEcil, endEcil, data, propIdx_));
+
+    // Need to delete the link here
+    WorldManager::instance().linkerManager().deleteLinkInternal(
+      startEcil, endEcil, propIdx_);
 }
-
 
 /**
  *  This compares this operation with another.
@@ -143,11 +134,10 @@ LinkerUndoAddLinkOperation::LinkerUndoAddLinkOperation(
  *  @returns            false.
  */
 /*virtual*/ bool LinkerUndoAddLinkOperation::iseq(
-	UndoRedo::Operation const &other) const
+  UndoRedo::Operation const& other) const
 {
     return false;
 }
-
 
 /**
  *  This is the LinkerUndoDeleteLinkOperation constructor.
@@ -158,71 +148,65 @@ LinkerUndoAddLinkOperation::LinkerUndoAddLinkOperation(
  *  @param propIdx		The property index.
  */
 LinkerUndoDeleteLinkOperation::LinkerUndoDeleteLinkOperation(
-		const EditorChunkItemLinkable * startEcil,
-		const EditorChunkItemLinkable * endEcil,
-		DataSectionPtr data,
-		PropertyIndex propIdx) :
-	UndoRedo::Operation(size_t(typeid(LinkerUndoDeleteLinkOperation).name())),
-	data_(data), propIdx_(propIdx)
+  const EditorChunkItemLinkable* startEcil,
+  const EditorChunkItemLinkable* endEcil,
+  DataSectionPtr                 data,
+  PropertyIndex                  propIdx)
+  : UndoRedo::Operation(size_t(typeid(LinkerUndoDeleteLinkOperation).name()))
+  , data_(data)
+  , propIdx_(propIdx)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	startUID_ = startEcil->guid();
-	startCID_ = startEcil->getOutsideChunkId();
+    startUID_ = startEcil->guid();
+    startCID_ = startEcil->getOutsideChunkId();
 
-	endUID_ = endEcil->guid();
-	endCID_ = endEcil->getOutsideChunkId();
+    endUID_ = endEcil->guid();
+    endCID_ = endEcil->getOutsideChunkId();
 }
-
 
 /**
  *  This restores the link information.
  */
 /*virtual*/ void LinkerUndoDeleteLinkOperation::undo()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	EditorChunkItemLinkable * startEcil =
-		WorldManager::instance().linkerManager().forceLoad( startUID_, startCID_ );
-	EditorChunkItemLinkable * endEcil =
-		WorldManager::instance().linkerManager().forceLoad( endUID_, endCID_ );
-	
-	// The force load should be successful for all cases
-	if (!startEcil || !endEcil)
-	{
-		ERROR_MSG( "LinkerUndoDeleteLinkOperation::undo: "
-					"One or more linker objects failed to force load\n" );
-		return;
-	}
+    EditorChunkItemLinkable* startEcil =
+      WorldManager::instance().linkerManager().forceLoad(startUID_, startCID_);
+    EditorChunkItemLinkable* endEcil =
+      WorldManager::instance().linkerManager().forceLoad(endUID_, endCID_);
 
-	UndoRedo::instance().add(new LinkerUndoAddLinkOperation(startEcil, endEcil, propIdx_));
+    // The force load should be successful for all cases
+    if (!startEcil || !endEcil) {
+        ERROR_MSG("LinkerUndoDeleteLinkOperation::undo: "
+                  "One or more linker objects failed to force load\n");
+        return;
+    }
 
-	// Need to create the property
-	startEcil->propHelper()->propSet( propIdx_.valueAt(0), data_ );
+    UndoRedo::instance().add(
+      new LinkerUndoAddLinkOperation(startEcil, endEcil, propIdx_));
 
-	WorldManager::instance().linkerManager().updateLink( startEcil, endEcil );
+    // Need to create the property
+    startEcil->propHelper()->propSet(propIdx_.valueAt(0), data_);
 
-	// Save the changes
-	startEcil->chunkItem()->edSave( startEcil->chunkItem()->pOwnSect() );
-	if ( startEcil->chunkItem()->chunk() != NULL )
-	{
-		WorldManager::instance().changedChunk( 
-			startEcil->chunkItem()->chunk(),
-			*startEcil->chunkItem() );
-		startEcil->chunkItem()->edPostModify();
-	}
+    WorldManager::instance().linkerManager().updateLink(startEcil, endEcil);
 
-	endEcil->chunkItem()->edSave( endEcil->chunkItem()->pOwnSect() );
-	if ( endEcil->chunkItem()->chunk() != NULL )
-	{
-		WorldManager::instance().changedChunk( 
-			endEcil->chunkItem()->chunk(),
-			*startEcil->chunkItem() );
-		endEcil->chunkItem()->edPostModify();
-	}
+    // Save the changes
+    startEcil->chunkItem()->edSave(startEcil->chunkItem()->pOwnSect());
+    if (startEcil->chunkItem()->chunk() != NULL) {
+        WorldManager::instance().changedChunk(startEcil->chunkItem()->chunk(),
+                                              *startEcil->chunkItem());
+        startEcil->chunkItem()->edPostModify();
+    }
 
+    endEcil->chunkItem()->edSave(endEcil->chunkItem()->pOwnSect());
+    if (endEcil->chunkItem()->chunk() != NULL) {
+        WorldManager::instance().changedChunk(endEcil->chunkItem()->chunk(),
+                                              *startEcil->chunkItem());
+        endEcil->chunkItem()->edPostModify();
+    }
 }
-
 
 /**
  *  This compares this operation with another.
@@ -231,11 +215,10 @@ LinkerUndoDeleteLinkOperation::LinkerUndoDeleteLinkOperation(
  *  @returns            false.
  */
 /*virtual*/ bool LinkerUndoDeleteLinkOperation::iseq(
-	UndoRedo::Operation const &other) const
+  UndoRedo::Operation const& other) const
 {
     return false;
 }
-
 
 /**
  *  This is the LinkerUpdateLinkOperation constructor.
@@ -245,64 +228,59 @@ LinkerUndoDeleteLinkOperation::LinkerUndoDeleteLinkOperation(
  *  @param targetChunkID	The target linker object's Chunk Id.
  */
 LinkerUpdateLinkOperation::LinkerUpdateLinkOperation(
-		const EditorChunkItemLinkable * startEcil,
-		BW::string targetUID,
-		BW::string targetChunkID) :
-	UndoRedo::Operation(size_t(typeid(LinkerUpdateLinkOperation).name()))
+  const EditorChunkItemLinkable* startEcil,
+  BW::string                     targetUID,
+  BW::string                     targetChunkID)
+  : UndoRedo::Operation(size_t(typeid(LinkerUpdateLinkOperation).name()))
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	startUID_ = startEcil->guid();
-	startCID_ = startEcil->getOutsideChunkId();
-	targetUID_ = UniqueID(targetUID);
-	targetCID_ = targetChunkID;
+    startUID_  = startEcil->guid();
+    startCID_  = startEcil->getOutsideChunkId();
+    targetUID_ = UniqueID(targetUID);
+    targetCID_ = targetChunkID;
 }
-
 
 /**
  *  This restores the link information for the entity.
  */
 /*virtual*/ void LinkerUpdateLinkOperation::undo()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	EditorChunkItemLinkable* startEcil =
-		WorldManager::instance().linkerManager().forceLoad(startUID_, startCID_);
-	EditorChunkItemLinkable* targetEcil =
-		WorldManager::instance().linkerManager().forceLoad(targetUID_, targetCID_);
-	
-	// The force load should be successful for all cases
-	if (!startEcil || !targetEcil)
-	{
-		ERROR_MSG( "LinkerUpdateLinkOperation::undo: "
-					"One or more linker objects failed to force load\n" );
-		return;
-	}
+    EditorChunkItemLinkable* startEcil =
+      WorldManager::instance().linkerManager().forceLoad(startUID_, startCID_);
+    EditorChunkItemLinkable* targetEcil =
+      WorldManager::instance().linkerManager().forceLoad(targetUID_,
+                                                         targetCID_);
 
-	UndoRedo::instance().add(new LinkerUpdateLinkOperation(startEcil, targetUID_, targetCID_));
+    // The force load should be successful for all cases
+    if (!startEcil || !targetEcil) {
+        ERROR_MSG("LinkerUpdateLinkOperation::undo: "
+                  "One or more linker objects failed to force load\n");
+        return;
+    }
 
-	WorldManager::instance().linkerManager().updateLink(startEcil, targetEcil);
+    UndoRedo::instance().add(
+      new LinkerUpdateLinkOperation(startEcil, targetUID_, targetCID_));
 
-	// Save the changes
-	startEcil->chunkItem()->edSave( startEcil->chunkItem()->pOwnSect() );
-	if ( startEcil->chunkItem()->chunk() != NULL )
-	{
-		WorldManager::instance().changedChunk(
-			startEcil->chunkItem()->chunk(),
-			*startEcil->chunkItem() );
-		startEcil->chunkItem()->edPostModify();
-	}
+    WorldManager::instance().linkerManager().updateLink(startEcil, targetEcil);
 
-	targetEcil->chunkItem()->edSave( targetEcil->chunkItem()->pOwnSect() );
-	if ( targetEcil->chunkItem()->chunk() != NULL )
-	{
-		WorldManager::instance().changedChunk( 
-			targetEcil->chunkItem()->chunk(),
-			*startEcil->chunkItem() );
-		targetEcil->chunkItem()->edPostModify();
-	}
+    // Save the changes
+    startEcil->chunkItem()->edSave(startEcil->chunkItem()->pOwnSect());
+    if (startEcil->chunkItem()->chunk() != NULL) {
+        WorldManager::instance().changedChunk(startEcil->chunkItem()->chunk(),
+                                              *startEcil->chunkItem());
+        startEcil->chunkItem()->edPostModify();
+    }
+
+    targetEcil->chunkItem()->edSave(targetEcil->chunkItem()->pOwnSect());
+    if (targetEcil->chunkItem()->chunk() != NULL) {
+        WorldManager::instance().changedChunk(targetEcil->chunkItem()->chunk(),
+                                              *startEcil->chunkItem());
+        targetEcil->chunkItem()->edPostModify();
+    }
 }
-
 
 /**
  *  This compares this operation with another.
@@ -311,9 +289,8 @@ LinkerUpdateLinkOperation::LinkerUpdateLinkOperation(
  *  @returns            false.
  */
 /*virtual*/ bool LinkerUpdateLinkOperation::iseq(
-	UndoRedo::Operation const &other) const
+  UndoRedo::Operation const& other) const
 {
     return false;
 }
 BW_END_NAMESPACE
-

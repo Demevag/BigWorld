@@ -2,13 +2,8 @@
 
 #include "client_space_factory.hpp"
 
-namespace BW
-{
+namespace BW {
 
-IClientSpaceFactory::~IClientSpaceFactory()
-{
-
-}
-
+    IClientSpaceFactory::~IClientSpaceFactory() {}
 
 } // namespace BW

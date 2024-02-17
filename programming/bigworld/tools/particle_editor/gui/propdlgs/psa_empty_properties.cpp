@@ -10,22 +10,16 @@ BEGIN_MESSAGE_MAP(PsaEmptyProperties, PsaProperties)
 END_MESSAGE_MAP()
 
 PsaEmptyProperties::PsaEmptyProperties()
-: 
-PsaProperties(PsaEmptyProperties::IDD)
+  : PsaProperties(PsaEmptyProperties::IDD)
 {
 }
 
-PsaEmptyProperties::~PsaEmptyProperties()
+PsaEmptyProperties::~PsaEmptyProperties() {}
+
+/*virtual*/ void* PsaEmptyProperties::action()
 {
+    return NULL;
 }
 
-/*virtual*/ void *PsaEmptyProperties::action() 
-{ 
-    return NULL; 
-}
-
-/*virtual*/ void PsaEmptyProperties::SetParameters(SetOperation /*task*/) 
-{ 
-}
+/*virtual*/ void PsaEmptyProperties::SetParameters(SetOperation /*task*/) {}
 BW_END_NAMESPACE
-

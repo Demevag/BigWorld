@@ -6,17 +6,16 @@
 #define BW_COMMON_PREFIX "ids/"
 #include "server/server_app_option_macros.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
 // Section: IDConfig
 // -----------------------------------------------------------------------------
 
-BW_OPTION_RO( int, criticallyLowSize, 100 );
-BW_OPTION_RO( int, lowSize, 2000 );
-BW_OPTION_RO( int, desiredSize, 2400 );
-BW_OPTION_RO( int, highSize, 3000 );
+BW_OPTION_RO(int, criticallyLowSize, 100);
+BW_OPTION_RO(int, lowSize, 2000);
+BW_OPTION_RO(int, desiredSize, 2400);
+BW_OPTION_RO(int, highSize, 3000);
 
 BW_END_NAMESPACE
 

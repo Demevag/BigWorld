@@ -18,29 +18,32 @@ typedef SmartPointer<RompCollider> RompColliderPtr;
  */
 class RompCollider : public ReferenceCount
 {
-public:
-	enum FilterType
-	{
-		EVERYTHING,
-		TERRAIN_ONLY
-	};
+  public:
+    enum FilterType
+    {
+        EVERYTHING,
+        TERRAIN_ONLY
+    };
 
-    virtual float ground( const Vector3 &pos, float dropDistance, bool oneSided = false ) = 0;
-	virtual float ground( const Vector3 &pos ) = 0;
-	virtual float collide( const Vector3 &start, const Vector3& end, class WorldTriangle& result ) = 0;
+    virtual float ground(const Vector3& pos,
+                         float          dropDistance,
+                         bool           oneSided = false)        = 0;
+    virtual float ground(const Vector3& pos)           = 0;
+    virtual float collide(const Vector3&       start,
+                          const Vector3&       end,
+                          class WorldTriangle& result) = 0;
 
     static float NO_GROUND_COLLISION;
 
-	static RompColliderPtr createDefault( FilterType filter = EVERYTHING );
+    static RompColliderPtr createDefault(FilterType filter = EVERYTHING);
 
-	typedef RompColliderPtr (*CreationFunction)( FilterType );
-	static void setDefaultCreationFuction( CreationFunction func );
+    typedef RompColliderPtr (*CreationFunction)(FilterType);
+    static void setDefaultCreationFuction(CreationFunction func);
 
-private:
-	static CreationFunction s_defaultCreate;
+  private:
+    static CreationFunction s_defaultCreate;
 };
 
 BW_END_NAMESPACE
 
 #endif // ROMP_COLLIDER_HPP
-

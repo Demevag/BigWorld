@@ -31,6 +31,6 @@
 
 @interface NSCharacterSet (NSCharacterSet_Extensions)
 
-+ (NSCharacterSet *)linebreaksCharacterSet;
++ (NSCharacterSet*)linebreaksCharacterSet;
 
 @end

@@ -14,43 +14,39 @@
 #include "math/boundbox.hpp"
 #include "math/loose_octree.hpp"
 
-namespace BW {
+namespace BW { namespace CompiledSpace {
 
-namespace CompiledSpace {
+    class BinaryFormatWriter;
+    class StringTableWriter;
+    class AssetListWriter;
 
-class BinaryFormatWriter;
-class StringTableWriter;
-class AssetListWriter;
+    class ParticleSystemWriter : public ISpaceWriter
+    {
+      public:
+        ParticleSystemWriter();
+        ~ParticleSystemWriter();
 
-class ParticleSystemWriter :
-	public ISpaceWriter
-{
-public:
-	ParticleSystemWriter();
-	~ParticleSystemWriter();
-	
-	virtual bool initialize( const DataSectionPtr& pSpaceSettings,
-		const CommandLine& commandLine );
-	virtual void postProcess();
-	virtual bool write( BinaryFormatWriter& writer );
+        virtual bool initialize(const DataSectionPtr& pSpaceSettings,
+                                const CommandLine&    commandLine);
+        virtual void postProcess();
+        virtual bool write(BinaryFormatWriter& writer);
 
-	void convertParticles( const ConversionContext& ctx, 
-		const DataSectionPtr& pItemDS, const BW::string& uid );
+        void convertParticles(const ConversionContext& ctx,
+                              const DataSectionPtr&    pItemDS,
+                              const BW::string&        uid);
 
-	void addFromChunkParticles( const DataSectionPtr& pObjectDS,
-		const Matrix& chunkTransform,
-		StringTableWriter& stringTable,
-		AssetListWriter& assetList );
+        void addFromChunkParticles(const DataSectionPtr& pObjectDS,
+                                   const Matrix&         chunkTransform,
+                                   StringTableWriter&    stringTable,
+                                   AssetListWriter&      assetList);
 
-	AABB boundBox() const;
+        AABB boundBox() const;
 
-private:
-
-	BW::vector<ParticleSystemTypes::ParticleSystem> systemData_;
-};
+      private:
+        BW::vector<ParticleSystemTypes::ParticleSystem> systemData_;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW
-
 
 #endif // PARTICLE_SYSTEM_BINARY_WRITER_HPP

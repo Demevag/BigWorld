@@ -4,12 +4,11 @@
 #include "pyscript/pyobject_plus.hpp"
 #include "script/script_object.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class Entity;
 class PyEntity;
-typedef WeakPyPtr< PyEntity > PyEntityWPtr;
+typedef WeakPyPtr<PyEntity> PyEntityWPtr;
 
 /*~ class BigWorld.PyServer
  *  @components{ bots }
@@ -36,23 +35,23 @@ typedef WeakPyPtr< PyEntity > PyEntityWPtr;
  */
 class PyServer : public PyObjectPlus
 {
-	Py_Header( PyServer, PyObjectPlus )
+    Py_Header(PyServer, PyObjectPlus)
 
-public:
-	PyServer( PyEntity * pPyEntity,
-		bool isProxyCaller,
-		PyTypeObject * pType = &PyServer::s_type_ );
-	~PyServer();
+      public
+      : PyServer(PyEntity*     pPyEntity,
+                 bool          isProxyCaller,
+                 PyTypeObject* pType = &PyServer::s_type_);
+    ~PyServer();
 
-	ScriptObject pyGetAttribute( const ScriptString & attrObj );
+    ScriptObject pyGetAttribute(const ScriptString& attrObj);
 
-	void pyAdditionalMembers( const ScriptList & pList ) const;
+    void pyAdditionalMembers(const ScriptList& pList) const;
 
-private:
-	Entity * pEntity() const;
+  private:
+    Entity* pEntity() const;
 
-	PyEntityWPtr wpPyEntity_;
-	bool isProxyCaller_;
+    PyEntityWPtr wpPyEntity_;
+    bool         isProxyCaller_;
 };
 
 BW_END_NAMESPACE

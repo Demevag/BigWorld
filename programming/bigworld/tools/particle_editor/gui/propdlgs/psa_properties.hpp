@@ -9,13 +9,13 @@ BW_BEGIN_NAMESPACE
 
 class PsaProperties : public CFormView
 {
-public:
+  public:
     PsaProperties(UINT nIDTemplate);
 
-    void    SetPSA(ParticleSystemActionPtr action);
+    void SetPSA(ParticleSystemActionPtr action);
 
-    void    CopyDataToControls();
-    void    CopyDataToPSA();
+    void CopyDataToControls();
+    void CopyDataToPSA();
 
     virtual void SetParameters(SetOperation task) = 0;
 
@@ -24,13 +24,13 @@ public:
     virtual void OnInitialUpdate();
     virtual BOOL PreTranslateMessage(MSG* pMsg);
 
-protected:
+  protected:
     afx_msg LRESULT OnUpdatePsaProperties(WPARAM mParam, LPARAM lParam);
     DECLARE_AUTO_TOOLTIP_EX(PsaProperties)
     DECLARE_MESSAGE_MAP()
 
-protected:
-    ParticleSystemActionPtr	action_;
+  protected:
+    ParticleSystemActionPtr action_;
     bool                    initialised_;
 };
 

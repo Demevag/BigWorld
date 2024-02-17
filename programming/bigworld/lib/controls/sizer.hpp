@@ -5,25 +5,24 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace controls
-{
+namespace controls {
     /**
      *  This is the interface for sizers used by the layout manager.
      */
-	class Sizer : public ReferenceCount
+    class Sizer : public ReferenceCount
     {
-    public:
+      public:
         Sizer();
 
         virtual ~Sizer();
 
-		/**
-		 *	This can be called just after initialization to get the
-		 *	controls into their start positions.
-		 *
-		 *	@param wnd		The window the sizer is operating on.
-		 */	
-		void onStart(CWnd *wnd);
+        /**
+         *	This can be called just after initialization to get the
+         *	controls into their start positions.
+         *
+         *	@param wnd		The window the sizer is operating on.
+         */
+        void onStart(CWnd* wnd);
 
         /**
          *  This should get called on the WM_SIZE window message on the
@@ -38,10 +37,10 @@ namespace controls
          *  This is called to do the actual sizing.  Derived classes should
          *  call the base class version.
          *
-         *  @param extents  The extents allowed for the Sizer and it's 
+         *  @param extents  The extents allowed for the Sizer and it's
          *                  children.
          */
-        virtual void onSize(CRect const &extents);
+        virtual void onSize(CRect const& extents);
 
         /**
          *  This should be called in OnGetMinMaxInfo in a CWnd to get the
@@ -49,7 +48,7 @@ namespace controls
          *
          *  @param mmi      The MINMAXINFO to set.
          */
-        void onGetMinMaxInfo(MINMAXINFO *mmi);
+        void onGetMinMaxInfo(MINMAXINFO* mmi);
 
         /**
          *  This gets the current extents of the sizer.
@@ -71,28 +70,28 @@ namespace controls
          *
          *  @param dc       The device context to draw into.
          */
-        virtual void draw(CDC *dc) = 0;
+        virtual void draw(CDC* dc) = 0;
 
-    protected:
+      protected:
         /**
          *  This sets the extents.  This is done during onSize.
          */
-        void extents(CRect const &ext);
+        void extents(CRect const& ext);
 
         /**
          *  This draws a rectangle.
          */
-        void drawRect(CDC *dc, CRect const &rect, COLORREF clr);
+        void drawRect(CDC* dc, CRect const& rect, COLORREF clr);
 
-    private:
-        Sizer(Sizer const &);               // not allowed
-        Sizer &operator=(Sizer const &);    // not allowed
+      private:
+        Sizer(Sizer const&);            // not allowed
+        Sizer& operator=(Sizer const&); // not allowed
 
-    private:
-        CRect               extents_;
+      private:
+        CRect extents_;
     };
 
-	typedef SmartPointer<Sizer>	SizerPtr;
+    typedef SmartPointer<Sizer> SizerPtr;
 }
 
 BW_END_NAMESPACE

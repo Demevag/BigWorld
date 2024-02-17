@@ -1,4 +1,4 @@
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 #pragma once
 #endif
 
@@ -10,15 +10,14 @@
 
 BW_BEGIN_NAMESPACE
 
-
 typedef BW::vector<TransformFashionPtr> TransformFashionVector;
-typedef BW::vector<MaterialFashionPtr> MaterialFashionVector;
+typedef BW::vector<MaterialFashionPtr>  MaterialFashionVector;
 
 // Amount of space to reserve off the stack for lists of temporary fashion
 // vectors.
 const size_t MAX_TRANSFORMS = 128;
-typedef DynamicEmbeddedArrayWithWarning<TransformFashion *, MAX_TRANSFORMS>
-	TmpTransforms;
+typedef DynamicEmbeddedArrayWithWarning<TransformFashion*, MAX_TRANSFORMS>
+  TmpTransforms;
 
 class Matrix;
 class SuperModel;
@@ -30,11 +29,10 @@ class SuperModel;
  */
 class Fashion : public ReferenceCount
 {
-public:
-	Fashion();
-	virtual ~Fashion();
+  public:
+    Fashion();
+    virtual ~Fashion();
 };
-
 
 /**
  *	This class represents any animations or other transforms that apply
@@ -42,25 +40,23 @@ public:
  */
 class TransformFashion : public Fashion
 {
-public:
+  public:
+    /**
+     *	Apply transform to the given SuperModel.
+     *	@param superModel the SuperModel on which to apply.
+     *	@param world the current world transform.
+     *		Note that the TransformFashion can modify the world transform.
+     */
+    virtual void dress(SuperModel& superModel, Matrix& world) = 0;
 
-	/**
-	 *	Apply transform to the given SuperModel.
-	 *	@param superModel the SuperModel on which to apply.
-	 *	@param world the current world transform.
-	 *		Note that the TransformFashion can modify the world transform.
-	 */
-	virtual void dress( SuperModel & superModel, Matrix& world ) = 0;
-
-	/**
-	 *	Check if this transform fashion requires the models to re-calculate
-	 *	their transform state after this fashion is applied.
-	 *	@return true if this transform requires a re-calculation of transform
-	 *		state, false if it does not.
-	 */
-	virtual bool needsRedress() const = 0;
+    /**
+     *	Check if this transform fashion requires the models to re-calculate
+     *	their transform state after this fashion is applied.
+     *	@return true if this transform requires a re-calculation of transform
+     *		state, false if it does not.
+     */
+    virtual bool needsRedress() const = 0;
 };
-
 
 /**
  *	This class represents any materials that apply to a SuperModel before
@@ -68,23 +64,20 @@ public:
  */
 class MaterialFashion : public Fashion
 {
-public:
+  public:
+    /**
+     *	Apply material to the given SuperModel.
+     *	@param superModel the SuperModel on which to apply.
+     */
+    virtual void dress(SuperModel& superModel) = 0;
 
-	/**
-	 *	Apply material to the given SuperModel.
-	 *	@param superModel the SuperModel on which to apply.
-	 */
-	virtual void dress( SuperModel & superModel ) = 0;
-
-	/**
-	 *	Removes any materials that have been applied.
-	 *	@param superModel the SuperModel on which to apply.
-	 */
-	virtual void undress( SuperModel & superModel ) {};
+    /**
+     *	Removes any materials that have been applied.
+     *	@param superModel the SuperModel on which to apply.
+     */
+    virtual void undress(SuperModel& superModel){};
 };
 
 BW_END_NAMESPACE
-
-
 
 #endif // FASHION_HPP

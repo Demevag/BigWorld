@@ -21,13 +21,13 @@ BWENTITY_BEGIN_NAMESPACE
 /**
  * Map BW basic types to BWEntityDef
  */
-typedef BW::EntityID		EntityID;
-typedef BW::EntityTypeID 	EntityTypeID;
+typedef BW::EntityID     EntityID;
+typedef BW::EntityTypeID EntityTypeID;
 
 /**
  * Declare EntityDef smart pointers
  */
-typedef BW::SmartPointer< EntityDescriptionMap >EntityDescriptionMapPtr;
+typedef BW::SmartPointer<EntityDescriptionMap> EntityDescriptionMapPtr;
 
 BWENTITY_END_NAMESPACE
 

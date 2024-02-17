@@ -1,10 +1,9 @@
 #ifndef WE_CONFIG_HPP
 #define WE_CONFIG_HPP
 
-
 /**
  *	This file is #included by all files within the WorldEditor project as the
- *	first file to include.  It allows WorldEditor specific compile-time options 
+ *	first file to include.  It allows WorldEditor specific compile-time options
  *	to be turned on or off.
  */
 
@@ -16,7 +15,6 @@
 /**
  *	This turns off version control support in WorldEditor.
  */
-//#define BIGWORLD_CLIENT_ONLY
-
+// #define BIGWORLD_CLIENT_ONLY
 
 #endif // WE_CONFIG_HPP

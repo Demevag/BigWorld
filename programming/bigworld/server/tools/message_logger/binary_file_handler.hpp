@@ -5,7 +5,6 @@
 
 #include "network/file_stream.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -13,16 +12,16 @@ BW_BEGIN_NAMESPACE
  */
 class BinaryFileHandler : public FileHandler
 {
-public:
-	BinaryFileHandler();
-	virtual ~BinaryFileHandler();
+  public:
+    BinaryFileHandler();
+    virtual ~BinaryFileHandler();
 
-	bool init( const char *path, const char *mode );
+    bool init(const char* path, const char* mode);
 
-	virtual long length();
+    virtual long length();
 
-protected:
-	FileStream *pFile_;
+  protected:
+    FileStream* pFile_;
 };
 
 BW_END_NAMESPACE

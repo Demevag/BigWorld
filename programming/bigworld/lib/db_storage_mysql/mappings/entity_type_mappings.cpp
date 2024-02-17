@@ -7,97 +7,80 @@
 
 #include "db_storage/db_entitydefs.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
  *	Default constructor.
  */
-EntityTypeMappings::EntityTypeMappings()
-{
-}
-
+EntityTypeMappings::EntityTypeMappings() {}
 
 /**
  *	Constructor.
  */
-EntityTypeMappings::EntityTypeMappings( const EntityDefs & entityDefs,
-	MySql & connection )
+EntityTypeMappings::EntityTypeMappings(const EntityDefs& entityDefs,
+                                       MySql&            connection)
 {
-	this->init( entityDefs, connection );
+    this->init(entityDefs, connection);
 }
-
 
 /**
  *	Destructor.
  */
 EntityTypeMappings::~EntityTypeMappings()
 {
-	this->clearContainer();
+    this->clearContainer();
 }
-
 
 /**
  * 	This function creates EntityTypeMappings from the given
  * 	PropertyMappings.
  */
-bool EntityTypeMappings::init( const EntityDefs & entityDefs,
-	MySql & connection )
+bool EntityTypeMappings::init(const EntityDefs& entityDefs, MySql& connection)
 {
-	PropertyMappingsPerType propMappingsPerType;
-	MF_VERIFY( propMappingsPerType.init( entityDefs ) );
+    PropertyMappingsPerType propMappingsPerType;
+    MF_VERIFY(propMappingsPerType.init(entityDefs));
 
-	for (EntityTypeID typeID = 0;
-			typeID < entityDefs.getNumEntityTypes();
-			++typeID)
-	{
-		if (entityDefs.isValidEntityType( typeID ))
-		{
-			const EntityDescription & entityDesc =
-				entityDefs.getEntityDescription( typeID );
-			const DataDescription *pIdentifier = entityDesc.pIdentifier();
+    for (EntityTypeID typeID = 0; typeID < entityDefs.getNumEntityTypes();
+         ++typeID) {
+        if (entityDefs.isValidEntityType(typeID)) {
+            const EntityDescription& entityDesc =
+              entityDefs.getEntityDescription(typeID);
+            const DataDescription* pIdentifier = entityDesc.pIdentifier();
 
-			BW::string identiferProperty;
-			if (pIdentifier)
-			{
-				identiferProperty = pIdentifier->name();
-			}
+            BW::string identiferProperty;
+            if (pIdentifier) {
+                identiferProperty = pIdentifier->name();
+            }
 
-			try 
-			{
-				container_.push_back( new EntityTypeMapping( connection,
-										entityDesc,
-										propMappingsPerType[ typeID ],
-										identiferProperty ) );
-			}
-			catch (std::exception & e)
-			{
-				this->clearContainer();
-				return false;	
-			}
-		}
-		else
-		{
-			container_.push_back( NULL );
-		}
-	}
+            try {
+                container_.push_back(
+                  new EntityTypeMapping(connection,
+                                        entityDesc,
+                                        propMappingsPerType[typeID],
+                                        identiferProperty));
+            } catch (std::exception& e) {
+                this->clearContainer();
+                return false;
+            }
+        } else {
+            container_.push_back(NULL);
+        }
+    }
 
-	return true;
+    return true;
 }
 
 void EntityTypeMappings::clearContainer()
 {
-	Container::iterator iter = container_.begin();
+    Container::iterator iter = container_.begin();
 
-	while (iter != container_.end())
-	{
-		delete *iter;
+    while (iter != container_.end()) {
+        delete *iter;
 
-		++iter;
-	}
+        ++iter;
+    }
 }
 
 BW_END_NAMESPACE
-
 
 // entity_type_mappings.cpp

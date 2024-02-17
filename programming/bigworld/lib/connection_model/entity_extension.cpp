@@ -11,58 +11,50 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor.
  */
-EntityExtension::EntityExtension( const BWEntity * pEntity ) :
-	pEntity_( pEntity ),
-	pDelegate_( NULL )
+EntityExtension::EntityExtension(const BWEntity* pEntity)
+  : pEntity_(pEntity)
+  , pDelegate_(NULL)
 {
 }
-
 
 /**
  *	Destructor.
  */
 EntityExtension::~EntityExtension()
 {
-	if (pDelegate_)
-	{
-		pDelegate_->destroySelf();
-	}
+    if (pDelegate_) {
+        pDelegate_->destroySelf();
+    }
 }
-
 
 /**
  *
  */
 void EntityExtension::onEntityDestroyed()
 {
-	pEntity_ = NULL;
-	this->destroySelf();
+    pEntity_ = NULL;
+    this->destroySelf();
 }
-
 
 /**
  *
  */
-void EntityExtension::setDelegate( EntityExtension * pDelegate )
+void EntityExtension::setDelegate(EntityExtension* pDelegate)
 {
-	if (pDelegate_)
-	{
-		pDelegate_->destroySelf();
-	}
+    if (pDelegate_) {
+        pDelegate_->destroySelf();
+    }
 
-	pDelegate_ = pDelegate;
+    pDelegate_ = pDelegate;
 }
-
-
 
 /**
  *
  */
-void EntityExtension::setEntityFilter( MovementFilter * pFilter )
+void EntityExtension::setEntityFilter(MovementFilter* pFilter)
 {
-	const_cast< BWEntity * >( pEntity_ )->pFilter( pFilter );
+    const_cast<BWEntity*>(pEntity_)->pFilter(pFilter);
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Methods to override.
@@ -73,24 +65,20 @@ void EntityExtension::setEntityFilter( MovementFilter * pFilter )
  */
 void EntityExtension::onBecomePlayer()
 {
-	if (pDelegate_)
-	{
-		pDelegate_->triggerOnBecomePlayer();
-	}
+    if (pDelegate_) {
+        pDelegate_->triggerOnBecomePlayer();
+    }
 }
-
 
 /**
  *	This method is called when the entity first has a consistent cell position.
  */
-void EntityExtension::onEnterAoI( const EntityEntryBlocker & rBlocker )
+void EntityExtension::onEnterAoI(const EntityEntryBlocker& rBlocker)
 {
-	if (pDelegate_)
-	{
-		pDelegate_->triggerOnEnterAoI( rBlocker );
-	}
+    if (pDelegate_) {
+        pDelegate_->triggerOnEnterAoI(rBlocker);
+    }
 }
-
 
 /**
  *	This method is called once all blocking conditions from the call to
@@ -98,12 +86,10 @@ void EntityExtension::onEnterAoI( const EntityEntryBlocker & rBlocker )
  */
 void EntityExtension::onEnterWorld()
 {
-	if (pDelegate_)
-	{
-		pDelegate_->triggerOnEnterWorld();
-	}
+    if (pDelegate_) {
+        pDelegate_->triggerOnEnterWorld();
+    }
 }
-
 
 /**
  *	This method is called if an entity in world gets a position update into
@@ -111,12 +97,10 @@ void EntityExtension::onEnterWorld()
  */
 void EntityExtension::onChangeSpace()
 {
-	if (pDelegate_)
-	{
-		pDelegate_->triggerOnChangeSpace();
-	}
+    if (pDelegate_) {
+        pDelegate_->triggerOnChangeSpace();
+    }
 }
-
 
 /**
  *	This method is called when the client no longer knows about the cell entity.
@@ -124,49 +108,40 @@ void EntityExtension::onChangeSpace()
  */
 void EntityExtension::onLeaveWorld()
 {
-	if (pDelegate_)
-	{
-		pDelegate_->triggerOnLeaveWorld();
-	}
+    if (pDelegate_) {
+        pDelegate_->triggerOnLeaveWorld();
+    }
 }
-
 
 /**
  *	This method is called when the client no longer knows about the cell entity.
  */
 void EntityExtension::onLeaveAoI()
 {
-	if (pDelegate_)
-	{
-		pDelegate_->triggerOnLeaveAoI();
-	}
+    if (pDelegate_) {
+        pDelegate_->triggerOnLeaveAoI();
+    }
 }
-
 
 /**
  *	This method is called when the associated entity stops being the player.
  */
 void EntityExtension::onBecomeNonPlayer()
 {
-	if (pDelegate_)
-	{
-		pDelegate_->triggerOnBecomeNonPlayer();
-	}
+    if (pDelegate_) {
+        pDelegate_->triggerOnBecomeNonPlayer();
+    }
 }
-
 
 /**
  *	This method is called when the associated entity changes control status
  */
-void EntityExtension::onChangeControl( bool isControlling,
-	bool isInitialising )
+void EntityExtension::onChangeControl(bool isControlling, bool isInitialising)
 {
-	if (pDelegate_)
-	{
-		pDelegate_->triggerOnChangeControl( isControlling, isInitialising );
-	}
+    if (pDelegate_) {
+        pDelegate_->triggerOnChangeControl(isControlling, isInitialising);
+    }
 }
-
 
 /**
  *	This method is called when this entity receives a volatile update when
@@ -174,12 +149,10 @@ void EntityExtension::onChangeControl( bool isControlling,
  */
 void EntityExtension::onChangeReceivingVolatileUpdates()
 {
-	if (pDelegate_)
-	{
-		pDelegate_->triggerOnChangeReceivingVolatileUpdates();
-	}
+    if (pDelegate_) {
+        pDelegate_->triggerOnChangeReceivingVolatileUpdates();
+    }
 }
-
 
 /**
  *	This method is called when the entity is done with this extension.
@@ -187,7 +160,7 @@ void EntityExtension::onChangeReceivingVolatileUpdates()
  */
 void EntityExtension::destroySelf()
 {
-	delete this;
+    delete this;
 }
 
 BW_END_NAMESPACE

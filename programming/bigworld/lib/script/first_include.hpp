@@ -10,10 +10,11 @@
 // cstdmf/stdmf.hpp has had a chance to.
 #define __STDC_FORMAT_MACROS
 
-#if defined( SCRIPT_PYTHON )
+#if defined(SCRIPT_PYTHON)
 #include "Python.h"
 #endif
 
-#else	/* FIRST_INCLUDE_HPP_ */
-#warning "This file is supposed to be included only once to a precompiled header or directly to a .cpp file"
-#endif	/* FIRST_INCLUDE_HPP_ */
+#else /* FIRST_INCLUDE_HPP_ */
+#warning                                                                       \
+  "This file is supposed to be included only once to a precompiled header or directly to a .cpp file"
+#endif /* FIRST_INCLUDE_HPP_ */

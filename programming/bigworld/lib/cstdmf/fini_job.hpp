@@ -16,17 +16,17 @@ BW_BEGIN_NAMESPACE
  */
 class FiniJob
 {
-public:
-	FiniJob();
-	virtual ~FiniJob() {};
+  public:
+    FiniJob();
+    virtual ~FiniJob(){};
 
-	static bool runAll();
+    static bool runAll();
 
-protected:
-	virtual bool fini() = 0;
+  protected:
+    virtual bool fini() = 0;
 };
 
-typedef FiniJob * FiniJobPtr;
+typedef FiniJob* FiniJobPtr;
 
 BW_END_NAMESPACE
 

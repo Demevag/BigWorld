@@ -7,22 +7,24 @@
 
 #include "cstdmf/bgtask_manager.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace MongoDB
-{
+namespace MongoDB {
 
-class ReconnectTask : public MongoDBBackgroundTask
-{
-public:
-	ReconnectTask() :
-		MongoDBBackgroundTask( "ReconnectTask" ) {}
+    class ReconnectTask : public MongoDBBackgroundTask
+    {
+      public:
+        ReconnectTask()
+          : MongoDBBackgroundTask("ReconnectTask")
+        {
+        }
 
-protected:
-	void performBackgroundTask( TaskManager & mgr, 
-		ConnectionThreadData & connectionData ) {}
-};
+      protected:
+        void performBackgroundTask(TaskManager&          mgr,
+                                   ConnectionThreadData& connectionData)
+        {
+        }
+    };
 
 } // namespace MongoDB
 

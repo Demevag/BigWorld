@@ -3,8 +3,7 @@
 
 #include "terrain_height_map2.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Moo", 0 );
-
+DECLARE_DEBUG_COMPONENT2("Moo", 0);
 
 BW_BEGIN_NAMESPACE
 
@@ -16,12 +15,11 @@ using namespace Terrain;
  *  @param level        The level that this AliasedHeightMap will represent.
  *  @param pParent      The parent TerrainHeightMap2.
  */
-AliasedHeightMap::AliasedHeightMap(uint32 level, TerrainHeightMap2Ptr pParent):
-    level_(level),
-    pParent_(pParent)
+AliasedHeightMap::AliasedHeightMap(uint32 level, TerrainHeightMap2Ptr pParent)
+  : level_(level)
+  , pParent_(pParent)
 {
 }
-
 
 /**
  *  This function samples the underlying TerrainHeightMap2 at this level.
@@ -32,7 +30,7 @@ AliasedHeightMap::AliasedHeightMap(uint32 level, TerrainHeightMap2Ptr pParent):
  *                      given coordinates, taking into account the level of
  *                      this mip-map.
  */
-float AliasedHeightMap::height( uint32 x, uint32 z ) const
+float AliasedHeightMap::height(uint32 x, uint32 z) const
 {
     return pParent_->heightAt((int)(x << level_), (int)(z << level_));
 }

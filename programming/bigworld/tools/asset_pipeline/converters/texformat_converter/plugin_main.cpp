@@ -15,53 +15,52 @@
 
 BW_BEGIN_NAMESPACE
 
-DECLARE_WATCHER_DATA( "TexFormatConverter" )
-DECLARE_COPY_STACK_INFO( true )
+DECLARE_WATCHER_DATA("TexFormatConverter")
+DECLARE_COPY_STACK_INFO(true)
 DEFINE_CREATE_EDITOR_PROPERTY_STUB
 
 TexFormatConversionRule texFormatConversionRule;
-ConverterInfo texFormatConverterInfo;
-ResourceCallbacks resourceCallbacks;
+ConverterInfo           texFormatConverterInfo;
+ResourceCallbacks       resourceCallbacks;
 
 PLUGIN_INIT_FUNC
 {
-	Compiler * compiler = dynamic_cast< Compiler * >( &pluginLoader );
-	if (compiler == NULL)
-	{
-		return false;
-	}
+    Compiler* compiler = dynamic_cast<Compiler*>(&pluginLoader);
+    if (compiler == NULL) {
+        return false;
+    }
 
-	// Initialise the file systems
-	const auto & paths = compiler->getResourcePaths();
-	bool bInitRes = BWResource::init( paths );
+    // Initialise the file systems
+    const auto& paths    = compiler->getResourcePaths();
+    bool        bInitRes = BWResource::init(paths);
 
-	if ( !AutoConfig::configureAllFrom( "resources.xml" ) )
-	{
-		ERROR_MSG("Couldn't load auto-config strings from resource.xml\n" );
-	}
-	
-	INIT_CONVERTER_INFO( texFormatConverterInfo, 
-						 TexFormatConverter, 
-						 ConverterInfo::DEFAULT_FLAGS | ConverterInfo::UPGRADE_CONVERSION );
+    if (!AutoConfig::configureAllFrom("resources.xml")) {
+        ERROR_MSG("Couldn't load auto-config strings from resource.xml\n");
+    }
 
-	// Register the bsp conversion rule and converter
-	compiler->registerConversionRule( texFormatConversionRule );
-	compiler->registerConverter( texFormatConverterInfo );
-	compiler->registerResourceCallbacks( resourceCallbacks );
+    INIT_CONVERTER_INFO(texFormatConverterInfo,
+                        TexFormatConverter,
+                        ConverterInfo::DEFAULT_FLAGS |
+                          ConverterInfo::UPGRADE_CONVERSION);
 
-	return true;
+    // Register the bsp conversion rule and converter
+    compiler->registerConversionRule(texFormatConversionRule);
+    compiler->registerConverter(texFormatConverterInfo);
+    compiler->registerResourceCallbacks(resourceCallbacks);
+
+    return true;
 }
 
 PLUGIN_FINI_FUNC
-{		
-	BWResource::fini();
+{
+    BWResource::fini();
 
-	// DataSectionCensus is created on first use, so delete at end of App
-	DataSectionCensus::fini();
+    // DataSectionCensus is created on first use, so delete at end of App
+    DataSectionCensus::fini();
 
-	Watcher::fini();
+    Watcher::fini();
 
-	return true;
+    return true;
 }
 
 BW_END_NAMESPACE

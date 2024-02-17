@@ -3,28 +3,25 @@
 
 BW_BEGIN_NAMESPACE
 
-BW::map< CWnd*, int > DelayRedraw::s_counter_;
+BW::map<CWnd*, int> DelayRedraw::s_counter_;
 
-DelayRedraw::DelayRedraw( CWnd* wnd ):
-	wnd_(wnd)
+DelayRedraw::DelayRedraw(CWnd* wnd)
+  : wnd_(wnd)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (s_counter_[wnd_]++ == 0)
-	{
-		wnd_->SetRedraw( FALSE );
-	}
+    if (s_counter_[wnd_]++ == 0) {
+        wnd_->SetRedraw(FALSE);
+    }
 }
 
 DelayRedraw::~DelayRedraw()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (--s_counter_[wnd_] <= 0)
-	{
-		wnd_->SetRedraw( TRUE );
-		wnd_->Invalidate(); 
-	}
+    if (--s_counter_[wnd_] <= 0) {
+        wnd_->SetRedraw(TRUE);
+        wnd_->Invalidate();
+    }
 }
 BW_END_NAMESPACE
-

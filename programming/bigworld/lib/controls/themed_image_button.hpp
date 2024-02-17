@@ -6,30 +6,28 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace controls
-{
+namespace controls {
 
-	class ThemedImageButton : public CButton
-	{
-		DECLARE_DYNAMIC(ThemedImageButton)
+    class ThemedImageButton : public CButton
+    {
+        DECLARE_DYNAMIC(ThemedImageButton)
 
-	public:
-		ThemedImageButton();
-		~ThemedImageButton();
+      public:
+        ThemedImageButton();
+        ~ThemedImageButton();
 
-		HICON SetIcon( HICON hIcon );
-		HICON SetCheckedIcon( HICON hIcon );
+        HICON SetIcon(HICON hIcon);
+        HICON SetCheckedIcon(HICON hIcon);
 
-	protected:
-		DECLARE_MESSAGE_MAP()
-		afx_msg void OnNotifyCustomDraw ( NMHDR * pNotifyStruct, LRESULT* result );
+      protected:
+        DECLARE_MESSAGE_MAP()
+        afx_msg void OnNotifyCustomDraw(NMHDR* pNotifyStruct, LRESULT* result);
 
-	private:
-		HICON hIcon_;
-		HICON hCheckedIcon_;
-	};
+      private:
+        HICON hIcon_;
+        HICON hCheckedIcon_;
+    };
 
 }
 
 BW_END_NAMESPACE
-

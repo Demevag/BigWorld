@@ -12,90 +12,90 @@ BW_BEGIN_NAMESPACE
 class AABB;
 
 namespace Moo {
-	class LightContainer;
+    class LightContainer;
 }
 
 BW_END_NAMESPACE
 
 namespace BW {
 
-class ConvexHull;
-typedef SmartPointer< class ClientSpace > ClientSpacePtr;
+    class ConvexHull;
+    typedef SmartPointer<class ClientSpace> ClientSpacePtr;
 
-namespace CompiledSpace
-{
-	class CompiledSpace;
-}
+    namespace CompiledSpace {
+        class CompiledSpace;
+    }
 
-/*
- * This is the non-chunky concrete class for spot light embodiments.
- */
-class SpotLightEmbodiment : public ISpotLightEmbodiment
-{
-	typedef CompiledSpace::CompiledSpace* CompiledSpaceRawPtr;
-	typedef SmartPointer<CompiledSpace::CompiledSpace> CompiledSpacePtr;
+    /*
+     * This is the non-chunky concrete class for spot light embodiments.
+     */
+    class SpotLightEmbodiment : public ISpotLightEmbodiment
+    {
+        typedef CompiledSpace::CompiledSpace*              CompiledSpaceRawPtr;
+        typedef SmartPointer<CompiledSpace::CompiledSpace> CompiledSpacePtr;
 
-public:
-	SpotLightEmbodiment( const PySpotLight & parent );
-	virtual ~SpotLightEmbodiment();
+      public:
+        SpotLightEmbodiment(const PySpotLight& parent);
+        virtual ~SpotLightEmbodiment();
 
-	// ILightEmbodiment interfaces...
-	bool doIntersectAndAddToLightContainer( const ConvexHull & hull,
-		Moo::LightContainer & lightContainer ) const;
-	bool doIntersectAndAddToLightContainer( const AABB & bbox,
-		Moo::LightContainer & lightContainer ) const;
+        // ILightEmbodiment interfaces...
+        bool doIntersectAndAddToLightContainer(
+          const ConvexHull&    hull,
+          Moo::LightContainer& lightContainer) const;
+        bool doIntersectAndAddToLightContainer(
+          const AABB&          bbox,
+          Moo::LightContainer& lightContainer) const;
 
-	void doTick( float dTime );
+        void doTick(float dTime);
 
-	void drawBBox() const;
+        void drawBBox() const;
 
-	// All reference counting is maintained by the parent python-object.
-	void incRef() const { parent_.incRef(); };
-	void decRef() const { parent_.decRef(); };
-	int refCount() const { return parent_.refCount(); }
-	// --
+        // All reference counting is maintained by the parent python-object.
+        void incRef() const { parent_.incRef(); };
+        void decRef() const { parent_.decRef(); };
+        int  refCount() const { return parent_.refCount(); }
+        // --
 
-	// ISpotLight interfaces...
-	bool visible() const;
-	void visible( bool v );
+        // ISpotLight interfaces...
+        bool visible() const;
+        void visible(bool v);
 
-	const Vector3 & position() const;
-	void position( const Vector3 & v );
+        const Vector3& position() const;
+        void           position(const Vector3& v);
 
-	const Vector3 & direction() const;
-	void direction( const Vector3 & v );
+        const Vector3& direction() const;
+        void           direction(const Vector3& v);
 
-	const Moo::Colour & colour() const;
-	void colour( const Moo::Colour & v );
+        const Moo::Colour& colour() const;
+        void               colour(const Moo::Colour& v);
 
-	int priority() const;
-	void priority( int v );
+        int  priority() const;
+        void priority(int v);
 
-	float innerRadius() const;
-	void innerRadius( float v );
+        float innerRadius() const;
+        void  innerRadius(float v);
 
-	float outerRadius() const;
-	void outerRadius( float v );
+        float outerRadius() const;
+        void  outerRadius(float v);
 
-	float cosConeAngle() const;
-	void cosConeAngle( float v );
+        float cosConeAngle() const;
+        void  cosConeAngle(float v);
 
-	// Unused. Required for support of the older PyChunkSpotLight interface.
-	void recalc() { }
-	// --
+        // Unused. Required for support of the older PyChunkSpotLight interface.
+        void recalc() {}
+        // --
 
-private:
-	void doEnterSpace( ClientSpacePtr pSpace );
-	virtual void doLeaveSpace();
-	virtual void doUpdateLocation();
+      private:
+        void         doEnterSpace(ClientSpacePtr pSpace);
+        virtual void doLeaveSpace();
+        virtual void doUpdateLocation();
 
-	const PySpotLight & parent_;
-	Moo::SpotLightPtr pLight_;
-	CompiledSpacePtr pEnteredSpace_;
-	bool visible_;
-};
+        const PySpotLight& parent_;
+        Moo::SpotLightPtr  pLight_;
+        CompiledSpacePtr   pEnteredSpace_;
+        bool               visible_;
+    };
 
 } // namespace BW
 
 #endif // SPOT_LIGHT_EMBODIMENT_HPP
-

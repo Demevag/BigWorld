@@ -10,7 +10,6 @@
 
 #include "common_machine_guard.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 void checkSocketBufferSizes();

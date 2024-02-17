@@ -16,7 +16,6 @@
 #include "moo/custom_mesh.hpp"
 #include "moo/vertex_formats.hpp"
 
-
 //--------------------------------------------------------------------------------------------------
 // Configuration
 //--------------------------------------------------------------------------------------------------
@@ -27,8 +26,7 @@
 // Forward declarations.
 //--------------------------------------------------------------------------------------------------
 
-namespace DX
-{
+namespace DX {
     typedef IDirect3DBaseTexture9 BaseTexture;
 };
 
@@ -39,8 +37,7 @@ class Chunk;
 class ChunkItem;
 typedef SmartPointer<ChunkItem> ChunkItemPtr;
 
-namespace Moo
-{
+namespace Moo {
     class RenderTarget;
     class EffectMaterial;
     class BaseTexture;
@@ -58,23 +55,30 @@ namespace Moo {
 
     class DynamicShadow : public Moo::DeviceCallback
     {
-    public:
-
+      public:
         enum QualityMask
         {
-            QM_DINAMYC_CAST_ALL = 0,
+            QM_DINAMYC_CAST_ALL             = 0,
             QM_DINAMYC_CAST_ATTACHMENT_ONLY = 1,
         };
 
         struct AtlasRect
         {
-            AtlasRect() :
-                x(0), y(0), w(0), h(0)
-            {}
+            AtlasRect()
+              : x(0)
+              , y(0)
+              , w(0)
+              , h(0)
+            {
+            }
 
-            AtlasRect(float x, float y, float w, float h) :
-                x(x), y(y), w(w), h(h)
-            { }
+            AtlasRect(float x, float y, float w, float h)
+              : x(x)
+              , y(y)
+              , w(w)
+              , h(h)
+            {
+            }
 
             float x; //-- top corner
             float y; //-- left corner
@@ -90,17 +94,16 @@ namespace Moo {
         };
 
         DynamicShadow(
-            // rendering mode of the used area of Shadow Map.
-            bool  debugMode,
-            // map resolution for soft terrain shadows (in pixels)
-            uint  terrainShadowMapSize,
-            // shadow map resolution of one split (in pixels)
-            uint  dynamicShadowMapSize,
-            // visibility of shadows
-            float viewDist,
-            // quality of shadows.
-            int   shadowQuality
-        );
+          // rendering mode of the used area of Shadow Map.
+          bool debugMode,
+          // map resolution for soft terrain shadows (in pixels)
+          uint terrainShadowMapSize,
+          // shadow map resolution of one split (in pixels)
+          uint dynamicShadowMapSize,
+          // visibility of shadows
+          float viewDist,
+          // quality of shadows.
+          int shadowQuality);
 
         ~DynamicShadow();
 
@@ -121,37 +124,38 @@ namespace Moo {
         void setNumSplit(uint numSplit);
         uint getNumSplit() const;
 
-    private:
+      private:
         bool createNoiseMap();
 
         //-- init flags
         //-- TODO: reconsider initialization mechanism
-        bool                        m_inited;  // init() has been called
-        bool                        m_enabled; // the object enabled from options
-        bool                        m_unmanagedObjectsCreated;
+        bool m_inited;  // init() has been called
+        bool m_enabled; // the object enabled from options
+        bool m_unmanagedObjectsCreated;
 
         //-- construction settings
-        const bool m_debugMode;
-        const uint m_terrainShadowMapSize;
-        const uint m_dynamicShadowMapSize;
-        const float m_viewDist;
+        const bool    m_debugMode;
+        const uint    m_terrainShadowMapSize;
+        const uint    m_dynamicShadowMapSize;
+        const float   m_viewDist;
         ShadowQuality m_shadowQuality;
 
         //-- data (transfer from cast to receive pass)
-        BW::vector<float>           m_splitPlanes;
-        BW::vector<Matrix>          m_textureMatrices;
+        BW::vector<float>  m_splitPlanes;
+        BW::vector<Matrix> m_textureMatrices;
 
         //-- resources (main)
-        Moo::RenderTargetPtr        m_dynamicShadowMapAtlas;
-        ComObjectWrap<DX::Texture>  m_pNoiseMap;
+        Moo::RenderTargetPtr       m_dynamicShadowMapAtlas;
+        ComObjectWrap<DX::Texture> m_pNoiseMap;
 
         //-- resources (cast)
-        Moo::EffectMaterialPtr      m_terrainCast;
-        Moo::EffectMaterialPtr      m_fillScreenMap; // fill screen map using z-buffer
+        Moo::EffectMaterialPtr m_terrainCast;
+        Moo::EffectMaterialPtr
+          m_fillScreenMap; // fill screen map using z-buffer
 
         //-- resources (debug mode)
-        Moo::EffectMaterialPtr              m_debugEffectMaterial;
-        AtlasRect                           m_atlasLayout[BW_SHADOWS_MAX_SPLIT_COUNT];
+        Moo::EffectMaterialPtr m_debugEffectMaterial;
+        AtlasRect              m_atlasLayout[BW_SHADOWS_MAX_SPLIT_COUNT];
     };
 
 }

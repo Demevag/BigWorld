@@ -6,40 +6,34 @@
 
 #include "cstdmf/bw_vector.hpp"
 
-namespace BW
-{
+namespace BW {
 
-class AABB;
+    class AABB;
 
-class SCENE_API ChangeSceneViewListener
-{
-public:
-	virtual ~ChangeSceneViewListener();
+    class SCENE_API ChangeSceneViewListener
+    {
+      public:
+        virtual ~ChangeSceneViewListener();
 
-	virtual void onAreaLoaded( const AABB & bb );
-	virtual void onAreaUnloaded( const AABB & bb );
-	virtual void onAreaChanged( const AABB & bb );
-};
+        virtual void onAreaLoaded(const AABB& bb);
+        virtual void onAreaUnloaded(const AABB& bb);
+        virtual void onAreaChanged(const AABB& bb);
+    };
 
-class SCENE_API ChangeSceneView :
-	public SceneEventView
-{
-public:
-	
-	void addListener( ChangeSceneViewListener* pListener );
-	void removeListener( ChangeSceneViewListener* pListener );
+    class SCENE_API ChangeSceneView : public SceneEventView
+    {
+      public:
+        void addListener(ChangeSceneViewListener* pListener);
+        void removeListener(ChangeSceneViewListener* pListener);
 
-	void notifyAreaLoaded( const AABB & bb ) const;
-	void notifyAreaUnloaded( const AABB & bb ) const;
-	void notifyAreaChanged( const AABB & bb ) const;
+        void notifyAreaLoaded(const AABB& bb) const;
+        void notifyAreaUnloaded(const AABB& bb) const;
+        void notifyAreaChanged(const AABB& bb) const;
 
-protected:
-	
-	typedef BW::vector<ChangeSceneViewListener*> Listeners;
-	Listeners listeners_;
-};
-
-
+      protected:
+        typedef BW::vector<ChangeSceneViewListener*> Listeners;
+        Listeners                                    listeners_;
+    };
 
 } // namespace BW
 

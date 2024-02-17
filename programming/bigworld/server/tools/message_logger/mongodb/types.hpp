@@ -11,29 +11,24 @@
 #include <string>
 #include <vector>
 
-
 BW_BEGIN_NAMESPACE
 
-namespace MongoDB
-{
-/**
- * This type represents the MongoDB collection name list
- */
-typedef BW::list< BW::string > CollList;
+namespace MongoDB {
+    /**
+     * This type represents the MongoDB collection name list
+     */
+    typedef BW::list<BW::string> CollList;
 
+    /**
+     * This type represents the string type used by MongoDB
+     */
+    typedef std::string string;
 
-/**
- * This type represents the string type used by MongoDB
- */
-typedef std::string string;
-
-
-/**
- *  This type represents a batch of BSON Objects which can be written straight
- *  to the database.
- */
-typedef std::vector< mongo::BSONObj > BSONObjBuffer;
-
+    /**
+     *  This type represents a batch of BSON Objects which can be written
+     * straight to the database.
+     */
+    typedef std::vector<mongo::BSONObj> BSONObjBuffer;
 
 } // namespace MongoDB
 

@@ -3,7 +3,6 @@
 
 #include "class_data_type.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -59,147 +58,147 @@ class PyFixedDictDataInstance;
  */
 class FixedDictDataType : public DataType
 {
-public:
-	typedef ClassDataType::Field	Field;
-	typedef ClassDataType::Fields 	Fields;
+  public:
+    typedef ClassDataType::Field  Field;
+    typedef ClassDataType::Fields Fields;
 
-	FixedDictDataType( MetaDataType* pMeta, Fields& fields, bool allowNone );
-	virtual ~FixedDictDataType();
+    FixedDictDataType(MetaDataType* pMeta, Fields& fields, bool allowNone);
+    virtual ~FixedDictDataType();
 
-	const BW::string & customTypeName() const { return customTypeName_; }
+    const BW::string& customTypeName() const { return customTypeName_; }
 
-	void customTypeName( const BW::string & customTypeName )
-	{
-		customTypeName_ = customTypeName; 
-	}
+    void customTypeName(const BW::string& customTypeName)
+    {
+        customTypeName_ = customTypeName;
+    }
 
-	int getFieldIndex( const BW::string& fieldName ) const
-	{
-		FieldMap::const_iterator found = fieldMap_.find( fieldName );
-		return (found != fieldMap_.end()) ? found->second : -1;
-	}
+    int getFieldIndex(const BW::string& fieldName) const
+    {
+        FieldMap::const_iterator found = fieldMap_.find(fieldName);
+        return (found != fieldMap_.end()) ? found->second : -1;
+    }
 
-	DataType & getFieldDataType( int index )
-	{
-		return *(fields_[index].type_);
-	}
+    DataType& getFieldDataType(int index) { return *(fields_[index].type_); }
 
-	const DataType & getFieldDataType( int index ) const
-	{
-		return *(fields_[index].type_);
-	}
+    const DataType& getFieldDataType(int index) const
+    {
+        return *(fields_[index].type_);
+    }
 
-	const BW::string& getFieldName( int index ) const
-	{
-		return fields_[index].name_;
-	}
+    const BW::string& getFieldName(int index) const
+    {
+        return fields_[index].name_;
+    }
 
-	Fields::size_type getNumFields() const { return fields_.size(); }
-	const Fields& getFields() const	{ return fields_; }
+    Fields::size_type getNumFields() const { return fields_.size(); }
+    const Fields&     getFields() const { return fields_; }
 
-	bool allowNone() const 	{ return allowNone_; }
+    bool allowNone() const { return allowNone_; }
 
-#if defined( SCRIPT_PYTHON )
-	void setCustomClassImplementor( const BW::string& moduleName,
-			const BW::string& instanceName );
+#if defined(SCRIPT_PYTHON)
+    void setCustomClassImplementor(const BW::string& moduleName,
+                                   const BW::string& instanceName);
 #endif
 
-	// Overrides the DataType method.
-	virtual bool isSameType( ScriptObject pValue );
-	virtual void reloadScript();
-	virtual void clearScript();
-	virtual void setDefaultValue( DataSectionPtr pSection );
-	virtual bool getDefaultValue( DataSink & output ) const;
-	virtual DataSectionPtr pDefaultSection() const;
-	virtual int streamSize() const;
-	virtual bool addToSection( DataSource & source,
-			DataSectionPtr pSection ) const;
-	virtual bool createFromSection( DataSectionPtr pSection,
-			DataSink & sink ) const;
-	virtual void addToMD5( MD5 & md5 ) const;
-	virtual StreamElementPtr getStreamElement( size_t index,
-		size_t & size, bool & isNone, bool isPersistentOnly ) const;
-	virtual int clientSafety() const { return clientSafety_; }
-	virtual bool operator<( const DataType & other ) const;
-	virtual BW::string typeName() const;
-	virtual ScriptObject attach( ScriptObject pObject,
-		PropertyOwnerBase * pOwner, int ownerRef );
-	virtual void detach( ScriptObject pObject );
-	virtual PropertyOwnerBase * asOwner( ScriptObject pObject ) const;
+    // Overrides the DataType method.
+    virtual bool               isSameType(ScriptObject pValue);
+    virtual void               reloadScript();
+    virtual void               clearScript();
+    virtual void               setDefaultValue(DataSectionPtr pSection);
+    virtual bool               getDefaultValue(DataSink& output) const;
+    virtual DataSectionPtr     pDefaultSection() const;
+    virtual int                streamSize() const;
+    virtual bool               addToSection(DataSource&    source,
+                                            DataSectionPtr pSection) const;
+    virtual bool               createFromSection(DataSectionPtr pSection,
+                                                 DataSink&      sink) const;
+    virtual void               addToMD5(MD5& md5) const;
+    virtual StreamElementPtr   getStreamElement(size_t  index,
+                                                size_t& size,
+                                                bool&   isNone,
+                                                bool    isPersistentOnly) const;
+    virtual int                clientSafety() const { return clientSafety_; }
+    virtual bool               operator<(const DataType& other) const;
+    virtual BW::string         typeName() const;
+    virtual ScriptObject       attach(ScriptObject       pObject,
+                                      PropertyOwnerBase* pOwner,
+                                      int                ownerRef);
+    virtual void               detach(ScriptObject pObject);
+    virtual PropertyOwnerBase* asOwner(ScriptObject pObject) const;
 
-	// Functions to handle PyFixedDictDataInstance
-	ScriptObject createDefaultInstance() const;
-#if defined( SCRIPT_PYTHON )
-	void addInstanceToStream( PyFixedDictDataInstance* pInst,
-			BinaryOStream& stream, bool isPersistentOnly ) const;
-	bool addMappingObjToStream( ScriptObject pValue, BinaryOStream & stream,
-			bool isPersistentOnly ) const;
-	ScriptObject createInstanceFromStream( BinaryIStream & stream,
-			bool isPersistentOnly ) const;
-	bool addInstanceToSection( PyFixedDictDataInstance* pInst,
-			DataSectionPtr pSection ) const;
-	ScriptObject createInstanceFromSection( DataSectionPtr pSection ) const;
-	ScriptObject createInstanceFromMappingObj(
-			ScriptObject pyMappingObj ) const;
+    // Functions to handle PyFixedDictDataInstance
+    ScriptObject createDefaultInstance() const;
+#if defined(SCRIPT_PYTHON)
+    void         addInstanceToStream(PyFixedDictDataInstance* pInst,
+                                     BinaryOStream&           stream,
+                                     bool                     isPersistentOnly) const;
+    bool         addMappingObjToStream(ScriptObject   pValue,
+                                       BinaryOStream& stream,
+                                       bool           isPersistentOnly) const;
+    ScriptObject createInstanceFromStream(BinaryIStream& stream,
+                                          bool isPersistentOnly) const;
+    bool         addInstanceToSection(PyFixedDictDataInstance* pInst,
+                                      DataSectionPtr           pSection) const;
+    ScriptObject createInstanceFromSection(DataSectionPtr pSection) const;
+    ScriptObject createInstanceFromMappingObj(ScriptObject pyMappingObj) const;
 
-	// Functions to handle custom class
-	void initCustomClassImplOnDemand()
-	{
-		if (!isCustomClassImplInited_)
-		{
-			this->setCustomClassFunctions( false );
-		}
-	}
-	void setCustomClassFunctions( bool ignoreFailure );
-	bool hasCustomClass() const{ return pImplementor_ != NULL; }
-	const BW::string& moduleName() const { return moduleName_; }
-	const BW::string& instanceName() const { return instanceName_; }
-	bool hasCustomIsSameType() const { return pIsSameTypeFn_ != NULL; }
-	bool hasCustomAddToStream() const { return pAddToStreamFn_ != NULL; }
-	bool hasCustomCreateFromStream() const
-	{
-		return pCreateFromStreamFn_ != NULL;
-	}
-	ScriptObject createCustomClassFromInstance( PyFixedDictDataInstance* pInst )
-			const;
-	bool isSameTypeCustom( ScriptObject pValue ) const;
-	void addToStreamCustom( ScriptObject pValue, BinaryOStream& stream,
-		bool isPersistentOnly) const;
-	ScriptObject createFromStreamCustom( BinaryIStream & stream,
-			bool isPersistentOnly ) const;
-	ScriptObject getDictFromCustomClass( ScriptObject pCustomClass ) const;
-	ScriptObject createInstanceFromCustomClass( ScriptObject pValue )
-			const;
+    // Functions to handle custom class
+    void initCustomClassImplOnDemand()
+    {
+        if (!isCustomClassImplInited_) {
+            this->setCustomClassFunctions(false);
+        }
+    }
+    void              setCustomClassFunctions(bool ignoreFailure);
+    bool              hasCustomClass() const { return pImplementor_ != NULL; }
+    const BW::string& moduleName() const { return moduleName_; }
+    const BW::string& instanceName() const { return instanceName_; }
+    bool hasCustomIsSameType() const { return pIsSameTypeFn_ != NULL; }
+    bool hasCustomAddToStream() const { return pAddToStreamFn_ != NULL; }
+    bool hasCustomCreateFromStream() const
+    {
+        return pCreateFromStreamFn_ != NULL;
+    }
+    ScriptObject createCustomClassFromInstance(
+      PyFixedDictDataInstance* pInst) const;
+    bool         isSameTypeCustom(ScriptObject pValue) const;
+    void         addToStreamCustom(ScriptObject   pValue,
+                                   BinaryOStream& stream,
+                                   bool           isPersistentOnly) const;
+    ScriptObject createFromStreamCustom(BinaryIStream& stream,
+                                        bool           isPersistentOnly) const;
+    ScriptObject getDictFromCustomClass(ScriptObject pCustomClass) const;
+    ScriptObject createInstanceFromCustomClass(ScriptObject pValue) const;
 #endif
 
-private:
-	Fields::size_type getNumPersistentFields() const;
-	Fields::size_type getFieldIndexForPersistentFieldIndex(
-		Fields::size_type persistentIndex ) const;
+  private:
+    Fields::size_type getNumPersistentFields() const;
+    Fields::size_type getFieldIndexForPersistentFieldIndex(
+      Fields::size_type persistentIndex) const;
 
-	bool 		allowNone_;
-	Fields		fields_;
+    bool   allowNone_;
+    Fields fields_;
 
-	typedef BW::map< BW::string, int > FieldMap;
-	FieldMap	fieldMap_;
+    typedef BW::map<BW::string, int> FieldMap;
+    FieldMap                         fieldMap_;
 
-	BW::string customTypeName_;
-	BW::string moduleName_;
-	BW::string instanceName_;
+    BW::string customTypeName_;
+    BW::string moduleName_;
+    BW::string instanceName_;
 
-	DataSectionPtr	pDefaultSection_;
+    DataSectionPtr pDefaultSection_;
 
-	bool			isCustomClassImplInited_;
-	ScriptObject 	pImplementor_;
-	ScriptObject 	pGetDictFromObjFn_;
-	ScriptObject 	pCreateObjFromDictFn_;
-	ScriptObject 	pIsSameTypeFn_;
-	ScriptObject 	pAddToStreamFn_;
-	ScriptObject 	pCreateFromStreamFn_;
+    bool         isCustomClassImplInited_;
+    ScriptObject pImplementor_;
+    ScriptObject pGetDictFromObjFn_;
+    ScriptObject pCreateObjFromDictFn_;
+    ScriptObject pIsSameTypeFn_;
+    ScriptObject pAddToStreamFn_;
+    ScriptObject pCreateFromStreamFn_;
 
-	int				streamSize_;
+    int streamSize_;
 
-	int				clientSafety_;
+    int clientSafety_;
 };
 
 BW_END_NAMESPACE

@@ -13,31 +13,30 @@ BW_BEGIN_NAMESPACE
  */
 class Portal2D
 {
-public:
-	typedef VectorNoDestructor< Vector2 > V2Vector;
+  public:
+    typedef VectorNoDestructor<Vector2> V2Vector;
 
-	Portal2D();
-	Portal2D( const Portal2D & other );
-	Portal2D & operator =( const Portal2D & other );
-	~Portal2D();
+    Portal2D();
+    Portal2D(const Portal2D& other);
+    Portal2D& operator=(const Portal2D& other);
+    ~Portal2D();
 
+    void setDefaults();
+    void addPoint(const Vector2& v);
+    void erasePoints() { points_.clear(); }
 
-	void setDefaults();
-	void addPoint( const Vector2 &v );
-	void erasePoints()					{ points_.clear(); }
+    bool combine(Portal2D* p1, Portal2D* p2);
+    // bool combine( const Portal2D & p1, const Portal2D & p2 );
 
-	bool combine( Portal2D *p1, Portal2D *p2 );
-	//bool combine( const Portal2D & p1, const Portal2D & p2 );
-	
-	bool contains( const Vector2 & v ) const;
-	const V2Vector & points() const		{ return points_; }
+    bool            contains(const Vector2& v) const;
+    const V2Vector& points() const { return points_; }
 
-	uint refs()							{ return refs_; }
-	void refs( uint r )					{ refs_ = r; }
+    uint refs() { return refs_; }
+    void refs(uint r) { refs_ = r; }
 
-private:
-	V2Vector	points_;
-	uint		refs_;
+  private:
+    V2Vector points_;
+    uint     refs_;
 };
 
 #ifdef CODE_INLINE

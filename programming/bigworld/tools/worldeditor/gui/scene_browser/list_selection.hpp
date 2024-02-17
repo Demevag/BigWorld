@@ -10,44 +10,44 @@ BW_BEGIN_NAMESPACE
  */
 class ListSelection
 {
-public:
-	typedef BW::list< ItemInfoDB::ItemPtr > ItemList;
+  public:
+    typedef BW::list<ItemInfoDB::ItemPtr> ItemList;
 
-	ListSelection();
+    ListSelection();
 
-	void init( CListCtrl * pList );
+    void init(CListCtrl* pList);
 
-	void filter( bool eraseMissingItems = true );
+    void filter(bool eraseMissingItems = true);
 
-	void restore( const BW::vector< ItemInfoDB::ItemPtr > & items );
+    void restore(const BW::vector<ItemInfoDB::ItemPtr>& items);
 
-	void update( const BW::vector< ItemInfoDB::ItemPtr > & items );
+    void update(const BW::vector<ItemInfoDB::ItemPtr>& items);
 
-	int numItems() const { return (int)selection_.size(); }
-	int numSelectedTris() const;
-	int numSelectedPrimitives() const;
+    int numItems() const { return (int)selection_.size(); }
+    int numSelectedTris() const;
+    int numSelectedPrimitives() const;
 
-	const ItemList & selection( bool validate );
-	void selection( const BW::vector< ChunkItemPtr > & selection,
-					const BW::vector< ItemInfoDB::ItemPtr > & items  );
+    const ItemList& selection(bool validate);
+    void            selection(const BW::vector<ChunkItemPtr>&        selection,
+                              const BW::vector<ItemInfoDB::ItemPtr>& items);
 
-	void deleteSelectedItems() const;
+    void deleteSelectedItems() const;
 
-	bool needsUpdate() const { return needsUpdate_; }
-	void needsUpdate( bool val ) { needsUpdate_ = val; }
+    bool needsUpdate() const { return needsUpdate_; }
+    void needsUpdate(bool val) { needsUpdate_ = val; }
 
-	bool changed() const { return changed_; }
-	void resetChanged() { changed_ = false; }
+    bool changed() const { return changed_; }
+    void resetChanged() { changed_ = false; }
 
-private:
-	typedef BW::unordered_set< ChunkItem * > ChunkItemHash;
+  private:
+    typedef BW::unordered_set<ChunkItem*> ChunkItemHash;
 
-	CListCtrl * pList_;
+    CListCtrl* pList_;
 
-	ItemList selection_;
-	ChunkItemHash selectionHash_; // for speed
-	bool needsUpdate_;
-	bool changed_;
+    ItemList      selection_;
+    ChunkItemHash selectionHash_; // for speed
+    bool          needsUpdate_;
+    bool          changed_;
 };
 
 BW_END_NAMESPACE

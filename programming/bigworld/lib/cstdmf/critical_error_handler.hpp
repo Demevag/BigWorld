@@ -12,23 +12,22 @@ BW_BEGIN_NAMESPACE
  */
 class CriticalErrorHandler
 {
-private:
-	static CriticalErrorHandler * handler_;
+  private:
+    static CriticalErrorHandler* handler_;
 
-public:
+  public:
+    enum Result
+    {
+        ENTERDEBUGGER = 0,
+        EXITDIRECTLY
+    };
 
-	enum Result
-	{
-		ENTERDEBUGGER = 0,
-		EXITDIRECTLY
-	};
+    static CriticalErrorHandler* get();
+    static CriticalErrorHandler* set(CriticalErrorHandler*);
 
-	static CriticalErrorHandler * get();
-	static CriticalErrorHandler * set( CriticalErrorHandler * );
-
-	virtual ~CriticalErrorHandler() {}
-	virtual Result ask( const char * msg ) = 0;
-	virtual void recordInfo( bool willExit ) = 0;
+    virtual ~CriticalErrorHandler() {}
+    virtual Result ask(const char* msg)      = 0;
+    virtual void   recordInfo(bool willExit) = 0;
 };
 
 void RaiseEngineException(const char* msg);

@@ -1,7 +1,6 @@
 #ifndef _NODE_CATALOGUE_HOLDER_HPP_
 #define _NODE_CATALOGUE_HOLDER_HPP_
 
-
 #include "moo/node_catalogue.hpp"
 
 BW_BEGIN_NAMESPACE
@@ -11,9 +10,9 @@ BW_BEGIN_NAMESPACE
  */
 class NodeCatalogueHolder
 {
-public:
-	NodeCatalogueHolder();
-	~NodeCatalogueHolder();
+  public:
+    NodeCatalogueHolder();
+    ~NodeCatalogueHolder();
 };
 
 BW_END_NAMESPACE

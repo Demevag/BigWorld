@@ -5,14 +5,14 @@
 
 BW_BEGIN_NAMESPACE
 
-/** 
+/**
  *	This class records per-frame statistics and writes them to a log file.
  *	It can be activated and customised through the Debug/FrameLogger watchers.
  */
 class FrameLogger
 {
-public:	
-	static void init();
+  public:
+    static void init();
 };
 
 BW_END_NAMESPACE

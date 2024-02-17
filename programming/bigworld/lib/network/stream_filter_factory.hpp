@@ -5,30 +5,26 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
+namespace Mercury {
 
+    /**
+     *	This class is the interface for all stream filter factories. These
+     *objects are used to create and attach a stream filter when a TCPChannel
+     *has been created.
+     */
+    class StreamFilterFactory
+    {
+      public:
+        /**
+         *	Destructor.
+         */
+        virtual ~StreamFilterFactory() {}
 
-/**
- *	This class is the interface for all stream filter factories. These objects
- *	are used to create and attach a stream filter when a TCPChannel has been
- *	created.
- */
-class StreamFilterFactory
-{
-public:
-	/**
-	 *	Destructor.
- 	 */
-	virtual ~StreamFilterFactory() {}
+        virtual StreamFilterPtr createFor(TCPChannel& channel) = 0;
 
-	virtual StreamFilterPtr createFor( TCPChannel & channel ) = 0;
-
-protected:
-	StreamFilterFactory()
-	{}
-
-};
+      protected:
+        StreamFilterFactory() {}
+    };
 
 } // end namespace Mercury
 

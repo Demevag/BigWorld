@@ -14,11 +14,10 @@ int ServerEntityMailBox_Token = 0;
 /**
  *	Constructor.
  */
-ServerEntityMailBox::ServerEntityMailBox( BWEntity & entity ) :
-		entity_( entity )
+ServerEntityMailBox::ServerEntityMailBox(BWEntity& entity)
+  : entity_(entity)
 {
 }
-
 
 /**
  *	This method starts a message with the given message ID for either the cell
@@ -29,28 +28,29 @@ ServerEntityMailBox::ServerEntityMailBox( BWEntity & entity ) :
  *							entity, otherwise, it is destined for the cell
  *							entity.
  */
-BinaryOStream * ServerEntityMailBox::startMessage( int methodID,
-		bool isForBaseEntity, bool & shouldDrop ) const
+BinaryOStream* ServerEntityMailBox::startMessage(int   methodID,
+                                                 bool  isForBaseEntity,
+                                                 bool& shouldDrop) const
 {
-	shouldDrop = false;
+    shouldDrop = false;
 
-	BWConnection * pBWConnection = entity_.pBWConnection();
+    BWConnection* pBWConnection = entity_.pBWConnection();
 
-	if (pBWConnection == NULL)
-	{
-		WARNING_MSG( "ServerEntityMailBox::startMessage: "
-				"Trying to start message %d on entity %d of type %s that "
-				"does not have a connection.\n",
-			methodID, entity_.entityID(), entity_.entityTypeName().c_str() );
+    if (pBWConnection == NULL) {
+        WARNING_MSG("ServerEntityMailBox::startMessage: "
+                    "Trying to start message %d on entity %d of type %s that "
+                    "does not have a connection.\n",
+                    methodID,
+                    entity_.entityID(),
+                    entity_.entityTypeName().c_str());
 
-		return NULL;
-	}
+        return NULL;
+    }
 
-	return pBWConnection->addServerMessage( entity_.entityID(), methodID,
-		isForBaseEntity, shouldDrop );
+    return pBWConnection->addServerMessage(
+      entity_.entityID(), methodID, isForBaseEntity, shouldDrop);
 }
 
 BW_END_NAMESPACE
 
 // server_entity_mail_box.cpp
-

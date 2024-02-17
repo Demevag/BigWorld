@@ -6,29 +6,25 @@
 
 #include "compiled_space_settings_types.hpp"
 
+namespace BW { namespace CompiledSpace {
 
-namespace BW {
-namespace CompiledSpace {
+    class COMPILED_SPACE_API CompiledSpaceSettings
+    {
+      public:
+        CompiledSpaceSettings();
+        ~CompiledSpaceSettings();
 
+        bool read(BinaryFormat& reader);
+        void close();
 
-class COMPILED_SPACE_API CompiledSpaceSettings
-{
-public:
-	CompiledSpaceSettings();
-	~CompiledSpaceSettings();
+        const AABB& boundingBox() const;
 
-	bool read( BinaryFormat& reader );
-	void close();
+      private:
+        BinaryFormat*         pReader_;
+        BinaryFormat::Stream* pStream_;
 
-	const AABB& boundingBox() const;
-
-private:
-	BinaryFormat* pReader_;
-	BinaryFormat::Stream* pStream_;
-
-	CompiledSpaceSettingsTypes::Header data_;
-};
-
+        CompiledSpaceSettingsTypes::Header data_;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW

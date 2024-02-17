@@ -7,41 +7,37 @@ BW_BEGIN_NAMESPACE
 
 class ParticleEditorView : public CView
 {
-protected:
-	ParticleEditorView();
+  protected:
+    ParticleEditorView();
 
-	BOOL PreCreateWindow(CREATESTRUCT& cs);
+    BOOL PreCreateWindow(CREATESTRUCT& cs);
 
-	DECLARE_DYNCREATE(ParticleEditorView)
+    DECLARE_DYNCREATE(ParticleEditorView)
 
-	CRect lastRect_;
+    CRect lastRect_;
 
-public:
+  public:
     /*virtual*/ ~ParticleEditorView();
 
-    static ParticleEditorView *instance();
+    static ParticleEditorView* instance();
 
-	ParticleEditorDoc* GetDocument() const;
+    ParticleEditorDoc* GetDocument() const;
 
-    /*virtual*/ void OnDraw(CDC *dc);
+    /*virtual*/ void OnDraw(CDC* dc);
 
-	/*virtual*/ void 
-    OnActivateView
-    (
-        BOOL            bActivate, 
-        CView           *pActivateView, 
-        CView           *
-    );
+    /*virtual*/ void OnActivateView(BOOL   bActivate,
+                                    CView* pActivateView,
+                                    CView*);
 
-protected:
+  protected:
     afx_msg void OnSize(UINT type, int cx, int cy);
-	afx_msg void OnPaint();
-	afx_msg void OnKillFocus( CWnd *pNewWnd );
-	DECLARE_MESSAGE_MAP()
+    afx_msg void OnPaint();
+    afx_msg void OnKillFocus(CWnd* pNewWnd);
+    DECLARE_MESSAGE_MAP()
 
-	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+    virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 
-    static ParticleEditorView   *s_instance_;
+    static ParticleEditorView* s_instance_;
 };
 
 BW_END_NAMESPACE

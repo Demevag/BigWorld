@@ -7,12 +7,12 @@ BW_BEGIN_NAMESPACE
 
 enum DebugMessageSource
 {
-	MESSAGE_SOURCE_CPP,
-	MESSAGE_SOURCE_SCRIPT,
-	NUM_MESSAGE_SOURCE
+    MESSAGE_SOURCE_CPP,
+    MESSAGE_SOURCE_SCRIPT,
+    NUM_MESSAGE_SOURCE
 };
 
-const char * messageSourceAsCString( DebugMessageSource sourceIndex );
+const char* messageSourceAsCString(DebugMessageSource sourceIndex);
 
 BW_END_NAMESPACE
 

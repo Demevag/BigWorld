@@ -9,24 +9,23 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace ScaleformBW
-{
-	class SysAlloc : public SysAllocWinAPI
-	{
-		size_t total_allocated_memory;
-		static SysAlloc instance_;
-	public:
+namespace ScaleformBW {
+    class SysAlloc : public SysAllocWinAPI
+    {
+        size_t          total_allocated_memory;
+        static SysAlloc instance_;
 
-		SysAlloc();
+      public:
+        SysAlloc();
 
-		static SysAlloc& instance() { return instance_; }
-		size_t MemoryUsed() { return total_allocated_memory; }
+        static SysAlloc& instance() { return instance_; }
+        size_t           MemoryUsed() { return total_allocated_memory; }
 
-		virtual void	GetInfo(Info* i) const;
-		virtual void*	Alloc(UPInt size, UPInt align);
-		virtual bool    Free(void* ptr, UPInt size, UPInt align);
-	};
-}	//namespace ScaleformBW
+        virtual void  GetInfo(Info* i) const;
+        virtual void* Alloc(UPInt size, UPInt align);
+        virtual bool  Free(void* ptr, UPInt size, UPInt align);
+    };
+} // namespace ScaleformBW
 
 BW_END_NAMESPACE
 

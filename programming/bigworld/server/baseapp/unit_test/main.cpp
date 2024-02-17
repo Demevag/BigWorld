@@ -6,25 +6,25 @@
 
 BW_USE_NAMESPACE
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
-	BW_SYSTEMSTAGE_MAIN();
-	
-	initNetwork();
+    BW_SYSTEMSTAGE_MAIN();
 
-	Allocator::setReportOnExit( true );
-	Allocator::setCrashOnLeak( true );
+    initNetwork();
 
-	int result = BWUnitTest::runTest( "baseapp", argc, argv );
+    Allocator::setReportOnExit(true);
+    Allocator::setCrashOnLeak(true);
 
-	finiNetwork();
+    int result = BWUnitTest::runTest("baseapp", argc, argv);
 
-	// the config is not being read so the options have to be cleared manually
-	ServerAppOptionIniter::deleteAll();
+    finiNetwork();
 
-	DebugFilter::fini(); // prevent singleton leak.
+    // the config is not being read so the options have to be cleared manually
+    ServerAppOptionIniter::deleteAll();
 
-	return result;
+    DebugFilter::fini(); // prevent singleton leak.
+
+    return result;
 }
 
 // main.cpp

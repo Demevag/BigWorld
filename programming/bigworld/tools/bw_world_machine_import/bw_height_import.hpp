@@ -9,35 +9,36 @@
 /**
  *	This class is a generator that imports heights from a BigWorld space
  */
-class BWHeightImport :
-	public Generator
+class BWHeightImport : public Generator
 {
-public:
+  public:
+    static const char* HEIGH_SCALE_PROPERTY;
+    static const char* CHUNK_SCALE_PROPERTY;
 
-	static const char* HEIGH_SCALE_PROPERTY;
-	static const char* CHUNK_SCALE_PROPERTY;
+    BWHeightImport(void);
+    virtual ~BWHeightImport(void);
 
-	BWHeightImport(void);
-	virtual ~BWHeightImport(void);
+    virtual bool Load(std::istream& in);
+    virtual bool Save(std::ostream& out);
 
-	virtual bool Load(std::istream &in);
-	virtual bool Save(std::ostream &out);
+    virtual char* GetDescription()
+    {
+        return "Import height map from BigWorld space";
+    };
+    virtual char* GetTypeName() { return "BigWorld Height Importer"; };
 
-	virtual char *GetDescription() { return "Import height map from BigWorld space";};
-	virtual char *GetTypeName() { return "BigWorld Height Importer"; };
+    // The hasOrigin() property is false because this generator doesn't have an
+    // origin.
+    virtual bool hasOrigin() { return false; };
 
-	// The hasOrigin() property is false because this generator doesn't have an origin.
-	virtual bool hasOrigin() { return false; };
+    virtual bool Activate(BuildContext& context);
 
-	virtual bool Activate(BuildContext &context);
+    void resetChunkScale();
 
-	void resetChunkScale();
+    void selectSpace();
 
-	void selectSpace();
-
-
-protected:
-	BW::SpaceHelper spaceHelper_;
+  protected:
+    BW::SpaceHelper spaceHelper_;
 };
 
 #endif // BIGWORLD_HEIGHT_IMPORTER_HPP

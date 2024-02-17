@@ -14,138 +14,122 @@
 #include "item_view.hpp"
 #include "chunk/chunk_item.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Editor", 0 )
+DECLARE_DEBUG_COMPONENT2("Editor", 0)
 
 BW_BEGIN_NAMESPACE
 
-PY_TYPEOBJECT( MatrixPositioner )
+PY_TYPEOBJECT(MatrixPositioner)
 
-PY_BEGIN_METHODS( MatrixPositioner )
+PY_BEGIN_METHODS(MatrixPositioner)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( MatrixPositioner )
+PY_BEGIN_ATTRIBUTES(MatrixPositioner)
 PY_END_ATTRIBUTES()
 
-PY_FACTORY( MatrixPositioner, Functor )
-
+PY_FACTORY(MatrixPositioner, Functor)
 
 /**
  *	Constructor.
  */
-MatrixPositioner::MatrixPositioner( MatrixProxyPtr pMatrix,
-	bool allowedToDiscardChanges,
-	PyTypeObject * pType ) :
+MatrixPositioner::MatrixPositioner(MatrixProxyPtr pMatrix,
+                                   bool           allowedToDiscardChanges,
+                                   PyTypeObject*  pType)
+  :
 
-	AlwaysApplyingFunctor( allowedToDiscardChanges, pType ),
-	lastLocatorPos_( Vector3::zero() ),
-	totalLocatorOffset_( Vector3::zero() ),
-	gotInitialLocatorPos_( false )
+  AlwaysApplyingFunctor(allowedToDiscardChanges, pType)
+  , lastLocatorPos_(Vector3::zero())
+  , totalLocatorOffset_(Vector3::zero())
+  , gotInitialLocatorPos_(false)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	BW::vector<GenPositionProperty*> props =
-		CurrentPositionProperties::properties();
-	for (BW::vector<GenPositionProperty*>::iterator i = props.begin();
-		i != props.end(); ++i)
-	{
-		(*i)->pMatrix()->recordState();
-	}
+    BW::vector<GenPositionProperty*> props =
+      CurrentPositionProperties::properties();
+    for (BW::vector<GenPositionProperty*>::iterator i = props.begin();
+         i != props.end();
+         ++i) {
+        (*i)->pMatrix()->recordState();
+    }
 
-	matrix_ = pMatrix;
+    matrix_ = pMatrix;
 }
 
-
-void MatrixPositioner::doApply( float dTime, Tool& tool )
+void MatrixPositioner::doApply(float dTime, Tool& tool)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// figure out movement
-	if (tool.locator())
-	{
-		if (!gotInitialLocatorPos_)
-		{
-			lastLocatorPos_ = tool.locator()->transform().applyToOrigin();
-			gotInitialLocatorPos_ = true;
-		}
+    // figure out movement
+    if (tool.locator()) {
+        if (!gotInitialLocatorPos_) {
+            lastLocatorPos_       = tool.locator()->transform().applyToOrigin();
+            gotInitialLocatorPos_ = true;
+        }
 
-		totalLocatorOffset_ += tool.locator()->transform().applyToOrigin() -
-			lastLocatorPos_;
-		lastLocatorPos_ = tool.locator()->transform().applyToOrigin();
+        totalLocatorOffset_ +=
+          tool.locator()->transform().applyToOrigin() - lastLocatorPos_;
+        lastLocatorPos_ = tool.locator()->transform().applyToOrigin();
 
+        // reset the last change we made
+        matrix_->commitState(true);
 
-		// reset the last change we made
-		matrix_->commitState( true );
+        Matrix m;
+        matrix_->getMatrix(m);
 
+        Vector3 newPos = m.applyToOrigin() + totalLocatorOffset_;
 
-		Matrix m;
-		matrix_->getMatrix( m );
+        SnapProvider::instance()->snapPosition(newPos);
 
-		Vector3 newPos = m.applyToOrigin() + totalLocatorOffset_;
+        m.translation(newPos);
 
-		SnapProvider::instance()->snapPosition( newPos );
+        Matrix worldToLocal;
+        matrix_->getMatrixContextInverse(worldToLocal);
 
-		m.translation( newPos );
+        m.postMultiply(worldToLocal);
 
-		Matrix worldToLocal;
-		matrix_->getMatrixContextInverse( worldToLocal );
-
-		m.postMultiply( worldToLocal );
-
-
-		matrix_->setMatrix( m );
-	}
+        matrix_->setMatrix(m);
+    }
 }
 
-
-void MatrixPositioner::stopApplyCommitChanges( Tool& tool, bool addUndoBarrier )
+void MatrixPositioner::stopApplyCommitChanges(Tool& tool, bool addUndoBarrier)
 {
-	BW_GUARD;
-	if (applying_)
-	{
-		if (matrix_->hasChanged())
-		{
-			// set its transform permanently
-			matrix_->commitState( false );
-		}
-		else
-		{
-			matrix_->commitState( true );
-		}
+    BW_GUARD;
+    if (applying_) {
+        if (matrix_->hasChanged()) {
+            // set its transform permanently
+            matrix_->commitState(false);
+        } else {
+            matrix_->commitState(true);
+        }
 
-		AlwaysApplyingFunctor::stopApplyCommitChanges( tool, addUndoBarrier );
-	}
+        AlwaysApplyingFunctor::stopApplyCommitChanges(tool, addUndoBarrier);
+    }
 }
 
-
-void MatrixPositioner::stopApplyDiscardChanges( Tool& tool )
+void MatrixPositioner::stopApplyDiscardChanges(Tool& tool)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (applying_)
-	{
-		// Set the items back to their original states
-		matrix_->commitState( true );
+    if (applying_) {
+        // Set the items back to their original states
+        matrix_->commitState(true);
 
-		AlwaysApplyingFunctor::stopApplyDiscardChanges( tool );
-	}
+        AlwaysApplyingFunctor::stopApplyDiscardChanges(tool);
+    }
 }
-
 
 /**
  *	Factory method
  */
-PyObject * MatrixPositioner::pyNew( PyObject * args )
+PyObject* MatrixPositioner::pyNew(PyObject* args)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (CurrentPositionProperties::properties().empty())
-	{
-		PyErr_Format( PyExc_ValueError,
-			"MatrixPositioner()  No current editor" );
-		return NULL;
-	}
+    if (CurrentPositionProperties::properties().empty()) {
+        PyErr_Format(PyExc_ValueError, "MatrixPositioner()  No current editor");
+        return NULL;
+    }
 
-	return new MatrixPositioner( NULL );
+    return new MatrixPositioner(NULL);
 }
 
 BW_END_NAMESPACE

@@ -29,10 +29,9 @@ class TimeKeeper;
 typedef Mercury::ChannelOwner CellAppMgr;
 typedef Mercury::ChannelOwner DBApp;
 
-namespace Mercury
-{
-class EventDispatcher;
-class NetworkInterface;
+namespace Mercury {
+    class EventDispatcher;
+    class NetworkInterface;
 }
 
 /**
@@ -41,18 +40,17 @@ class NetworkInterface;
  */
 class BaseAppsIterator
 {
-public:
-	typedef std::function<bool ( const BaseApp & )> Predicate;
-	BaseAppsIterator( const BaseApps & apps,
-					  const Predicate & pred = Predicate() );
-	const BaseAppPtr & next();
-private:
-	BaseApps::const_iterator		iter_;
-	const BaseApps::const_iterator	end_;
-	const Predicate					predicate_;
-	static const BaseAppPtr			endOfContainer_;
-};
+  public:
+    typedef std::function<bool(const BaseApp&)> Predicate;
+    BaseAppsIterator(const BaseApps& apps, const Predicate& pred = Predicate());
+    const BaseAppPtr& next();
 
+  private:
+    BaseApps::const_iterator       iter_;
+    const BaseApps::const_iterator end_;
+    const Predicate                predicate_;
+    static const BaseAppPtr        endOfContainer_;
+};
 
 /**
  *	This class encapsulates operations that should be applied only to a subset
@@ -60,78 +58,80 @@ private:
  */
 class ManagedAppSubSet
 {
-public:
-	uint size() const
-	{
-		MF_ASSERT_DEBUG( size_ == this->countApps() );
-		return size_;
-	}
-	BaseApp * findLeastLoadedApp() const;
-	float minAppLoad() const;
-	float avgAppLoad() const;
-	float maxAppLoad() const;
+  public:
+    uint size() const
+    {
+        MF_ASSERT_DEBUG(size_ == this->countApps());
+        return size_;
+    }
+    BaseApp* findLeastLoadedApp() const;
+    float    minAppLoad() const;
+    float    avgAppLoad() const;
+    float    maxAppLoad() const;
 
-	BaseAppID lastAppID() const { return lastAppID_; }
+    BaseAppID lastAppID() const { return lastAppID_; }
 
-	void adjustBackupLocations( BaseApp & app, AdjustBackupLocationsOp op );
-	virtual void updateCreateBaseInfo() = 0;
+    void adjustBackupLocations(BaseApp& app, AdjustBackupLocationsOp op);
+    virtual void updateCreateBaseInfo() = 0;
 
-	void recoverBaseApp( const Mercury::Address & srcAddr,
-		BaseAppMgr & baseAppMgr, const Mercury::Address & addrForCells,
-		const Mercury::Address & addrForClients, BaseAppID id,
-		bool isServiceApp, BinaryIStream & data );
+    void recoverBaseApp(const Mercury::Address& srcAddr,
+                        BaseAppMgr&             baseAppMgr,
+                        const Mercury::Address& addrForCells,
+                        const Mercury::Address& addrForClients,
+                        BaseAppID               id,
+                        bool                    isServiceApp,
+                        BinaryIStream&          data);
 
-	void killApp( const BaseApp & baseApp );
-	virtual void addApp( const BaseAppPtr & pBaseApp );
-	void removeApp( const BaseApp & baseApp );
-	virtual bool onBaseAppDeath( BaseApp & app );
-	
-	BaseAppID getNextAppID();
+    void         killApp(const BaseApp& baseApp);
+    virtual void addApp(const BaseAppPtr& pBaseApp);
+    void         removeApp(const BaseApp& baseApp);
+    virtual bool onBaseAppDeath(BaseApp& app);
 
-	/**
-	 *	This method should return the minimum number of apps required for a
-	 *	particular subset.
-	 */
-	virtual uint minimumRequiredApps() const = 0;
+    BaseAppID getNextAppID();
 
-protected:
-	ManagedAppSubSet( BaseApps & apps, CellAppMgr & cellAppMgr );
-	typedef BaseAppMgrConfig Config;
+    /**
+     *	This method should return the minimum number of apps required for a
+     *	particular subset.
+     */
+    virtual uint minimumRequiredApps() const = 0;
 
-	/**
-	 *	This method should return an iterator that only enumerates apps from this
-	 *	subset.
-	 */
-	virtual BaseAppsIterator iterator() const = 0;
-	virtual ~ManagedAppSubSet() { }
+  protected:
+    ManagedAppSubSet(BaseApps& apps, CellAppMgr& cellAppMgr);
+    typedef BaseAppMgrConfig Config;
 
-private:
-	void stopBackupsTo( const Mercury::Address & addr );
-	uint countApps() const;
-	bool hasIdealBackups() const;
+    /**
+     *	This method should return an iterator that only enumerates apps from
+     *this subset.
+     */
+    virtual BaseAppsIterator iterator() const = 0;
+    virtual ~ManagedAppSubSet() {}
 
-	/**
-	 *	This method should return a camel-case base name (no ID) for an app
-	 *	in this subset.
-	 */
-	virtual const char * appName() const = 0;
+  private:
+    void stopBackupsTo(const Mercury::Address& addr);
+    uint countApps() const;
+    bool hasIdealBackups() const;
 
-	/**
-	 *	This method should return @a true if the server should be shut down when
-	 *	an app from this subset dies.
-	 */
-	virtual bool shutDownOnAppDeath() const = 0;
+    /**
+     *	This method should return a camel-case base name (no ID) for an app
+     *	in this subset.
+     */
+    virtual const char* appName() const = 0;
 
-protected:
-	BaseApps &		apps_;
-	CellAppMgr &	cellAppMgr_;
-	BaseAppID		lastAppID_;		//  last id allocated for a BaseApp
-	// Cached subset size.
-	uint			size_;
-	// Whether we've got apps on multiple machines.
-	bool			hasIdealBackups_;
+    /**
+     *	This method should return @a true if the server should be shut down when
+     *	an app from this subset dies.
+     */
+    virtual bool shutDownOnAppDeath() const = 0;
+
+  protected:
+    BaseApps&   apps_;
+    CellAppMgr& cellAppMgr_;
+    BaseAppID   lastAppID_; //  last id allocated for a BaseApp
+    // Cached subset size.
+    uint size_;
+    // Whether we've got apps on multiple machines.
+    bool hasIdealBackups_;
 };
-
 
 /**
  *	This class extends @ref ManagedAppSubSet to represent a subset of "real"
@@ -139,319 +139,317 @@ protected:
  */
 class BaseAppSubSet : public ManagedAppSubSet
 {
-public:
-	BaseAppSubSet( BaseApps & apps, CellAppMgr & cellAppMgr );
-	void updateBestBaseApp();
-	void updateCreateBaseInfo() /* override */;
-	void clearBestBaseApp();
-	const Mercury::Address & bestBaseApp() const { return bestBaseAppAddr_; }
-	void bestBaseApp( const Mercury::Address & addr )
-	{
-		bestBaseAppAddr_ = addr;
-	}
-	void addApp( const BaseAppPtr & pBaseApp ) /* override */;
-	uint minimumRequiredApps() const /* override */ { return 1; }
+  public:
+    BaseAppSubSet(BaseApps& apps, CellAppMgr& cellAppMgr);
+    void                    updateBestBaseApp();
+    void                    updateCreateBaseInfo() /* override */;
+    void                    clearBestBaseApp();
+    const Mercury::Address& bestBaseApp() const { return bestBaseAppAddr_; }
+    void bestBaseApp(const Mercury::Address& addr) { bestBaseAppAddr_ = addr; }
+    void addApp(const BaseAppPtr& pBaseApp) /* override */;
+    uint minimumRequiredApps() const /* override */ { return 1; }
 
-private:
-	const char * appName() const /* override */ { return "BaseApp"; }
-	bool shutDownOnAppDeath() const /* override */;
-	BaseAppsIterator iterator() const /* override */;
+  private:
+    const char*      appName() const /* override */ { return "BaseApp"; }
+    bool             shutDownOnAppDeath() const /* override */;
+    BaseAppsIterator iterator() const /* override */;
 
-	Mercury::Address bestBaseAppAddr_;
+    Mercury::Address bestBaseAppAddr_;
 };
-
 
 /**
  *	This class extends @ref ManagedAppSubSet to represent a subset ServiceApps.
  */
-class ServiceAppSubSet: public ManagedAppSubSet
+class ServiceAppSubSet : public ManagedAppSubSet
 {
-public:
-	ServiceAppSubSet( BaseApps & apps, CellAppMgr & cellAppMgr );
-	void addServiceFragmentFromStream( const Mercury::Address & srcAddr,
-		BinaryIStream & data, bool sendToBaseApps );
-	bool deregisterServiceFragment( const Mercury::Address & addr,
-		BinaryIStream & data, ShutDownStage shutDownStage );
-	void putServiceFragmentsInto( Mercury::Bundle & bundle );
-	void recoverServiceFragments( const Mercury::Address & srcAddr,
-		BinaryIStream & data );
-	bool onBaseAppDeath( BaseApp & app ) /* override */;
-	uint minimumRequiredApps() const /* override */;
-	void updateCreateBaseInfo() /* override */;
+  public:
+    ServiceAppSubSet(BaseApps& apps, CellAppMgr& cellAppMgr);
+    void addServiceFragmentFromStream(const Mercury::Address& srcAddr,
+                                      BinaryIStream&          data,
+                                      bool                    sendToBaseApps);
+    bool deregisterServiceFragment(const Mercury::Address& addr,
+                                   BinaryIStream&          data,
+                                   ShutDownStage           shutDownStage);
+    void putServiceFragmentsInto(Mercury::Bundle& bundle);
+    void recoverServiceFragments(const Mercury::Address& srcAddr,
+                                 BinaryIStream&          data);
+    bool onBaseAppDeath(BaseApp& app) /* override */;
+    uint minimumRequiredApps() const /* override */;
+    void updateCreateBaseInfo() /* override */;
 
-private:
-	BaseAppsIterator iterator() const /* override */;
-	const char * appName() const /* override */ { return "ServiceApp"; }
-	bool shutDownOnAppDeath() const /* override */;
+  private:
+    BaseAppsIterator iterator() const /* override */;
+    const char*      appName() const /* override */ { return "ServiceApp"; }
+    bool             shutDownOnAppDeath() const /* override */;
 
-	ServicesMap services_;
+    ServicesMap services_;
 };
-
 
 /**
  *	This singleton class is the global object that is used to manage proxies and
  *	bases.
  */
-class BaseAppMgr : public ManagerApp,
-	private TimerHandler,
-	public Singleton< BaseAppMgr >
+class BaseAppMgr
+  : public ManagerApp
+  , private TimerHandler
+  , public Singleton<BaseAppMgr>
 {
-public:
-	MANAGER_APP_HEADER( BaseAppMgr, baseAppMgr )
+  public:
+    MANAGER_APP_HEADER(BaseAppMgr, baseAppMgr)
 
-	typedef BaseAppMgrConfig Config;
+    typedef BaseAppMgrConfig Config;
 
-	BaseAppMgr( Mercury::EventDispatcher & mainDispatcher,
-			Mercury::NetworkInterface & interface );
-	virtual ~BaseAppMgr();
+    BaseAppMgr(Mercury::EventDispatcher&  mainDispatcher,
+               Mercury::NetworkInterface& interface);
+    virtual ~BaseAppMgr();
 
-	void createEntity( const Mercury::Address & srcAddr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    void createEntity(const Mercury::Address&               srcAddr,
+                      const Mercury::UnpackedMessageHeader& header,
+                      BinaryIStream&                        data);
 
-	// BaseApps register/unregister via the add/del calls.
-	void add( const Mercury::Address & srcAddr,
-			const Mercury::UnpackedMessageHeader & header,
-			const BaseAppMgrInterface::addArgs & args );
-
-	void recoverBaseApp( const Mercury::Address & addr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
-
-	void del( const Mercury::Address & addr,
-		const Mercury::UnpackedMessageHeader & header,
-		const BaseAppMgrInterface::delArgs & args );
-
-	void finishedInit( const Mercury::Address & addr,
-		const Mercury::UnpackedMessageHeader & header);
+    // BaseApps register/unregister via the add/del calls.
+    void add(const Mercury::Address&               srcAddr,
+             const Mercury::UnpackedMessageHeader& header,
+             const BaseAppMgrInterface::addArgs&   args);
+
+    void recoverBaseApp(const Mercury::Address&               addr,
+                        const Mercury::UnpackedMessageHeader& header,
+                        BinaryIStream&                        data);
+
+    void del(const Mercury::Address&               addr,
+             const Mercury::UnpackedMessageHeader& header,
+             const BaseAppMgrInterface::delArgs&   args);
+
+    void finishedInit(const Mercury::Address&               addr,
+                      const Mercury::UnpackedMessageHeader& header);
+
+    void informOfLoad(const Mercury::Address&                      addr,
+                      const Mercury::UnpackedMessageHeader&        header,
+                      const BaseAppMgrInterface::informOfLoadArgs& args);
+
+    virtual void shutDown() // from ServerApp
+    {
+        this->shutDown(false);
+    }
+
+    void shutDown(bool shutDownOthers);
+    void shutDown(const BaseAppMgrInterface::shutDownArgs& args);
+    void startup(const Mercury::Address&               addr,
+                 const Mercury::UnpackedMessageHeader& header,
+                 BinaryIStream&                        data);
 
-	void informOfLoad( const Mercury::Address & addr,
-		const Mercury::UnpackedMessageHeader & header,
-		const BaseAppMgrInterface::informOfLoadArgs & args );
+    void checkStatus(const Mercury::Address&               addr,
+                     const Mercury::UnpackedMessageHeader& header,
+                     BinaryIStream&                        data);
 
-	virtual void shutDown() // from ServerApp
-		{ this->shutDown( false ); }
+    void controlledShutDown(
+      const BaseAppMgrInterface::controlledShutDownArgs& args);
 
+    void requestHasStarted(const Mercury::Address&               addr,
+                           const Mercury::UnpackedMessageHeader& header);
 
-	void shutDown( bool shutDownOthers );
-	void shutDown( const BaseAppMgrInterface::shutDownArgs & args );
-	void startup( const Mercury::Address & addr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    void initData(const Mercury::Address&               addr,
+                  const Mercury::UnpackedMessageHeader& header,
+                  BinaryIStream&                        data);
 
-	void checkStatus( const Mercury::Address & addr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    void spaceDataRestore(const Mercury::Address&               addr,
+                          const Mercury::UnpackedMessageHeader& header,
+                          BinaryIStream&                        data);
 
-	void controlledShutDown(
-			const BaseAppMgrInterface::controlledShutDownArgs & args );
+    void setSharedData(const Mercury::Address&               srcAddr,
+                       const Mercury::UnpackedMessageHeader& header,
+                       BinaryIStream&                        data);
 
-	void requestHasStarted( const Mercury::Address & addr,
-			const Mercury::UnpackedMessageHeader & header );
+    void delSharedData(const Mercury::Address&               srcAddr,
+                       const Mercury::UnpackedMessageHeader& header,
+                       BinaryIStream&                        data);
 
-	void initData( const Mercury::Address & addr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    void useNewBackupHash(const Mercury::Address&               addr,
+                          const Mercury::UnpackedMessageHeader& header,
+                          BinaryIStream&                        data);
 
-	void spaceDataRestore( const Mercury::Address & addr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    void informOfArchiveComplete(const Mercury::Address&               addr,
+                                 const Mercury::UnpackedMessageHeader& header,
+                                 BinaryIStream&                        data);
 
-	void setSharedData( const Mercury::Address & srcAddr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    void requestBackupHashChain(const Mercury::Address&               addr,
+                                const Mercury::UnpackedMessageHeader& header,
+                                BinaryIStream&                        data);
 
-	void delSharedData( const Mercury::Address & srcAddr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    void updateDBAppHash(const Mercury::Address&               addr,
+                         const Mercury::UnpackedMessageHeader& header,
+                         BinaryIStream&                        data);
 
-	void useNewBackupHash( const Mercury::Address & addr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    BaseApp*               findBaseApp(const Mercury::Address& addr);
+    Mercury::ChannelOwner* findChannelOwner(const Mercury::Address& addr);
 
-	void informOfArchiveComplete( const Mercury::Address & addr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    static Mercury::UDPChannel& getChannel(const Mercury::Address& addr);
 
-	void requestBackupHashChain( const Mercury::Address & addr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    /*
+     * This method returns the number of known BaseApps and ServiceApps.
+     */
+    uint numBaseAndServiceApps() const { return baseAndServiceApps_.size(); }
+    uint numBaseApps() const { return baseApps_.size(); }
+    uint numServiceApps() const { return serviceApps_.size(); }
 
-	void updateDBAppHash( const Mercury::Address & addr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    int numBases() const;
+    int numProxies() const;
 
-	BaseApp * findBaseApp( const Mercury::Address & addr );
-	Mercury::ChannelOwner * findChannelOwner( const Mercury::Address & addr );
+    CellAppMgr& cellAppMgr() { return cellAppMgr_; }
+    DBApp&      dbAppAlpha() { return dbAppAlpha_; }
 
-	static Mercury::UDPChannel & getChannel( const Mercury::Address & addr );
+    // ---- Message Handlers ----
+    void handleCellAppMgrBirth(
+      const BaseAppMgrInterface::handleCellAppMgrBirthArgs& args);
+    void handleBaseAppMgrBirth(
+      const BaseAppMgrInterface::handleBaseAppMgrBirthArgs& args);
 
-	/*
-	 * This method returns the number of known BaseApps and ServiceApps.
-	 */
-	uint numBaseAndServiceApps() const
-	{
-		return baseAndServiceApps_.size();
-	}
-	uint numBaseApps() const { return baseApps_.size(); }
-	uint numServiceApps() const { return serviceApps_.size(); }
+    void handleCellAppDeath(const Mercury::Address&               addr,
+                            const Mercury::UnpackedMessageHeader& header,
+                            BinaryIStream&                        data);
+    void handleBaseAppDeath(
+      const BaseAppMgrInterface::handleBaseAppDeathArgs& args);
+    void handleBaseAppDeath(const Mercury::Address& addr);
 
-	int numBases() const;
-	int numProxies() const;
+    void registerBaseGlobally(const Mercury::Address&               addr,
+                              const Mercury::UnpackedMessageHeader& header,
+                              BinaryIStream&                        data);
 
-	CellAppMgr & cellAppMgr()	{ return cellAppMgr_; }
-	DBApp & dbAppAlpha()		{ return dbAppAlpha_; }
+    void deregisterBaseGlobally(const Mercury::Address&               addr,
+                                const Mercury::UnpackedMessageHeader& header,
+                                BinaryIStream&                        data);
 
-	// ---- Message Handlers ----
-	void handleCellAppMgrBirth(
-		const BaseAppMgrInterface::handleCellAppMgrBirthArgs & args );
-	void handleBaseAppMgrBirth(
-		const BaseAppMgrInterface::handleBaseAppMgrBirthArgs & args );
+    void registerServiceFragment(const Mercury::Address&               addr,
+                                 const Mercury::UnpackedMessageHeader& header,
+                                 BinaryIStream&                        data);
 
-	void handleCellAppDeath( const Mercury::Address & addr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
-	void handleBaseAppDeath(
-		const BaseAppMgrInterface::handleBaseAppDeathArgs & args );
-	void handleBaseAppDeath( const Mercury::Address & addr );
+    void deregisterServiceFragment(const Mercury::Address&               addr,
+                                   const Mercury::UnpackedMessageHeader& header,
+                                   BinaryIStream&                        data);
 
-	void registerBaseGlobally( const Mercury::Address & addr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    void runScript(const Mercury::Address&               addr,
+                   const Mercury::UnpackedMessageHeader& header,
+                   BinaryIStream&                        data);
 
-	void deregisterBaseGlobally( const Mercury::Address & addr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    void startAsyncShutDownStage(ShutDownStage stage);
 
-	void registerServiceFragment( const Mercury::Address & addr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    void controlledShutDownServer();
 
-	void deregisterServiceFragment( const Mercury::Address & addr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    bool onBaseAppDeath(const Mercury::Address& addr);
 
-	void runScript( const Mercury::Address & addr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    void removeControlledShutdownBaseApp(const Mercury::Address& addr);
 
-	void startAsyncShutDownStage( ShutDownStage stage );
+    void onBaseAppRetire(BaseApp& baseApp);
 
-	void controlledShutDownServer();
+    void ackBaseAppsShutDownToCellAppMgr(ShutDownStage stage);
 
-	bool onBaseAppDeath( const Mercury::Address & addr );
+  private:
+    virtual bool init(int argc, char* argv[]);
 
-	void removeControlledShutdownBaseApp( const Mercury::Address & addr );
+    enum TimeOutType
+    {
+        TIMEOUT_GAME_TICK
+    };
 
-	void onBaseAppRetire( BaseApp & baseApp );
+    virtual void handleTimeout(TimerHandle handle, void* arg);
 
-	void ackBaseAppsShutDownToCellAppMgr( ShutDownStage stage );
+    void startTimer();
+    void checkBackups(); // Old-style backup
+    void adjustBackupLocations(const Mercury::Address& addr,
+                               AdjustBackupLocationsOp op);
 
-private:
-	virtual bool init( int argc, char* argv[] );
+    void checkForDeadBaseApps();
 
-	enum TimeOutType
-	{
-		TIMEOUT_GAME_TICK
-	};
+    void runScriptAll(BW::string script);
+    void runScriptSingle(BW::string script);
 
-	virtual void handleTimeout( TimerHandle handle, void * arg );
+    void runScript(const BW::string& script, int8 broadcast);
 
-	void startTimer();
-	void checkBackups(); // Old-style backup
-	void adjustBackupLocations( const Mercury::Address & addr, 
-			AdjustBackupLocationsOp op );
+    void addServiceFragmentFromStream(const Mercury::Address& srcAddr,
+                                      BinaryIStream&          data,
+                                      bool                    sendToBaseApps);
 
-	void checkForDeadBaseApps();
+    void recoverGlobalBasesFromStream(const Mercury::Address& srcAddr,
+                                      BinaryIStream&          data);
 
-	void runScriptAll( BW::string script );
-	void runScriptSingle( BW::string script );
+    void recoverSharedDataFromStream(BinaryIStream& data);
 
-	void runScript( const BW::string & script, int8 broadcast );
+    ManagedAppSubSet& getSubSet(const BaseApp& app);
 
-	void addServiceFragmentFromStream( const Mercury::Address & srcAddr,
-		BinaryIStream & data,
-		bool sendToBaseApps );
+    void startupBaseApp(BaseApp& baseApp,
+                        bool&    shouldSendBootstrap,
+                        bool     didAutoLoadEntitiesFromDB);
 
-	void recoverGlobalBasesFromStream( const Mercury::Address & srcAddr,
-		BinaryIStream & data );
+    void synchronize(BaseAppPtr baseApp);
 
-	void recoverSharedDataFromStream( BinaryIStream & data );
+    /**
+     *	This method returns a subset instance reference corresponding to the
+     *	given argument.
+     *	@param isServiceApp Which subset to pick.
+     */
+    ManagedAppSubSet& getSubSet(bool isServiceApp)
+    {
+        return isServiceApp ? static_cast<ManagedAppSubSet&>(serviceApps_)
+                            : static_cast<ManagedAppSubSet&>(baseApps_);
+    }
+    void redirectGlobalBases(const BaseApp& baseApp);
+    void sendBaseAppDeathNotifications(const BaseApp& baseApp);
 
-	ManagedAppSubSet & getSubSet( const BaseApp & app );
-	
-	void startupBaseApp( BaseApp & baseApp, bool & shouldSendBootstrap,
-		bool didAutoLoadEntitiesFromDB );
+  public:
+    const BaseApps& baseApps() const { return baseAndServiceApps_; }
 
-	void synchronize( BaseAppPtr baseApp );
+  private:
+    void addWatchers();
 
-	/**
-	 *	This method returns a subset instance reference corresponding to the
-	 *	given argument.
-	 *	@param isServiceApp Which subset to pick.
-	 */
-	ManagedAppSubSet & getSubSet( bool isServiceApp )
-	{
-		return isServiceApp ? static_cast<ManagedAppSubSet &>( serviceApps_ )
-							: static_cast<ManagedAppSubSet &>( baseApps_ );
-	}
-	void redirectGlobalBases( const BaseApp & baseApp );
-	void sendBaseAppDeathNotifications( const BaseApp & baseApp );
-public:
-	const BaseApps & baseApps() const { return baseAndServiceApps_; }
+    bool calculateOverloaded(bool areBaseAppsOverloaded);
 
-private:
-	void addWatchers();
+    void informBaseAppsOfShutDown(
+      const BaseAppMgrInterface::controlledShutDownArgs& args);
 
-	bool calculateOverloaded( bool areBaseAppsOverloaded );
+    CellAppMgr    cellAppMgr_;
+    DBApp         dbAppAlpha_;
+    DBAppsGateway dbApps_;
 
-	void informBaseAppsOfShutDown(
-		const BaseAppMgrInterface::controlledShutDownArgs & args );
+    // A container for all apps added but not ready to process message.
+    BaseApps pendingApps_;
 
-	CellAppMgr				cellAppMgr_;
-	DBApp					dbAppAlpha_;
-	DBAppsGateway 			dbApps_;
+    // A container for all apps ready to process message.
+    // NOTE:	The 'baseAndServiceApps_' container should only be modified
+    //			through the corresponding subset's 'addApp'/'removeApp' methods.
+    const BaseApps   baseAndServiceApps_;
+    BaseAppSubSet    baseApps_;
+    ServiceAppSubSet serviceApps_;
 
-	// A container for all apps added but not ready to process message.
-	BaseApps			pendingApps_;
+    std::auto_ptr<BackupHashChain> pBackupHashChain_;
 
-	// A container for all apps ready to process message.
-	// NOTE:	The 'baseAndServiceApps_' container should only be modified
-	//			through the corresponding subset's 'addApp'/'removeApp' methods.
-	const BaseApps			baseAndServiceApps_;
-	BaseAppSubSet			baseApps_;
-	ServiceAppSubSet		serviceApps_;
+    typedef BW::map<BW::string, BW::string> SharedData;
+    SharedData sharedBaseAppData_; // Authoritative copy
+    SharedData sharedGlobalData_;  // Copy from CellAppMgr
 
-	std::auto_ptr< BackupHashChain >	pBackupHashChain_;
+    typedef BW::map<BW::string, EntityMailBoxRef> GlobalBases;
+    GlobalBases                                   globalBases_;
 
-	typedef BW::map< BW::string, BW::string > SharedData;
-	SharedData 		sharedBaseAppData_; // Authoritative copy
-	SharedData 		sharedGlobalData_; // Copy from CellAppMgr
+    TimeKeeper* pTimeKeeper_;
+    int         syncTimePeriod_;
 
-	typedef BW::map< BW::string, EntityMailBoxRef > GlobalBases;
-	GlobalBases globalBases_;
+    bool isRecovery_;
+    bool hasInitData_;
+    bool hasStarted_;
+    bool shouldShutDownOthers_;
 
-	TimeKeeper *	pTimeKeeper_;
-	int				syncTimePeriod_;
+    Mercury::Address deadBaseAppAddr_;
+    unsigned int     archiveCompleteMsgCounter_;
 
-	bool			isRecovery_;
-	bool			hasInitData_;
-	bool			hasStarted_;
-	bool			shouldShutDownOthers_;
+    GameTime      shutDownTime_;
+    ShutDownStage shutDownStage_;
 
-	Mercury::Address	deadBaseAppAddr_;
-	unsigned int		archiveCompleteMsgCounter_;
+    // Entity creation rate limiting when baseapps are overload
+    uint64 baseAppOverloadStartTime_;
+    int    loginsSinceOverload_;
 
-	GameTime		shutDownTime_;
-	ShutDownStage	shutDownStage_;
+    TimerHandle gameTimer_;
 
-	// Entity creation rate limiting when baseapps are overload
-	uint64			baseAppOverloadStartTime_;
-	int				loginsSinceOverload_;
-
-	TimerHandle		gameTimer_;
-
-	friend class CreateBaseReplyHandler;
+    friend class CreateBaseReplyHandler;
 };
 
 #ifdef CODE_INLINE

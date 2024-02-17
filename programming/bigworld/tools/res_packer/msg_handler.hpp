@@ -3,33 +3,36 @@
 
 #include "cstdmf/debug_message_callbacks.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
- *	This class filters normal and critical messages, printing only warning, 
+ *	This class filters normal and critical messages, printing only warning,
  *	errors and critical messages. If an error or critical message is received
  *	the internal errorsOccurred_ flag is set.
  */
-class MsgHandler : public DebugMessageCallback, public CriticalMessageCallback
+class MsgHandler
+  : public DebugMessageCallback
+  , public CriticalMessageCallback
 {
-public:
-	MsgHandler();
-	virtual ~MsgHandler();
+  public:
+    MsgHandler();
+    virtual ~MsgHandler();
 
-	// normal DebugMessageCallback message handler
-	virtual bool handleMessage(
-		DebugMessagePriority messagePriority, const char * pCategory,
-		DebugMessageSource messageSource, const LogMetaData & metaData,
-		const char * pFormat, va_list argPtr );
+    // normal DebugMessageCallback message handler
+    virtual bool handleMessage(DebugMessagePriority messagePriority,
+                               const char*          pCategory,
+                               DebugMessageSource   messageSource,
+                               const LogMetaData&   metaData,
+                               const char*          pFormat,
+                               va_list              argPtr);
 
-	// critical CriticalMessageCallback handler
-	virtual void handleCritical( const char * msg );
+    // critical CriticalMessageCallback handler
+    virtual void handleCritical(const char* msg);
 
-	bool errorsOccurred() const;
+    bool errorsOccurred() const;
 
-private:
-	bool errorsOccurred_;
+  private:
+    bool errorsOccurred_;
 };
 
 BW_END_NAMESPACE

@@ -4,34 +4,32 @@
 
 #include "cstdmf/bw_vector.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "DBEngine", 0 )
+DECLARE_DEBUG_COMPONENT2("DBEngine", 0)
 
 BW_BEGIN_NAMESPACE
 
 namespace // (anonymous)
 {
 
-typedef BW::vector< DatabaseEngineCreator * > DatabaseEngines;
+    typedef BW::vector<DatabaseEngineCreator*> DatabaseEngines;
 
-// This global is used by the IntrusiveObject of the DatabaseEngineCreator
-DatabaseEngines * g_pDatabaseEnginesCollection = NULL;
+    // This global is used by the IntrusiveObject of the DatabaseEngineCreator
+    DatabaseEngines* g_pDatabaseEnginesCollection = NULL;
 
 } // end namespace (anonymous)
-
 
 // --------------------------------------------------------------------------
 // Section: DatabaseEngineData
 // --------------------------------------------------------------------------
 
-DatabaseEngineData::DatabaseEngineData(
-	Mercury::NetworkInterface & interface,
-		Mercury::EventDispatcher & dispatcher,
-		bool isProduction ) :
-	pInterface_( &interface ),
-	pDispatcher_( &dispatcher ), 
-	isProduction_( isProduction )
-{ }
-
+DatabaseEngineData::DatabaseEngineData(Mercury::NetworkInterface& interface,
+                                       Mercury::EventDispatcher&  dispatcher,
+                                       bool                       isProduction)
+  : pInterface_(&interface)
+  , pDispatcher_(&dispatcher)
+  , isProduction_(isProduction)
+{
+}
 
 // --------------------------------------------------------------------------
 // Section: DatabaseEngineCreator
@@ -40,11 +38,11 @@ DatabaseEngineData::DatabaseEngineData(
 /**
  *	Constructor.
  */
-DatabaseEngineCreator::DatabaseEngineCreator( const BW::string & typeName ) :
-	IntrusiveObject< DatabaseEngineCreator >( g_pDatabaseEnginesCollection ),
-	typeName_( typeName )
-{ }
-
+DatabaseEngineCreator::DatabaseEngineCreator(const BW::string& typeName)
+  : IntrusiveObject<DatabaseEngineCreator>(g_pDatabaseEnginesCollection)
+  , typeName_(typeName)
+{
+}
 
 /**
  *	This method calls through to the database specific creator method
@@ -58,20 +56,19 @@ DatabaseEngineCreator::DatabaseEngineCreator( const BW::string & typeName ) :
  *	@returns A pointer to an IDatabase interface for the engine created on
  *	         success, NULL on error.
  */
-IDatabase * DatabaseEngineCreator::create( const BW::string type,
-							const DatabaseEngineData & dbEngineData ) const
+IDatabase* DatabaseEngineCreator::create(
+  const BW::string          type,
+  const DatabaseEngineData& dbEngineData) const
 {
-	IDatabase * pDatabase = NULL;
+    IDatabase* pDatabase = NULL;
 
-	if (type.empty() || type == typeName_)
-	{
-		pDatabase = this->createImpl(
-						const_cast< DatabaseEngineData & >( dbEngineData ) );
-	}
+    if (type.empty() || type == typeName_) {
+        pDatabase =
+          this->createImpl(const_cast<DatabaseEngineData&>(dbEngineData));
+    }
 
-	return pDatabase;
+    return pDatabase;
 }
-
 
 /**
  *	This method creates an IDatabase instance.
@@ -84,34 +81,32 @@ IDatabase * DatabaseEngineCreator::create( const BW::string type,
  *	@returns A pointer to an IDatabase interface for the engine created on
  *	         success, NULL on error.
  */
-/* static */ IDatabase * DatabaseEngineCreator::createInstance(
-	const BW::string type,
-	const DatabaseEngineData & dbEngineData )
+/* static */ IDatabase* DatabaseEngineCreator::createInstance(
+  const BW::string          type,
+  const DatabaseEngineData& dbEngineData)
 {
-	if (g_pDatabaseEnginesCollection == NULL)
-	{
-		WARNING_MSG( "DatabaseEngineCreator::createInstance: "
-			"No database engines registered.\n" );
-		return NULL;
-	}
+    if (g_pDatabaseEnginesCollection == NULL) {
+        WARNING_MSG("DatabaseEngineCreator::createInstance: "
+                    "No database engines registered.\n");
+        return NULL;
+    }
 
-	DatabaseEngines::iterator iter = g_pDatabaseEnginesCollection->begin();
-	IDatabase * pDatabase = NULL;
-	while (iter != g_pDatabaseEnginesCollection->end())
-	{
-		pDatabase = (*iter)->create( type, dbEngineData );
+    DatabaseEngines::iterator iter      = g_pDatabaseEnginesCollection->begin();
+    IDatabase*                pDatabase = NULL;
+    while (iter != g_pDatabaseEnginesCollection->end()) {
+        pDatabase = (*iter)->create(type, dbEngineData);
 
-		if (pDatabase)
-		{
-			INFO_MSG( "DatabaseEngineCreator::createInstance: "
-				"Created database interface: %s\n", type.c_str() ); 
-			return pDatabase;
-		}
+        if (pDatabase) {
+            INFO_MSG("DatabaseEngineCreator::createInstance: "
+                     "Created database interface: %s\n",
+                     type.c_str());
+            return pDatabase;
+        }
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	return NULL;
+    return NULL;
 }
 
 BW_END_NAMESPACE

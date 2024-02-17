@@ -14,17 +14,15 @@
 #include "chunk/user_data_object_link_data_type.hpp"
 
 BW_BEGIN_NAMESPACE
-DECLARE_WATCHER_DATA( NULL )
-DECLARE_COPY_STACK_INFO( false )
+DECLARE_WATCHER_DATA(NULL)
+DECLARE_COPY_STACK_INFO(false)
 DEFINE_CREATE_EDITOR_PROPERTY_STUB
 BW_END_NAMESPACE
 
 int main()
 {
-	BW_SYSTEMSTAGE_MAIN();
-	BW_NAMESPACE OfflineProcessor::CommandManager manager;
-	bool bSuccess = manager.run();
-	return bSuccess ? 0 : 1;
+    BW_SYSTEMSTAGE_MAIN();
+    BW_NAMESPACE OfflineProcessor::CommandManager manager;
+    bool                                          bSuccess = manager.run();
+    return bSuccess ? 0 : 1;
 }
-
-

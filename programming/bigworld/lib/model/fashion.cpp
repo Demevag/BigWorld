@@ -2,9 +2,7 @@
 
 #include "fashion.hpp"
 
-
-DECLARE_DEBUG_COMPONENT2( "Model", 0 )
-
+DECLARE_DEBUG_COMPONENT2("Model", 0)
 
 BW_BEGIN_NAMESPACE
 
@@ -13,19 +11,17 @@ BW_BEGIN_NAMESPACE
  */
 Fashion::Fashion()
 {
-	BW_GUARD;
+    BW_GUARD;
 }
-
 
 /**
  *	Fashion destructor
  */
 Fashion::~Fashion()
 {
-	BW_GUARD;
+    BW_GUARD;
 }
 
 BW_END_NAMESPACE
 
 // fashion.cpp
-

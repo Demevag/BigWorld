@@ -1,7 +1,6 @@
 #ifndef SYNC_MODE_HPP
 #define SYNC_MODE_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 
@@ -12,18 +11,18 @@ BW_BEGIN_NAMESPACE
  */
 class SyncMode
 {
-public:
+  public:
     explicit SyncMode();
     ~SyncMode();
 
     operator bool() const;
 
-private:
-    SyncMode(SyncMode const &);
-    SyncMode &operator=(SyncMode const &);
+  private:
+    SyncMode(SyncMode const&);
+    SyncMode& operator=(SyncMode const&);
 
-private:
-    bool            readOnly_;
+  private:
+    bool readOnly_;
 };
 
 BW_END_NAMESPACE

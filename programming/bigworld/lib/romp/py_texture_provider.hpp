@@ -5,7 +5,6 @@
 #include "pyscript/pyobject_plus.hpp"
 #include "pyscript/script.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /*~ class BigWorld.PyTextureProvider
@@ -30,34 +29,41 @@ BW_BEGIN_NAMESPACE
  */
 class PyTextureProvider : public PyObjectPlus
 {
-	Py_Header( PyTextureProvider, PyObjectPlus )
+    Py_Header(PyTextureProvider, PyObjectPlus)
 
-public:
-	PyTextureProvider( PyObject * pOwner, Moo::BaseTexturePtr pTexture,
-			PyTypeObject * pType = &s_type_ ) :
-		PyObjectPlus( pType ), pOwner_( pOwner ), pTexture_( pTexture ) { }
-	PyTextureProvider( PyTypeObject * pType = &s_type_ ) :
-		PyObjectPlus( pType ) { }
-	virtual ~PyTextureProvider() { }
+      public
+      : PyTextureProvider(PyObject*           pOwner,
+                          Moo::BaseTexturePtr pTexture,
+                          PyTypeObject*       pType = &s_type_)
+      : PyObjectPlus(pType)
+      , pOwner_(pOwner)
+      , pTexture_(pTexture)
+    {
+    }
+    PyTextureProvider(PyTypeObject* pType = &s_type_)
+      : PyObjectPlus(pType)
+    {
+    }
+    virtual ~PyTextureProvider() {}
 
-	PY_RO_ATTRIBUTE_DECLARE( pOwner_, owner )
-	PyObject * pyGet_width();
-	PY_RO_ATTRIBUTE_SET( width );
-	PyObject * pyGet_height();
-	PY_RO_ATTRIBUTE_SET( height );
-	PY_RO_ATTRIBUTE_DECLARE( pTexture_->resourceID(), name )
-	PY_FACTORY_DECLARE()
+    PY_RO_ATTRIBUTE_DECLARE(pOwner_, owner)
+    PyObject* pyGet_width();
+    PY_RO_ATTRIBUTE_SET(width);
+    PyObject* pyGet_height();
+    PY_RO_ATTRIBUTE_SET(height);
+    PY_RO_ATTRIBUTE_DECLARE(pTexture_->resourceID(), name)
+    PY_FACTORY_DECLARE()
 
-	virtual Moo::BaseTexturePtr texture() { return pTexture_; }
+    virtual Moo::BaseTexturePtr texture() { return pTexture_; }
 
-protected:
-	WeakPyPtr<PyObject>	pOwner_;
-	Moo::BaseTexturePtr		pTexture_;
+  protected:
+    WeakPyPtr<PyObject> pOwner_;
+    Moo::BaseTexturePtr pTexture_;
 };
 
-PY_SCRIPT_CONVERTERS_DECLARE( PyTextureProvider )
+PY_SCRIPT_CONVERTERS_DECLARE(PyTextureProvider)
 
-typedef SmartPointer<PyTextureProvider>	PyTextureProviderPtr;
+typedef SmartPointer<PyTextureProvider> PyTextureProviderPtr;
 
 BW_END_NAMESPACE
 

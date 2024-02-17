@@ -2,11 +2,10 @@
 #define FLORA_TEXTURE_HPP
 
 #ifdef EDITOR_ENABLED
-	#define MAX_ECOTYPES	17
+#define MAX_ECOTYPES 17
 #else
-	#define MAX_ECOTYPES	16
+#define MAX_ECOTYPES 16
 #endif
-
 
 BW_BEGIN_NAMESPACE
 
@@ -15,41 +14,42 @@ BW_BEGIN_NAMESPACE
  */
 class CompressedMipMapCalculator
 {
-public:
-	/**
-	 * TODO: to be documented.
-	 */
-	struct MipData
-	{
-		uint32 offset_;
-		uint32 numBytesPerRow_;
-		uint32 numRows_;
-		uint32 numBytes_;
-	};
+  public:
+    /**
+     * TODO: to be documented.
+     */
+    struct MipData
+    {
+        uint32 offset_;
+        uint32 numBytesPerRow_;
+        uint32 numRows_;
+        uint32 numBytes_;
+    };
 
-	/**
-	 * TODO: to be documented.
-	 */
-	struct DDSData
-	{
-		uint32 numBytes_;
-		uint32 numMipMaps_;
-	};
+    /**
+     * TODO: to be documented.
+     */
+    struct DDSData
+    {
+        uint32 numBytes_;
+        uint32 numMipMaps_;
+    };
 
-	CompressedMipMapCalculator( bool includeHeader );
-	void dimensions( int width, int height );
-	int width()	{ return w_; }
-	int height()	{ return h_; }
-	void mipMap( int mipmapLevel, MipData& ret );
-	uint32 ddsSize();
-	uint32 dataSize();
-	uint32 numMipMaps();
-private:
-	bool includeHeader_;
-	int w_;
-	int h_;
-	DDSData data_;
-	BW::vector<MipData> mipmaps_;
+    CompressedMipMapCalculator(bool includeHeader);
+    void   dimensions(int width, int height);
+    int    width() { return w_; }
+    int    height() { return h_; }
+    void   mipMap(int mipmapLevel, MipData& ret);
+    uint32 ddsSize();
+    uint32 dataSize();
+    uint32 numMipMaps();
+
+  private:
+    bool                includeHeader_;
+    int                 w_;
+    int                 h_;
+    DDSData             data_;
+    BW::vector<MipData> mipmaps_;
 };
 
 /**
@@ -70,67 +70,71 @@ private:
  */
 class FloraTexture : public Moo::DeviceCallback
 {
-public:
-	FloraTexture();
-	~FloraTexture();
+  public:
+    FloraTexture();
+    ~FloraTexture();
 
-	bool	init( DataSectionPtr pSection );
+    bool init(DataSectionPtr pSection);
 
-	void	activate();
-	void	deactivate();
+    void activate();
+    void deactivate();
 
-	void	createUnmanagedObjects();
-	void	deleteUnmanagedObjects();	
+    void createUnmanagedObjects();
+    void deleteUnmanagedObjects();
 
-	//Texture management - these are called when ecotypes go into/out of scope.
-	Vector2& allocate( uint8 ecotypeID, Moo::BaseTexturePtr pTexture );
-	void deallocate( uint8 ecotypeID );
+    // Texture management - these are called when ecotypes go into/out of scope.
+    Vector2& allocate(uint8 ecotypeID, Moo::BaseTexturePtr pTexture);
+    void     deallocate(uint8 ecotypeID);
 
-	float	width() const	{ return (float)width_; }
-	int		blocksWide() const	{ return numBlocksWide_; }
-	int		blocksHigh() const	{ return numBlocksHigh_; }
+    float width() const { return (float)width_; }
+    int   blocksWide() const { return numBlocksWide_; }
+    int   blocksHigh() const { return numBlocksHigh_; }
 
-	void	drawDebug();
+    void drawDebug();
 
-private:
+  private:
+    int widthPerBlock_;  // texture width per ecotype
+    int heightPerBlock_; // texture height per ecotype
+    int width_;          // width of texture containing all ecotypes
+    int height_;         // height of texture containing all ecotypes
+    int numBlocksWide_;  // number of blocks across the main texture
+    int numBlocksHigh_;  // number of blocks up/down the main texture
 
-	int		widthPerBlock_;		// texture width per ecotype
-	int		heightPerBlock_;	// texture height per ecotype
-	int		width_;				// width of texture containing all ecotypes
-	int		height_;			// height of texture containing all ecotypes
-	int		numBlocksWide_;		// number of blocks across the main texture
-	int		numBlocksHigh_;		// number of blocks up/down the main texture
+    struct Block
+    {
+        Vector2    offset_;
+        int        pixelOffsetX_;
+        int        pixelOffsetY_;
+        int        ecotype_;
+        BW::string texName_;
+    };
 
-	struct Block
-	{
-		Vector2 offset_;
-		int pixelOffsetX_;
-		int pixelOffsetY_;
-		int ecotype_;
-		BW::string texName_;
-	};
+    Block blocks_[MAX_ECOTYPES];
 
-	Block	blocks_[MAX_ECOTYPES];
+    Vector2& allocate(uint8                             id,
+                      const ComObjectWrap<DX::Texture>& tex,
+                      const BW::string&                 textureID);
+    void     swapInBlock(int                               idx,
+                         const ComObjectWrap<DX::Texture>& tex,
+                         const BW::string&                 textureID);
 
-	Vector2& allocate( uint8 id, const ComObjectWrap<DX::Texture>& tex,  const BW::string& textureID );
-	void	swapInBlock( int idx, const ComObjectWrap<DX::Texture>& tex,  const BW::string& textureID  );
+    CompressedMipMapCalculator largeMap_;
+    CompressedMipMapCalculator mediumMap_;
+    CompressedMipMapCalculator smallMap_;
 
-	CompressedMipMapCalculator	largeMap_;
-	CompressedMipMapCalculator	mediumMap_;
-	CompressedMipMapCalculator	smallMap_;
+    Moo::EffectConstantValuePtr textureSetter_;
+    bool                        isActive_;
 
-	Moo::EffectConstantValuePtr textureSetter_;
-	bool						isActive_;
-
-	//temporary
-	BYTE*	textureMemory_;
-	ComObjectWrap<DX::Texture>	pTexture_;
+    // temporary
+    BYTE*                      textureMemory_;
+    ComObjectWrap<DX::Texture> pTexture_;
 
 #ifdef EDITOR_ENABLED
-	Vector2 highLightTextureUV_;
-public:
-	bool loadHighLightTexture();
-	Vector2 highLightTextureUV() { return highLightTextureUV_; }
+    Vector2 highLightTextureUV_;
+
+  public:
+    bool    loadHighLightTexture();
+    Vector2 highLightTextureUV() { return highLightTextureUV_; }
 #endif
 };
 

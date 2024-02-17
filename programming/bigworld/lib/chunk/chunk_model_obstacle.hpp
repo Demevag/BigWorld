@@ -5,7 +5,6 @@
 #include "chunk_item.hpp"
 #include "chunk.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class ChunkObstacle;
@@ -17,38 +16,38 @@ class Model;
  */
 class ChunkModelObstacle : public ChunkCache
 {
-public:
-	ChunkModelObstacle( Chunk & chunk );
-	~ChunkModelObstacle();
+  public:
+    ChunkModelObstacle(Chunk& chunk);
+    ~ChunkModelObstacle();
 
-	virtual int focus();
+    virtual int focus();
 
-	void addObstacle( ChunkObstacle * pObstacle );
-	void delObstacles( ChunkItemPtr pItem );
+    void addObstacle(ChunkObstacle* pObstacle);
+    void delObstacles(ChunkItemPtr pItem);
 
-	static Instance<ChunkModelObstacle> instance;
+    static Instance<ChunkModelObstacle> instance;
 
-	void addModel( SmartPointer<Model> model, 
-		const Matrix & world, ChunkItemPtr pItem,
-		bool editorProxy = false );
+    void addModel(SmartPointer<Model> model,
+                  const Matrix&       world,
+                  ChunkItemPtr        pItem,
+                  bool                editorProxy = false);
 
-private:
-	typedef BW::list< SmartPointer< ChunkObstacle > > Obstacles;
-	Obstacles obstacles_;
+  private:
+    typedef BW::list<SmartPointer<ChunkObstacle>> Obstacles;
+    Obstacles                                     obstacles_;
 #ifdef EDITOR_ENABLED
-	// In the tools, we add a mutex because we don't want the tools to crash
-	// and any potential performance spikes are not as important as crashes.
-	SimpleMutex obstaclesMutex_;
+    // In the tools, we add a mutex because we don't want the tools to crash
+    // and any potential performance spikes are not as important as crashes.
+    SimpleMutex obstaclesMutex_;
 #endif // EDITOR_ENABLED
 
-protected:
-	virtual int addToSpace( ChunkObstacle & cso );
-	virtual void delFromSpace( ChunkObstacle & cso );
+  protected:
+    virtual int  addToSpace(ChunkObstacle& cso);
+    virtual void delFromSpace(ChunkObstacle& cso);
 
-	Chunk * pChunk_;
+    Chunk* pChunk_;
 };
 
 BW_END_NAMESPACE
 
 #endif // CHUNK_MODEL_OBSTACLE_HPP
-

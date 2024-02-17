@@ -14,10 +14,9 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
-class EventDispatcher;
-class NetworkInterface;
+namespace Mercury {
+    class EventDispatcher;
+    class NetworkInterface;
 }
 
 class BufferedLoggerPacket;
@@ -27,107 +26,104 @@ class LoggerMessageForwarder;
 class LoggerEndpointMemberHandler;
 class LoggerEndpointNeedWriteTimeout;
 
-
 class LoggerEndpoint
 {
-	friend class LoggerEndpointMemberHandler;
-	friend class LoggerEndpointNeedWriteTimeout;
-public:
-	LoggerEndpoint( Mercury::EventDispatcher & dispatcher,
-		LoggerMessageForwarder * logForwarder,
-		const Mercury::Address & remoteAddress );
+    friend class LoggerEndpointMemberHandler;
+    friend class LoggerEndpointNeedWriteTimeout;
 
-	bool init( uint16 majorVersion, uint16 minorVersion );
+  public:
+    LoggerEndpoint(Mercury::EventDispatcher& dispatcher,
+                   LoggerMessageForwarder*   logForwarder,
+                   const Mercury::Address&   remoteAddress);
 
-	~LoggerEndpoint();
+    bool init(uint16 majorVersion, uint16 minorVersion);
 
-	bool send( MemoryOStream & buffer );
+    ~LoggerEndpoint();
 
-	bool handlePacket( char * packet, int packetLength );
+    bool send(MemoryOStream& buffer);
 
-	const Mercury::Address & addr() const
-	{
-		return remoteAddress_;
-	}
+    bool handlePacket(char* packet, int packetLength);
 
-	bool shouldSendMetaData() const;
-	bool shouldStreamMetaDataArgs() const;
+    const Mercury::Address& addr() const { return remoteAddress_; }
+
+    bool shouldSendMetaData() const;
+    bool shouldStreamMetaDataArgs() const;
 
 #if ENABLE_WATCHERS
-	static WatcherPtr pWatcher();
+    static WatcherPtr pWatcher();
 #endif
 
-private:
-	void appendPacket( BufferedLoggerPacket * pPacket );
-	bool enableUDP();
-	void sendDelete();
-	void sendImmediate( MemoryOStream & ostream );
-	bool sendBuffered();
-	void disconnectTCP();
-	void disconnectUDP();
-	bool reconnect();
-	const char * getLoggerState() const;
+  private:
+    void        appendPacket(BufferedLoggerPacket* pPacket);
+    bool        enableUDP();
+    void        sendDelete();
+    void        sendImmediate(MemoryOStream& ostream);
+    bool        sendBuffered();
+    void        disconnectTCP();
+    void        disconnectUDP();
+    bool        reconnect();
+    const char* getLoggerState() const;
 
-	enum LoggerState
-	{
-		LOGGER_ENDPOINT_UNINITALIZED,
-		LOGGER_ENDPOINT_CONNECTING,
-		LOGGER_ENDPOINT_WAITING,
-		LOGGER_ENDPOINT_NEED_WRITE,
-		LOGGER_ENDPOINT_REGISTERED_WRITE,
-		LOGGER_ENDPOINT_ERROR
-	};
+    enum LoggerState
+    {
+        LOGGER_ENDPOINT_UNINITALIZED,
+        LOGGER_ENDPOINT_CONNECTING,
+        LOGGER_ENDPOINT_WAITING,
+        LOGGER_ENDPOINT_NEED_WRITE,
+        LOGGER_ENDPOINT_REGISTERED_WRITE,
+        LOGGER_ENDPOINT_ERROR
+    };
 
-	LoggerState loggerState_;
+    LoggerState loggerState_;
 
-	Mercury::EventDispatcher & dispatcher_;
-	LoggerMessageForwarder * logForwarder_;
-	int consecutiveReconnects_;
+    Mercury::EventDispatcher& dispatcher_;
+    LoggerMessageForwarder*   logForwarder_;
+    int                       consecutiveReconnects_;
 
-	TimerHandle registerWriteTimer_;
-	LoggerEndpointNeedWriteTimeout * pWriteTimeoutHandler_;
+    TimerHandle                     registerWriteTimer_;
+    LoggerEndpointNeedWriteTimeout* pWriteTimeoutHandler_;
 
-	Endpoint tcpEndpoint_;
-	LoggerEndpointMemberHandler * pTcpConnectHandler_;
-	LoggerEndpointMemberHandler * pTcpReadHandler_;
-	LoggerEndpointMemberHandler * pTcpWriteHandler_;
-	int handleConnectTCP( int fd );
-	int handleReadTCP( int fd );
-	int handleWriteTCP( int fd );
+    Endpoint                     tcpEndpoint_;
+    LoggerEndpointMemberHandler* pTcpConnectHandler_;
+    LoggerEndpointMemberHandler* pTcpReadHandler_;
+    LoggerEndpointMemberHandler* pTcpWriteHandler_;
+    int                          handleConnectTCP(int fd);
+    int                          handleReadTCP(int fd);
+    int                          handleWriteTCP(int fd);
 
-	Endpoint udpEndpoint_;
-	LoggerEndpointMemberHandler * pUdpReadHandler_;
-	int handleReadUDP( int fd );
+    Endpoint                     udpEndpoint_;
+    LoggerEndpointMemberHandler* pUdpReadHandler_;
+    int                          handleReadUDP(int fd);
 
-	Mercury::Address remoteAddress_;
+    Mercury::Address remoteAddress_;
 
-	uint32 bufferCount_;
-	BufferedLoggerPacket * lastPacket_;
-	BufferedLoggerPacket * nextPacket_;
+    uint32                bufferCount_;
+    BufferedLoggerPacket* lastPacket_;
+    BufferedLoggerPacket* nextPacket_;
 
-	bool isTCP_;
+    bool isTCP_;
 
-	uint32 receivedSize_;
-	uint32 messageSize_;
-	char * receivedBuffer_;
+    uint32 receivedSize_;
+    uint32 messageSize_;
+    char*  receivedBuffer_;
 
-	volatile int droppedMessageCount_;
+    volatile int droppedMessageCount_;
 
-	/*
-		This mutex should be used to lock:
-			* last/nextPacket_
-			* loggerState_
-			* tcpEndpoint_
-	*/
-	RecursiveMutex mutex_;
+    /*
+        This mutex should be used to lock:
+            * last/nextPacket_
+            * loggerState_
+            * tcpEndpoint_
+    */
+    RecursiveMutex mutex_;
 
-	uint16 majorVersion_;
-	uint16 minorVersion_;
+    uint16 majorVersion_;
+    uint16 minorVersion_;
 
-	bool isSendingExceededBufferedMessage_;
+    bool isSendingExceededBufferedMessage_;
 };
 
-bool operator==( LoggerEndpoint * lhs, const Mercury::Address & rhs );
+bool operator==(LoggerEndpoint* lhs, const Mercury::Address& rhs);
 
 BW_END_NAMESPACE
 

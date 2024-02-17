@@ -3,7 +3,6 @@
 
 #include "simple_gui_component.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /*~ class GUI.FrameGUIComponent
@@ -25,8 +24,8 @@ BW_BEGIN_NAMESPACE
  *
  *	The height of the top and bottom edges is specified by the tiledHeight
  *  attribute, and the texture is tiled along the top and bottom using the
- *  tiledWidth attribute. 
- *	
+ *  tiledWidth attribute.
+ *
  *	The width of the side edges is specified by the tiledWidth attribute, and
  *  the texture is tiled long the side edges using the tiledHeight attribute.
  *
@@ -44,45 +43,52 @@ BW_BEGIN_NAMESPACE
  */
 class FrameGUIComponent : public SimpleGUIComponent
 {
-	Py_Header( FrameGUIComponent, SimpleGUIComponent )
+    Py_Header(FrameGUIComponent, SimpleGUIComponent)
 
-public:
-	FrameGUIComponent( const BW::string& backgroundTextureName,
-					const BW::string& frameTextureName,
-					const BW::string& edgeTextureName,
-					int tileWidth, int tileHeight,
-					PyTypeObject * pType = &s_type_ );
-	~FrameGUIComponent();
+      public
+      : FrameGUIComponent(const BW::string& backgroundTextureName,
+                          const BW::string& frameTextureName,
+                          const BW::string& edgeTextureName,
+                          int               tileWidth,
+                          int               tileHeight,
+                          PyTypeObject*     pType = &s_type_);
+    ~FrameGUIComponent();
 
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(
-		BW::string, edgeTextureName, edgeTextureName )
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(
-		BW::string, cornerTextureName, cornerTextureName )
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(BW::string,
+                                     edgeTextureName,
+                                     edgeTextureName)
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(BW::string,
+                                     cornerTextureName,
+                                     cornerTextureName)
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-	void		update( float dTime, float relParentWidth, float relParentHeight );
-	void		applyShaders( float dTime );
-	void		applyShader( GUIShader& shader, float dTime );
-	void		draw( Moo::DrawContext& drawContext, bool reallyDraw, bool overlay = true );
+    void update(float dTime, float relParentWidth, float relParentHeight);
+    void applyShaders(float dTime);
+    void applyShader(GUIShader& shader, float dTime);
+    void draw(Moo::DrawContext& drawContext,
+              bool              reallyDraw,
+              bool              overlay = true);
 
-	const BW::string & edgeTextureName() const;
-	void		edgeTextureName( const BW::string & name );
+    const BW::string& edgeTextureName() const;
+    void              edgeTextureName(const BW::string& name);
 
-	const BW::string & cornerTextureName() const;
-	void		cornerTextureName( const BW::string & name );
+    const BW::string& cornerTextureName() const;
+    void              cornerTextureName(const BW::string& name);
 
-private:
-	FrameGUIComponent(const FrameGUIComponent&);
-	FrameGUIComponent& operator=(const FrameGUIComponent&);
+  private:
+    FrameGUIComponent(const FrameGUIComponent&);
+    FrameGUIComponent& operator=(const FrameGUIComponent&);
 
-	SimpleGUIComponent* corners_[4];
-	SimpleGUIComponent* edges_[4];
+    SimpleGUIComponent* corners_[4];
+    SimpleGUIComponent* edges_[4];
 
-	virtual bool		load( DataSectionPtr pSect, const BW::string& ownerName, LoadBindings & bindings );
-	virtual void		save( DataSectionPtr pSect, SaveBindings & bindings );
+    virtual bool load(DataSectionPtr    pSect,
+                      const BW::string& ownerName,
+                      LoadBindings&     bindings);
+    virtual void save(DataSectionPtr pSect, SaveBindings& bindings);
 
-	COMPONENT_FACTORY_DECLARE( FrameGUIComponent("","","",16,16) )
+    COMPONENT_FACTORY_DECLARE(FrameGUIComponent("", "", "", 16, 16))
 };
 
 BW_END_NAMESPACE
@@ -90,6 +96,5 @@ BW_END_NAMESPACE
 #ifdef CODE_INLINE
 #include "frame_gui_component.ipp"
 #endif
-
 
 #endif // FRAME_GUI_COMPONENT_HPP

@@ -6,7 +6,6 @@
 
 #include "cstdmf/memory_stream.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class EntityTypeMapping;
@@ -17,19 +16,19 @@ class GetEntityTask;
  */
 class GetDbIDTask : public MySqlBackgroundTask
 {
-public:
-	GetDbIDTask( const EntityTypeMapping * pEntityTypeMapping,
-			const EntityDBKey & entityKey,
-			IDatabase::IGetDbIDHandler & getDbIDHandler );
+  public:
+    GetDbIDTask(const EntityTypeMapping*    pEntityTypeMapping,
+                const EntityDBKey&          entityKey,
+                IDatabase::IGetDbIDHandler& getDbIDHandler);
 
-	virtual void performBackgroundTask( MySql & conn );
-	virtual void performMainThreadTask( bool succeeded );
+    virtual void performBackgroundTask(MySql& conn);
+    virtual void performMainThreadTask(bool succeeded);
 
-private:
-	const EntityTypeMapping * pEntityTypeMapping_;
-	EntityDBKey entityKey_;
+  private:
+    const EntityTypeMapping* pEntityTypeMapping_;
+    EntityDBKey              entityKey_;
 
-	IDatabase::IGetDbIDHandler & getDbIDHandler_;
+    IDatabase::IGetDbIDHandler& getDbIDHandler_;
 };
 
 BW_END_NAMESPACE

@@ -1,7 +1,6 @@
 #ifndef LINK_FUNCTOR_HPP
 #define LINK_FUNCTOR_HPP
 
-
 #include "gizmo/always_applying_functor.hpp"
 #include "worldeditor/editor/link_proxy.hpp"
 
@@ -12,18 +11,18 @@ BW_BEGIN_NAMESPACE
  */
 class LinkFunctor : public AlwaysApplyingFunctor
 {
-public:
-    LinkFunctor( LinkProxyPtr linkProxy, bool allowedToDiscardChanges = true );
+  public:
+    LinkFunctor(LinkProxyPtr linkProxy, bool allowedToDiscardChanges = true);
 
-protected:
-	virtual void stopApplyCommitChanges( Tool & tool, bool addUndoBarrier );
-	virtual void stopApplyDiscardChanges( Tool & tool );
+  protected:
+    virtual void stopApplyCommitChanges(Tool& tool, bool addUndoBarrier);
+    virtual void stopApplyDiscardChanges(Tool& tool);
 
-    LinkProxyPtr            linkProxy_;
+    LinkProxyPtr linkProxy_;
 
-private:
-    LinkFunctor(LinkFunctor const &);
-    LinkFunctor &operator=(LinkFunctor const &);
+  private:
+    LinkFunctor(LinkFunctor const&);
+    LinkFunctor& operator=(LinkFunctor const&);
 };
 
 BW_END_NAMESPACE

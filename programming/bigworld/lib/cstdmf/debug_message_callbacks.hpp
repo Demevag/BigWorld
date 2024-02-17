@@ -15,12 +15,11 @@ class LogMetaData;
  */
 class CriticalMessageCallback
 {
-public:
-	virtual void handleCritical( const char * msg ) = 0;
+  public:
+    virtual void handleCritical(const char* msg) = 0;
 
-	virtual ~CriticalMessageCallback() {};
+    virtual ~CriticalMessageCallback(){};
 };
-
 
 /**
  *	Definition for the message callback functor. If the
@@ -29,13 +28,15 @@ public:
  */
 class DebugMessageCallback
 {
-public:
-	virtual bool handleMessage(
-		DebugMessagePriority messagePriority, const char * pCategory,
-		DebugMessageSource messageSource, const LogMetaData & metaData,
-		const char * pFormat, va_list argPtr ) = 0;
+  public:
+    virtual bool handleMessage(DebugMessagePriority messagePriority,
+                               const char*          pCategory,
+                               DebugMessageSource   messageSource,
+                               const LogMetaData&   metaData,
+                               const char*          pFormat,
+                               va_list              argPtr) = 0;
 
-	virtual ~DebugMessageCallback() {};
+    virtual ~DebugMessageCallback(){};
 };
 
 BW_END_NAMESPACE

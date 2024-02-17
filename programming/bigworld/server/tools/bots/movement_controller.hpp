@@ -4,7 +4,6 @@
 #include "math/vector3.hpp"
 #include "network/basictypes.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -12,13 +11,14 @@ BW_BEGIN_NAMESPACE
  */
 class MovementController
 {
-public:
-	virtual ~MovementController() {}
+  public:
+    virtual ~MovementController() {}
 
-	virtual bool nextStep( float & speed, float dTime,
-		Vector3 & pos, Direction3D & dir ) = 0;
+    virtual bool nextStep(float&       speed,
+                          float        dTime,
+                          Vector3&     pos,
+                          Direction3D& dir) = 0;
 };
-
 
 /**
  *	This class is the base class for all movement factories. They are
@@ -26,10 +26,11 @@ public:
  */
 class MovementFactory
 {
-public:
-	MovementFactory( const char * name );
-	virtual MovementController * create( const BW::string & data,
-		float & speed, Vector3 & startPos ) = 0;
+  public:
+    MovementFactory(const char* name);
+    virtual MovementController* create(const BW::string& data,
+                                       float&            speed,
+                                       Vector3&          startPos) = 0;
 };
 
 BW_END_NAMESPACE

@@ -6,45 +6,47 @@
 
 #include "cstdmf/event.hpp"
 
-namespace BW
-{
+namespace BW {
 
-class SCENE_API ObjectChangeSceneView :
-	public SceneEventView
-{
-public:
-	
-	struct BaseObjectsEventArgs
-	{
-		SceneProvider * pProvider_;
-		const SceneObject * pObjects_;
-		size_t numObjects_;
-	};
+    class SCENE_API ObjectChangeSceneView : public SceneEventView
+    {
+      public:
+        struct BaseObjectsEventArgs
+        {
+            SceneProvider*     pProvider_;
+            const SceneObject* pObjects_;
+            size_t             numObjects_;
+        };
 
-	typedef BaseObjectsEventArgs ObjectsAddedEventArgs;
-	typedef BaseObjectsEventArgs ObjectsRemovedEventArgs;
-	typedef BaseObjectsEventArgs ObjectsChangedEventArgs;
+        typedef BaseObjectsEventArgs ObjectsAddedEventArgs;
+        typedef BaseObjectsEventArgs ObjectsRemovedEventArgs;
+        typedef BaseObjectsEventArgs ObjectsChangedEventArgs;
 
-	typedef Event< Scene, const ObjectsAddedEventArgs& > ObjectsAddedEvent;
-	typedef Event< Scene, const ObjectsRemovedEventArgs& > ObjectsRemovedEvent;
-	typedef Event< Scene, const ObjectsChangedEventArgs& > ObjectsChangedEvent;
+        typedef Event<Scene, const ObjectsAddedEventArgs&> ObjectsAddedEvent;
+        typedef Event<Scene, const ObjectsRemovedEventArgs&>
+          ObjectsRemovedEvent;
+        typedef Event<Scene, const ObjectsChangedEventArgs&>
+          ObjectsChangedEvent;
 
-	ObjectsAddedEvent::EventDelegateList& objectsAdded();
-	ObjectsRemovedEvent::EventDelegateList& objectsRemoved();
-	ObjectsChangedEvent::EventDelegateList& objectsChanged();
+        ObjectsAddedEvent::EventDelegateList&   objectsAdded();
+        ObjectsRemovedEvent::EventDelegateList& objectsRemoved();
+        ObjectsChangedEvent::EventDelegateList& objectsChanged();
 
-	void notifyObjectsAdded( SceneProvider* pProvider, 
-		const SceneObject* pObjects, size_t numObjects ) const;
-	void notifyObjectsRemoved( SceneProvider* pProvider, 
-		const SceneObject* pObjects, size_t numObjects ) const;
-	void notifyObjectsChanged( SceneProvider* pProvider, 
-		const SceneObject* pObjects, size_t numObjects ) const;
+        void notifyObjectsAdded(SceneProvider*     pProvider,
+                                const SceneObject* pObjects,
+                                size_t             numObjects) const;
+        void notifyObjectsRemoved(SceneProvider*     pProvider,
+                                  const SceneObject* pObjects,
+                                  size_t             numObjects) const;
+        void notifyObjectsChanged(SceneProvider*     pProvider,
+                                  const SceneObject* pObjects,
+                                  size_t             numObjects) const;
 
-private:
-	ObjectsAddedEvent onObjectsAdded_;
-	ObjectsRemovedEvent onObjectsRemoved_;
-	ObjectsChangedEvent onObjectsChanged_;
-};
+      private:
+        ObjectsAddedEvent   onObjectsAdded_;
+        ObjectsRemovedEvent onObjectsRemoved_;
+        ObjectsChangedEvent onObjectsChanged_;
+    };
 
 } // namespace BW
 

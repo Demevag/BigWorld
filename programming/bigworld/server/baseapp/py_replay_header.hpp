@@ -5,38 +5,33 @@
 
 #include "connection/replay_header.hpp"
 
-
 BW_BEGIN_NAMESPACE
-
 
 /**
  *	This class wraps a ReplayHeader object for exposure to Python.
  */
 class PyReplayHeader : public PyObjectPlus
 {
-	Py_Header( PyReplayHeader, PyObjectPlus )
+    Py_Header(PyReplayHeader, PyObjectPlus)
 
-public:
-	PyReplayHeader( const ReplayHeader & header,
-		PyTypeObject * pType = &s_type_);
-	
-	PY_RO_ATTRIBUTE_DECLARE( header_.version().c_str(), version );
-	PY_RO_ATTRIBUTE_DECLARE( header_.digest().quote(), digest );
-	PY_RO_ATTRIBUTE_DECLARE( header_.numTicks(), numTicks );
-	PY_RO_ATTRIBUTE_DECLARE( header_.gameUpdateFrequency(), 
-		gameUpdateFrequency );
-	PY_RO_ATTRIBUTE_DECLARE( header_.timestamp(), timestamp );
-	PY_RO_ATTRIBUTE_DECLARE( header_.reportedSignatureLength(), 
-		reportedSignatureLength );
+      public
+      : PyReplayHeader(const ReplayHeader& header,
+                       PyTypeObject*       pType = &s_type_);
 
-	PyObject * pyRepr() const;
+    PY_RO_ATTRIBUTE_DECLARE(header_.version().c_str(), version);
+    PY_RO_ATTRIBUTE_DECLARE(header_.digest().quote(), digest);
+    PY_RO_ATTRIBUTE_DECLARE(header_.numTicks(), numTicks);
+    PY_RO_ATTRIBUTE_DECLARE(header_.gameUpdateFrequency(), gameUpdateFrequency);
+    PY_RO_ATTRIBUTE_DECLARE(header_.timestamp(), timestamp);
+    PY_RO_ATTRIBUTE_DECLARE(header_.reportedSignatureLength(),
+                            reportedSignatureLength);
 
-private:
-	ReplayHeader header_;
+    PyObject* pyRepr() const;
+
+  private:
+    ReplayHeader header_;
 };
 
-
 BW_END_NAMESPACE
-
 
 #endif // PY_REPLAY_HEADER_HPP

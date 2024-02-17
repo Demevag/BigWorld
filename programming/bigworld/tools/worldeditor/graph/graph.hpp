@@ -1,78 +1,75 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
-
 #include "cstdmf/smartpointer.hpp"
 
 BW_BEGIN_NAMESPACE
 
-namespace Graph
-{
+namespace Graph {
 
+    // Forward declarations.
+    class Node;
+    typedef SmartPointer<Node> NodePtr;
 
-// Forward declarations.
-class Node;
-typedef SmartPointer< Node > NodePtr;
+    class Edge;
+    typedef SmartPointer<Edge> EdgePtr;
 
+    typedef BW::set<NodePtr> NodesSet;
 
-class Edge;
-typedef SmartPointer< Edge > EdgePtr;
+    typedef BW::set<EdgePtr> EdgesSet;
 
+    typedef BW::multimap<NodePtr, EdgePtr> EdgesMap;
 
-typedef BW::set< NodePtr > NodesSet;
+    /**
+     *	This class stores info about and manages a set of connected nodes.
+     */
+    class Graph : public ReferenceCount
+    {
+      public:
+        Graph();
+        virtual ~Graph();
 
-typedef BW::set< EdgePtr > EdgesSet;
+        virtual bool addNode(const NodePtr& node);
+        virtual bool removeNode(const NodePtr& node);
 
-typedef BW::multimap< NodePtr, EdgePtr > EdgesMap;
+        virtual bool addEdge(const EdgePtr& edge);
+        virtual bool removeEdge(const EdgePtr& edge);
 
+        virtual void updateEdge(EdgePtr&       edge,
+                                const NodePtr& start,
+                                const NodePtr& end);
 
-/**
- *	This class stores info about and manages a set of connected nodes.
- */
-class Graph : public ReferenceCount
-{
-public:
-	Graph();
-	virtual ~Graph();
+        virtual void clear();
 
-	virtual bool addNode( const NodePtr & node );
-	virtual bool removeNode( const NodePtr & node );
+        virtual void adjacentNodes(const NodePtr& startNode,
+                                   NodesSet&      retNodes) const;
 
-	virtual bool addEdge( const EdgePtr & edge );
-	virtual bool removeEdge( const EdgePtr & edge );
+        virtual void backAdjacentNodes(const NodePtr& endNode,
+                                       NodesSet&      retNodes) const;
 
-	virtual void updateEdge( EdgePtr & edge, const NodePtr & start, const NodePtr & end );
+        virtual void edges(const NodePtr& startNode, EdgesSet& retEdges) const;
 
-	virtual void clear();
+        virtual void backEdges(const NodePtr& endNode,
+                               EdgesSet&      retEdges) const;
 
-	virtual void adjacentNodes( const NodePtr & startNode, NodesSet & retNodes ) const;
+        virtual const NodesSet& allNodes() const { return nodes_; }
 
-	virtual void backAdjacentNodes( const NodePtr & endNode, NodesSet & retNodes ) const;
+        virtual const EdgesSet& allEdges() const { return edges_; }
 
-	virtual void edges( const NodePtr & startNode, EdgesSet & retEdges ) const;
+      private:
+        Graph(const Graph& other);
 
-	virtual void backEdges( const NodePtr & endNode, EdgesSet & retEdges ) const;
+        NodesSet nodes_;
 
-	virtual const NodesSet & allNodes() const { return nodes_; }
+        EdgesSet edges_;
 
-	virtual const EdgesSet & allEdges() const { return edges_; }
+        EdgesMap edgesMap_;
+        EdgesMap backEdgesMap_;
 
-private:
-	Graph( const Graph & other );
+        void removeEdgeFromMap(const EdgePtr& edge, EdgesMap& edgesMap);
+    };
 
-	NodesSet nodes_;
-
-	EdgesSet edges_;
-
-	EdgesMap edgesMap_;
-	EdgesMap backEdgesMap_;
-
-	void removeEdgeFromMap( const EdgePtr & edge, EdgesMap & edgesMap );
-};
-
-
-typedef SmartPointer< Graph > GraphPtr;
-
+    typedef SmartPointer<Graph> GraphPtr;
 
 } // namespace Graph
 

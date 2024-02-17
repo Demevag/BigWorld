@@ -7,44 +7,37 @@
 
 DECLARE_DEBUG_COMPONENT2("Moo", 0)
 
-
 BW_BEGIN_NAMESPACE
 
 using namespace Terrain;
 
-namespace
-{
-	SimpleMutex		cacheMutex;
+namespace {
+    SimpleMutex cacheMutex;
 }
 
 /**
  *	This gets the TTL2Cache from the Manager.
  */
-/*static*/ TTL2Cache *TTL2Cache::instance()
+/*static*/ TTL2Cache* TTL2Cache::instance()
 {
-	if ( Manager::pInstance() == NULL )
-		return NULL;
+    if (Manager::pInstance() == NULL)
+        return NULL;
 
-	return &Manager::instance().ttl2Cache();
+    return &Manager::instance().ttl2Cache();
 }
-
 
 /**
  *	This is the default constructor for TTL2Cache as needed by the compiler.
  */
-TTL2Cache::TTL2Cache()
-{
-}
-
+TTL2Cache::TTL2Cache() {}
 
 /**
  *	This method clears the cache lists.
  */
 void TTL2Cache::clear()
 {
-	layers_.clear();
+    layers_.clear();
 }
-
 
 /**
  *	This is called then a TerrainTextureLayer is being locked.  We make
@@ -53,42 +46,37 @@ void TTL2Cache::clear()
  *	@param layer	The layer being locked.
  *  @param readOnly	Is the layer only being read?
  */
-void TTL2Cache::onLock(TerrainTextureLayer2 *layer, bool /*readOnly*/)
+void TTL2Cache::onLock(TerrainTextureLayer2* layer, bool /*readOnly*/)
 {
-	BW_GUARD;
-	SimpleMutexHolder holder(cacheMutex);
+    BW_GUARD;
+    SimpleMutexHolder holder(cacheMutex);
 
-	// If the layer was already in the cache remove it.
-	LayerList::iterator it = std::find(layers_.begin(), layers_.end(), layer);
-	if (it != layers_.end())
-		layers_.erase(it);
+    // If the layer was already in the cache remove it.
+    LayerList::iterator it = std::find(layers_.begin(), layers_.end(), layer);
+    if (it != layers_.end())
+        layers_.erase(it);
 
-	// Add the to front of the cache:
-	layers_.push_front(layer);
+    // Add the to front of the cache:
+    layers_.push_front(layer);
 
-	// Make sure that the new layer is decompressed:
-	if ((layer->state() & TerrainTextureLayer2::BLENDS) == 0)
-		layer->decompressBlend();
+    // Make sure that the new layer is decompressed:
+    if ((layer->state() & TerrainTextureLayer2::BLENDS) == 0)
+        layer->decompressBlend();
 
-	// If the cache has grown too large remove the last element:
-	if (layers_.size() > CACHE_SIZE)
-	{
-		TerrainTextureLayer2 *last = layers_.back();
-		last->compressBlend(); 
-		layers_.pop_back();
-	}
+    // If the cache has grown too large remove the last element:
+    if (layers_.size() > CACHE_SIZE) {
+        TerrainTextureLayer2* last = layers_.back();
+        last->compressBlend();
+        layers_.pop_back();
+    }
 }
-
 
 /**
  *	This is called when a TerrainTextureLayer2 is unlocked.
  *
  *  @param layer	The unlocked layer.
  */
-void TTL2Cache::onUnlock(TerrainTextureLayer2 * /*layer*/)
-{
-}
-
+void TTL2Cache::onUnlock(TerrainTextureLayer2* /*layer*/) {}
 
 /**
  *	This is called when a TerrainTextureLayer2 is deleted.  We simply
@@ -96,14 +84,14 @@ void TTL2Cache::onUnlock(TerrainTextureLayer2 * /*layer*/)
  *
  *  @param layer	The layer being deleted.
  */
-void TTL2Cache::delTextureLayer(TerrainTextureLayer2 *layer)
+void TTL2Cache::delTextureLayer(TerrainTextureLayer2* layer)
 {
-	BW_GUARD;
-	SimpleMutexHolder holder(cacheMutex);
+    BW_GUARD;
+    SimpleMutexHolder holder(cacheMutex);
 
-	LayerList::iterator it = std::find(layers_.begin(), layers_.end(), layer);
-	if (it != layers_.end())
-		layers_.erase(it);
+    LayerList::iterator it = std::find(layers_.begin(), layers_.end(), layer);
+    if (it != layers_.end())
+        layers_.erase(it);
 }
 
 BW_END_NAMESPACE

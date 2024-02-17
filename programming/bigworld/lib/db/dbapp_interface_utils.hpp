@@ -4,24 +4,23 @@
 #include "pyscript/script.hpp"
 #include "network/channel.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
-	class NetworkInterface;
+namespace Mercury {
+    class NetworkInterface;
 }
 class BinaryIStream;
 class BinaryOStream;
 
-namespace DBAppInterfaceUtils
-{
-	bool executeRawDatabaseCommand( const BW::string & command,
-		PyObjectPtr pResultHandler, Mercury::Channel & channel );
+namespace DBAppInterfaceUtils {
+    bool executeRawDatabaseCommand(const BW::string& command,
+                                   PyObjectPtr       pResultHandler,
+                                   Mercury::Channel& channel);
 
-	bool executeRawDatabaseCommand( const BW::string & command,
-		PyObjectPtr pResultHandler, Mercury::NetworkInterface & interface,
-		const Mercury::Address & dbAppAddr );
+    bool executeRawDatabaseCommand(const BW::string&          command,
+                                   PyObjectPtr                pResultHandler,
+                                   Mercury::NetworkInterface& interface,
+                                   const Mercury::Address&    dbAppAddr);
 }
 
 BW_END_NAMESPACE

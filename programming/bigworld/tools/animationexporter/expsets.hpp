@@ -1,7 +1,7 @@
 #ifndef EXPSETS_HPP
 #define EXPSETS_HPP
 
-#pragma warning ( disable : 4530 )
+#pragma warning(disable : 4530)
 
 #include <iostream>
 
@@ -16,74 +16,87 @@ typedef SmartPointer<DataSection> DataSectionPtr;
 
 class ExportSettings
 {
-public:
-	~ExportSettings();
+  public:
+    ~ExportSettings();
 
-	bool readSettings( const char* fileName );
-	bool writeSettings( BW::string fileName );
-	bool readSettings( DataSectionPtr pSection );
-	bool writeSettings( DataSectionPtr pSection );
-	bool displayDialog( HWND hWnd );
+    bool readSettings(const char* fileName);
+    bool writeSettings(BW::string fileName);
+    bool readSettings(DataSectionPtr pSection);
+    bool writeSettings(DataSectionPtr pSection);
+    bool displayDialog(HWND hWnd);
 
-	const BW::string &referenceNodesFile( void ) const { return referenceNodesFile_; }
+    const BW::string& referenceNodesFile(void) const
+    {
+        return referenceNodesFile_;
+    }
 
-	enum NodeFilter
-	{
-		ALL = 0,
-		SELECTED,
-		VISIBLE
-	};
+    enum NodeFilter
+    {
+        ALL = 0,
+        SELECTED,
+        VISIBLE
+    };
 
-	void setFrameRange( int first, int last ) { frameFirst_ = first; frameLast_ = last; }
+    void setFrameRange(int first, int last)
+    {
+        frameFirst_ = first;
+        frameLast_  = last;
+    }
 
-	int firstFrame() const { return frameFirst_; };
-	int lastFrame() const { return frameLast_; };
+    int firstFrame() const { return frameFirst_; };
+    int lastFrame() const { return frameLast_; };
 
-	void setStaticFrame( int i ) { staticFrame_ = i; }
-	int staticFrame( void ) const { return staticFrame_; }
-	
-	float	unitScale( ) const;
+    void setStaticFrame(int i) { staticFrame_ = i; }
+    int  staticFrame(void) const { return staticFrame_; }
 
-	NodeFilter	nodeFilter( ) const { return nodeFilter_; };
-	void		nodeFilter( NodeFilter nodeFilter ) { nodeFilter_ = nodeFilter; };
+    float unitScale() const;
 
-	bool		allowScale( ) const { return allowScale_; };
-	void		allowScale( bool state ) { allowScale_ = state; };
+    NodeFilter nodeFilter() const { return nodeFilter_; };
+    void       nodeFilter(NodeFilter nodeFilter) { nodeFilter_ = nodeFilter; };
 
-	bool		exportNodeAnimation() const { return exportNodeAnimation_; }
-	void		exportNodeAnimation( bool state ) { exportNodeAnimation_ = state; }
+    bool allowScale() const { return allowScale_; };
+    void allowScale(bool state) { allowScale_ = state; };
 
-	bool		useLegacyOrientation() const { return useLegacyOrientation_; }
-	void		useLegacyOrientation( bool state ) { useLegacyOrientation_ = state; }
+    bool exportNodeAnimation() const { return exportNodeAnimation_; }
+    void exportNodeAnimation(bool state) { exportNodeAnimation_ = state; }
 
-	bool		exportCueTrack() const { return exportCueTrack_; }
+    bool useLegacyOrientation() const { return useLegacyOrientation_; }
+    void useLegacyOrientation(bool state) { useLegacyOrientation_ = state; }
 
-	static ExportSettings& ExportSettings::instance();
+    bool exportCueTrack() const { return exportCueTrack_; }
 
-private:
-	ExportSettings();
-	static INT_PTR CALLBACK dialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	static INT_PTR CALLBACK settingsDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    static ExportSettings& ExportSettings::instance();
 
-	bool			allowScale_;
-	bool			exportNodeAnimation_;
-	bool			exportCueTrack_;	
-	bool			useLegacyOrientation_;	
+  private:
+    ExportSettings();
+    static INT_PTR CALLBACK dialogProc(HWND   hWnd,
+                                       UINT   msg,
+                                       WPARAM wParam,
+                                       LPARAM lParam);
+    static INT_PTR CALLBACK settingsDialogProc(HWND   hWnd,
+                                               UINT   msg,
+                                               WPARAM wParam,
+                                               LPARAM lParam);
 
-	NodeFilter		nodeFilter_;
+    bool allowScale_;
+    bool exportNodeAnimation_;
+    bool exportCueTrack_;
+    bool useLegacyOrientation_;
 
-	int	staticFrame_; //the static frame output
-	int	frameFirst_;
-	int	frameLast_;
+    NodeFilter nodeFilter_;
 
-	BW::string	referenceNodesFile_;
-	BW::string getReferenceFile( HWND hWnd );
-	void displayReferenceHierarchyFile( HWND hWnd ) const;
+    int staticFrame_; // the static frame output
+    int frameFirst_;
+    int frameLast_;
 
-	ExportSettings(const ExportSettings&);
-	ExportSettings& operator=(const ExportSettings&);
+    BW::string referenceNodesFile_;
+    BW::string getReferenceFile(HWND hWnd);
+    void       displayReferenceHierarchyFile(HWND hWnd) const;
 
-	friend std::ostream& operator<<(std::ostream&, const ExportSettings&);
+    ExportSettings(const ExportSettings&);
+    ExportSettings& operator=(const ExportSettings&);
+
+    friend std::ostream& operator<<(std::ostream&, const ExportSettings&);
 };
 
 BW_END_NAMESPACE

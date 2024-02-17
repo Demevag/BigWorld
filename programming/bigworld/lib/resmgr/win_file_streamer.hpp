@@ -16,51 +16,53 @@ BW_BEGIN_NAMESPACE
  */
 class WinFileStreamer : public IFileStreamer
 {
-public:
-	WinFileStreamer( HANDLE hFile );
-	virtual ~WinFileStreamer();
+  public:
+    WinFileStreamer(HANDLE hFile);
+    virtual ~WinFileStreamer();
 
-	virtual size_t read( size_t nBytes, void* buffer );
-	virtual bool skip( int nBytes );
-	virtual bool setOffset( size_t offset );
-	virtual size_t getOffset() const;
+    virtual size_t read(size_t nBytes, void* buffer);
+    virtual bool   skip(int nBytes);
+    virtual bool   setOffset(size_t offset);
+    virtual size_t getOffset() const;
 
-	virtual void* memoryMap( size_t offset, size_t length, bool writable );
-	virtual void memoryUnmap( void * p );
+    virtual void* memoryMap(size_t offset, size_t length, bool writable);
+    virtual void  memoryUnmap(void* p);
 
-private:
-	HANDLE hFile_;
+  private:
+    HANDLE hFile_;
 
-	struct MemoryMapping
-	{
-		bool writable_;
-		HANDLE hFileMapping_;
-		size_t fileSize_;
-		size_t mappedOffset_;
-		size_t userOffset_;
-		size_t mappedLength_;
-		size_t userLength_;
-		void* mappedPtr_;
-		void* userPtr_;
+    struct MemoryMapping
+    {
+        bool   writable_;
+        HANDLE hFileMapping_;
+        size_t fileSize_;
+        size_t mappedOffset_;
+        size_t userOffset_;
+        size_t mappedLength_;
+        size_t userLength_;
+        void*  mappedPtr_;
+        void*  userPtr_;
 
-		struct CompareFunc : public std::unary_function<MemoryMapping, void*>
-		{
-			CompareFunc( void* ptr ) : ptr_(ptr) { }
-			bool operator()(const MemoryMapping& other)
-			{
-				return ptr_ == other.userPtr_;
-			}
+        struct CompareFunc : public std::unary_function<MemoryMapping, void*>
+        {
+            CompareFunc(void* ptr)
+              : ptr_(ptr)
+            {
+            }
+            bool operator()(const MemoryMapping& other)
+            {
+                return ptr_ == other.userPtr_;
+            }
 
-			void* ptr_;
-		};
-	};
+            void* ptr_;
+        };
+    };
 
-	typedef BW::vector<MemoryMapping> MemoryMappings;
-	MemoryMappings memoryMappings_;
-	SimpleMutex memoryMappingsLock_;
+    typedef BW::vector<MemoryMapping> MemoryMappings;
+    MemoryMappings                    memoryMappings_;
+    SimpleMutex                       memoryMappingsLock_;
 };
 
 BW_END_NAMESPACE
 
 #endif // FILE_HANDLE_STREAMER_HPP
-

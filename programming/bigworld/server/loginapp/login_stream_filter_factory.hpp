@@ -6,60 +6,53 @@
 #include "network/websocket_handshake_handler.hpp"
 #include "network/websocket_stream_filter.hpp"
 
-
 BW_BEGIN_NAMESPACE
-
 
 /**
  *	This class is the filter factory for TCP channels created on the LoginApp,
  *	when WebSockets is enabled.
  */
-class LoginStreamFilterFactory : public Mercury::StreamFilterFactory,
-		public Mercury::WebSocketHandshakeHandler
+class LoginStreamFilterFactory
+  : public Mercury::StreamFilterFactory
+  , public Mercury::WebSocketHandshakeHandler
 {
-public:
+  public:
+    /**
+     *	Constructor.
+     */
+    LoginStreamFilterFactory()
+      : Mercury::StreamFilterFactory()
+      , Mercury::WebSocketHandshakeHandler()
+    {
+    }
 
-	/**
-	 *	Constructor.
-	 */
-	LoginStreamFilterFactory() :
-			Mercury::StreamFilterFactory(),
-			Mercury::WebSocketHandshakeHandler()
-	{}
+    /**
+     *	Destructor.
+     */
+    virtual ~LoginStreamFilterFactory() {}
 
-	/**
-	 *	Destructor.
-	 */
-	virtual ~LoginStreamFilterFactory()
-	{}
+    // Override from Mercury::StreamFilterFactory
+    virtual Mercury::StreamFilterPtr createFor(Mercury::TCPChannel& channel)
+    {
+        Mercury::NetworkStreamPtr pChannelStream(
+          new Mercury::TCPChannelStreamAdaptor(channel));
 
+        return new Mercury::WebSocketStreamFilter(*pChannelStream, *this);
+    }
 
-	// Override from Mercury::StreamFilterFactory
-	virtual Mercury::StreamFilterPtr createFor( Mercury::TCPChannel & channel )
-	{
-		Mercury::NetworkStreamPtr pChannelStream(
-			new Mercury::TCPChannelStreamAdaptor( channel ) );
+    // Override from Mercury::WebSocketHandshakeHandler
+    virtual bool shouldAcceptHandshake(
+      const Mercury::WebSocketStreamFilter& filter,
+      const Mercury::HTTPRequest&           request,
+      Subprotocols&                         subprotocols)
+    {
+        Mercury::WebSocketHandshakeHandler::adjustForEmscriptenSubprotocols(
+          subprotocols);
 
-		return new Mercury::WebSocketStreamFilter( *pChannelStream, *this );
-	}
-
-
-	// Override from Mercury::WebSocketHandshakeHandler
-	virtual bool shouldAcceptHandshake( 
-		const Mercury::WebSocketStreamFilter & filter, 
-		const Mercury::HTTPRequest & request,
-		Subprotocols & subprotocols )
-	{
-		Mercury::WebSocketHandshakeHandler::adjustForEmscriptenSubprotocols(
-			subprotocols );
-
-		return true;
-	}
-
+        return true;
+    }
 };
 
-
 BW_END_NAMESPACE
-
 
 #endif // LOGIN_STREAM_FILTER_FACTORY_HPP

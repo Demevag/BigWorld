@@ -4,7 +4,6 @@
 #include "math/vector3.hpp"
 #include "girth.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class Chunk;
@@ -19,38 +18,37 @@ class PhysicsHandler;
  */
 class ChunkFlooder
 {
-public:
-	ChunkFlooder( Chunk * pChunk, const BW::string& floodResultPath );
-	~ChunkFlooder();
+  public:
+    ChunkFlooder(Chunk* pChunk, const BW::string& floodResultPath);
+    ~ChunkFlooder();
 
-	bool flood(
-		Girth gSpec,
-		const BW::vector<Vector3>& entityPts,
-		bool (*progressCallback)( int npoints ) = NULL,
-		int nshrink = 0,
-        bool writeTGAs = true );
+    bool flood(Girth                      gSpec,
+               const BW::vector<Vector3>& entityPts,
+               bool (*progressCallback)(int npoints) = NULL,
+               int  nshrink                          = 0,
+               bool writeTGAs                        = true);
 
-	Vector3	minBounds() const;
-	Vector3	maxBounds() const;
-	float	resolution() const;
-	int		width() const;
-	int		height() const;
-	AdjGridElt **	adjGrids() const;
-	float **		hgtGrids() const;
+    Vector3      minBounds() const;
+    Vector3      maxBounds() const;
+    float        resolution() const;
+    int          width() const;
+    int          height() const;
+    AdjGridElt** adjGrids() const;
+    float**      hgtGrids() const;
 
-private:
-	ChunkFlooder( const ChunkFlooder& );
-	ChunkFlooder& operator=( const ChunkFlooder& );
+  private:
+    ChunkFlooder(const ChunkFlooder&);
+    ChunkFlooder& operator=(const ChunkFlooder&);
 
-	void reset();
+    void reset();
 
-	void getSeedPoints( BW::vector<Vector3> & pts, PhysicsHandler& ph );
-	bool flashFlood( const Vector3 & seedPt );
+    void getSeedPoints(BW::vector<Vector3>& pts, PhysicsHandler& ph);
+    bool flashFlood(const Vector3& seedPt);
 
-	Chunk *					pChunk_;
-	WaypointFlood *			pWF_;
+    Chunk*         pChunk_;
+    WaypointFlood* pWF_;
 
-	BW::string				floodResultPath_;
+    BW::string floodResultPath_;
 };
 
 BW_END_NAMESPACE

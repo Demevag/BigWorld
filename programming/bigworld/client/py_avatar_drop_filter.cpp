@@ -6,13 +6,11 @@
 
 #include "script/script_object.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Entity", 0 )
-
+DECLARE_DEBUG_COMPONENT2("Entity", 0)
 
 BW_BEGIN_NAMESPACE
 
-typedef WeakPyPtr< PyAvatarDropFilter > WeakPyAvatarDropFilterPtr;
-
+typedef WeakPyPtr<PyAvatarDropFilter> WeakPyAvatarDropFilterPtr;
 
 /*~ class NoModule.GroundNormalProvider
  *
@@ -27,85 +25,78 @@ typedef WeakPyPtr< PyAvatarDropFilter > WeakPyAvatarDropFilterPtr;
  */
 class GroundNormalProvider : public Vector4Provider
 {
-	Py_Header( GroundNormalProvider, Vector4Provider )
+    Py_Header(GroundNormalProvider, Vector4Provider)
 
-public:
-	GroundNormalProvider( PyAvatarDropFilter & pyAvatarDropFilter,
-			PyTypeObject * pType = &s_type_ )
-		: Vector4Provider( false, pType ),
-		wpPyAvatarDropFilter_( &pyAvatarDropFilter )
-	{
-		BW_GUARD;
-		MF_ASSERT( wpPyAvatarDropFilter_.exists() );
-	}
+      public
+      : GroundNormalProvider(PyAvatarDropFilter& pyAvatarDropFilter,
+                             PyTypeObject*       pType = &s_type_)
+      : Vector4Provider(false, pType)
+      , wpPyAvatarDropFilter_(&pyAvatarDropFilter)
+    {
+        BW_GUARD;
+        MF_ASSERT(wpPyAvatarDropFilter_.exists());
+    }
 
-	~GroundNormalProvider()
-	{
-		BW_GUARD;
-	}
+    ~GroundNormalProvider() { BW_GUARD; }
 
-	PY_RO_ATTRIBUTE_DECLARE( wpPyAvatarDropFilter_.get(), avatarDropFilter );
+    PY_RO_ATTRIBUTE_DECLARE(wpPyAvatarDropFilter_.get(), avatarDropFilter);
 
-	virtual void output( Vector4 & val )
-	{
-		BW_GUARD;
-		if (wpPyAvatarDropFilter_.exists() &&
-			wpPyAvatarDropFilter_->pAttachedFilter() != NULL)
-		{
-			const BW::Vector3 & normal =
-				wpPyAvatarDropFilter_->pAttachedFilter()->groundNormal();
-			val.set( normal.x, normal.y, normal.z, 0.f );
-		}
-	}
+    virtual void output(Vector4& val)
+    {
+        BW_GUARD;
+        if (wpPyAvatarDropFilter_.exists() &&
+            wpPyAvatarDropFilter_->pAttachedFilter() != NULL) {
+            const BW::Vector3& normal =
+              wpPyAvatarDropFilter_->pAttachedFilter()->groundNormal();
+            val.set(normal.x, normal.y, normal.z, 0.f);
+        }
+    }
 
-private:
-	WeakPyAvatarDropFilterPtr wpPyAvatarDropFilter_;
+  private:
+    WeakPyAvatarDropFilterPtr wpPyAvatarDropFilter_;
 };
 
-PY_TYPEOBJECT( GroundNormalProvider )
+PY_TYPEOBJECT(GroundNormalProvider)
 
-PY_BEGIN_METHODS( GroundNormalProvider )
+PY_BEGIN_METHODS(GroundNormalProvider)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( GroundNormalProvider )
-	/*~ attribute GroundNormalProvider.avatarDropFilter
-	 *
-	 *	This attribute returns the AvatarDropFilter weakly reference by the
-	 *	provider or None if the filter has been destroyed.
-	 *
-	 *	@type AvatarDropFilter
-	 */
-	PY_ATTRIBUTE( avatarDropFilter )
+PY_BEGIN_ATTRIBUTES(GroundNormalProvider)
+/*~ attribute GroundNormalProvider.avatarDropFilter
+ *
+ *	This attribute returns the AvatarDropFilter weakly reference by the
+ *	provider or None if the filter has been destroyed.
+ *
+ *	@type AvatarDropFilter
+ */
+PY_ATTRIBUTE(avatarDropFilter)
 PY_END_ATTRIBUTES()
 
+PY_TYPEOBJECT(PyAvatarDropFilter)
 
-
-
-PY_TYPEOBJECT( PyAvatarDropFilter )
-
-PY_BEGIN_METHODS( PyAvatarDropFilter )
+PY_BEGIN_METHODS(PyAvatarDropFilter)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( PyAvatarDropFilter )
-	/*~ attribute AvatarDropFilter.alignToGround
-	 *
-	 *	This attribute controls whether the entity should also be rotated to
-	 *	match the slope of the ground on which they are standing.
-	 *
-	 *	@type bool
-	 */
-	PY_ATTRIBUTE( alignToGround )
-	/*~ attribute AvatarDropFilter.groundNormal
-	 *
-	 *	The attribute returns a Vector4 provider to the normalised ground
-	 *	normal of the drop filter in the form (x, y, z, 0).
-	 *
-	 *	@type GroundNormalProvider
-	 */
-	PY_ATTRIBUTE( groundNormal )
+PY_BEGIN_ATTRIBUTES(PyAvatarDropFilter)
+/*~ attribute AvatarDropFilter.alignToGround
+ *
+ *	This attribute controls whether the entity should also be rotated to
+ *	match the slope of the ground on which they are standing.
+ *
+ *	@type bool
+ */
+PY_ATTRIBUTE(alignToGround)
+/*~ attribute AvatarDropFilter.groundNormal
+ *
+ *	The attribute returns a Vector4 provider to the normalised ground
+ *	normal of the drop filter in the form (x, y, z, 0).
+ *
+ *	@type GroundNormalProvider
+ */
+PY_ATTRIBUTE(groundNormal)
 PY_END_ATTRIBUTES()
 
-PY_SCRIPT_CONVERTERS( PyAvatarDropFilter )
+PY_SCRIPT_CONVERTERS(PyAvatarDropFilter)
 
 /*~ function BigWorld.AvatarDropFilter
  *
@@ -120,22 +111,20 @@ PY_SCRIPT_CONVERTERS( PyAvatarDropFilter )
 /**
  *
  */
-PY_FACTORY_NAMED( PyAvatarDropFilter, "AvatarDropFilter", BigWorld );
-
+PY_FACTORY_NAMED(PyAvatarDropFilter, "AvatarDropFilter", BigWorld);
 
 /**
  *	Constructor
  *
  *	@param	pType	The python object defining the type of the filter.
  */
-PyAvatarDropFilter::PyAvatarDropFilter( PyTypeObject * pType ) :
-	PyAvatarFilter( pType ),
-	alignToGround_( false ),
-	wpGroundNormalProvider_( NULL )
+PyAvatarDropFilter::PyAvatarDropFilter(PyTypeObject* pType)
+  : PyAvatarFilter(pType)
+  , alignToGround_(false)
+  , wpGroundNormalProvider_(NULL)
 {
-	BW_GUARD;
+    BW_GUARD;
 }
-
 
 /**
  *	This method returns alignToGround for this object's AvatarDropFilter, if it
@@ -143,41 +132,36 @@ PyAvatarDropFilter::PyAvatarDropFilter( PyTypeObject * pType ) :
  */
 bool PyAvatarDropFilter::alignToGround() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	const AvatarDropFilter * pFilter = this->pAttachedFilter();
+    const AvatarDropFilter* pFilter = this->pAttachedFilter();
 
-	if (pFilter == NULL)
-	{
-		return alignToGround_;
-	}
+    if (pFilter == NULL) {
+        return alignToGround_;
+    }
 
-	return pFilter->alignToGround();
+    return pFilter->alignToGround();
 }
-
 
 /**
  *	This method updates alignToGround for this object and its AvatarDropFilter.
  */
-void PyAvatarDropFilter::alignToGround( bool newValue )
+void PyAvatarDropFilter::alignToGround(bool newValue)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (newValue == this->alignToGround())
-	{
-		return;
-	}
+    if (newValue == this->alignToGround()) {
+        return;
+    }
 
-	alignToGround_ = newValue;
+    alignToGround_ = newValue;
 
-	AvatarDropFilter * pFilter = this->pAttachedFilter();
+    AvatarDropFilter* pFilter = this->pAttachedFilter();
 
-	if (pFilter != NULL)
-	{
-		pFilter->alignToGround( alignToGround_ );
-	}
+    if (pFilter != NULL) {
+        pFilter->alignToGround(alignToGround_);
+    }
 }
-
 
 /**
  *	This function returns a GroundNormalProvider instance for this
@@ -186,68 +170,60 @@ void PyAvatarDropFilter::alignToGround( bool newValue )
  */
 Vector4ProviderPtr PyAvatarDropFilter::groundNormalProvider()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	Vector4ProviderPtr result;
+    Vector4ProviderPtr result;
 
-	if (!wpGroundNormalProvider_.exists())
-	{
-		GroundNormalProvider * pNewProvider = new GroundNormalProvider( *this );
-		result = Vector4ProviderPtr( pNewProvider,
-			Vector4ProviderPtr::STEAL_REFERENCE );
+    if (!wpGroundNormalProvider_.exists()) {
+        GroundNormalProvider* pNewProvider = new GroundNormalProvider(*this);
+        result =
+          Vector4ProviderPtr(pNewProvider, Vector4ProviderPtr::STEAL_REFERENCE);
 
-		wpGroundNormalProvider_ = pNewProvider;
-	}
-	else
-	{
-		result = Vector4ProviderPtr( wpGroundNormalProvider_.get() );
-	}
+        wpGroundNormalProvider_ = pNewProvider;
+    } else {
+        result = Vector4ProviderPtr(wpGroundNormalProvider_.get());
+    }
 
-	MF_ASSERT( wpGroundNormalProvider_.exists() );
-	MF_ASSERT( result.exists() );
+    MF_ASSERT(wpGroundNormalProvider_.exists());
+    MF_ASSERT(result.exists());
 
-	return result;
+    return result;
 }
-
 
 /**
  *	This method returns the AvatarDropFilter * we created, if not yet lost,
  *	and NULL otherwise.
  */
-AvatarDropFilter * PyAvatarDropFilter::pAttachedFilter()
+AvatarDropFilter* PyAvatarDropFilter::pAttachedFilter()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return static_cast< AvatarDropFilter * >(
-		this->PyFilter::pAttachedFilter() );
+    return static_cast<AvatarDropFilter*>(this->PyFilter::pAttachedFilter());
 }
-
 
 /**
  *	This method returns the const AvatarDropFilter * we created, if not yet
  *	lost, and NULL otherwise.
  */
-const AvatarDropFilter * PyAvatarDropFilter::pAttachedFilter() const
+const AvatarDropFilter* PyAvatarDropFilter::pAttachedFilter() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return static_cast< const AvatarDropFilter * >(
-		this->PyFilter::pAttachedFilter() );
+    return static_cast<const AvatarDropFilter*>(
+      this->PyFilter::pAttachedFilter());
 }
-
 
 /**
  *	This method provides a new AvatarDropFilter
  */
-AvatarDropFilter * PyAvatarDropFilter::getNewFilter()
+AvatarDropFilter* PyAvatarDropFilter::getNewFilter()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	AvatarDropFilter * pNewFilter = new AvatarDropFilter( this );
-	pNewFilter->alignToGround( alignToGround_ );
-	return pNewFilter;
+    AvatarDropFilter* pNewFilter = new AvatarDropFilter(this);
+    pNewFilter->alignToGround(alignToGround_);
+    return pNewFilter;
 }
-
 
 /**
  *	This method updates our cached filter properties before the existing filter
@@ -255,13 +231,12 @@ AvatarDropFilter * PyAvatarDropFilter::getNewFilter()
  */
 void PyAvatarDropFilter::onLosingAttachedFilter()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	AvatarDropFilter * pFilter = this->pAttachedFilter();
+    AvatarDropFilter* pFilter = this->pAttachedFilter();
 
-	alignToGround_ = pFilter->alignToGround();
+    alignToGround_ = pFilter->alignToGround();
 }
-
 
 BW_END_NAMESPACE
 

@@ -17,53 +17,53 @@ BW_BEGIN_NAMESPACE
  *	Constructor.
  */
 ForwardingReplyHandler::ForwardingReplyHandler(
-			const Mercury::Address & srcAddr,
-			Mercury::ReplyID replyID,
-			Mercury::NetworkInterface & networkInterface ) :
-		srcAddr_( srcAddr ),
-		replyID_( replyID ),
-		interface_( networkInterface )
+  const Mercury::Address&    srcAddr,
+  Mercury::ReplyID           replyID,
+  Mercury::NetworkInterface& networkInterface)
+  : srcAddr_(srcAddr)
+  , replyID_(replyID)
+  , interface_(networkInterface)
 {
 }
-
 
 /**
  *	This method handles the reply message.
  */
-void ForwardingReplyHandler::handleMessage( const Mercury::Address& /*srcAddr*/,
-								Mercury::UnpackedMessageHeader & header,
-								BinaryIStream & data, void * /*arg*/)
+void ForwardingReplyHandler::handleMessage(
+  const Mercury::Address& /*srcAddr*/,
+  Mercury::UnpackedMessageHeader& header,
+  BinaryIStream&                  data,
+  void* /*arg*/)
 {
-	Mercury::ChannelSender sender( interface_.findOrCreateChannel( srcAddr_ ) );
-	Mercury::Bundle & bundle = sender.bundle();
+    Mercury::ChannelSender sender(interface_.findOrCreateChannel(srcAddr_));
+    Mercury::Bundle&       bundle = sender.bundle();
 
-	bundle.startReply( replyID_ );
+    bundle.startReply(replyID_);
 
-	// For classes that derive.
-	this->prependData( data, bundle );
+    // For classes that derive.
+    this->prependData(data, bundle);
 
-	bundle.transfer( data, data.remainingLength() );
+    bundle.transfer(data, data.remainingLength());
 
-	delete this;
+    delete this;
 }
-
 
 /**
  *	This method handles an exception to the request.
  */
-void ForwardingReplyHandler::handleException( const Mercury::NubException & ne,
-		void* /*arg*/ )
+void ForwardingReplyHandler::handleException(const Mercury::NubException& ne,
+                                             void* /*arg*/)
 {
-	WARNING_MSG( "ForwardingReplyHandler::handleException: reason %s\n",
-			Mercury::reasonToString( ne.reason() ) );
-	Mercury::ChannelSender sender( interface_.findOrCreateChannel( srcAddr_ ) );
-	Mercury::Bundle & bundle = sender.bundle();
+    WARNING_MSG("ForwardingReplyHandler::handleException: reason %s\n",
+                Mercury::reasonToString(ne.reason()));
+    Mercury::ChannelSender sender(interface_.findOrCreateChannel(srcAddr_));
+    Mercury::Bundle&       bundle = sender.bundle();
 
-	bundle.startReply( replyID_ );
+    bundle.startReply(replyID_);
 
-	this->appendErrorData( bundle );
+    this->appendErrorData(bundle);
 
-	delete this;
+    delete this;
 }
 
 BW_END_NAMESPACE

@@ -4,42 +4,37 @@
 
 #include "cstdmf/debug.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "2DComponents", 0 )
-
+DECLARE_DEBUG_COMPONENT2("2DComponents", 0)
 
 BW_BEGIN_NAMESPACE
 
-PY_TYPEOBJECT( GUIShader )
+PY_TYPEOBJECT(GUIShader)
 
-PY_BEGIN_METHODS( GUIShader )
+PY_BEGIN_METHODS(GUIShader)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( GUIShader )
+PY_BEGIN_ATTRIBUTES(GUIShader)
 PY_END_ATTRIBUTES()
 
-
-template <> GUIShaderFactory::ObjectMap * GUIShaderFactory::pMap_;
-
-
+template <>
+GUIShaderFactory::ObjectMap* GUIShaderFactory::pMap_;
 
 /**
  *	Constructor
  */
-GUIShader::GUIShader( PyTypeObject * pType )
-:PyObjectPlus( pType )
+GUIShader::GUIShader(PyTypeObject* pType)
+  : PyObjectPlus(pType)
 {
-	BW_GUARD;	
+    BW_GUARD;
 }
-
 
 /**
  *	Destructor
  */
 GUIShader::~GUIShader()
 {
-	BW_GUARD;	
+    BW_GUARD;
 }
-
 
 /**
  *	This method processes a GUI component, applying this shader to its vertices
@@ -49,11 +44,10 @@ GUIShader::~GUIShader()
  *
  *	@return false		To stop processing child components.
  */
-bool
-GUIShader::processComponent( SimpleGUIComponent& component, float dTime )
+bool GUIShader::processComponent(SimpleGUIComponent& component, float dTime)
 {
-	BW_GUARD;
-	return false;
+    BW_GUARD;
+    return false;
 }
 
 BW_END_NAMESPACE

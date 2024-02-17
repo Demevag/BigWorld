@@ -3,10 +3,10 @@
 #pragma once
 
 #ifndef __AFXWIN_H__
-	#error include 'stdafx.h' before including this file for PCH
+#error include 'stdafx.h' before including this file for PCH
 #endif
 
-#include "resource.h"       // main symbols
+#include "resource.h" // main symbols
 
 #include "me_shell.hpp"
 #include "me_app.hpp"
@@ -29,77 +29,76 @@ class UalItemInfo;
 class PageLights;
 
 class CModelEditorApp
-	: public CWinApp
-	, GUI::OptionMap
-	, public IModelEditorApp
+  : public CWinApp
+  , GUI::OptionMap
+  , public IModelEditorApp
 {
-public:
-	static DogWatch s_updateWatch;
-	
-	CModelEditorApp();
-	virtual ~CModelEditorApp();
+  public:
+    static DogWatch s_updateWatch;
 
-	static UINT loadErrorMsg( LPVOID lpvParam );
+    CModelEditorApp();
+    virtual ~CModelEditorApp();
 
-	CWnd* mainWnd() { return m_pMainWnd; }
-	App* mfApp() { return mfApp_; }
-	bool initDone() { return initDone_; };
+    static UINT loadErrorMsg(LPVOID lpvParam);
 
-	bool loadFile( UalItemInfo* item );
+    CWnd* mainWnd() { return m_pMainWnd; }
+    App*  mfApp() { return mfApp_; }
+    bool  initDone() { return initDone_; };
 
-	const BW::string& modelToLoad() { return modelToLoad_; }
-	void modelToLoad( const BW::string& modelName ) { modelToLoad_ = modelName; }
+    bool loadFile(UalItemInfo* item);
 
-	void loadLights( const char* lightsName );
+    const BW::string& modelToLoad() { return modelToLoad_; }
+    void modelToLoad(const BW::string& modelName) { modelToLoad_ = modelName; }
 
-	//The menu commands
-	void OnFileOpen();
-	void OnFileAdd();
-	void OnFileReloadTextures();
-	void OnFileRegenBoundingBox();
-	void OnAppPrefs();
-	void exit( bool ignoreChanges = false );
+    void loadLights(const char* lightsName);
 
-	void updateRecentList( const BW::string& kind );
+    // The menu commands
+    void OnFileOpen();
+    void OnFileAdd();
+    void OnFileReloadTextures();
+    void OnFileRegenBoundingBox();
+    void OnAppPrefs();
+    void exit(bool ignoreChanges = false);
 
-	void updateLanguageList();
+    void updateRecentList(const BW::string& kind);
 
-	MEPythonAdapter* pythonAdapter() const;
+    void updateLanguageList();
 
-// Overrides
-	virtual BOOL InitInstance();
-	virtual BOOL OnIdle(LONG lCount);
-	virtual int ExitInstance(); 
-	virtual int Run();
+    MEPythonAdapter* pythonAdapter() const;
 
-private:
-	App* mfApp_;
-	bool initDone_;
+    // Overrides
+    virtual BOOL InitInstance();
+    virtual BOOL OnIdle(LONG lCount);
+    virtual int  ExitInstance();
+    virtual int  Run();
 
-	MeShell*	meShell_;
-	MeApp*		meApp_;
+  private:
+    App* mfApp_;
+    bool initDone_;
 
-	PageLights* lightPage_;
+    MeShell* meShell_;
+    MeApp*   meApp_;
 
-	MEPythonAdapter* pPythonAdapter_;
+    PageLights* lightPage_;
 
-	std::auto_ptr< GUI::MenuHelper > menuHelper_;
+    MEPythonAdapter* pPythonAdapter_;
 
-	BOOL parseCommandLineMF();
-		
-	virtual BW::string get( const BW::string& key ) const;
-	virtual bool exist( const BW::string& key ) const;
-	virtual void set( const BW::string& key, const BW::string& value );
+    std::auto_ptr<GUI::MenuHelper> menuHelper_;
 
-	BOOL InternalInitInstance();
-	int InternalExitInstance();
-	int InternalRun();
+    BOOL parseCommandLineMF();
 
-	IMainFrame * getMainFrame();
+    virtual BW::string get(const BW::string& key) const;
+    virtual bool       exist(const BW::string& key) const;
+    virtual void       set(const BW::string& key, const BW::string& value);
 
-	DECLARE_MESSAGE_MAP()
+    BOOL InternalInitInstance();
+    int  InternalExitInstance();
+    int  InternalRun();
+
+    IMainFrame* getMainFrame();
+
+    DECLARE_MESSAGE_MAP()
 };
 
 extern CModelEditorApp theApp;
 BW_END_NAMESPACE
-

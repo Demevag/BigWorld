@@ -8,115 +8,101 @@
 
 #include "moo/deferred_decals_manager.hpp"
 
-namespace BW {
-namespace CompiledSpace {
+namespace BW { namespace CompiledSpace {
 
-//-----------------------------------------------------------------------------
-StaticSceneDecalWriter::StaticSceneDecalWriter()
-{
+    //-----------------------------------------------------------------------------
+    StaticSceneDecalWriter::StaticSceneDecalWriter() {}
 
-}
+    //-----------------------------------------------------------------------------
+    StaticSceneDecalWriter::~StaticSceneDecalWriter() {}
 
+    // ----------------------------------------------------------------------------
+    SceneTypeSystem::RuntimeTypeID StaticSceneDecalWriter::typeID() const
+    {
+        return StaticSceneTypes::StaticObjectType::DECAL;
+    }
 
-//-----------------------------------------------------------------------------
-StaticSceneDecalWriter::~StaticSceneDecalWriter()
-{
+    // ----------------------------------------------------------------------------
+    size_t StaticSceneDecalWriter::numObjects() const
+    {
+        return decals_.size();
+    }
 
-}
+    // ----------------------------------------------------------------------------
+    bool StaticSceneDecalWriter::writeData(BinaryFormatWriter& writer)
+    {
+        BinaryFormatWriter::Stream* stream = writer.appendSection(
+          CompiledSpace::StaticSceneDecalTypes::FORMAT_MAGIC,
+          CompiledSpace::StaticSceneDecalTypes::FORMAT_VERSION);
+        MF_ASSERT(stream != NULL);
 
+        stream->write(decals_);
+        return true;
+    }
 
-// ----------------------------------------------------------------------------
-SceneTypeSystem::RuntimeTypeID StaticSceneDecalWriter::typeID() const
-{
-    return StaticSceneTypes::StaticObjectType::DECAL;
-}
+    // ----------------------------------------------------------------------------
+    void StaticSceneDecalWriter::convertStaticDecal(
+      const ConversionContext& ctx,
+      const DataSectionPtr&    pItemDS,
+      const BW::string&        uid)
+    {
+        addFromChunkDecal(pItemDS, ctx.chunkTransform, strings(), assets());
+    }
 
+    //-----------------------------------------------------------------------------
+    bool StaticSceneDecalWriter::addFromChunkDecal(
+      const DataSectionPtr& pObjectDS,
+      const Matrix&         chunkTransform,
+      StringTableWriter&    stringTable,
+      AssetListWriter&      assetList)
+    {
+        MF_ASSERT(pObjectDS != NULL);
 
-// ----------------------------------------------------------------------------
-size_t StaticSceneDecalWriter::numObjects() const
-{
-    return decals_.size();
-}
+        CompiledSpace::StaticSceneDecalTypes::Decal result;
+        memset(&result, 0, sizeof(result));
 
+        typedef DecalsManager::Decal Decals;
 
-// ----------------------------------------------------------------------------
-bool StaticSceneDecalWriter::writeData( BinaryFormatWriter& writer )
-{
-    BinaryFormatWriter::Stream * stream = writer.appendSection(
-        CompiledSpace::StaticSceneDecalTypes::FORMAT_MAGIC,
-        CompiledSpace::StaticSceneDecalTypes::FORMAT_VERSION );
-    MF_ASSERT( stream != NULL );
+        result.diffuseTexture_ =
+          stringTable.addString(pObjectDS->readString("diffTex"));
 
-    stream->write( decals_ );
-    return true;
-}
+        result.bumpTexture_ =
+          stringTable.addString(pObjectDS->readString("bumpTex"));
 
+        result.influenceType_ =
+          (uint8)pObjectDS->readUInt("influence", Decals::APPLY_TO_TERRAIN);
 
-// ----------------------------------------------------------------------------
-void StaticSceneDecalWriter::convertStaticDecal( const ConversionContext& ctx,
-    const DataSectionPtr& pItemDS, const BW::string& uid )
-{
-    addFromChunkDecal( pItemDS, ctx.chunkTransform,
-        strings(), assets() );
-}
+        result.materialType_ = (uint8)pObjectDS->readUInt("type", 1);
+        result.priority_     = (uint8)pObjectDS->readUInt("priority", 0);
 
+        result.worldTransform_ =
+          pObjectDS->readMatrix34("transform", Matrix::identity);
+        result.worldTransform_.postMultiply(chunkTransform);
 
-//-----------------------------------------------------------------------------
-bool StaticSceneDecalWriter::addFromChunkDecal(
-    const DataSectionPtr& pObjectDS,
-    const Matrix& chunkTransform,
-    StringTableWriter& stringTable,
-    AssetListWriter& assetList )
-{
-    MF_ASSERT( pObjectDS != NULL );
+        decals_.push_back(result);
 
-    CompiledSpace::StaticSceneDecalTypes::Decal result;
-    memset( &result, 0, sizeof(result) );
+        BoundingBox bb(Vector3(-0.5f, -0.5f, -0.5f),
+                       Vector3(+0.5f, +0.5f, +0.5f));
+        bb.transformBy(result.worldTransform_);
 
-    typedef DecalsManager::Decal Decals;
+        worldBounds_.push_back(bb);
 
-    result.diffuseTexture_ =
-        stringTable.addString( pObjectDS->readString( "diffTex" ) );
+        return true;
+    }
 
-    result.bumpTexture_ =
-        stringTable.addString( pObjectDS->readString( "bumpTex" ) );
+    // ----------------------------------------------------------------------------
+    const BoundingBox& StaticSceneDecalWriter::worldBounds(size_t idx) const
+    {
+        MF_ASSERT(idx < worldBounds_.size());
+        return worldBounds_[idx];
+    }
 
-    result.influenceType_ =
-        (uint8)pObjectDS->readUInt( "influence", Decals::APPLY_TO_TERRAIN );
-
-    result.materialType_ = (uint8)pObjectDS->readUInt( "type", 1 );
-    result.priority_ = (uint8)pObjectDS->readUInt( "priority", 0 );
-
-    result.worldTransform_ =
-        pObjectDS->readMatrix34( "transform", Matrix::identity );
-    result.worldTransform_.postMultiply( chunkTransform );
-
-    decals_.push_back( result );
-
-    BoundingBox bb( Vector3(-0.5f, -0.5f, -0.5f), Vector3(+0.5f, +0.5f, +0.5f) );
-    bb.transformBy( result.worldTransform_ );
-
-    worldBounds_.push_back( bb );
-
-    return true;
-}
-
-
-// ----------------------------------------------------------------------------
-const BoundingBox& StaticSceneDecalWriter::worldBounds( size_t idx ) const
-{
-    MF_ASSERT( idx < worldBounds_.size() );
-    return worldBounds_[idx];
-}
-
-
-// ----------------------------------------------------------------------------
-const Matrix& StaticSceneDecalWriter::worldTransform( size_t idx ) const
-{
-    MF_ASSERT( idx < decals_.size() );
-    return decals_[idx].worldTransform_;
-}
-
+    // ----------------------------------------------------------------------------
+    const Matrix& StaticSceneDecalWriter::worldTransform(size_t idx) const
+    {
+        MF_ASSERT(idx < decals_.size());
+        return decals_[idx].worldTransform_;
+    }
 
 } // namespace CompiledSpace
 } // namespace BW

@@ -11,15 +11,16 @@ BW_BEGIN_NAMESPACE
  */
 class BWStreamDataHandler
 {
-public:
-	virtual ~BWStreamDataHandler() {}
+  public:
+    virtual ~BWStreamDataHandler() {}
 
-	/**
-	 * This method receives a notification when data has been streamed
-	 * from the server in unutilised bandwidth.
-	 */
-	virtual void onStreamDataComplete( uint16 streamID,
-		const BW::string & rDescription, BinaryIStream & rData ) = 0;
+    /**
+     * This method receives a notification when data has been streamed
+     * from the server in unutilised bandwidth.
+     */
+    virtual void onStreamDataComplete(uint16            streamID,
+                                      const BW::string& rDescription,
+                                      BinaryIStream&    rData) = 0;
 };
 
 BW_END_NAMESPACE

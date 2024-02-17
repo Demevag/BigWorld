@@ -8,16 +8,15 @@
 
 #include "moo/render_context.hpp"
 
-namespace BW
-{
+namespace BW {
 
-SceneDrawContext::SceneDrawContext( const Scene & scene, Moo::DrawContext & drawContext ) :
-	scene_( scene ),
-	drawContext_( drawContext ),
-	renderFlares_( true )
-{
-	lodCameraView( Moo::rc().view() );
-}
-
+    SceneDrawContext::SceneDrawContext(const Scene&      scene,
+                                       Moo::DrawContext& drawContext)
+      : scene_(scene)
+      , drawContext_(drawContext)
+      , renderFlares_(true)
+    {
+        lodCameraView(Moo::rc().view());
+    }
 
 } // namespace BW

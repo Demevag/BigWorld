@@ -9,22 +9,22 @@ BW_BEGIN_NAMESPACE
 
 class OutputFileDependency : public Dependency
 {
-public:
-	OutputFileDependency();
-	OutputFileDependency( const BW::string & fileName );
-	virtual ~OutputFileDependency();
+  public:
+    OutputFileDependency();
+    OutputFileDependency(const BW::string& fileName);
+    virtual ~OutputFileDependency();
 
-	const BW::string & getFileName() const { return fileName_; }
+    const BW::string& getFileName() const { return fileName_; }
 
-	virtual DependencyType getType() const { return OutputFileDependencyType; }
+    virtual DependencyType getType() const { return OutputFileDependencyType; }
 
-	virtual bool serialiseIn( DataSectionPtr pSection );
-	virtual bool serialiseOut( DataSectionPtr pSection ) const;
+    virtual bool serialiseIn(DataSectionPtr pSection);
+    virtual bool serialiseOut(DataSectionPtr pSection) const;
 
-private:
-	BW::string fileName_;
+  private:
+    BW::string fileName_;
 };
 
 BW_END_NAMESPACE
 
-#endif //ASSET_PIPELINE_OUTPUT_FILE_DEPENDENCY
+#endif // ASSET_PIPELINE_OUTPUT_FILE_DEPENDENCY

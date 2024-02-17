@@ -7,12 +7,15 @@ BW_BEGIN_NAMESPACE
 
 class CAboutDlg : public CDialog
 {
-public:
-    enum { IDD = IDD_ABOUTBOX };
+  public:
+    enum
+    {
+        IDD = IDD_ABOUTBOX
+    };
 
     CAboutDlg();
 
-protected:
+  protected:
     /*virtual*/ BOOL OnInitDialog();
 
     afx_msg void OnPaint();
@@ -23,10 +26,10 @@ protected:
 
     DECLARE_MESSAGE_MAP()
 
-private:
-    CBitmap         m_background;
-    CFont           m_buildFont;
-	CFont           m_copyrightFont;
+  private:
+    CBitmap m_background;
+    CFont   m_buildFont;
+    CFont   m_copyrightFont;
 };
 
 BW_END_NAMESPACE

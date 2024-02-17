@@ -16,41 +16,44 @@ BW_BEGIN_NAMESPACE
  */
 class UalHistory : public XmlItemList
 {
-public:
-	UalHistory();
-	virtual ~UalHistory();
+  public:
+    UalHistory();
+    virtual ~UalHistory();
 
-	void setChangedCallback( UalCallback0* callback ) { changedCallback_ = callback; };
+    void setChangedCallback(UalCallback0* callback)
+    {
+        changedCallback_ = callback;
+    };
 
-	// to add an item to history, prepareItem on EndDrag and addPreparedItem
-	// after your app thinks the operation was successful.
-	// NOTE: You should take advantage of the fact that an AssetInfo object
-	// can get automatically converted to an XmlItem object.
-	void prepareItem( const XmlItem& item );
-	bool addPreparedItem();
-	void discardPreparedItem();
-	const XmlItem getPreparedItem();
+    // to add an item to history, prepareItem on EndDrag and addPreparedItem
+    // after your app thinks the operation was successful.
+    // NOTE: You should take advantage of the fact that an AssetInfo object
+    // can get automatically converted to an XmlItem object.
+    void          prepareItem(const XmlItem& item);
+    bool          addPreparedItem();
+    void          discardPreparedItem();
+    const XmlItem getPreparedItem();
 
-	// shouldn't use this one. The preferred method is prepareItem + addPreparedItem
-	DataSectionPtr add( const XmlItem& item );
+    // shouldn't use this one. The preferred method is prepareItem +
+    // addPreparedItem
+    DataSectionPtr add(const XmlItem& item);
 
-	void setMaxItems( int maxItems ) { maxItems_ = maxItems; };
-	int getMaxItems() { return maxItems_; };
-	void remove( const XmlItem& item, bool callCallback = true );
-	void clear();
+    void setMaxItems(int maxItems) { maxItems_ = maxItems; };
+    int  getMaxItems() { return maxItems_; };
+    void remove(const XmlItem& item, bool callCallback = true);
+    void clear();
 
-private:
-	// history notifications
-	SmartPointer<UalCallback0> changedCallback_;
+  private:
+    // history notifications
+    SmartPointer<UalCallback0> changedCallback_;
 
-	int maxItems_;
-	bool preparedItemValid_;
-	XmlItem preparedItem_;
+    int     maxItems_;
+    bool    preparedItemValid_;
+    XmlItem preparedItem_;
 
-	void saveTimestamp( DataSectionPtr ds );
-	time_t loadTimestamp( DataSectionPtr ds );
+    void   saveTimestamp(DataSectionPtr ds);
+    time_t loadTimestamp(DataSectionPtr ds);
 };
-
 
 BW_END_NAMESPACE
 

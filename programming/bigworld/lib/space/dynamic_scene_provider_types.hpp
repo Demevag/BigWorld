@@ -3,11 +3,10 @@
 
 #include <cstdmf/object_pool.hpp>
 
-namespace BW
-{
+namespace BW {
 
-class DynamicSceneProvider;
-typedef Handle<24, 8> DynamicObjectHandle;
+    class DynamicSceneProvider;
+    typedef Handle<24, 8> DynamicObjectHandle;
 
 } // namespace BW
 

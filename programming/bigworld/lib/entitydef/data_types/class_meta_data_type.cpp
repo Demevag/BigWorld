@@ -3,7 +3,6 @@
 
 #include "entitydef/data_types.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,30 +10,27 @@ BW_BEGIN_NAMESPACE
  */
 ClassMetaDataType::ClassMetaDataType()
 {
-	MetaDataType::addMetaType( this );
+    MetaDataType::addMetaType(this);
 }
-
 
 /**
  *	Destructor.
  */
 ClassMetaDataType::~ClassMetaDataType()
 {
-	MetaDataType::delMetaType( this );
+    MetaDataType::delMetaType(this);
 }
-
 
 /**
  *
  */
-DataTypePtr ClassMetaDataType::getType( DataSectionPtr pSection )
+DataTypePtr ClassMetaDataType::getType(DataSectionPtr pSection)
 {
-	return ClassMetaDataType::buildType( pSection, *this );
+    return ClassMetaDataType::buildType(pSection, *this);
 }
 
-
 static ClassMetaDataType s_CLASS_metaDataType;
-DATA_TYPE_LINK_ITEM( CLASS )
+DATA_TYPE_LINK_ITEM(CLASS)
 
 BW_END_NAMESPACE
 

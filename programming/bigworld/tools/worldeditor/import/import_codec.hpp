@@ -1,7 +1,6 @@
 #ifndef IMPORT_CODEC_HPP
 #define IMPORT_CODEC_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "cstdmf/smartpointer.hpp"
@@ -14,10 +13,10 @@ BW_BEGIN_NAMESPACE
  */
 class ImportCodec : public ReferenceCount
 {
-public:
+  public:
     virtual ~ImportCodec();
 
-    virtual bool canHandleFile(BW::string const &filename) = 0;
+    virtual bool canHandleFile(BW::string const& filename) = 0;
 
     enum LoadResult
     {
@@ -27,38 +26,31 @@ public:
         LR_UNKNOWN_CODEC
     };
 
-    virtual LoadResult load
-    (
-        BW::string         const &filename, 
-        ImportImage			&image,
-        float               *left           = NULL,
-        float               *top            = NULL,
-        float               *right          = NULL,
-        float               *bottom         = NULL,
-		bool				*absolute		= NULL,
-        bool                loadConfigDlg   = false
-    ) = 0;
+    virtual LoadResult load(BW::string const& filename,
+                            ImportImage&      image,
+                            float*            left          = NULL,
+                            float*            top           = NULL,
+                            float*            right         = NULL,
+                            float*            bottom        = NULL,
+                            bool*             absolute      = NULL,
+                            bool              loadConfigDlg = false) = 0;
 
-    virtual bool save
-    (
-        BW::string         const &filename, 
-        ImportImage			const &image,
-        float               *left           = NULL,
-        float               *top            = NULL,
-        float               *right          = NULL,
-        float               *bottom         = NULL,
-		bool				*absolute		= NULL,
-		float				*minVal			= NULL,
-		float				*maxVal			= NULL
-    ) = 0;
+    virtual bool save(BW::string const&  filename,
+                      ImportImage const& image,
+                      float*             left     = NULL,
+                      float*             top      = NULL,
+                      float*             right    = NULL,
+                      float*             bottom   = NULL,
+                      bool*              absolute = NULL,
+                      float*             minVal   = NULL,
+                      float*             maxVal   = NULL) = 0;
 
     virtual bool canLoad() const;
 
     virtual bool canSave() const;
 };
 
-
-typedef SmartPointer< ImportCodec > ImportCodecPtr;
+typedef SmartPointer<ImportCodec> ImportCodecPtr;
 
 BW_END_NAMESPACE
 

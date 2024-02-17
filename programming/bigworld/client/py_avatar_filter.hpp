@@ -4,7 +4,6 @@
 #include "avatar_filter.hpp"
 #include "py_filter.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /*~ class BigWorld.AvatarFilter
@@ -30,53 +29,52 @@ BW_BEGIN_NAMESPACE
  */
 class PyAvatarFilter : public PyFilter
 {
-	Py_Header( PyAvatarFilter, PyFilter )
+    Py_Header(PyAvatarFilter, PyFilter)
 
-public:
-	PyAvatarFilter( PyTypeObject * pType = &s_type_ );
-	virtual ~PyAvatarFilter() {}
+      public : PyAvatarFilter(PyTypeObject* pType = &s_type_);
+    virtual ~PyAvatarFilter() {}
 
-	float latency() const;
-	void latency( float newLatency );
+    float latency() const;
+    void  latency(float newLatency);
 
-	bool callback(	int whence,
-					ScriptObject callbackFn,
-					float extra = 0.f,
-					bool shouldPassMissedBy = false );
+    bool callback(int          whence,
+                  ScriptObject callbackFn,
+                  float        extra              = 0.f,
+                  bool         shouldPassMissedBy = false);
 
-	// Python Interface
-	PY_AUTO_CONSTRUCTOR_FACTORY_DECLARE( PyAvatarFilter, END );
+    // Python Interface
+    PY_AUTO_CONSTRUCTOR_FACTORY_DECLARE(PyAvatarFilter, END);
 
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( float, latency, latency );
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(float, latency, latency);
 
-	PY_RW_ATTRIBUTE_DECLARE( AvatarFilterSettings::s_latencyVelocity_,
-		velLatency );
-	PY_RW_ATTRIBUTE_DECLARE( AvatarFilterSettings::s_latencyMinimum_,
-		minLatency );
-	PY_RW_ATTRIBUTE_DECLARE( AvatarFilterSettings::s_latencyFrames_,
-		latencyFrames );
-	PY_RW_ATTRIBUTE_DECLARE( AvatarFilterSettings::s_latencyCurvePower_,
-		latencyCurvePower );
+    PY_RW_ATTRIBUTE_DECLARE(AvatarFilterSettings::s_latencyVelocity_,
+                            velLatency);
+    PY_RW_ATTRIBUTE_DECLARE(AvatarFilterSettings::s_latencyMinimum_,
+                            minLatency);
+    PY_RW_ATTRIBUTE_DECLARE(AvatarFilterSettings::s_latencyFrames_,
+                            latencyFrames);
+    PY_RW_ATTRIBUTE_DECLARE(AvatarFilterSettings::s_latencyCurvePower_,
+                            latencyCurvePower);
 
-	PY_AUTO_METHOD_DECLARE( RETOK,
-							callback,
-							ARG( int,
-							CALLABLE_ARG( ScriptObject,
-							OPTARG( float, 0.f,
-							OPTARG( bool, false, END ) ) ) ) );
+    PY_AUTO_METHOD_DECLARE(
+      RETOK,
+      callback,
+      ARG(int,
+          CALLABLE_ARG(ScriptObject,
+                       OPTARG(float, 0.f, OPTARG(bool, false, END)))));
 
-	PY_METHOD_DECLARE( py_debugMatrixes );
+    PY_METHOD_DECLARE(py_debugMatrixes);
 
-	// Implementation of PyFilter
-	virtual AvatarFilter * pAttachedFilter();
-	virtual const AvatarFilter * pAttachedFilter() const;
+    // Implementation of PyFilter
+    virtual AvatarFilter*       pAttachedFilter();
+    virtual const AvatarFilter* pAttachedFilter() const;
 
-protected:
-	// Implementation of PyFilter
-	virtual AvatarFilter * getNewFilter();
+  protected:
+    // Implementation of PyFilter
+    virtual AvatarFilter* getNewFilter();
 };
 
-PY_SCRIPT_CONVERTERS_DECLARE( PyAvatarFilter );
+PY_SCRIPT_CONVERTERS_DECLARE(PyAvatarFilter);
 
 BW_END_NAMESPACE
 

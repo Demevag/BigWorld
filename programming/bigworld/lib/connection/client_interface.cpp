@@ -4,4 +4,3 @@
 
 #define DEFINE_INTERFACE_HERE
 #include "client_interface.hpp"
-

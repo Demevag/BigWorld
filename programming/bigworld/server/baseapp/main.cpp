@@ -9,45 +9,37 @@
 
 BW_USE_NAMESPACE
 
-
 BW_BEGIN_NAMESPACE
 
-namespace
-{
+namespace {
 
-bool isServiceApp( int argc, char * argv[] )
-{
-	bool isServiceApp = false;
+    bool isServiceApp(int argc, char* argv[])
+    {
+        bool isServiceApp = false;
 
-	if (argc >= 0)
-	{
-		char * basec = strdup( argv[0] );
-		char * bname = basename( basec );
+        if (argc >= 0) {
+            char* basec = strdup(argv[0]);
+            char* bname = basename(basec);
 
-		isServiceApp = (strcmp( bname, "serviceapp" ) == 0);
+            isServiceApp = (strcmp(bname, "serviceapp") == 0);
 
-		free( basec );
-	}
+            free(basec);
+        }
 
-	return isServiceApp;
-}
+        return isServiceApp;
+    }
 
 } // anonymous namespace
 
 BW_END_NAMESPACE
 
-
-int BIGWORLD_MAIN( int argc, char * argv[] )
+int BIGWORLD_MAIN(int argc, char* argv[])
 {
-	if (isServiceApp( argc, argv ))
-	{
-		return bwMainT< ServiceApp >( argc, argv );
-	}
-	else
-	{
-		return bwMainT< BaseApp >( argc, argv );
-	}
+    if (isServiceApp(argc, argv)) {
+        return bwMainT<ServiceApp>(argc, argv);
+    } else {
+        return bwMainT<BaseApp>(argc, argv);
+    }
 }
-
 
 // main.cpp

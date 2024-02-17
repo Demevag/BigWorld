@@ -16,47 +16,46 @@ BW_BEGIN_NAMESPACE
  */
 class Commentary
 {
-public:
-	~Commentary();
+  public:
+    ~Commentary();
 
-	//Accessors
-	static Commentary & instance();
+    // Accessors
+    static Commentary& instance();
 
-	enum LevelId
-	{
-		COMMENT = 0,
-		CRITICAL = 1,
-		ERROR_LEVEL = 2,
-		WARNING = 3,
-		HACK = 4,
-		SCRIPT_ERROR = 5,
-		NUM_LEVELS
-	};
+    enum LevelId
+    {
+        COMMENT      = 0,
+        CRITICAL     = 1,
+        ERROR_LEVEL  = 2,
+        WARNING      = 3,
+        HACK         = 4,
+        SCRIPT_ERROR = 5,
+        NUM_LEVELS
+    };
 
-	void	addMsg( const BW::string & msg, int id = COMMENT );
-	void	addMsg( const BW::wstring & msg, int id = COMMENT );
+    void addMsg(const BW::string& msg, int id = COMMENT);
+    void addMsg(const BW::wstring& msg, int id = COMMENT);
 
-	//callbacks
-	class View
-	{
-	public:
-		virtual void onAddMsg( const BW::wstring & msg, int id ) = 0;
-	};
+    // callbacks
+    class View
+    {
+      public:
+        virtual void onAddMsg(const BW::wstring& msg, int id) = 0;
+    };
 
-	void	addView( Commentary::View * view );
-	void	delView( Commentary::View * view );
+    void addView(Commentary::View* view);
+    void delView(Commentary::View* view);
 
-private:
-	Commentary();
+  private:
+    Commentary();
 
-	Commentary( const Commentary& );
-	Commentary& operator=( const Commentary& );
+    Commentary(const Commentary&);
+    Commentary& operator=(const Commentary&);
 
-	typedef BW::vector< View* > Views;
-	Views	views_;
+    typedef BW::vector<View*> Views;
+    Views                     views_;
 
-
-	friend std::wostream& operator<<( std::wostream&, const Commentary& );
+    friend std::wostream& operator<<(std::wostream&, const Commentary&);
 };
 
 BW_END_NAMESPACE

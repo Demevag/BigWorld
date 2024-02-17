@@ -5,7 +5,6 @@
 #include "cellappmgr_config.hpp"
 #include "space.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
@@ -17,15 +16,14 @@ BW_BEGIN_NAMESPACE
  */
 class SpaceVisitor
 {
-public:
-	virtual ~SpaceVisitor() {}
+  public:
+    virtual ~SpaceVisitor() {}
 
-	/**
-	 *	This method will be called for each space in a collection.
-	 */
-	virtual void onSpace( const Space & space ) = 0;
+    /**
+     *	This method will be called for each space in a collection.
+     */
+    virtual void onSpace(const Space& space) = 0;
 };
-
 
 // -----------------------------------------------------------------------------
 // Section: SpaceChooser
@@ -36,14 +34,13 @@ public:
  */
 class SpaceChooser : public SpaceVisitor
 {
-public:
-	SpaceChooser() { pSpace_ = NULL; }
-	const Space * pSpace() { return pSpace_; }
+  public:
+    SpaceChooser() { pSpace_ = NULL; }
+    const Space* pSpace() { return pSpace_; }
 
-protected:
-	const Space * pSpace_;
+  protected:
+    const Space* pSpace_;
 };
-
 
 // -----------------------------------------------------------------------------
 // Section: LargestSpaceChooser
@@ -54,37 +51,34 @@ protected:
  */
 class LargestSpaceChooser : public SpaceChooser
 {
-public:
-	LargestSpaceChooser();
-	virtual void onSpace( const Space & space );
+  public:
+    LargestSpaceChooser();
+    virtual void onSpace(const Space& space);
 
-private:
-	int maxCells_;
+  private:
+    int maxCells_;
 };
-
 
 /**
  *	Constructor.
  */
-LargestSpaceChooser::LargestSpaceChooser() :
-	SpaceChooser(),
-	maxCells_( 0 )
-{ }
-
+LargestSpaceChooser::LargestSpaceChooser()
+  : SpaceChooser()
+  , maxCells_(0)
+{
+}
 
 /**
  *	This method is visited every time a Space that needs to be evaluated
  *	for selection.
  */
-void LargestSpaceChooser::onSpace( const Space & space )
+void LargestSpaceChooser::onSpace(const Space& space)
 {
-	if (space.numCells() > maxCells_)
-	{
-		pSpace_ = &space;
-		maxCells_ = space.numCells();
-	}
+    if (space.numCells() > maxCells_) {
+        pSpace_   = &space;
+        maxCells_ = space.numCells();
+    }
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: SmallestSpaceChooser
@@ -93,39 +87,36 @@ void LargestSpaceChooser::onSpace( const Space & space )
 /**
  *	This class chooses the smallest (fewest cells) space in a collection.
  */
-class SmallestSpaceChooser: public SpaceChooser
+class SmallestSpaceChooser : public SpaceChooser
 {
-public:
-	SmallestSpaceChooser();
-	virtual void onSpace( const Space & space );
+  public:
+    SmallestSpaceChooser();
+    virtual void onSpace(const Space& space);
 
-private:
-	int minCells_;
+  private:
+    int minCells_;
 };
-
 
 /**
  *	Constructor.
  */
-SmallestSpaceChooser::SmallestSpaceChooser() :
-	SpaceChooser(),
-	minCells_( INT_MAX )
-{ }
-
+SmallestSpaceChooser::SmallestSpaceChooser()
+  : SpaceChooser()
+  , minCells_(INT_MAX)
+{
+}
 
 /**
  *	This method is visited every time a Space that needs to be evaluated
  *	for selection.
  */
-void SmallestSpaceChooser::onSpace( const Space & space )
+void SmallestSpaceChooser::onSpace(const Space& space)
 {
-	if (space.numCells() < minCells_)
-	{
-		pSpace_ = &space;
-		minCells_ = space.numCells();
-	}
+    if (space.numCells() < minCells_) {
+        pSpace_   = &space;
+        minCells_ = space.numCells();
+    }
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: HybridSpaceChooser
@@ -135,60 +126,54 @@ void SmallestSpaceChooser::onSpace( const Space & space )
  *	This class chooses the best space in a collection to introduce a new cell
  *	to.
  */
-class HybridSpaceChooser: public SpaceChooser
+class HybridSpaceChooser : public SpaceChooser
 {
-public:
-	HybridSpaceChooser();
-	virtual void onSpace( const Space & space );
+  public:
+    HybridSpaceChooser();
+    virtual void onSpace(const Space& space);
 
-	bool hasLargestSpace() const { return minCells_ == 0; }
+    bool hasLargestSpace() const { return minCells_ == 0; }
 
-private:
-	int minCells_;
-	float maxLoad_;
+  private:
+    int   minCells_;
+    float maxLoad_;
 };
-
 
 /**
  *	Constructor.
  */
-HybridSpaceChooser::HybridSpaceChooser() :
-	SpaceChooser(),
-	minCells_( INT_MAX ),
-	maxLoad_( FLT_MAX )
+HybridSpaceChooser::HybridSpaceChooser()
+  : SpaceChooser()
+  , minCells_(INT_MAX)
+  , maxLoad_(FLT_MAX)
 {
 }
-
 
 /**
  *	This method is visited every time a Space that needs to be evaluated
  *	for selection.
  */
-void HybridSpaceChooser::onSpace( const Space & space )
+void HybridSpaceChooser::onSpace(const Space& space)
 {
-	float currentLoad = space.avgLoad();
+    float currentLoad = space.avgLoad();
 
-	if (space.isLarge())
-	{
-		if ((currentLoad > maxLoad_) || !this->hasLargestSpace())
-		{
-			pSpace_ = &space;
-			maxLoad_ = currentLoad;
+    if (space.isLarge()) {
+        if ((currentLoad > maxLoad_) || !this->hasLargestSpace()) {
+            pSpace_  = &space;
+            maxLoad_ = currentLoad;
 
-			// No longer look for min cells.
-			minCells_ = 0;
-		}
-	}
+            // No longer look for min cells.
+            minCells_ = 0;
+        }
+    }
 
-	if ((space.numCells() < minCells_) ||
-			((space.numCells() == minCells_) && (currentLoad > maxLoad_)))
-	{
-		pSpace_ = &space;
-		minCells_ = space.numCells();
-		maxLoad_ = currentLoad;
-	}
+    if ((space.numCells() < minCells_) ||
+        ((space.numCells() == minCells_) && (currentLoad > maxLoad_))) {
+        pSpace_   = &space;
+        minCells_ = space.numCells();
+        maxLoad_  = currentLoad;
+    }
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: CellAppGroup
@@ -199,112 +184,98 @@ void HybridSpaceChooser::onSpace( const Space & space )
  */
 CellAppGroup::~CellAppGroup()
 {
-	iterator iter = this->begin();
+    iterator iter = this->begin();
 
-	while (iter != this->end())
-	{
-		CellApp * pApp = *iter;
+    while (iter != this->end()) {
+        CellApp* pApp = *iter;
 
-		MF_ASSERT( pApp->pGroup() == this );
+        MF_ASSERT(pApp->pGroup() == this);
 
-		pApp->pGroup_ = NULL;
+        pApp->pGroup_ = NULL;
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 /**
  *	This method visits all spaces that belong in this group. Note that spaces
  *	can be visited more than once.
  */
-void CellAppGroup::visitSpaces( SpaceVisitor & visitor ) const
+void CellAppGroup::visitSpaces(SpaceVisitor& visitor) const
 {
-	const_iterator appIter = this->begin();
+    const_iterator appIter = this->begin();
 
-	while (appIter != this->end())
-	{
-		CellApp * pApp = *appIter;
+    while (appIter != this->end()) {
+        CellApp* pApp = *appIter;
 
-		Cells::const_iterator cellIter = pApp->cells().begin();
+        Cells::const_iterator cellIter = pApp->cells().begin();
 
-		while (cellIter != pApp->cells().end())
-		{
-			visitor.onSpace( (*cellIter)->space() );
+        while (cellIter != pApp->cells().end()) {
+            visitor.onSpace((*cellIter)->space());
 
-			++cellIter;
-		}
+            ++cellIter;
+        }
 
-		++appIter;
-	}
+        ++appIter;
+    }
 }
-
 
 /**
  *	This method chooses a space in this group that would be good to use to
  *	connect to another group.
  */
-Space * CellAppGroup::chooseConnectionSpace( SpaceChooser & chooser ) const
+Space* CellAppGroup::chooseConnectionSpace(SpaceChooser& chooser) const
 {
-	this->visitSpaces( chooser );
+    this->visitSpaces(chooser);
 
-	const Space * pSpace = chooser.pSpace();
+    const Space* pSpace = chooser.pSpace();
 
-	if (!pSpace)
-	{
-		ERROR_MSG( "CellAppGroup::chooseConnectionSpace: "
-				"No appropriate space in group\n" );
-		return NULL;
-	}
+    if (!pSpace) {
+        ERROR_MSG("CellAppGroup::chooseConnectionSpace: "
+                  "No appropriate space in group\n");
+        return NULL;
+    }
 
-	return const_cast< Space *>( pSpace );
+    return const_cast<Space*>(pSpace);
 }
-
 
 /**
  *	This method chooses a space in this group that would be good to use to
  *	connect to another group.
  */
-Space * CellAppGroup::chooseConnectionSpace() const
+Space* CellAppGroup::chooseConnectionSpace() const
 {
-	CellAppMgrConfig::MetaLoadBalanceScheme scheme =
-		static_cast< CellAppMgrConfig::MetaLoadBalanceScheme >(
-			CellAppMgrConfig::metaLoadBalanceScheme() );
+    CellAppMgrConfig::MetaLoadBalanceScheme scheme =
+      static_cast<CellAppMgrConfig::MetaLoadBalanceScheme>(
+        CellAppMgrConfig::metaLoadBalanceScheme());
 
-	switch (scheme)
-	{
-		case CellAppMgrConfig::SCHEME_LARGEST:
-		{
-			LargestSpaceChooser chooser;
-			return this->chooseConnectionSpace( chooser );
-		}
-		break;
+    switch (scheme) {
+        case CellAppMgrConfig::SCHEME_LARGEST: {
+            LargestSpaceChooser chooser;
+            return this->chooseConnectionSpace(chooser);
+        } break;
 
-		case CellAppMgrConfig::SCHEME_SMALLEST:
-		{
-			SmallestSpaceChooser chooser;
-			return this->chooseConnectionSpace( chooser );
-		}
-		break;
+        case CellAppMgrConfig::SCHEME_SMALLEST: {
+            SmallestSpaceChooser chooser;
+            return this->chooseConnectionSpace(chooser);
+        } break;
 
-		case CellAppMgrConfig::SCHEME_HYBRID:
-		{
-			HybridSpaceChooser chooser;
-			return this->chooseConnectionSpace( chooser );
-		}
-		break;
+        case CellAppMgrConfig::SCHEME_HYBRID: {
+            HybridSpaceChooser chooser;
+            return this->chooseConnectionSpace(chooser);
+        } break;
 
-		default:
-			ERROR_MSG( "CellAppGroup::chooseConnectionSpace: "
-					"Invalid scheme %d. Switching.\n", scheme );
-			CellAppMgrConfig::metaLoadBalanceScheme.set(
-					CellAppMgrConfig::SCHEME_HYBRID );
-		break;
-	}
+        default:
+            ERROR_MSG("CellAppGroup::chooseConnectionSpace: "
+                      "Invalid scheme %d. Switching.\n",
+                      scheme);
+            CellAppMgrConfig::metaLoadBalanceScheme.set(
+              CellAppMgrConfig::SCHEME_HYBRID);
+            break;
+    }
 
-	return NULL;
+    return NULL;
 }
-
 
 /**
  *	This method stops a CellApp in this group from retiring its Cells.
@@ -314,24 +285,21 @@ Space * CellAppGroup::chooseConnectionSpace() const
  */
 bool CellAppGroup::cancelRetiringCellApp()
 {
-	iterator iter = this->begin();
+    iterator iter = this->begin();
 
-	while (iter != this->end())
-	{
-		CellApp * pApp = *iter;
+    while (iter != this->end()) {
+        CellApp* pApp = *iter;
 
-		if (!pApp->isRetiring() && pApp->hasAnyRetiringCells())
-		{
-			pApp->cancelRetiringCells();
-			return true;
-		}
+        if (!pApp->isRetiring() && pApp->hasAnyRetiringCells()) {
+            pApp->cancelRetiringCells();
+            return true;
+        }
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	return false;
+    return false;
 }
-
 
 /**
  *	This method returns the average load over all CellApps in this group. For
@@ -343,58 +311,52 @@ bool CellAppGroup::cancelRetiringCellApp()
  *
  *	@return The average load for this group.
  */
-float CellAppGroup::avgLoad( int ifNumRemoved ) const
+float CellAppGroup::avgLoad(int ifNumRemoved) const
 {
-	int count = -ifNumRemoved;
-	float totalLoad = 0.f;
+    int   count     = -ifNumRemoved;
+    float totalLoad = 0.f;
 
-	CellAppGroup::iterator iter = this->begin();
+    CellAppGroup::iterator iter = this->begin();
 
-	while (iter != this->end())
-	{
-		CellApp * pApp = *iter;
-		totalLoad += pApp->smoothedLoad();
+    while (iter != this->end()) {
+        CellApp* pApp = *iter;
+        totalLoad += pApp->smoothedLoad();
 
-		if (!pApp->hasOnlyRetiringCells())
-		{
-			++count;
-		}
+        if (!pApp->hasOnlyRetiringCells()) {
+            ++count;
+        }
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	return (count > 0) ? totalLoad/count : FLT_MAX;
+    return (count > 0) ? totalLoad / count : FLT_MAX;
 }
-
 
 /**
  *	This method generates a string representation of the group.
  */
 BW::string CellAppGroup::asString() const
 {
-	BW::stringstream str;
+    BW::stringstream str;
 
-	Set::const_iterator iter = set_.begin();
+    Set::const_iterator iter = set_.begin();
 
-	str << '(';
+    str << '(';
 
-	while (iter != set_.end())
-	{
-		if (iter != set_.begin())
-		{
-			str << ',';
-		}
+    while (iter != set_.end()) {
+        if (iter != set_.begin()) {
+            str << ',';
+        }
 
-		str << (*iter)->id();
+        str << (*iter)->id();
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	str << ')';
+    str << ')';
 
-	return str.str();
+    return str.str();
 }
-
 
 /**
  *	This method fills a mapping of IP addresses to the number of CellApps in
@@ -402,17 +364,15 @@ BW::string CellAppGroup::asString() const
  */
 void CellAppGroup::updateCellAppsPerIP()
 {
-	cellAppsPerIP_.clear();
+    cellAppsPerIP_.clear();
 
-	const_iterator iter = this->begin();
+    const_iterator iter = this->begin();
 
-	while (iter != this->end())
-	{
-		++cellAppsPerIP_[ (*iter)->addr().ip ];
-		++iter;
-	}
+    while (iter != this->end()) {
+        ++cellAppsPerIP_[(*iter)->addr().ip];
+        ++iter;
+    }
 }
-
 
 /**
  *	This methods inserts a CellApp into this group. It also takes care of
@@ -420,16 +380,15 @@ void CellAppGroup::updateCellAppsPerIP()
  *
  *	@param	pApp	The CellApp to add to this group.
  */
-void CellAppGroup::insert( CellApp * pApp )
+void CellAppGroup::insert(CellApp* pApp)
 {
-	MF_ASSERT( pApp->pGroup() == NULL );
+    MF_ASSERT(pApp->pGroup() == NULL);
 
-	set_.insert( pApp );
-	pApp->pGroup_ = this;
+    set_.insert(pApp);
+    pApp->pGroup_ = this;
 
-	++cellAppsPerIP_[ pApp->addr().ip ];
+    ++cellAppsPerIP_[pApp->addr().ip];
 }
-
 
 /**
  *	This method causes this group to join the input group. At the end of this
@@ -437,26 +396,23 @@ void CellAppGroup::insert( CellApp * pApp )
  *
  *	@param pMainGroup The group that this group will be joined to.
  */
-void CellAppGroup::join( CellAppGroup * pMainGroup )
+void CellAppGroup::join(CellAppGroup* pMainGroup)
 {
-	if (pMainGroup)
-	{
-		pMainGroup->set_.insert( set_.begin(), set_.end() );
+    if (pMainGroup) {
+        pMainGroup->set_.insert(set_.begin(), set_.end());
 
-		iterator iter = this->begin();
+        iterator iter = this->begin();
 
-		while (iter != this->end())
-		{
-			(*iter)->pGroup_ = pMainGroup;
+        while (iter != this->end()) {
+            (*iter)->pGroup_ = pMainGroup;
 
-			++iter;
-		}
+            ++iter;
+        }
 
-		set_.clear();
-		pMainGroup->updateCellAppsPerIP();
-	}
+        set_.clear();
+        pMainGroup->updateCellAppsPerIP();
+    }
 }
-
 
 /**
  *	This method attempts to add a cell to this group to help spread the group's
@@ -464,60 +420,52 @@ void CellAppGroup::join( CellAppGroup * pMainGroup )
  */
 void CellAppGroup::addCell()
 {
-	if (this->isEmpty())
-	{
-		// This occurs if this group was already merged with another.
-		return;
-	}
+    if (this->isEmpty()) {
+        // This occurs if this group was already merged with another.
+        return;
+    }
 
-	if (!this->cancelRetiringCellApp())
-	{
-		// Which space from this group should have a Cell added?
-		Space * pSpace = this->chooseConnectionSpace();
+    if (!this->cancelRetiringCellApp()) {
+        // Which space from this group should have a Cell added?
+        Space* pSpace = this->chooseConnectionSpace();
 
-		if (pSpace)
-		{
-			pSpace->addCell();
-		}
-	}
+        if (pSpace) {
+            pSpace->addCell();
+        }
+    }
 }
-
 
 /**
  *	This method checks whether this group is underloaded and removes a CellApp
  *	if necessary.
  */
-void CellAppGroup::checkForUnderloaded( float loadLowerBound )
+void CellAppGroup::checkForUnderloaded(float loadLowerBound)
 {
-	// If the expected average load with one less CellApp is lower than the
-	// input threshold, the least loaded CellApp is retired from the group.
+    // If the expected average load with one less CellApp is lower than the
+    // input threshold, the least loaded CellApp is retired from the group.
 
-	if (this->avgLoad( 1 ) < loadLowerBound)
-	{
-		CellApp * pLeastLoaded = NULL;
-		float leastLoad = FLT_MAX;
+    if (this->avgLoad(1) < loadLowerBound) {
+        CellApp* pLeastLoaded = NULL;
+        float    leastLoad    = FLT_MAX;
 
-		iterator iter = this->begin();
+        iterator iter = this->begin();
 
-		while (iter != this->end())
-		{
-			CellApp * pApp = *iter;
+        while (iter != this->end()) {
+            CellApp* pApp = *iter;
 
-			if ((!pApp->hasOnlyRetiringCells() &&
-				pApp->smoothedLoad() < leastLoad))
-			{
-				pLeastLoaded = *iter;
-				leastLoad = pLeastLoaded->smoothedLoad();
-			}
+            if ((!pApp->hasOnlyRetiringCells() &&
+                 pApp->smoothedLoad() < leastLoad)) {
+                pLeastLoaded = *iter;
+                leastLoad    = pLeastLoaded->smoothedLoad();
+            }
 
-			++iter;
-		}
+            ++iter;
+        }
 
-		if (pLeastLoaded)
-		{
-			pLeastLoaded->retireAllCells();
-		}
-	}
+        if (pLeastLoaded) {
+            pLeastLoaded->retireAllCells();
+        }
+    }
 }
 
 BW_END_NAMESPACE

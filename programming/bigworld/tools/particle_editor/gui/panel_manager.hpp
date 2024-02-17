@@ -1,7 +1,6 @@
 #ifndef PANEL_MANAGER_HPP
 #define PANEL_MANAGER_HPP
 
-
 #include "cstdmf/singleton.hpp"
 #include "ual/ual_manager.hpp"
 #include "guitabs/manager.hpp"
@@ -14,7 +13,6 @@ BW_BEGIN_NAMESPACE
 class UalDialog;
 class UalItemInfo;
 
-
 class PanelManager :
 	public Singleton<PanelManager>,
 	public GUI::ActionMaker<PanelManager>  ,	// show panels
@@ -26,56 +24,59 @@ class PanelManager :
 	public GUI::UpdaterMaker<PanelManager, 3>,		// Language selection
 	public BasePanelManager
 {
-public:
+  public:
     ~PanelManager();
 
-	static bool init( CFrameWnd* mainFrame, CWnd* mainView, const wchar_t* defaultLayoutFilename );
-	static void fini();
+    static bool init(CFrameWnd*     mainFrame,
+                     CWnd*          mainView,
+                     const wchar_t* defaultLayoutFilename);
+    static void fini();
 
-	// panel stuff
-    bool ready();
-    void showPanel(BW::wstring const &pyID, int show);
-    bool isPanelVisible(BW::wstring const &pyID);
-    bool showSidePanel(GUI::ItemPtr item);
-    bool hideSidePanel(GUI::ItemPtr item);
-    bool setLanguage(GUI::ItemPtr item);
+    // panel stuff
+    bool         ready();
+    void         showPanel(BW::wstring const& pyID, int show);
+    bool         isPanelVisible(BW::wstring const& pyID);
+    bool         showSidePanel(GUI::ItemPtr item);
+    bool         hideSidePanel(GUI::ItemPtr item);
+    bool         setLanguage(GUI::ItemPtr item);
     unsigned int updateSidePanel(GUI::ItemPtr item);
-	unsigned int updateUalPanel(GUI::ItemPtr item);
-	unsigned int updateMsgsPanel(GUI::ItemPtr item);
-	unsigned int updateLanguage(GUI::ItemPtr item);
-    void updateControls();
-    void onClose();
-    void ualAddItemToHistory(BW::string filePath);
-	bool loadDefaultPanels(GUI::ItemPtr item);
-	bool loadLastPanels(GUI::ItemPtr item, const wchar_t* defaultLayoutFilename );
+    unsigned int updateUalPanel(GUI::ItemPtr item);
+    unsigned int updateMsgsPanel(GUI::ItemPtr item);
+    unsigned int updateLanguage(GUI::ItemPtr item);
+    void         updateControls();
+    void         onClose();
+    void         ualAddItemToHistory(BW::string filePath);
+    bool         loadDefaultPanels(GUI::ItemPtr item);
+    bool         loadLastPanels(GUI::ItemPtr   item,
+                                const wchar_t* defaultLayoutFilename);
 
-	GUITABS::Manager& panels() { return panels_; }
+    GUITABS::Manager& panels() { return panels_; }
 
-private:
+  private:
     PanelManager();
 
     void finishLoad();
-    bool initPanels(const wchar_t* defaultLayoutFilename );
+    bool initPanels(const wchar_t* defaultLayoutFilename);
 
-	// UAL callbacks
-	void ualItemDblClick(UalItemInfo* ii);
-	void ualStartDrag(UalItemInfo* ii);
-	void ualUpdateDrag(UalItemInfo* ii);
-	void ualEndDrag(UalItemInfo* ii);
+    // UAL callbacks
+    void ualItemDblClick(UalItemInfo* ii);
+    void ualStartDrag(UalItemInfo* ii);
+    void ualUpdateDrag(UalItemInfo* ii);
+    void ualEndDrag(UalItemInfo* ii);
 
-private:
-	UalManager ualManager_;
+  private:
+    UalManager ualManager_;
 
-	GUITABS::Manager panels_;
+    GUITABS::Manager panels_;
 
-    BW::map<BW::wstring, BW::wstring>  m_contentID;
-    int                                 m_currentTool;
-    CFrameWnd                           *m_mainFrame;
-    CWnd                                *m_mainView;
-    bool                                m_ready;
-    bool                                m_dropable;
-	BW::string							currentLanguageName_;
-	BW::string							currentCountryName_;
+    BW::map<BW::wstring, BW::wstring> m_contentID;
+    int                               m_currentTool;
+    CFrameWnd*                        m_mainFrame;
+    CWnd*                             m_mainView;
+    bool                              m_ready;
+    bool                              m_dropable;
+    BW::string                        currentLanguageName_;
+    BW::string                        currentCountryName_;
 };
 
 BW_END_NAMESPACE

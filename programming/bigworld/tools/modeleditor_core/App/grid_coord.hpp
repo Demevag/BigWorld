@@ -8,33 +8,33 @@ BW_BEGIN_NAMESPACE
 /** Basically an int vector */
 class GridCoord
 {
-public:
-	GridCoord( int xc, int yc );
-	GridCoord( Vector2 v );
+  public:
+    GridCoord(int xc, int yc);
+    GridCoord(Vector2 v);
 
-	int x;
-	int y;
+    int x;
+    int y;
 
-	GridCoord operator+ (const GridCoord& rhs );
+    GridCoord operator+(const GridCoord& rhs);
 
-	static GridCoord zero();
+    static GridCoord zero();
 };
 
 class GridRect
 {
-public:
-	GridRect( GridCoord bl, GridCoord tr );
+  public:
+    GridRect(GridCoord bl, GridCoord tr);
 
-	GridCoord bottomLeft;
-	GridCoord topRight;
+    GridCoord bottomLeft;
+    GridCoord topRight;
 
-	bool valid();
+    bool valid();
 
-	GridRect operator+ (const GridCoord& rhs );
+    GridRect operator+(const GridCoord& rhs);
 
-	static GridRect zero();
-	/** Create a GridRect from any two points */
-	static GridRect fromCoords( GridCoord a, GridCoord b);
+    static GridRect zero();
+    /** Create a GridRect from any two points */
+    static GridRect fromCoords(GridCoord a, GridCoord b);
 };
 
 BW_END_NAMESPACE

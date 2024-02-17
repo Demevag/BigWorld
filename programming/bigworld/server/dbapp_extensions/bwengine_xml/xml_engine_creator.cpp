@@ -4,7 +4,6 @@
 
 #include "db_storage_xml/xml_database.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -12,41 +11,40 @@ BW_BEGIN_NAMESPACE
  */
 class XMLEngineCreator : public DatabaseEngineCreator
 {
-public:
-	/**
-	 *	Constructor.
-	 */
-	XMLEngineCreator() :
-		DatabaseEngineCreator( "xml" )
-	{ }
+  public:
+    /**
+     *	Constructor.
+     */
+    XMLEngineCreator()
+      : DatabaseEngineCreator("xml")
+    {
+    }
 
+    /*
+     *	Override from DatabaseEngineCreator.
+     */
+    IDatabase* createImpl(DatabaseEngineData& dbEngineData) const
+    {
+        IDatabase* pDatabase = new XMLDatabase();
 
-	/*
-	 *	Override from DatabaseEngineCreator.
-	 */
-	IDatabase * createImpl( DatabaseEngineData & dbEngineData ) const
-	{
-		IDatabase * pDatabase = new XMLDatabase();
+        if (pDatabase && dbEngineData.isProduction()) {
+            ERROR_MSG(
+              "The XML database is suitable for demonstrations and "
+              "evaluations only.\n"
+              "Please use the MySQL database for serious development and "
+              "production systems.\n"
+              "See the Server Operations Guide for instructions on how to "
+              "switch to the MySQL database.\n");
+        }
 
-		if (pDatabase && dbEngineData.isProduction())
-		{
-			ERROR_MSG(
-				"The XML database is suitable for demonstrations and "
-				"evaluations only.\n"
-				"Please use the MySQL database for serious development and "
-				"production systems.\n"
-				"See the Server Operations Guide for instructions on how to "
-				"switch to the MySQL database.\n" );
-		}
-
-		return pDatabase;
-	}
+        return pDatabase;
+    }
 };
 
 namespace // (anonymous)
 {
 
-XMLEngineCreator staticInitialiser;
+    XMLEngineCreator staticInitialiser;
 
 } // end namespace (anonymous)
 

@@ -34,12 +34,12 @@
 
 + (id)serializer;
 
-- (NSString *)serializeObject:(id)inObject;
+- (NSString*)serializeObject:(id)inObject;
 
-- (NSString *)serializeNull:(NSNull *)inNull;
-- (NSString *)serializeNumber:(NSNumber *)inNumber;
-- (NSString *)serializeString:(NSString *)inString;
-- (NSString *)serializeArray:(NSArray *)inArray;
-- (NSString *)serializeDictionary:(NSDictionary *)inDictionary;
+- (NSString*)serializeNull:(NSNull*)inNull;
+- (NSString*)serializeNumber:(NSNumber*)inNumber;
+- (NSString*)serializeString:(NSString*)inString;
+- (NSString*)serializeArray:(NSArray*)inArray;
+- (NSString*)serializeDictionary:(NSDictionary*)inDictionary;
 
 @end

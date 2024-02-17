@@ -6,20 +6,18 @@ BW_BEGIN_NAMESPACE
 //--------------------------------------------------------------------------------------------------
 
 SSAOSettings::SSAOSettings()
-    : m_enabled(true)
-    , m_radius(0.04f)
-    , m_amplify(1.f)
-    , m_fade(3.f)
+  : m_enabled(true)
+  , m_radius(0.04f)
+  , m_amplify(1.f)
+  , m_fade(3.f)
 {
 }
 
-SSAOSettings::~SSAOSettings()
-{
-}
+SSAOSettings::~SSAOSettings() {}
 
 //--------------------------------------------------------------------------------------------------
 
-bool SSAOSettings::load(const DataSectionPtr &iData)
+bool SSAOSettings::load(const DataSectionPtr& iData)
 {
     BW_GUARD;
 
@@ -31,13 +29,14 @@ bool SSAOSettings::load(const DataSectionPtr &iData)
     m_radius  = iData->readFloat("redius", m_radius);
     m_amplify = iData->readFloat("amplify", m_amplify);
     m_fade    = iData->readFloat("fade", m_fade);
-    
+
     //-- influence factors parameters.
     {
         InfluenceFactors& i = m_influences;
-        i.m_speedtree   = iData->readVector2("influences/speedtree", i.m_speedtree);
-        i.m_terrain     = iData->readVector2("influences/terrain", i.m_terrain);
-        i.m_objects     = iData->readVector2("influences/objects", i.m_objects);
+        i.m_speedtree =
+          iData->readVector2("influences/speedtree", i.m_speedtree);
+        i.m_terrain = iData->readVector2("influences/terrain", i.m_terrain);
+        i.m_objects = iData->readVector2("influences/objects", i.m_objects);
     }
 
     return true;

@@ -6,48 +6,46 @@
 #include "scene/scene_provider.hpp"
 #include "moo/semi_dynamic_shadow_scene_view.hpp"
 
-namespace BW {
-namespace CompiledSpace {
+namespace BW { namespace CompiledSpace {
 
-class StringTable;
-class StaticSceneProvider;
+    class StringTable;
+    class StaticSceneProvider;
 
-class CachedSemiDynamicShadowSceneProvider:
-	public SceneProvider,
-	public Moo::ISemiDynamicShadowSceneViewProvider
-{
-public:
-	CachedSemiDynamicShadowSceneProvider( );
-	virtual ~CachedSemiDynamicShadowSceneProvider();
+    class CachedSemiDynamicShadowSceneProvider
+      : public SceneProvider
+      , public Moo::ISemiDynamicShadowSceneViewProvider
+    {
+      public:
+        CachedSemiDynamicShadowSceneProvider();
+        virtual ~CachedSemiDynamicShadowSceneProvider();
 
-	void configure( const AABB& totalBounds, 
-		float divisionSize );
-	void configure( const Moo::IntBoundBox2& bounds, 
-		float divisionSize );
-	void flushCache();
-	
-private:
-	virtual void * getView(
-		const SceneTypeSystem::RuntimeTypeID & sceneInterfaceTypeID);
+        void configure(const AABB& totalBounds, float divisionSize);
+        void configure(const Moo::IntBoundBox2& bounds, float divisionSize);
+        void flushCache();
 
-	virtual void updateDivisionConfig( Moo::IntBoundBox2& bounds, 
-		float& divisionSize );
-	virtual void addDivisionBounds( const Moo::IntVector2& divisionCoords, 
-		AABB& divisionBounds );
+      private:
+        virtual void* getView(
+          const SceneTypeSystem::RuntimeTypeID& sceneInterfaceTypeID);
 
-	const AABB& cachedDivisionBounds( const Moo::IntVector2& divisionCoords );
-	size_t calculateDivisionID( const Moo::IntVector2& divisionCoords );
-	void generateDivisionBounds( const Moo::IntVector2& divisionCoords, AABB& bb );
-	bool isInsideBounds( const Moo::IntVector2& divisionCoords );
+        virtual void updateDivisionConfig(Moo::IntBoundBox2& bounds,
+                                          float&             divisionSize);
+        virtual void addDivisionBounds(const Moo::IntVector2& divisionCoords,
+                                       AABB&                  divisionBounds);
 
-	// Configuration data
-	Moo::IntBoundBox2 divisionBounds_;
-	float divisionSize_;
+        const AABB& cachedDivisionBounds(const Moo::IntVector2& divisionCoords);
+        size_t      calculateDivisionID(const Moo::IntVector2& divisionCoords);
+        void generateDivisionBounds(const Moo::IntVector2& divisionCoords,
+                                    AABB&                  bb);
+        bool isInsideBounds(const Moo::IntVector2& divisionCoords);
 
-	// Cache data
-	struct CacheData;
-	vector<CacheData> cache_;
-};
+        // Configuration data
+        Moo::IntBoundBox2 divisionBounds_;
+        float             divisionSize_;
+
+        // Cache data
+        struct CacheData;
+        vector<CacheData> cache_;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW

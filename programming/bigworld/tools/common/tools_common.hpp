@@ -6,8 +6,7 @@ BW_BEGIN_NAMESPACE
 
 class ToolsCommon
 {
-public:
-	static bool isEval();
+  public:
+    static bool isEval();
 };
 BW_END_NAMESPACE
-

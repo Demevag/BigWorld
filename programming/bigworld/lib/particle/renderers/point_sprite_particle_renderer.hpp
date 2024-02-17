@@ -3,7 +3,6 @@
 
 #include "sprite_particle_renderer.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,52 +10,52 @@ BW_BEGIN_NAMESPACE
  */
 class PointSpriteParticleRenderer : public SpriteParticleRenderer
 {
-public:
+  public:
+    /// @name Constructor(s) and Destructor.
+    //@{
+    PointSpriteParticleRenderer(const BW::StringRef& newTextureName);
+    ~PointSpriteParticleRenderer();
+    //@}
 
-	/// @name Constructor(s) and Destructor.
-	//@{
-	PointSpriteParticleRenderer( const BW::StringRef & newTextureName );
-	~PointSpriteParticleRenderer();
-	//@}
+    ///	@name Renderer Overrides.
+    //@{
+    virtual void draw(Moo::DrawContext&   drawContext,
+                      const Matrix&       worldTransform,
+                      Particles::iterator beg,
+                      Particles::iterator end,
+                      const BoundingBox&  bb);
 
-	///	@name Renderer Overrides.
-	//@{
-	virtual void draw( Moo::DrawContext& drawContext,
-		const Matrix & worldTransform,
-		Particles::iterator beg,
-		Particles::iterator end,
-		const BoundingBox & bb );
+    void realDraw(const Matrix&       worldTransform,
+                  Particles::iterator beg,
+                  Particles::iterator end);
 
-	void realDraw( const Matrix& worldTransform,
-		Particles::iterator beg,
-		Particles::iterator end );
+    virtual size_t sizeInBytes() const
+    {
+        return sizeof(PointSpriteParticleRenderer);
+    }
 
-	virtual size_t sizeInBytes() const { return sizeof(PointSpriteParticleRenderer); }
+    virtual PointSpriteParticleRenderer* clone() const;
+    //@}
 
-	virtual PointSpriteParticleRenderer * clone() const;
-	//@}
+    // type of renderer
+    virtual const BW::string& nameID() const { return nameID_; }
+    static const BW::string   nameID_;
+    virtual ParticlesPtr      createParticleContainer()
+    {
+        return new ContiguousParticles;
+    }
 
-
-	// type of renderer
-	virtual const BW::string & nameID() const { return nameID_; }
-	static const BW::string nameID_;
-	virtual ParticlesPtr createParticleContainer()
-	{
-		return new ContiguousParticles;
-	}
-
-protected:
-	///	@name Auxiliary Methods.
-	//@{
-	void updateMaterial();
-	void updateMaterial( const Moo::BaseTexturePtr & texture );
-	friend struct BGUpdateData<PointSpriteParticleRenderer>;
-	//@}
+  protected:
+    ///	@name Auxiliary Methods.
+    //@{
+    void updateMaterial();
+    void updateMaterial(const Moo::BaseTexturePtr& texture);
+    friend struct BGUpdateData<PointSpriteParticleRenderer>;
+    //@}
 };
 
-
-typedef SmartPointer<PointSpriteParticleRenderer> PointSpriteParticleRendererPtr;
-
+typedef SmartPointer<PointSpriteParticleRenderer>
+  PointSpriteParticleRendererPtr;
 
 /*~ class Pixie.PyPointSpriteParticleRenderer
  *
@@ -69,24 +68,26 @@ typedef SmartPointer<PointSpriteParticleRenderer> PointSpriteParticleRendererPtr
  *	This particle renderer is the quickest to draw, and uses the least amount
  *	of graphics memory ( push buffer ).
  *
- *	A new PyPointSpriteParticleRenderer is created using Pixie.PointSpriteParticleRenderer
- *	function.
+ *	A new PyPointSpriteParticleRenderer is created using
+ *Pixie.PointSpriteParticleRenderer function.
  */
 class PyPointSpriteParticleRenderer : public PySpriteParticleRenderer
 {
-	Py_Header( PyPointSpriteParticleRenderer, PySpriteParticleRenderer )
+    Py_Header(PyPointSpriteParticleRenderer, PySpriteParticleRenderer)
 
-public:
+      public
+      :
 
-	/// @name Constructor(s) and Destructor.
-	//@{
-	PyPointSpriteParticleRenderer( PointSpriteParticleRendererPtr pR, PyTypeObject *pType = &s_type_ );
-	//@}
+      /// @name Constructor(s) and Destructor.
+      //@{
+      PyPointSpriteParticleRenderer(PointSpriteParticleRendererPtr pR,
+                                    PyTypeObject* pType = &s_type_);
+    //@}
 
-	/// @name The Python Interface to PointSpriteParticleRenderer.
-	//@{
-	PY_FACTORY_DECLARE()
-	//@}
+    /// @name The Python Interface to PointSpriteParticleRenderer.
+    //@{
+    PY_FACTORY_DECLARE()
+    //@}
 };
 
 BW_END_NAMESPACE

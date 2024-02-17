@@ -4,7 +4,6 @@
 #include "water.hpp"
 #include "pyscript/script.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /*~ class BigWorld.PyWaterVolume
@@ -14,33 +13,32 @@ BW_BEGIN_NAMESPACE
  *	volume.
  */
 
-//TODO : change to use SmartPointer to water (requires ChunkWater
-//and Waters to use SmartPointers too)
+// TODO : change to use SmartPointer to water (requires ChunkWater
+// and Waters to use SmartPointers too)
 
-
-class PyWaterVolume : public PyObjectPlus	
+class PyWaterVolume : public PyObjectPlus
 {
-	Py_Header( PyWaterVolume, PyObjectPlus )
-public:
-	///	@name Constructor(s) and Destructor.
-	//@{
-	PyWaterVolume( Water* pWater, PyTypeObject *pType = &s_type_ );
-	//@}    
+    Py_Header(PyWaterVolume, PyObjectPlus) public
+      :
+      ///	@name Constructor(s) and Destructor.
+      //@{
+      PyWaterVolume(Water* pWater, PyTypeObject* pType = &s_type_);
+    //@}
 
-	/// Accessors to PyWaterVolume properties.
-	//@{
-	float surfaceHeight() const;
+    /// Accessors to PyWaterVolume properties.
+    //@{
+    float surfaceHeight() const;
 
-	///	@name Python Interface to the PyWaterVolume
-	//@{
-	PY_FACTORY_DECLARE()
+    ///	@name Python Interface to the PyWaterVolume
+    //@{
+    PY_FACTORY_DECLARE()
 
-	PY_RO_ATTRIBUTE_DECLARE( this->surfaceHeight(), surfaceHeight )
-private:
-	Water*	pWater_;
+    PY_RO_ATTRIBUTE_DECLARE(this->surfaceHeight(), surfaceHeight)
+  private:
+    Water* pWater_;
 };
 
-PY_SCRIPT_CONVERTERS_DECLARE( PyWaterVolume )
+PY_SCRIPT_CONVERTERS_DECLARE(PyWaterVolume)
 
 BW_END_NAMESPACE
 

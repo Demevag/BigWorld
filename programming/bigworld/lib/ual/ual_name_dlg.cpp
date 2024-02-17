@@ -14,20 +14,18 @@ BW_BEGIN_NAMESPACE
  *	@param pParent	Parent window, if any.
  */
 UalNameDlg::UalNameDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(UalNameDlg::IDD, pParent)
+  : CDialog(UalNameDlg::IDD, pParent)
 {
-	BW_GUARD;
+    BW_GUARD;
 }
-
 
 /**
  *	Destructor.
  */
 UalNameDlg::~UalNameDlg()
 {
-	BW_GUARD;
+    BW_GUARD;
 }
-
 
 /**
  *	This MFC method initialises the controls from the dialog's resource, and
@@ -37,15 +35,14 @@ UalNameDlg::~UalNameDlg()
  */
 void UalNameDlg::DoDataExchange(CDataExchange* pDX)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	DDX_Text(pDX, IDC_UALNAMELONG, longName_);
-	DDV_MaxChars(pDX, longName_, 80);
-	DDX_Text(pDX, IDC_UALNAMESHORT, shortName_);
-	DDV_MaxChars(pDX, shortName_, 20);
-	CDialog::DoDataExchange(pDX);
+    DDX_Text(pDX, IDC_UALNAMELONG, longName_);
+    DDV_MaxChars(pDX, longName_, 80);
+    DDX_Text(pDX, IDC_UALNAMESHORT, shortName_);
+    DDV_MaxChars(pDX, shortName_, 20);
+    CDialog::DoDataExchange(pDX);
 }
-
 
 /**
  *	This method returns the current short and long names.
@@ -53,14 +50,13 @@ void UalNameDlg::DoDataExchange(CDataExchange* pDX)
  *	@param shortName	Return param, returns the short name.
  *	@param longName		Return param, returns the long name.
  */
-void UalNameDlg::getNames( BW::wstring& shortName, BW::wstring& longName )
+void UalNameDlg::getNames(BW::wstring& shortName, BW::wstring& longName)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	shortName = shortName_;
-	longName = longName_;
+    shortName = shortName_;
+    longName  = longName_;
 }
-
 
 /**
  *	This method sets the short (tab) and long (panel) names.
@@ -68,19 +64,18 @@ void UalNameDlg::getNames( BW::wstring& shortName, BW::wstring& longName )
  *	@param shortName	The short name.
  *	@param longName		The long name.
  */
-void UalNameDlg::setNames( const BW::wstring& shortName, const BW::wstring& longName )
+void UalNameDlg::setNames(const BW::wstring& shortName,
+                          const BW::wstring& longName)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	shortName_ = shortName.c_str();
-	longName_ = longName.c_str();
+    shortName_ = shortName.c_str();
+    longName_  = longName.c_str();
 }
-
 
 // MFC message map
 BEGIN_MESSAGE_MAP(UalNameDlg, CDialog)
 END_MESSAGE_MAP()
-
 
 /**
  *	This MFC method validates the short and long names and in case they are not
@@ -91,21 +86,16 @@ END_MESSAGE_MAP()
  */
 void UalNameDlg::OnOK()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	UpdateData( TRUE );
-	if ( longName_.Trim().IsEmpty() || shortName_.Trim().IsEmpty() )
-	{
-		MessageBox
-		( 
-			Localise(L"UAL/UAL_NAME_DLG/TYPE_BOTH_TEXT"),
-			Localise(L"UAL/UAL_NAME_DLG/TYPE_BOTH_TITLE"),
-			MB_ICONERROR 
-		);
-		return;
-	}
-	CDialog::OnOK();
+    UpdateData(TRUE);
+    if (longName_.Trim().IsEmpty() || shortName_.Trim().IsEmpty()) {
+        MessageBox(Localise(L"UAL/UAL_NAME_DLG/TYPE_BOTH_TEXT"),
+                   Localise(L"UAL/UAL_NAME_DLG/TYPE_BOTH_TITLE"),
+                   MB_ICONERROR);
+        return;
+    }
+    CDialog::OnOK();
 }
 
 BW_END_NAMESPACE
-

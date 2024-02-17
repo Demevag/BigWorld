@@ -7,36 +7,33 @@
 #include "../static_geometry_types.hpp"
 #include "space_writer.hpp"
 
-namespace BW {
-namespace CompiledSpace {
+namespace BW { namespace CompiledSpace {
 
-class StringTableWriter;
-class AssetListWriter;
-class BinaryFormatWriter;
+    class StringTableWriter;
+    class AssetListWriter;
+    class BinaryFormatWriter;
 
-class StaticGeometryWriter :
-	public ISpaceWriter
-{
-public:
-	StaticGeometryWriter();
-	~StaticGeometryWriter();
+    class StaticGeometryWriter : public ISpaceWriter
+    {
+      public:
+        StaticGeometryWriter();
+        ~StaticGeometryWriter();
 
-	virtual bool initialize( const DataSectionPtr& pSpaceSettings,
-		const CommandLine& commandLine );
-	virtual void postProcess();
-	virtual bool write( BinaryFormatWriter& writer );
+        virtual bool initialize(const DataSectionPtr& pSpaceSettings,
+                                const CommandLine&    commandLine);
+        virtual void postProcess();
+        virtual bool write(BinaryFormatWriter& writer);
 
-	void extractCandidates( const StringTableWriter& stringTable,
-		const AssetListWriter& assetList );
+        void extractCandidates(const StringTableWriter& stringTable,
+                               const AssetListWriter&   assetList);
 
-	size_t size() const;
+        size_t size() const;
 
-private:
-	BW::vector<BW::string> primitiveReferences_;
-};
+      private:
+        BW::vector<BW::string> primitiveReferences_;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW
-
 
 #endif // STATIC_GEOMETRY_WRITER_HPP

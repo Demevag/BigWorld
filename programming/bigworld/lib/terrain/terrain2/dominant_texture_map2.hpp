@@ -3,29 +3,25 @@
 
 #include "../dominant_texture_map.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Terrain
-{
+namespace Terrain {
     /**
      *  This class allows access to material data of terrain blocks.
      */
     class DominantTextureMap2 : public DominantTextureMap
     {
-    public:
-		DominantTextureMap2( float blockSize );
+      public:
+        DominantTextureMap2(float blockSize);
 
-		DominantTextureMap2(
-			float				blockSize,
-			TextureLayers&		layerData,
-			float               sizeMultiplier = 0.5f );
+        DominantTextureMap2(float          blockSize,
+                            TextureLayers& layerData,
+                            float          sizeMultiplier = 0.5f);
 
 #ifdef EDITOR_ENABLED
-		virtual bool save(DataSectionPtr) const;
+        virtual bool save(DataSectionPtr) const;
 #endif
-		virtual bool load(DataSectionPtr dataSection, BW::string *error = NULL);
-
+        virtual bool load(DataSectionPtr dataSection, BW::string* error = NULL);
     };
 
 } // namespace Terrain

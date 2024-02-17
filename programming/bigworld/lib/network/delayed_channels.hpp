@@ -9,37 +9,37 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
+namespace Mercury {
 
-class UDPChannel;
-class EventDispatcher;
+    class UDPChannel;
+    class EventDispatcher;
 
-typedef SmartPointer< UDPChannel > UDPChannelPtr;
+    typedef SmartPointer<UDPChannel> UDPChannelPtr;
 
-/**
- *	This class is responsible for sending delayed channels. These are channels
- *	that have had delayedSend called on them. This is so that multiple messages
- *	can be put on the outgoing bundle instead of sending a bundle for each.
- */
-class DelayedChannels : public FrequentTask
-{
-public:
-	DelayedChannels();
+    /**
+     *	This class is responsible for sending delayed channels. These are
+     *channels that have had delayedSend called on them. This is so that
+     *multiple messages can be put on the outgoing bundle instead of sending a
+     *bundle for each.
+     */
+    class DelayedChannels : public FrequentTask
+    {
+      public:
+        DelayedChannels();
 
-	void init( EventDispatcher & dispatcher );
-	void fini( EventDispatcher & dispatcher );
+        void init(EventDispatcher& dispatcher);
+        void fini(EventDispatcher& dispatcher);
 
-	void add( UDPChannel & channel );
+        void add(UDPChannel& channel);
 
-	void sendIfDelayed( UDPChannel & channel );
+        void sendIfDelayed(UDPChannel& channel);
 
-private:
-	virtual void doTask();
+      private:
+        virtual void doTask();
 
-	typedef BW::set< UDPChannelPtr > Channels;
-	Channels channels_;
-};
+        typedef BW::set<UDPChannelPtr> Channels;
+        Channels                       channels_;
+    };
 
 } // namespace Mercury
 

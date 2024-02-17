@@ -23,24 +23,23 @@ BW_BEGIN_NAMESPACE
  *	@endcode
  */
 template <class Functor, class X_TYPE>
-inline void integrate(const Functor & F, X_TYPE & x, float h)
+inline void integrate(const Functor& F, X_TYPE& x, float h)
 {
-	// Integrate the function using Runge-Kutta (Order Four)
+    // Integrate the function using Runge-Kutta (Order Four)
 
-	X_TYPE A1 = F(0, x);
-	X_TYPE xTemp = x + (h/2.f) * A1;
+    X_TYPE A1    = F(0, x);
+    X_TYPE xTemp = x + (h / 2.f) * A1;
 
-	X_TYPE A2 =  F(h/2.f, xTemp);
-	xTemp = x + (h/2.f) * A2;
+    X_TYPE A2 = F(h / 2.f, xTemp);
+    xTemp     = x + (h / 2.f) * A2;
 
-	X_TYPE A3 = F(h/2.f, xTemp);
-	xTemp = x + h * A3;
+    X_TYPE A3 = F(h / 2.f, xTemp);
+    xTemp     = x + h * A3;
 
-	X_TYPE A4 = F(h, xTemp);
+    X_TYPE A4 = F(h, xTemp);
 
-	x += (h/6.f) * (A1 + A2 + A2 + A3 + A3 + A4);
+    x += (h / 6.f) * (A1 + A2 + A2 + A3 + A3 + A4);
 }
-
 
 /**
  *	This class implements an example functor. It must implement operator() as
@@ -54,26 +53,24 @@ inline void integrate(const Functor & F, X_TYPE & x, float h)
 template <class TYPE>
 class ApproachFunctor
 {
-public:
-	/// Constructor.
-	ApproachFunctor(const TYPE & desiredValue,
-			float approachRate = 1.f) :
-		desiredValue_(desiredValue),
-		approachRate_(approachRate){};
+  public:
+    /// Constructor.
+    ApproachFunctor(const TYPE& desiredValue, float approachRate = 1.f)
+      : desiredValue_(desiredValue)
+      , approachRate_(approachRate){};
 
-	/**
-	 *	This method prints the () operator.
-	 */
-	TYPE operator()(float t, const TYPE & x) const
-	{
-		return approachRate_ * (desiredValue_ - x);
-	}
+    /**
+     *	This method prints the () operator.
+     */
+    TYPE operator()(float t, const TYPE& x) const
+    {
+        return approachRate_ * (desiredValue_ - x);
+    }
 
-private:
-	const TYPE & desiredValue_;
-	float approachRate_;
+  private:
+    const TYPE& desiredValue_;
+    float       approachRate_;
 };
-
 
 /**
  *	This function is a helper so that you do not have to specify the type of the
@@ -82,11 +79,10 @@ private:
  *	@ingroup Math
  */
 template <class TYPE>
-inline ApproachFunctor<TYPE> makeApproach(const TYPE & desiredValue,
-										  float approachRate = 1.f)
+inline ApproachFunctor<TYPE> makeApproach(const TYPE& desiredValue,
+                                          float       approachRate = 1.f)
 {
-	return ApproachFunctor<TYPE>(desiredValue,
-		approachRate);
+    return ApproachFunctor<TYPE>(desiredValue, approachRate);
 }
 
 BW_END_NAMESPACE

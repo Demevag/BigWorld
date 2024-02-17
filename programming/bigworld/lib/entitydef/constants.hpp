@@ -5,97 +5,115 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace EntityDef
-{
+namespace EntityDef {
 
-class Constants
-{
-public:
+    class Constants
+    {
+      public:
+        // common constants
 
-	// common constants
+        inline static const char* commonPath() { return "scripts/common"; }
 
-	inline static const char*
-		commonPath() { return "scripts/common"; }
+        inline static const char* serverCommonPath()
+        {
+            return "scripts/server_common";
+        }
 
-	inline static const char *
-		serverCommonPath() { return "scripts/server_common"; }
+        inline static const char* aliasesFile()
+        {
+            return "scripts/entity_defs/alias.xml";
+        }
 
-	inline static const char*
-		aliasesFile() { return "scripts/entity_defs/alias.xml"; }
+        // database constants
 
+        inline static const char* databasePath() { return "scripts/db"; }
 
-	// database constants
+        inline static const char* xmlDatabaseFile() { return "scripts/db.xml"; }
 
-	inline static const char*
-		databasePath() { return "scripts/db"; }
+        // bot scripts constants
 
-	inline static const char*
-		xmlDatabaseFile() { return "scripts/db.xml"; }
+        inline static const char* botScriptsPath() { return "scripts/bot"; }
 
+        // entities constants
 
-	// bot scripts constants
+        inline static const char* entitiesFile()
+        {
+            return "scripts/entities.xml";
+        }
 
-	inline static const char*
-		botScriptsPath() { return "scripts/bot"; }
+        inline static const char* entitiesDefsPath()
+        {
+            return "scripts/entity_defs";
+        }
 
+        inline static const char* servicesDefsPath()
+        {
+            return "scripts/service_defs";
+        }
 
-	// entities constants
+        inline static const char* componentsDefsPath()
+        {
+            return "scripts/component_defs";
+        }
 
-	inline static const char*
-		entitiesFile() { return "scripts/entities.xml"; }
+        inline static const char* entitiesClientPath()
+        {
+            return "scripts/client";
+        }
 
-	inline static const char*
-		entitiesDefsPath() { return "scripts/entity_defs"; }
+        inline static const char* entitiesCellPath() { return "scripts/cell"; }
 
-	inline static const char*
-		servicesDefsPath() { return "scripts/service_defs"; }
+        inline static const char* entitiesBasePath() { return "scripts/base"; }
 
-	inline static const char*
-		componentsDefsPath() { return "scripts/component_defs"; }
+        inline static const char* entitiesServicePath()
+        {
+            return "scripts/service";
+        }
 
-	inline static const char*
-		entitiesClientPath() { return "scripts/client"; }
+        inline static const char* entitiesEditorPath()
+        {
+            return "scripts/editor";
+        }
 
-	inline static const char*
-		entitiesCellPath() { return "scripts/cell"; }
+        inline static const char* entitiesCapabilitiesFile()
+        {
+            return "scripts/common/capabilities.xml";
+        }
 
-	inline static const char*
-		entitiesBasePath() { return "scripts/base"; }
+        // user data objects constants
 
-	inline static const char*
-		entitiesServicePath() { return "scripts/service"; }
+        inline static const char* userDataObjectsFile()
+        {
+            return "scripts/user_data_objects.xml";
+        }
 
-	inline static const char*
-		entitiesEditorPath() { return "scripts/editor"; }
+        inline static const char* userDataObjectsDefsPath()
+        {
+            return "scripts/user_data_object_defs";
+        }
 
-	inline static const char*
-		entitiesCapabilitiesFile() { return "scripts/common/capabilities.xml"; }
+        inline static const char* userDataObjectsClientPath()
+        {
+            return "scripts/client";
+        }
 
+        inline static const char* userDataObjectsEditorPath()
+        {
+            return "scripts/editor";
+        }
 
-	// user data objects constants
+        // marker constants
 
-	inline static const char*
-		userDataObjectsFile() { return "scripts/user_data_objects.xml"; }
+        inline static const char* markerCategoriesFile()
+        {
+            return "scripts/marker_categories.xml";
+        }
 
-	inline static const char*
-		userDataObjectsDefsPath() { return "scripts/user_data_object_defs"; }
-
-	inline static const char*
-		userDataObjectsClientPath() { return "scripts/client"; }
-
-	inline static const char*
-		userDataObjectsEditorPath() { return "scripts/editor"; }
-
-
-	// marker constants
-
-	inline static const char*
-		markerCategoriesFile() { return "scripts/marker_categories.xml"; }
-
-	inline static const char*
-		markerEntitiesPath() { return "scripts/marker_entities"; }
-
-};
+        inline static const char* markerEntitiesPath()
+        {
+            return "scripts/marker_entities";
+        }
+    };
 
 }
 

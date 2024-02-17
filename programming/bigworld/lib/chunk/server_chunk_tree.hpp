@@ -4,7 +4,6 @@
 #include "base_chunk_tree.hpp"
 #include <memory>
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -12,18 +11,18 @@ BW_BEGIN_NAMESPACE
  */
 class ServerChunkTree : public BaseChunkTree
 {
-	DECLARE_CHUNK_ITEM( ServerChunkTree )
+    DECLARE_CHUNK_ITEM(ServerChunkTree)
 
-public:
-	ServerChunkTree();
-	~ServerChunkTree();
+  public:
+    ServerChunkTree();
+    ~ServerChunkTree();
 
-	bool load( DataSectionPtr pSection, Chunk * pChunk );
+    bool load(DataSectionPtr pSection, Chunk* pChunk);
 
-private:
-	// Disallow copy
-	ServerChunkTree( const ServerChunkTree & );
-	const ServerChunkTree & operator = ( const ServerChunkTree & );
+  private:
+    // Disallow copy
+    ServerChunkTree(const ServerChunkTree&);
+    const ServerChunkTree& operator=(const ServerChunkTree&);
 };
 
 BW_END_NAMESPACE

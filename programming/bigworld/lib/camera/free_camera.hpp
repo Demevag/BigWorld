@@ -1,10 +1,8 @@
 #ifndef FREE_CAMERA_HPP
 #define FREE_CAMERA_HPP
 
-
 #include "base_camera.hpp"
 #include "pyscript/script_math.hpp"
-
 
 BW_BEGIN_NAMESPACE
 
@@ -28,33 +26,31 @@ BW_BEGIN_NAMESPACE
  */
 class FreeCamera : public BaseCamera
 {
-	Py_Header( FreeCamera, BaseCamera )
+    Py_Header(FreeCamera, BaseCamera)
 
-public:
-	FreeCamera( PyTypeObject * pType = &s_type_ );
-	~FreeCamera();
+      public : FreeCamera(PyTypeObject* pType = &s_type_);
+    ~FreeCamera();
 
-	virtual bool handleKeyEvent( const KeyEvent & ev );
-	virtual bool handleMouseEvent( const MouseEvent & event );
-	virtual bool handleAxisEvent( const AxisEvent & event );
+    virtual bool handleKeyEvent(const KeyEvent& ev);
+    virtual bool handleMouseEvent(const MouseEvent& event);
+    virtual bool handleAxisEvent(const AxisEvent& event);
 
-	virtual void set( const Matrix & viewMatrix );
-	virtual void update( float dTime );
+    virtual void set(const Matrix& viewMatrix);
+    virtual void update(float dTime);
 
-	PY_RW_ATTRIBUTE_DECLARE( fixed_, fixed )
-	PY_RW_ATTRIBUTE_DECLARE( invViewProvider_, invViewProvider )
+    PY_RW_ATTRIBUTE_DECLARE(fixed_, fixed)
+    PY_RW_ATTRIBUTE_DECLARE(invViewProvider_, invViewProvider)
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-private:
-	FreeCamera( const FreeCamera& );
-	FreeCamera& operator=( const FreeCamera& );
+  private:
+    FreeCamera(const FreeCamera&);
+    FreeCamera& operator=(const FreeCamera&);
 
-	MatrixProviderPtr	invViewProvider_;
-	bool		fixed_;
+    MatrixProviderPtr invViewProvider_;
+    bool              fixed_;
 };
 
 BW_END_NAMESPACE
-
 
 #endif // FREE_CAMERA_HPP

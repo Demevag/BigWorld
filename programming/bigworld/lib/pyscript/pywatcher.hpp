@@ -1,5 +1,5 @@
 #ifndef PYWATCHER_HPP
-#define PYWATCHER_HPP 
+#define PYWATCHER_HPP
 #include "cstdmf/config.hpp"
 
 #if ENABLE_WATCHERS
@@ -14,16 +14,13 @@
 #include "cstdmf/watcher.hpp"
 #include "py_to_stl.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // Get a watcher for a PySequence (using PySequenceSTL)
-Watcher & PySequence_Watcher();
+Watcher& PySequence_Watcher();
 
 // Get a watcher for a PyMapping (using PyMappingSTL)
-Watcher & PyMapping_Watcher();
-
-
+Watcher& PyMapping_Watcher();
 
 /**
  *	This class is used to watch a PyObjectPtrRef
@@ -42,48 +39,53 @@ Watcher & PyMapping_Watcher();
  */
 class PyObjectWatcher : public Watcher
 {
-public:
-	/// @name Construction/Destruction
-	//@{
-	PyObjectWatcher( PyObjectPtrRef & popr );
-	//@}
+  public:
+    /// @name Construction/Destruction
+    //@{
+    PyObjectWatcher(PyObjectPtrRef& popr);
+    //@}
 
-	/// @name Overrides from Watcher
-	//@{
-	virtual bool getAsString( const void * base, const char * path,
-		BW::string & result, BW::string & desc, Watcher::Mode & mode )
-		const;
+    /// @name Overrides from Watcher
+    //@{
+    virtual bool getAsString(const void*    base,
+                             const char*    path,
+                             BW::string&    result,
+                             BW::string&    desc,
+                             Watcher::Mode& mode) const;
 
-	virtual bool setFromString( void * base, const char * path,
-		const char * valueStr );
+    virtual bool setFromString(void*       base,
+                               const char* path,
+                               const char* valueStr);
 
-	virtual bool getAsStream( const void * base, const char * path,
-		WatcherPathRequestV2 & pathRequest )
-		const;
+    virtual bool getAsStream(const void*           base,
+                             const char*           path,
+                             WatcherPathRequestV2& pathRequest) const;
 
-	virtual bool setFromStream( void * base, const char * path,
-		WatcherPathRequestV2 & pathRequest );
+    virtual bool setFromStream(void*                 base,
+                               const char*           path,
+                               WatcherPathRequestV2& pathRequest);
 
-	virtual bool visitChildren( const void * base, const char * path,
-		WatcherPathRequest & pathRequest );
+    virtual bool visitChildren(const void*         base,
+                               const char*         path,
+                               WatcherPathRequest& pathRequest);
 
-	virtual bool addChild( const char * path, WatcherPtr pChild,
-		void * withBase = NULL );
-	//@}
+    virtual bool addChild(const char* path,
+                          WatcherPtr  pChild,
+                          void*       withBase = NULL);
+    //@}
 
-private:
-	PyObjectPtrRef & popr_;
+  private:
+    PyObjectPtrRef& popr_;
 
-	static SmartPointer<DataWatcher<PyObjectPtrRef> >	fallback_;
+    static SmartPointer<DataWatcher<PyObjectPtrRef>> fallback_;
 
-	static Watcher * getSpecialWatcher( PyObject * pObject );
+    static Watcher* getSpecialWatcher(PyObject* pObject);
 
-	static const char * tail( const char * path )
-	{
-		return DirectoryWatcher::tail( path );
-	}
+    static const char* tail(const char* path)
+    {
+        return DirectoryWatcher::tail(path);
+    }
 };
-
 
 /**
  *	This class interprets the base as a python object and displays it.
@@ -92,103 +94,100 @@ private:
 
 class SimplePythonWatcher : public Watcher
 {
-public:
-	/// @name Construction/Destruction
-	//@{
-	/**
-	 *	Constructor.
-	 *
-	 */
-	SimplePythonWatcher()
-	{ }
+  public:
+    /// @name Construction/Destruction
+    //@{
+    /**
+     *	Constructor.
+     *
+     */
+    SimplePythonWatcher() {}
 
-	virtual bool getAsString( const void * base, const char * path,
-							  BW::string & result, BW::string & desc, 
-							  Watcher::Mode & mode ) const;
-	virtual bool setFromString( void * base, const char * path,
-								const char * valueStr );
-	virtual bool getAsStream( const void * base, const char * path,
-							  WatcherPathRequestV2 & pathRequest ) const;
-	virtual bool setFromStream( void * base, const char * path,
-								WatcherPathRequestV2 & pathRequest );
-	virtual bool visitChildren( const void * base, const char * path,
-								WatcherPathRequest & pathRequest );
+    virtual bool getAsString(const void*    base,
+                             const char*    path,
+                             BW::string&    result,
+                             BW::string&    desc,
+                             Watcher::Mode& mode) const;
+    virtual bool setFromString(void*       base,
+                               const char* path,
+                               const char* valueStr);
+    virtual bool getAsStream(const void*           base,
+                             const char*           path,
+                             WatcherPathRequestV2& pathRequest) const;
+    virtual bool setFromStream(void*                 base,
+                               const char*           path,
+                               WatcherPathRequestV2& pathRequest);
+    virtual bool visitChildren(const void*         base,
+                               const char*         path,
+                               WatcherPathRequest& pathRequest);
 
-private:
-	static PyObject * pythonChildBase( PyObject * pPyObject, 
-									   const char * path );
+  private:
+    static PyObject* pythonChildBase(PyObject* pPyObject, const char* path);
 };
-
 
 /**
  * This class handles asynchronous watcher requests.
  */
 class DeferrableWatcherPathRequest : public WatcherPathRequestNotification
 {
-public:
+  public:
+    DeferrableWatcherPathRequest(const BW::string&          path,
+                                 Mercury::NetworkInterface& networkInterface,
+                                 const Mercury::Address&    srcAddr,
+                                 const Mercury::ReplyID     replyID)
+      : interface_(networkInterface)
+      , srcAddr_(srcAddr)
+      , replyID_(replyID)
+      , pPathRequest_(new WatcherPathRequestV2(path))
+    {
+    }
 
-	DeferrableWatcherPathRequest( const BW::string & path,
-			Mercury::NetworkInterface & networkInterface,
-			const Mercury::Address & srcAddr, const Mercury::ReplyID replyID ):
-		interface_( networkInterface ),
-		srcAddr_( srcAddr ),
-		replyID_( replyID ),
-		pPathRequest_( new WatcherPathRequestV2( path ) )
-	{
-	}
+    virtual ~DeferrableWatcherPathRequest() {}
 
-	virtual ~DeferrableWatcherPathRequest() {}
+    virtual void notifyComplete(WatcherPathRequest& pathRequest, int32 count)
+    {
+        MF_ASSERT(&pathRequest == pPathRequest_);
 
-	virtual void notifyComplete( WatcherPathRequest & pathRequest, int32 count )
-	{
-		MF_ASSERT( &pathRequest == pPathRequest_ );
+        Mercury::Channel& channel = interface_.findOrCreateChannel(srcAddr_);
 
-		Mercury::Channel & channel = interface_.findOrCreateChannel( srcAddr_ );
+        Mercury::Bundle& bundle = channel.bundle();
+        bundle.startReply(replyID_);
 
-		Mercury::Bundle & bundle = channel.bundle();
-		bundle.startReply( replyID_ );
+        MemoryOStream& resultStream = pPathRequest_->getResultStream();
+        if (resultStream.size()) {
+            bundle.addBlob(resultStream.data(), resultStream.size());
+        }
 
-		MemoryOStream & resultStream = pPathRequest_->getResultStream();
-		if (resultStream.size())
-		{
-			bundle.addBlob( resultStream.data(), resultStream.size() );
-		}
+        bw_safe_delete(pPathRequest_);
+        delete this;
+    }
 
-		bw_safe_delete( pPathRequest_ );
-		delete this;
-	}
+    // Not implemented, return the request given to our constructor
+    virtual WatcherPathRequest* newRequest(BW::string& path)
+    {
+        return pPathRequest_;
+    }
 
+    void setPacketData(BinaryIStream& data)
+    {
+        pPathRequest_->setPacketData(data);
+    }
 
-	// Not implemented, return the request given to our constructor
-	virtual WatcherPathRequest * newRequest( BW::string & path )
-	{
-		return pPathRequest_;
-	}
+    void setWatcherValue()
+    {
+        pPathRequest_->setParent(this);
 
+        if (!pPathRequest_->setWatcherValue()) {
+            this->notifyComplete(*pPathRequest_, 1 /*replies*/);
+        }
+    }
 
-	void setPacketData( BinaryIStream & data )
-	{
-		pPathRequest_->setPacketData( data );
-	}
+  private:
+    Mercury::NetworkInterface& interface_;
+    const Mercury::Address     srcAddr_;
+    const Mercury::ReplyID     replyID_;
 
-
-	void setWatcherValue()
-	{
-		pPathRequest_->setParent( this );
-
-		if (!pPathRequest_->setWatcherValue())
-		{
-			this->notifyComplete( *pPathRequest_, 1 /*replies*/ );
-		}
-	}
-
-private:
-
-	Mercury::NetworkInterface & interface_;
-	const Mercury::Address srcAddr_;
-	const Mercury::ReplyID replyID_;
-
-	WatcherPathRequestV2 * pPathRequest_;
+    WatcherPathRequestV2* pPathRequest_;
 };
 
 BW_END_NAMESPACE

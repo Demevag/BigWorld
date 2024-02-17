@@ -4,7 +4,6 @@
 #include "network/basictypes.hpp"
 #include "network/interfaces.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -12,22 +11,23 @@ BW_BEGIN_NAMESPACE
  */
 class LoginAppCheckStatusReplyHandler : public Mercury::ReplyMessageHandler
 {
-public:
-	LoginAppCheckStatusReplyHandler( const Mercury::Address & srcAddr,
-			Mercury::ReplyID replyID );
+  public:
+    LoginAppCheckStatusReplyHandler(const Mercury::Address& srcAddr,
+                                    Mercury::ReplyID        replyID);
 
-private:
-	virtual void handleMessage( const Mercury::Address & /*srcAddr*/,
-			Mercury::UnpackedMessageHeader & /*header*/,
-			BinaryIStream & data, void * /*arg*/ );
+  private:
+    virtual void handleMessage(const Mercury::Address& /*srcAddr*/,
+                               Mercury::UnpackedMessageHeader& /*header*/,
+                               BinaryIStream& data,
+                               void* /*arg*/);
 
-	virtual void handleException( const Mercury::NubException & /*ne*/,
-		void * /*arg*/ );
-	virtual void handleShuttingDown( const Mercury::NubException & /*ne*/,
-		void * /*arg*/ );
+    virtual void handleException(const Mercury::NubException& /*ne*/,
+                                 void* /*arg*/);
+    virtual void handleShuttingDown(const Mercury::NubException& /*ne*/,
+                                    void* /*arg*/);
 
-	Mercury::Address srcAddr_;
-	Mercury::ReplyID replyID_;
+    Mercury::Address srcAddr_;
+    Mercury::ReplyID replyID_;
 };
 
 BW_END_NAMESPACE

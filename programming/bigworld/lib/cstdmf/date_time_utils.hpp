@@ -12,22 +12,22 @@ BW_BEGIN_NAMESPACE
  */
 class CSTDMF_DLL DateTimeUtils
 {
-public:
-	struct DateTime
-	{
-		uint16 year;
-		uint8 month;
-		uint8 day;
-		uint8 hour;
-		uint8 minute;
-		uint8 second;
-	};
+  public:
+    struct DateTime
+    {
+        uint16 year;
+        uint8  month;
+        uint8  day;
+        uint8  hour;
+        uint8  minute;
+        uint8  second;
+    };
 
-	static void format( BW::string & retFormattedTime,
-						time_t time, bool fullDateFormat = false );
+    static void format(BW::string& retFormattedTime,
+                       time_t      time,
+                       bool        fullDateFormat = false);
 
-	static bool parse( DateTime & retDateTime,
-						const BW::string & formattedTime );
+    static bool parse(DateTime& retDateTime, const BW::string& formattedTime);
 };
 
 BW_END_NAMESPACE

@@ -1,7 +1,6 @@
 #ifndef POPUP_MENU_HELPER_HPP
 #define POPUP_MENU_HELPER_HPP
 
-
 #include "chunk/chunk_item.hpp"
 #include "common/popup_menu.hpp"
 
@@ -12,9 +11,10 @@ BW_BEGIN_NAMESPACE
  */
 class PopupMenuHelper
 {
-public:
-	static int buildCommandMenu(
-					ChunkItemPtr pItem, int baseIdx, PopupMenu & destMenu );
+  public:
+    static int buildCommandMenu(ChunkItemPtr pItem,
+                                int          baseIdx,
+                                PopupMenu&   destMenu);
 };
 
 BW_END_NAMESPACE

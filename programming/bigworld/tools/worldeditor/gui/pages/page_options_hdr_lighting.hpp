@@ -1,7 +1,6 @@
 #ifndef PAGE_OPTIONS_HDR_LIGHTING_HPP
 #define PAGE_OPTIONS_HDR_LIGHTING_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "worldeditor/resource.h"
@@ -19,31 +18,34 @@
 
 BW_BEGIN_NAMESPACE
 
-class PageOptionsHDRLighting : public CFormView, public GUITABS::Content
+class PageOptionsHDRLighting
+  : public CFormView
+  , public GUITABS::Content
 {
-    IMPLEMENT_BASIC_CONTENT
-    (
-        L"HDR Lighting",              // short name of page
-        L"HDR Lighting",      // long name of page
-        290,                        // default width
-        500,                        // default height
-        NULL                        // icon
+    IMPLEMENT_BASIC_CONTENT(L"HDR Lighting", // short name of page
+                            L"HDR Lighting", // long name of page
+                            290,             // default width
+                            500,             // default height
+                            NULL             // icon
     )
 
-    static bool wasSlider( CWnd const & testScrollBar, CWnd const & scrollBar );
+    static bool wasSlider(CWnd const& testScrollBar, CWnd const& scrollBar);
 
-public:
-    enum { IDD = IDD_PAGE_OPTIONS_HDR_LIGHTING };
+  public:
+    enum
+    {
+        IDD = IDD_PAGE_OPTIONS_HDR_LIGHTING
+    };
 
     PageOptionsHDRLighting();
 
     /*virtual*/ ~PageOptionsHDRLighting();
 
-    static PageOptionsHDRLighting *instance();
-    void reinitialise();
-    static EnviroMinder &getEnviroMinder();
+    static PageOptionsHDRLighting* instance();
+    void                           reinitialise();
+    static EnviroMinder&           getEnviroMinder();
 
-protected:
+  protected:
     enum SliderMovementState
     {
         SMS_STARTED,
@@ -51,25 +53,27 @@ protected:
         SMS_DONE
     };
 
-    void InitPage();
-    /*virtual*/ void DoDataExchange(CDataExchange *dx);
+    void             InitPage();
+    /*virtual*/ void DoDataExchange(CDataExchange* dx);
 
     afx_msg LRESULT OnUpdateControls(WPARAM /*wParam*/, LPARAM /*lParam*/);
     afx_msg LRESULT OnNewSpace(WPARAM /*wParam*/, LPARAM /*lParam*/);
-    afx_msg void OnHScroll(UINT /*sbcode*/, UINT /*pos*/, CScrollBar *scrollBar);
-    afx_msg BOOL OnToolTipText(UINT, NMHDR* pNMHDR, LRESULT *result);
-    afx_msg void OnPaint();
-    afx_msg HBRUSH OnCtlColor( CDC* pDC, CWnd* pWnd, UINT nCtlColor );
+    afx_msg void    OnHScroll(UINT /*sbcode*/,
+                              UINT /*pos*/,
+                              CScrollBar* scrollBar);
+    afx_msg BOOL    OnToolTipText(UINT, NMHDR* pNMHDR, LRESULT* result);
+    afx_msg void    OnPaint();
+    afx_msg HBRUSH  OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 
     //--
-#undef  BW_GENERATE_SSAO_ACCESSOR_DECLARATION
-#define BW_GENERATE_SSAO_ACCESSOR_DECLARATION(funcName) \
-    void funcName##Slider(SliderMovementState sms);     \
+#undef BW_GENERATE_SSAO_ACCESSOR_DECLARATION
+#define BW_GENERATE_SSAO_ACCESSOR_DECLARATION(funcName)                        \
+    void         funcName##Slider(SliderMovementState sms);                    \
     afx_msg void funcName##Edit();
 
     //-- SSAO: common settings.
-    afx_msg void OnSSAOEnableBnClicked();   
-    afx_msg void OnSSAOShowBufferBnClicked();   
+    afx_msg void OnSSAOEnableBnClicked();
+    afx_msg void OnSSAOShowBufferBnClicked();
     BW_GENERATE_SSAO_ACCESSOR_DECLARATION(OnSSAOFade)
     BW_GENERATE_SSAO_ACCESSOR_DECLARATION(OnSSAOAmplify)
     BW_GENERATE_SSAO_ACCESSOR_DECLARATION(OnSSAORadius)
@@ -85,13 +89,13 @@ protected:
 #undef BW_GENERATE_SSAO_ACCESSOR_DECLARATION
 
     //--
-#undef  BW_GENERATE_HDR_ACCESSOR_DECLARATION
-#define BW_GENERATE_HDR_ACCESSOR_DECLARATION(funcName)  \
-    void funcName##Slider(SliderMovementState sms);     \
+#undef BW_GENERATE_HDR_ACCESSOR_DECLARATION
+#define BW_GENERATE_HDR_ACCESSOR_DECLARATION(funcName)                         \
+    void         funcName##Slider(SliderMovementState sms);                    \
     afx_msg void funcName##Edit();
 
     //-- HDR: common settings.
-    afx_msg void OnHDREnableBnClicked();    
+    afx_msg void OnHDREnableBnClicked();
     afx_msg void OnHDREnableLinearSpaceLightingBnClicked();
     BW_GENERATE_HDR_ACCESSOR_DECLARATION(OnHDRAdaptationSpeed)
     BW_GENERATE_HDR_ACCESSOR_DECLARATION(OnHDRAvgLumUpdateInterval)
@@ -143,16 +147,15 @@ protected:
 
     DECLARE_AUTO_TOOLTIP(PageOptionsHDRLighting, CFormView)
 
-    void saveUndoState(BW::string const &description);
+    void saveUndoState(BW::string const& description);
     void periodicSaveUndoState();
 
-private:
-
+  private:
     //--
-#undef  BW_GENERATE_SSAO_CONTROL
-#define BW_GENERATE_SSAO_CONTROL(name)      \
-    controls::EditNumeric   name##Edit_;    \
-    LimitSlider             name##Slider_;
+#undef BW_GENERATE_SSAO_CONTROL
+#define BW_GENERATE_SSAO_CONTROL(name)                                         \
+    controls::EditNumeric name##Edit_;                                         \
+    LimitSlider           name##Slider_;
 
     //-- SSAO settings
     CButton ssaoEnableBtn_;
@@ -168,13 +171,13 @@ private:
     BW_GENERATE_SSAO_CONTROL(ssaoFactorObjectsAmbient)
     BW_GENERATE_SSAO_CONTROL(ssaoFactorObjectsLighting)
 
-#undef  BW_GENERATE_SSAO_CONTROL
-    
-        //--
-#undef  BW_GENERATE_HDR_CONTROL
-#define BW_GENERATE_HDR_CONTROL(name)       \
-    controls::EditNumeric   name##Edit_;    \
-    LimitSlider             name##Slider_;
+#undef BW_GENERATE_SSAO_CONTROL
+
+    //--
+#undef BW_GENERATE_HDR_CONTROL
+#define BW_GENERATE_HDR_CONTROL(name)                                          \
+    controls::EditNumeric name##Edit_;                                         \
+    LimitSlider           name##Slider_;
 
     //-- HDR: common settings.
     CButton hdrEnableBtn_;
@@ -203,35 +206,40 @@ private:
 #undef BW_GENERATE_HDR_CONTROL
 
     //-- templated helper for settings hdr constants.
-    template<typename Type>
-    void onHDREditGeneric(HDRSettings& settings, Type& curValue, controls::EditNumeric& ed, LimitSlider& ls, const char* msg)
+    template <typename Type>
+    void onHDREditGeneric(HDRSettings&           settings,
+                          Type&                  curValue,
+                          controls::EditNumeric& ed,
+                          LimitSlider&           ls,
+                          const char*            msg)
     {
-        if (filterChange_ == 0)
-        {
+        if (filterChange_ == 0) {
             ++filterChange_;
 
-            float changedValue = Math::clamp( 
-                ls.getMinRange(), ed.GetValue(), ls.getMaxRange() );
-            if (curValue != changedValue)
-            {
+            float changedValue =
+              Math::clamp(ls.getMinRange(), ed.GetValue(), ls.getMaxRange());
+            if (curValue != changedValue) {
                 curValue = changedValue;
-                ls.SetPos( static_cast< int >( curValue * 100.0f ) );
+                ls.SetPos(static_cast<int>(curValue * 100.0f));
 
                 saveUndoState(msg);
                 getEnviroMinder().hdrSettings(settings);
-                WorldManager::instance().environmentChanged();      
+                WorldManager::instance().environmentChanged();
             }
 
-            --filterChange_;        
+            --filterChange_;
         }
     }
 
     //-- templated helper for settings hdr constants.
-    template<typename Type>
-    void onHDRSliderGeneric(HDRSettings& settings, Type& curValue, controls::EditNumeric& ed, LimitSlider& ls, const char* msg)
+    template <typename Type>
+    void onHDRSliderGeneric(HDRSettings&           settings,
+                            Type&                  curValue,
+                            controls::EditNumeric& ed,
+                            LimitSlider&           ls,
+                            const char*            msg)
     {
-        if (filterChange_ == 0)
-        {
+        if (filterChange_ == 0) {
             ++filterChange_;
 
             curValue = ls.GetPos() / 100.0f;
@@ -239,18 +247,21 @@ private:
 
             saveUndoState(msg);
             getEnviroMinder().hdrSettings(settings);
-            WorldManager::instance().environmentChanged();      
+            WorldManager::instance().environmentChanged();
 
             --filterChange_;
         }
     }
 
     //-- templated helper for settings SSAO constants.
-    template<typename Type>
-    void onSSAOSliderGeneric(SSAOSettings& settings, Type& curValue, controls::EditNumeric& ed, LimitSlider& ls, const char* msg)
+    template <typename Type>
+    void onSSAOSliderGeneric(SSAOSettings&          settings,
+                             Type&                  curValue,
+                             controls::EditNumeric& ed,
+                             LimitSlider&           ls,
+                             const char*            msg)
     {
-        if (filterChange_ == 0)
-        {
+        if (filterChange_ == 0) {
             ++filterChange_;
 
             curValue = ls.GetPos() / 100.0f;
@@ -258,45 +269,47 @@ private:
 
             saveUndoState(msg);
             getEnviroMinder().ssaoSettings(settings);
-            WorldManager::instance().environmentChanged();      
+            WorldManager::instance().environmentChanged();
 
             --filterChange_;
         }
     }
 
     //-- templated helper for settings SSAO constants.
-    template<typename Type>
-    void onSSAOEditGeneric(SSAOSettings& settings, Type& curValue, controls::EditNumeric& ed, LimitSlider& ls, const char* msg)
+    template <typename Type>
+    void onSSAOEditGeneric(SSAOSettings&          settings,
+                           Type&                  curValue,
+                           controls::EditNumeric& ed,
+                           LimitSlider&           ls,
+                           const char*            msg)
     {
-        if (filterChange_ == 0)
-        {
+        if (filterChange_ == 0) {
             ++filterChange_;
 
-            float changedValue = Math::clamp( 
-                ls.getMinRange(), ed.GetValue(), ls.getMaxRange() );
-            if (curValue != changedValue)
-            {
+            float changedValue =
+              Math::clamp(ls.getMinRange(), ed.GetValue(), ls.getMaxRange());
+            if (curValue != changedValue) {
                 curValue = changedValue;
-                ls.SetPos( static_cast< int >( curValue * 100.0f ) );
+                ls.SetPos(static_cast<int>(curValue * 100.0f));
 
                 saveUndoState(msg);
                 getEnviroMinder().ssaoSettings(settings);
-                WorldManager::instance().environmentChanged();      
+                WorldManager::instance().environmentChanged();
             }
 
-            --filterChange_;        
+            --filterChange_;
         }
     }
 
     size_t filterChange_;
-    bool initialised_;
-    bool sliding_;
+    bool   initialised_;
+    bool   sliding_;
 
-    BW::string nextSaveUndoMsg_;
-    uint64 nextSaveUndoTime_;
-    UndoRedo::Operation *nextEnvironmentUndoOp_;
+    BW::string           nextSaveUndoMsg_;
+    uint64               nextSaveUndoTime_;
+    UndoRedo::Operation* nextEnvironmentUndoOp_;
 
-    static PageOptionsHDRLighting   *s_instance_;
+    static PageOptionsHDRLighting* s_instance_;
 
     struct Impl;
     Impl* pImpl;

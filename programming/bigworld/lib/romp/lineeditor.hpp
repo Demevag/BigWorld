@@ -5,7 +5,6 @@
 
 #include "input/input.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // Forward declarations
@@ -16,72 +15,71 @@ class XConsole;
  */
 class LineEditor
 {
-public:
-	typedef BW::vector<BW::wstring> StringVector;
+  public:
+    typedef BW::vector<BW::wstring> StringVector;
 
-	enum ProcessState
-	{
-		NOT_HANDLED,
-		PROCESSED,
-		RESULT_SET,
-	};
+    enum ProcessState
+    {
+        NOT_HANDLED,
+        PROCESSED,
+        RESULT_SET,
+    };
 
+    LineEditor(XConsole* console);
+    ~LineEditor();
 
-	LineEditor(XConsole * console);
-	~LineEditor();
+    ProcessState processKeyEvent(KeyEvent event, BW::wstring& resultString);
 
-	ProcessState processKeyEvent( KeyEvent event, BW::wstring & resultString );
+    const BW::wstring& editString() const { return editString_; }
+    void               editString(const BW::wstring& s);
+    void               insertInEditString(const BW::wstring& s);
 
-	const BW::wstring& editString() const			{ return editString_; }
-	void editString( const BW::wstring & s );
-	void insertInEditString( const BW::wstring & s );
+    int  cursorPosition() const { return cx_; }
+    void cursorPosition(int pos);
 
-	int cursorPosition() const						{ return cx_; }
-	void cursorPosition( int pos );
+    bool advancedEditing() const { return advancedEditing_; }
+    void advancedEditing(bool enable) { advancedEditing_ = enable; }
 
-	bool advancedEditing() const					{ return advancedEditing_; }
-	void advancedEditing( bool enable )				{ advancedEditing_ = enable; }
+    void tick(float dTime);
+    void deactivate();
 
-	void tick( float dTime );
-	void deactivate();
+    const StringVector history() const;
+    void               setHistory(const StringVector& history);
+    void               insertHistory(const BW::wstring& history);
 
-	const StringVector history() const;
-	void setHistory(const StringVector & history);
-	void insertHistory( const BW::wstring& history );
+    void lineLength(int length) { lineLength_ = length; }
+    int  lineLength() { return lineLength_; }
 
-	void lineLength( int length ) { lineLength_ = length; }	
-	int lineLength() { return lineLength_; }
+  private:
+    LineEditor(const LineEditor&);
+    LineEditor& operator=(const LineEditor&);
 
-private:
-	LineEditor(const LineEditor&);
-	LineEditor& operator=(const LineEditor&);
+    bool processAdvanceEditKeys(KeyEvent event);
 
-	bool processAdvanceEditKeys( KeyEvent event );
+    int  insertChar(int pos, wchar_t c);
+    void deleteChar(int pos);
+    int  curWordStart(int pos) const;
+    int  curWordEnd(int pos) const;
 
-	int insertChar( int pos, wchar_t c );
-	void deleteChar( int pos );
-	int curWordStart( int pos ) const;
-	int curWordEnd( int pos ) const;
+    BW::wstring cutText(int start, int end);
+    int         pasteText(int pos, const BW::wstring& text);
 
-	BW::wstring cutText( int start, int end );
-	int pasteText( int pos, const BW::wstring & text );
+    void showHistory();
 
-	void showHistory();
+    BW::wstring editString_; // the currently edited string
+    BW::wstring clipBoard_;  // clip-board string
 
-	BW::wstring editString_;		// the currently edited string
-	BW::wstring clipBoard_;		// clip-board string
+    int  cx_;
+    bool inOverwriteMode_;
+    bool advancedEditing_;
+    char lastChar_;
 
-	int		cx_;
-	bool	inOverwriteMode_;
-	bool	advancedEditing_;
-	char	lastChar_;
+    BW::vector<BW::wstring> history_;
+    int                     historyShown_;
 
-	BW::vector<BW::wstring>	 history_;
-	int	historyShown_;
+    int lineLength_;
 
-	int lineLength_;
-
-	XConsole * console_;
+    XConsole* console_;
 };
 
 #ifdef CODE_INLINE

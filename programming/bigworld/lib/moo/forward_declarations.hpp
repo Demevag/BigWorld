@@ -1,4 +1,4 @@
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 #pragma once
 #endif
 
@@ -10,59 +10,58 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Moo
-{
+namespace Moo {
 
-	class Animation;
-	typedef SmartPointer<Animation>				AnimationPtr;
-	typedef ConstSmartPointer<Animation>		ConstAnimationPtr;
+    class Animation;
+    typedef SmartPointer<Animation>      AnimationPtr;
+    typedef ConstSmartPointer<Animation> ConstAnimationPtr;
 
-	class EffectMaterial;
-	typedef SmartPointer<EffectMaterial>		EffectMaterialPtr;
-	typedef ConstSmartPointer<EffectMaterial>	ConstEffectMaterialPtr;
+    class EffectMaterial;
+    typedef SmartPointer<EffectMaterial>      EffectMaterialPtr;
+    typedef ConstSmartPointer<EffectMaterial> ConstEffectMaterialPtr;
 
-	class BaseTexture;
-	typedef SmartPointer<BaseTexture>			BaseTexturePtr;
-	typedef ConstSmartPointer<BaseTexture>		ConstBaseTexturePtr;
+    class BaseTexture;
+    typedef SmartPointer<BaseTexture>      BaseTexturePtr;
+    typedef ConstSmartPointer<BaseTexture> ConstBaseTexturePtr;
 
-	class ComplexEffectMaterial;
-	typedef SmartPointer<ComplexEffectMaterial>			ComplexEffectMaterialPtr;
-	typedef ConstSmartPointer<ComplexEffectMaterial>	ConstComplexEffectMaterialPtr;
+    class ComplexEffectMaterial;
+    typedef SmartPointer<ComplexEffectMaterial> ComplexEffectMaterialPtr;
+    typedef ConstSmartPointer<ComplexEffectMaterial>
+      ConstComplexEffectMaterialPtr;
 
-	class EffectProperty;
-	typedef SmartPointer<EffectProperty>		EffectPropertyPtr;
-	typedef ConstSmartPointer<EffectProperty>	ConstEffectPropertyPtr;
+    class EffectProperty;
+    typedef SmartPointer<EffectProperty>      EffectPropertyPtr;
+    typedef ConstSmartPointer<EffectProperty> ConstEffectPropertyPtr;
 
-	class Material;
-	typedef SmartPointer<Material>				MaterialPtr;
-	typedef ConstSmartPointer<Material>			ConstMaterialPtr;
+    class Material;
+    typedef SmartPointer<Material>      MaterialPtr;
+    typedef ConstSmartPointer<Material> ConstMaterialPtr;
 
-	class ManagedEffect;
-	typedef SmartPointer<ManagedEffect>			ManagedEffectPtr;
-	typedef ConstSmartPointer<ManagedEffect>	ConstManagedEffectPtr;
+    class ManagedEffect;
+    typedef SmartPointer<ManagedEffect>      ManagedEffectPtr;
+    typedef ConstSmartPointer<ManagedEffect> ConstManagedEffectPtr;
 
-	class Node;
-	typedef SmartPointer<Node>					NodePtr;
-	typedef ConstSmartPointer<Node>				ConstNodePtr;
+    class Node;
+    typedef SmartPointer<Node>      NodePtr;
+    typedef ConstSmartPointer<Node> ConstNodePtr;
 
-	class StreamedDataCache;
-	class VertexDeclaration;
+    class StreamedDataCache;
+    class VertexDeclaration;
 
-	class Visual;
-	typedef SmartPointer<Visual>				VisualPtr;
-	typedef ConstSmartPointer<Visual>			ConstVisualPtr;
+    class Visual;
+    typedef SmartPointer<Visual>      VisualPtr;
+    typedef ConstSmartPointer<Visual> ConstVisualPtr;
 
-	class Vertices;
-	typedef SmartPointer<Vertices>				VerticesPtr;
+    class Vertices;
+    typedef SmartPointer<Vertices> VerticesPtr;
 
-	class Primitive;
-	typedef SmartPointer<Primitive>				PrimitivePtr;
+    class Primitive;
+    typedef SmartPointer<Primitive> PrimitivePtr;
 
-	class RenderTarget;
-	typedef SmartPointer<RenderTarget>					RenderTargetPtr;
+    class RenderTarget;
+    typedef SmartPointer<RenderTarget> RenderTargetPtr;
 } // namespace Moo
 
 BW_END_NAMESPACE
-
 
 #endif // MOO_FORWARD_DECLARATIONS_HPP

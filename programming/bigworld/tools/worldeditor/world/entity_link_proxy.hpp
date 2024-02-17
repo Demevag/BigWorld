@@ -1,7 +1,6 @@
 #ifndef ENTITY_LINK_PROXY_HPP
 #define ENTITY_LINK_PROXY_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "worldeditor/world/items/editor_chunk_entity.hpp"
@@ -15,11 +14,8 @@ BW_BEGIN_NAMESPACE
  */
 class EntityLinkProxy : public LinkProxy
 {
-public:
-    explicit EntityLinkProxy
-    (
-        EditorChunkEntity       *entity
-    );
+  public:
+    explicit EntityLinkProxy(EditorChunkEntity* entity);
 
     /*virtual*/ ~EntityLinkProxy();
 
@@ -33,12 +29,12 @@ public:
 
     /*virtual*/ ToolLocatorPtr createLocator() const;
 
-private:
-    EntityLinkProxy(EntityLinkProxy const &);
-    EntityLinkProxy &operator=(EntityLinkProxy const &);
+  private:
+    EntityLinkProxy(EntityLinkProxy const&);
+    EntityLinkProxy& operator=(EntityLinkProxy const&);
 
-private:
-    EditorChunkEntityPtr        entity_;
+  private:
+    EditorChunkEntityPtr entity_;
 };
 
 BW_END_NAMESPACE

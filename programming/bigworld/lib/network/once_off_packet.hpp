@@ -9,174 +9,173 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
+namespace Mercury {
 
-class EventDispatcher;
-class OnceOffSender;
-class PacketSender;
+    class EventDispatcher;
+    class OnceOffSender;
+    class PacketSender;
 
-// -----------------------------------------------------------------------------
-// Section: OnceOffReceipt
-// -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
+    // Section: OnceOffReceipt
+    // -----------------------------------------------------------------------------
 
-/**
- *	This struct is used to store details of once-off packets that we have
- *	received.
- */
-class OnceOffReceipt
-{
-public:
-	OnceOffReceipt( const Address & addr, SeqNum footerSequence ) :
-		addr_( addr ),
-		footerSequence_( footerSequence )
-	{
-	}
+    /**
+     *	This struct is used to store details of once-off packets that we have
+     *	received.
+     */
+    class OnceOffReceipt
+    {
+      public:
+        OnceOffReceipt(const Address& addr, SeqNum footerSequence)
+          : addr_(addr)
+          , footerSequence_(footerSequence)
+        {
+        }
 
-	// Overloaded operators declared outside the class:
-	//bool operator==( const OnceOffReceipt & oor1, 
-	//	const OnceOffReceipt & oor2 );
-	//bool operator<( const OnceOffReceipt & oor1, 
-	//	const OnceOffReceipt & oor2 );
+        // Overloaded operators declared outside the class:
+        // bool operator==( const OnceOffReceipt & oor1,
+        //	const OnceOffReceipt & oor2 );
+        // bool operator<( const OnceOffReceipt & oor1,
+        //	const OnceOffReceipt & oor2 );
 
-	Address addr_;
-	SeqNum footerSequence_;
-};
+        Address addr_;
+        SeqNum  footerSequence_;
+    };
 
+    /**
+     *	Equality operator for OnceOffReceipt instances.
+     */
+    inline bool operator==(const OnceOffReceipt& oor1,
+                           const OnceOffReceipt& oor2)
+    {
+        return (oor1.footerSequence_ == oor2.footerSequence_) &&
+               (oor1.addr_ == oor2.addr_);
+    }
 
-/**
- *	Equality operator for OnceOffReceipt instances.
- */
-inline bool operator==( const OnceOffReceipt & oor1, 
-		const OnceOffReceipt & oor2 )
-{
-	return (oor1.footerSequence_ == oor2.footerSequence_) && 
-		(oor1.addr_ == oor2.addr_);
-}
+    /**
+     *	Comparison operator for OnceOffReceipt instances.
+     */
+    inline bool operator<(const OnceOffReceipt& oor1,
+                          const OnceOffReceipt& oor2)
+    {
+        return (oor1.footerSequence_ < oor2.footerSequence_) ||
+               ((oor1.footerSequence_ == oor2.footerSequence_) &&
+                (oor1.addr_ < oor2.addr_));
+    }
 
+    typedef BW::set<OnceOffReceipt> OnceOffReceipts;
 
-/**
- *	Comparison operator for OnceOffReceipt instances.
- */
-inline bool operator<( const OnceOffReceipt & oor1,
-		const OnceOffReceipt & oor2 )
-{
-	return (oor1.footerSequence_ < oor2.footerSequence_) ||
-		((oor1.footerSequence_ == oor2.footerSequence_) && 
-			(oor1.addr_ < oor2.addr_));
-}
+    // -----------------------------------------------------------------------------
+    // Section: OnceOffReceiver
+    // -----------------------------------------------------------------------------
 
-typedef BW::set< OnceOffReceipt > OnceOffReceipts;
+    class OnceOffReceiver : public TimerHandler
+    {
+      public:
+        OnceOffReceiver();
+        ~OnceOffReceiver();
 
+        void init(EventDispatcher& dispatcher);
+        void fini();
 
-// -----------------------------------------------------------------------------
-// Section: OnceOffReceiver
-// -----------------------------------------------------------------------------
+        bool onReliableReceived(EventDispatcher& dispatcher,
+                                const Address&   addr,
+                                SeqNum           seq);
 
-class OnceOffReceiver : public TimerHandler
-{
-public:
-	OnceOffReceiver();
-	~OnceOffReceiver();
+        void onceOffReliableCleanup();
 
-	void init( EventDispatcher & dispatcher );
-	void fini();
+        // TODO: Remove this
+        FragmentedBundles& fragmentedBundles() { return fragmentedBundles_; }
 
-	bool onReliableReceived( EventDispatcher & dispatcher,
-			const Address & addr, SeqNum seq );
+      private:
+        virtual void handleTimeout(TimerHandle handle, void* arg);
 
-	void onceOffReliableCleanup();
+        void initOnceOffPacketCleaning(EventDispatcher& dispatcher);
 
-	// TODO: Remove this
-	FragmentedBundles & fragmentedBundles() { return fragmentedBundles_; }
+        OnceOffReceipts currOnceOffReceipts_;
+        OnceOffReceipts prevOnceOffReceipts_;
 
-private:
-	virtual void handleTimeout( TimerHandle handle, void * arg );
+        FragmentedBundles fragmentedBundles_;
+        // TODO: eventually allocate FragmentedBundleInfo's from
+        // a rotating list; when it gets full drop old fragments.
 
-	void initOnceOffPacketCleaning( EventDispatcher & dispatcher );
+        TimerHandle clearFragmentedBundlesTimerHandle_;
+        TimerHandle onceOffPacketCleaningTimerHandle_;
+    };
 
-	OnceOffReceipts currOnceOffReceipts_;
-	OnceOffReceipts prevOnceOffReceipts_;
+    // -----------------------------------------------------------------------------
+    // Section: OnceOffPacket
+    // -----------------------------------------------------------------------------
 
-	FragmentedBundles fragmentedBundles_;
-	// TODO: eventually allocate FragmentedBundleInfo's from
-	// a rotating list; when it gets full drop old fragments.
+    /**
+     *
+     */
+    class OnceOffPacket
+      : public TimerHandler
+      , public OnceOffReceipt
+    {
+      public:
+        OnceOffPacket(const Address& addr,
+                      SeqNum         footerSequence,
+                      OnceOffSender& onceOffSender,
+                      Packet*        pPacket = NULL);
 
-	TimerHandle clearFragmentedBundlesTimerHandle_;
-	TimerHandle onceOffPacketCleaningTimerHandle_;
-};
+        void registerTimer(EventDispatcher& dispatcher,
+                           PacketSender&    packetSender,
+                           int              period);
 
-// -----------------------------------------------------------------------------
-// Section: OnceOffPacket
-// -----------------------------------------------------------------------------
+        virtual void handleTimeout(TimerHandle handle, void* arg);
 
-/**
- *
- */
-class OnceOffPacket : public TimerHandler, public OnceOffReceipt
-{
-public:
-	OnceOffPacket( const Address & addr, SeqNum footerSequence,
-					OnceOffSender & onceOffSender,
-					Packet * pPacket = NULL );
+        PacketPtr      pPacket_;
+        OnceOffSender& onceOffSender_;
+        TimerHandle    timerHandle_;
+        int            retries_;
+    };
+    typedef BW::set<OnceOffPacket> OnceOffPackets;
 
-	void registerTimer( EventDispatcher & dispatcher,
-			PacketSender & packetSender,
-			int period );
+    // -----------------------------------------------------------------------------
+    // Section: OnceOffSender
+    // -----------------------------------------------------------------------------
 
-	virtual void handleTimeout( TimerHandle handle, void * arg );
+    class OnceOffSender
+    {
+      public:
+        OnceOffSender();
+        ~OnceOffSender();
 
-	PacketPtr pPacket_;
-	OnceOffSender & onceOffSender_;
-	TimerHandle timerHandle_;
-	int retries_;
-};
-typedef BW::set< OnceOffPacket > OnceOffPackets;
+        void addOnceOffResendTimer(const Address&   addr,
+                                   SeqNum           seq,
+                                   Packet*          p,
+                                   PacketSender&    packetSender,
+                                   EventDispatcher& dispatcher);
 
+        void delOnceOffResendTimer(const Address& addr, SeqNum seq);
+        void delOnceOffResendTimer(OnceOffPackets::iterator& iter);
 
-// -----------------------------------------------------------------------------
-// Section: OnceOffSender
-// -----------------------------------------------------------------------------
+        void expireOnceOffResendTimer(OnceOffPacket& packet,
+                                      PacketSender&  packetSender);
 
-class OnceOffSender
-{
-public:
-	OnceOffSender();
-	~OnceOffSender();
+        void onAddressDead(const Address& addr);
 
-	void addOnceOffResendTimer( const Address & addr, SeqNum seq,
-			Packet * p,
-			PacketSender & packetSender,
-			EventDispatcher & dispatcher );
+        int onceOffResendPeriod() const { return onceOffResendPeriod_; }
 
-	void delOnceOffResendTimer( const Address & addr, SeqNum seq );
-	void delOnceOffResendTimer( OnceOffPackets::iterator & iter );
+        void onceOffResendPeriod(int microseconds)
+        {
+            onceOffResendPeriod_ = microseconds;
+        }
 
-	void expireOnceOffResendTimer( OnceOffPacket & packet,
-									PacketSender & packetSender );
+        int onceOffMaxResends() const { return onceOffMaxResends_; }
 
-	void onAddressDead( const Address & addr );
+        void onceOffMaxResends(int retries) { onceOffMaxResends_ = retries; }
 
-	int onceOffResendPeriod() const
-	{	return onceOffResendPeriod_; }
+        bool hasUnackedPackets() const { return !onceOffPackets_.empty(); }
 
-	void onceOffResendPeriod( int microseconds )
-	{	onceOffResendPeriod_ = microseconds; }
+      private:
+        OnceOffPackets onceOffPackets_;
 
-	int onceOffMaxResends() const
-	{	return onceOffMaxResends_; }
-
-	void onceOffMaxResends( int retries )
-	{	onceOffMaxResends_ = retries; }
-
-	bool hasUnackedPackets() const { return !onceOffPackets_.empty(); }
-
-private:
-	OnceOffPackets onceOffPackets_;
-
-	int onceOffMaxResends_;
-	int onceOffResendPeriod_;
-};
+        int onceOffMaxResends_;
+        int onceOffResendPeriod_;
+    };
 
 } // namespace Mercury
 

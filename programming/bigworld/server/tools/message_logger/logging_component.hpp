@@ -6,7 +6,6 @@
 
 #include "network/logger_message_forwarder.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -15,61 +14,60 @@ BW_BEGIN_NAMESPACE
  */
 class LoggingComponent
 {
-public:
-	// Candidate for cleanup. only required by the 'reader'
-	LoggingComponent( UserComponents *userComponents );
+  public:
+    // Candidate for cleanup. only required by the 'reader'
+    LoggingComponent(UserComponents* userComponents);
 
-	// Candidate for cleanup. only required by 'writer'
-	LoggingComponent( UserComponents *userComponents,
-		const Mercury::Address & addr, const LoggerComponentMessage & msg,
-		MessageLogger::AppTypeID appTypeID );
+    // Candidate for cleanup. only required by 'writer'
+    LoggingComponent(UserComponents*               userComponents,
+                     const Mercury::Address&       addr,
+                     const LoggerComponentMessage& msg,
+                     MessageLogger::AppTypeID      appTypeID);
 
-	void write( FileStream & out );
-	void read( FileStream & in );
-	bool written() const;
+    void write(FileStream& out);
+    void read(FileStream& in);
+    bool written() const;
 
-	bool setAppInstanceID( ServerAppInstanceID appInstanceID );
-	MessageLogger::AppInstanceID getAppInstanceID() const;
+    bool setAppInstanceID(ServerAppInstanceID appInstanceID);
+    MessageLogger::AppInstanceID getAppInstanceID() const;
 
-	MessageLogger::AppTypeID getAppTypeID() const;
+    MessageLogger::AppTypeID getAppTypeID() const;
 
-	MessageLogger::UserComponentID getUserComponentID() const;
+    MessageLogger::UserComponentID getUserComponentID() const;
 
-	const Mercury::Address & getAddress() const;
+    const Mercury::Address& getAddress() const;
 
-	const LogEntryAddress & getFirstEntry() const;
+    const LogEntryAddress& getFirstEntry() const;
 
-	BW::string getString() const;
+    BW::string getString() const;
 
-	int getPID() const;
-	const BW::string & getComponentName() const;
+    int               getPID() const;
+    const BW::string& getComponentName() const;
 
-	void updateFirstEntry( const BW::string & suffix,
-									const int numEntries );
+    void updateFirstEntry(const BW::string& suffix, const int numEntries);
 
-	bool isSameComponentAs( const LoggerComponentMessage & otherMessage ) const;
+    bool isSameComponentAs(const LoggerComponentMessage& otherMessage) const;
 
-private:
+  private:
+    LoggerComponentMessage msg_;
 
-	LoggerComponentMessage msg_;
+    Mercury::Address addr_;
 
-	Mercury::Address addr_;
+    // Process-type ID assigned to cellapp, baseapp etc
+    MessageLogger::AppTypeID appTypeID_;
 
-	// Process-type ID assigned to cellapp, baseapp etc
-	MessageLogger::AppTypeID appTypeID_;
+    // on disk unique ID per Component object
+    MessageLogger::UserComponentID userComponentID_;
 
-	// on disk unique ID per Component object
-	MessageLogger::UserComponentID userComponentID_;
+    // ID known as amongst server components, eg. cellapp01
+    MessageLogger::AppInstanceID appInstanceID_;
 
-	// ID known as amongst server components, eg. cellapp01
-	MessageLogger::AppInstanceID appInstanceID_;
+    // The first log entry associated with the logging component.
+    LogEntryAddress firstEntry_;
 
-	// The first log entry associated with the logging component.
-	LogEntryAddress firstEntry_;
+    int fileOffset_;
 
-	int fileOffset_;
-
-	BW::string userComponentsFilename_;
+    BW::string userComponentsFilename_;
 };
 
 BW_END_NAMESPACE

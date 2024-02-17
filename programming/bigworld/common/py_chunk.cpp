@@ -7,52 +7,53 @@
 
 #include "pyscript/script.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 int PyChunk_token = 0;
 
 namespace {
 
-/**
- *	Static helper method to get chunk from info describing it
- */
-Chunk * lookupChunk( const BW::string & chunkNMapping, SpaceID spaceID,
-	const char * methodName )
-{
-	BW_GUARD;
-	// look up the space
-	ChunkSpacePtr pSpace;
+    /**
+     *	Static helper method to get chunk from info describing it
+     */
+    Chunk* lookupChunk(const BW::string& chunkNMapping,
+                       SpaceID           spaceID,
+                       const char*       methodName)
+    {
+        BW_GUARD;
+        // look up the space
+        ChunkSpacePtr pSpace;
 
-	ChunkManager & cm = ChunkManager::instance();
-	pSpace = cm.space( spaceID, false );
+        ChunkManager& cm = ChunkManager::instance();
+        pSpace           = cm.space(spaceID, false);
 
-	if (!pSpace)
-	{
-		PyErr_Format( PyExc_ValueError,
-			"%s: space ID %d not found", methodName, int(spaceID) );
-		return NULL;
-	}
+        if (!pSpace) {
+            PyErr_Format(PyExc_ValueError,
+                         "%s: space ID %d not found",
+                         methodName,
+                         int(spaceID));
+            return NULL;
+        }
 
-	// look up the chunk
-	BW::string chunkOnly = chunkNMapping;
-	BW::string mappingOnly;
-	const size_t firstAt = chunkNMapping.find_first_of( '@' );
-	if (firstAt < chunkNMapping.size())
-	{
-		chunkOnly = chunkNMapping.substr( 0, firstAt );
-		mappingOnly = chunkNMapping.substr( firstAt+1 );
-	}
-	Chunk * pChunk = pSpace->findChunk( chunkOnly, mappingOnly );
-	if (pChunk == NULL)
-	{
-		PyErr_Format( PyExc_ValueError,
-			"%s: chunk '%s' not found", methodName, chunkNMapping.c_str() );
-		return NULL;
-	}
+        // look up the chunk
+        BW::string   chunkOnly = chunkNMapping;
+        BW::string   mappingOnly;
+        const size_t firstAt = chunkNMapping.find_first_of('@');
+        if (firstAt < chunkNMapping.size()) {
+            chunkOnly   = chunkNMapping.substr(0, firstAt);
+            mappingOnly = chunkNMapping.substr(firstAt + 1);
+        }
+        Chunk* pChunk = pSpace->findChunk(chunkOnly, mappingOnly);
+        if (pChunk == NULL) {
+            PyErr_Format(PyExc_ValueError,
+                         "%s: chunk '%s' not found",
+                         methodName,
+                         chunkNMapping.c_str());
+            return NULL;
+        }
 
-	return pChunk;
-}
+        return pChunk;
+    }
 
 } // namespace
 
@@ -71,41 +72,45 @@ Chunk * lookupChunk( const BW::string & chunkNMapping, SpaceID spaceID,
 /**
  *	Function to find a chunk from a point.
  */
-static PyObject* findChunkFromPoint( const Vector3 & point,
-	SpaceID spaceID )
+static PyObject* findChunkFromPoint(const Vector3& point, SpaceID spaceID)
 {
-	BW_GUARD;
-	// look up the space
-	ChunkSpacePtr pSpace = NULL;
-	ChunkManager & cm = ChunkManager::instance();
-	pSpace = cm.space( spaceID, false );
+    BW_GUARD;
+    // look up the space
+    ChunkSpacePtr pSpace = NULL;
+    ChunkManager& cm     = ChunkManager::instance();
+    pSpace               = cm.space(spaceID, false);
 
-	if (!pSpace)
-	{
-		PyErr_Format( PyExc_ValueError,
-			"BigWorld.findChunkFromPoint(): space ID %d not found", int(spaceID) );
-		return NULL;
-	}
+    if (!pSpace) {
+        PyErr_Format(PyExc_ValueError,
+                     "BigWorld.findChunkFromPoint(): space ID %d not found",
+                     int(spaceID));
+        return NULL;
+    }
 
-	// ask it to find the chunk
-	Chunk * pChunk = pSpace->findChunkFromPointExact( point );
-	if (!pChunk)
-	{
-		// Note: we use bw_snprintf because PyErr_Format does not support %f.
-		char buf[256];
-		bw_snprintf( buf, sizeof(buf), "BigWorld.findChunkFromPoint(): "
-			"chunk at (%f,%f,%f) not found", point.x, point.y, point.z );
-		PyErr_SetString( PyExc_ValueError, buf );
-		return NULL;
-	}
+    // ask it to find the chunk
+    Chunk* pChunk = pSpace->findChunkFromPointExact(point);
+    if (!pChunk) {
+        // Note: we use bw_snprintf because PyErr_Format does not support %f.
+        char buf[256];
+        bw_snprintf(buf,
+                    sizeof(buf),
+                    "BigWorld.findChunkFromPoint(): "
+                    "chunk at (%f,%f,%f) not found",
+                    point.x,
+                    point.y,
+                    point.z);
+        PyErr_SetString(PyExc_ValueError, buf);
+        return NULL;
+    }
 
-	// return the chunk identifier
-	return Script::getData(
-		pChunk->identifier() + "@" + pChunk->mapping()->name() );
+    // return the chunk identifier
+    return Script::getData(pChunk->identifier() + "@" +
+                           pChunk->mapping()->name());
 }
-PY_AUTO_MODULE_FUNCTION( RETOWN, findChunkFromPoint,
-	ARG( Vector3, ARG( SpaceID, END ) ), BigWorld )
-
+PY_AUTO_MODULE_FUNCTION(RETOWN,
+                        findChunkFromPoint,
+                        ARG(Vector3, ARG(SpaceID, END)),
+                        BigWorld)
 
 /*~ function BigWorld chunkTransform
  *  @components{ client, cell }
@@ -121,21 +126,22 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, findChunkFromPoint,
 /**
  *	Function to let Python get a chunk's transform
  */
-static PyObject * chunkTransform( const BW::string & chunkNMapping,
-	SpaceID spaceID )
+static PyObject* chunkTransform(const BW::string& chunkNMapping,
+                                SpaceID           spaceID)
 {
-	BW_GUARD;
-	Chunk * pChunk = lookupChunk( chunkNMapping, spaceID,
-		"BigWorld.chunkTransform()" );
-	if (!pChunk) return NULL;
+    BW_GUARD;
+    Chunk* pChunk =
+      lookupChunk(chunkNMapping, spaceID, "BigWorld.chunkTransform()");
+    if (!pChunk)
+        return NULL;
 
-	return Script::getData( pChunk->transform() );
+    return Script::getData(pChunk->transform());
 }
-PY_AUTO_MODULE_FUNCTION( RETOWN, chunkTransform,
-	ARG( BW::string, ARG( SpaceID, END ) ), BigWorld )
+PY_AUTO_MODULE_FUNCTION(RETOWN,
+                        chunkTransform,
+                        ARG(BW::string, ARG(SpaceID, END)),
+                        BigWorld)
 
 BW_END_NAMESPACE
 
 // py_chunk.cpp
-
-

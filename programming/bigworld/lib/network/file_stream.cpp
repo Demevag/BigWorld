@@ -5,62 +5,57 @@
 #include "cstdmf/debug.hpp"
 #include "cstdmf/bw_util.hpp"
 
-#if !defined( CODE_INLINE )
+#if !defined(CODE_INLINE)
 BW_BEGIN_NAMESPACE
 #include "file_stream.ipp"
 BW_END_NAMESPACE
 #endif
 
-DECLARE_DEBUG_COMPONENT2( "Network", 0 )
+DECLARE_DEBUG_COMPONENT2("Network", 0)
 
 BW_BEGIN_NAMESPACE
 
 /**
  *	Constructor.
  */
-FileStream::FileStream( const char * pPath, const char * pMode ) :
-	path_( pPath ),
-	mode_( pMode ),
-	pFile_( NULL ),
-	pReadBuf_( new char[ INIT_READ_BUF_SIZE ] ),
-	readBufSize_( INIT_READ_BUF_SIZE ),
-	//errorMsg_(),
-	lastAction_( 0 ),
-	isOpen_( false ),
-	offset_( 0 ),
-	fileStreamsIter_( s_openFiles_.end() )
+FileStream::FileStream(const char* pPath, const char* pMode)
+  : path_(pPath)
+  , mode_(pMode)
+  , pFile_(NULL)
+  , pReadBuf_(new char[INIT_READ_BUF_SIZE])
+  , readBufSize_(INIT_READ_BUF_SIZE)
+  ,
+  // errorMsg_(),
+  lastAction_(0)
+  , isOpen_(false)
+  , offset_(0)
+  , fileStreamsIter_(s_openFiles_.end())
 {
-	this->open();
+    this->open();
 }
-
 
 /**
  *	Destructor.
  */
 FileStream::~FileStream()
 {
-	this->close();
-	bw_safe_delete_array( pReadBuf_ );
+    this->close();
+    bw_safe_delete_array(pReadBuf_);
 }
-
 
 /**
  *	This method returns a string represenation of the current error status.
  *
  *	@return A pointer to a string describing the error state.
  */
-const char * FileStream::strerror() const
+const char* FileStream::strerror() const
 {
-	if (errno)
-	{
-		return ::strerror( errno );
-	}
-	else
-	{
-		return errorMsg_.c_str();
-	}
+    if (errno) {
+        return ::strerror(errno);
+    } else {
+        return errorMsg_.c_str();
+    }
 }
-
 
 /**
  *	This method returns the stream pointer position within the open file.
@@ -69,21 +64,18 @@ const char * FileStream::strerror() const
  */
 long FileStream::tell()
 {
-	if (!this->open())
-	{
-		return -1;
-	}
+    if (!this->open()) {
+        return -1;
+    }
 
-	long result = ftell( pFile_ );
+    long result = ftell(pFile_);
 
-	if (result == -1)
-	{
-		error_ = true;
-	}
+    if (result == -1) {
+        error_ = true;
+    }
 
-	return result;
+    return result;
 }
-
 
 /**
  *	This method seeks to an abitrary point in the file.
@@ -96,24 +88,20 @@ long FileStream::tell()
  *
  *	@return 0 on success, -1 on error.
  */
-int FileStream::seek( long offset, int whence )
+int FileStream::seek(long offset, int whence)
 {
-	if (!this->open())
-	{
-		return -1;
-	}
+    if (!this->open()) {
+        return -1;
+    }
 
-	int result = fseek( pFile_, offset, whence );
+    int result = fseek(pFile_, offset, whence);
 
-	if (result == -1)
-	{
-		error_ = true;
-	}
+    if (result == -1) {
+        error_ = true;
+    }
 
-	return result;
+    return result;
 }
-
-
 
 /**
  *  Returns the size of this file on disk (i.e. doesn't include data not yet
@@ -121,21 +109,18 @@ int FileStream::seek( long offset, int whence )
  */
 long FileStream::length()
 {
-	if (!this->open())
-	{
-		return -1;
-	}
+    if (!this->open()) {
+        return -1;
+    }
 
-	struct stat statinfo;
-	if (fstat( bw_fileno( pFile_ ), &statinfo ))
-	{
-		error_ = true;
-		return -1;
-	}
+    struct stat statinfo;
+    if (fstat(bw_fileno(pFile_), &statinfo)) {
+        error_ = true;
+        return -1;
+    }
 
-	return statinfo.st_size;
+    return statinfo.st_size;
 }
-
 
 /**
  *  Using the output-streaming operators on FileStreams doesn't actually write
@@ -145,34 +130,29 @@ long FileStream::length()
  */
 bool FileStream::commit()
 {
-	this->setMode( 'w' );
+    this->setMode('w');
 
-	if (!this->open())
-	{
-		return false;
-	}
+    if (!this->open()) {
+        return false;
+    }
 
-	errno = 0;
+    errno = 0;
 
-	if (fwrite( this->data(), 1, this->size(), pFile_ ) !=
-		(size_t)this->size())
-	{
-		error_ = true;
-		errorMsg_ = "Couldn't write all bytes to disk";
-		return false;
-	}
+    if (fwrite(this->data(), 1, this->size(), pFile_) != (size_t)this->size()) {
+        error_    = true;
+        errorMsg_ = "Couldn't write all bytes to disk";
+        return false;
+    }
 
-	if (fflush( pFile_ ) == EOF)
-	{
-		error_ = true;
-		return false;
-	}
+    if (fflush(pFile_) == EOF) {
+        error_ = true;
+        return false;
+    }
 
-	// Clear the internal memory buffer
-	this->reset();
-	return true;
+    // Clear the internal memory buffer
+    this->reset();
+    return true;
 }
-
 
 /**
  *	This method retrieves a number of bytes from the file.
@@ -185,33 +165,29 @@ bool FileStream::commit()
  *
  *	@return A pointer to the start of the requested data.
  */
-const void * FileStream::retrieve( int nBytes )
+const void* FileStream::retrieve(int nBytes)
 {
-	this->setMode( 'r' );
+    this->setMode('r');
 
-	if (readBufSize_ < nBytes)
-	{
-		bw_safe_delete_array( pReadBuf_ );
-		pReadBuf_ = new char[ nBytes ];
-		readBufSize_ = nBytes;
-	}
+    if (readBufSize_ < nBytes) {
+        bw_safe_delete_array(pReadBuf_);
+        pReadBuf_    = new char[nBytes];
+        readBufSize_ = nBytes;
+    }
 
-	if (!this->open())
-	{
-		return pReadBuf_;
-	}
+    if (!this->open()) {
+        return pReadBuf_;
+    }
 
-	errno = 0;
+    errno = 0;
 
-	if (fread( pReadBuf_, 1, nBytes, pFile_ ) != (size_t)nBytes)
-	{
-		error_ = true;
-		errorMsg_ = "Couldn't read desired number of bytes from disk";
-	}
+    if (fread(pReadBuf_, 1, nBytes, pFile_) != (size_t)nBytes) {
+        error_    = true;
+        errorMsg_ = "Couldn't read desired number of bytes from disk";
+    }
 
-	return pReadBuf_;
+    return pReadBuf_;
 }
-
 
 /**
  *	This method performs a stat() on the open file.
@@ -220,38 +196,33 @@ const void * FileStream::retrieve( int nBytes )
  *
  *	@return 0 on success, -1 on error.
  */
-int FileStream::stat( struct stat * pStatInfo )
+int FileStream::stat(struct stat* pStatInfo)
 {
-	if (!this->open())
-	{
-		return -1;
-	}
+    if (!this->open()) {
+        return -1;
+    }
 
-	return fstat( bw_fileno( pFile_ ),  pStatInfo );
+    return fstat(bw_fileno(pFile_), pStatInfo);
 }
-
 
 /**
  *  Prepares this stream for I/O operations in the specified mode (either 'r' or
  *  'w').  This is necessary due to the ANSI C requirement that file positioning
  *  operations are interleaved between reads and writes, and vice versa.
  */
-void FileStream::setMode( char mode )
+void FileStream::setMode(char mode)
 {
-	if (!this->open())
-	{
-		return;
-	}
+    if (!this->open()) {
+        return;
+    }
 
-	if ((mode == 'w' && lastAction_ == 'r') ||
-		 (mode == 'r' && lastAction_ == 'w'))
-	{
-		error_ |= fseek( pFile_, 0, SEEK_CUR ) == -1;
-	}
+    if ((mode == 'w' && lastAction_ == 'r') ||
+        (mode == 'r' && lastAction_ == 'w')) {
+        error_ |= fseek(pFile_, 0, SEEK_CUR) == -1;
+    }
 
-	lastAction_ = mode;
+    lastAction_ = mode;
 }
-
 
 /**
  *	This method opens the file specified during construction.
@@ -260,92 +231,80 @@ void FileStream::setMode( char mode )
  */
 bool FileStream::open()
 {
-	// If we're already at the front of the open handles queue, just return now.
-	// This hopefully makes repeated accesses on the same file a bit faster
-	if (!s_openFiles_.empty() && s_openFiles_.front() == this)
-	{
-		return true;
-	}
+    // If we're already at the front of the open handles queue, just return now.
+    // This hopefully makes repeated accesses on the same file a bit faster
+    if (!s_openFiles_.empty() && s_openFiles_.front() == this) {
+        return true;
+    }
 
-	// If already open but not at the front of the queue, remove the existing
-	// reference to this file from the queue
-	else if (isOpen_)
-	{
-		this->remove();
-	}
+    // If already open but not at the front of the queue, remove the existing
+    // reference to this file from the queue
+    else if (isOpen_) {
+        this->remove();
+    }
 
-	// Otherwise, really open up the file again
-	else
-	{
-		if ((pFile_ = bw_fopen( path_.c_str(), mode_.c_str() )) == NULL)
-		{
-			error_ = true;
-			return false;
-		}
+    // Otherwise, really open up the file again
+    else {
+        if ((pFile_ = bw_fopen(path_.c_str(), mode_.c_str())) == NULL) {
+            error_ = true;
+            return false;
+        }
 
-		lastAction_ = 0;
-		isOpen_ = true;
+        lastAction_ = 0;
+        isOpen_     = true;
 
-		// Restore old position if it was set
-		if (offset_)
-		{
-			if (fseek( pFile_, offset_, SEEK_SET ) == -1)
-			{
-				error_ = true;
-				return false;
-			}
-		}
-	}
+        // Restore old position if it was set
+        if (offset_) {
+            if (fseek(pFile_, offset_, SEEK_SET) == -1) {
+                error_ = true;
+                return false;
+            }
+        }
+    }
 
-	// Each time we call this, this file moves to the front of the queue
-	s_openFiles_.push_front( this );
-	fileStreamsIter_ = s_openFiles_.begin();
+    // Each time we call this, this file moves to the front of the queue
+    s_openFiles_.push_front(this);
+    fileStreamsIter_ = s_openFiles_.begin();
 
-	// If there are too many files open, purge the least-recently used one
-	if (s_openFiles_.size() > MAX_OPEN_FILES)
-	{
-		s_openFiles_.back()->close();
-	}
+    // If there are too many files open, purge the least-recently used one
+    if (s_openFiles_.size() > MAX_OPEN_FILES) {
+        s_openFiles_.back()->close();
+    }
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method closes the open file.
  */
 void FileStream::close()
 {
-	if (!isOpen_)
-	{
-		return;
-	}
+    if (!isOpen_) {
+        return;
+    }
 
-	if (pCurr_ != pBegin_)
-	{
-		this->commit();
-	}
+    if (pCurr_ != pBegin_) {
+        this->commit();
+    }
 
-	// Save file offset in case we do an open() later on.  We can't use
-	// this->tell() here because that would cause an open()
-	offset_ = ftell( pFile_ );
-	fclose( pFile_ );
-	isOpen_ = false;
+    // Save file offset in case we do an open() later on.  We can't use
+    // this->tell() here because that would cause an open()
+    offset_ = ftell(pFile_);
+    fclose(pFile_);
+    isOpen_ = false;
 
-	// Remove this object from the handle queue
-	this->remove();
+    // Remove this object from the handle queue
+    this->remove();
 }
-
 
 /**
  *	This method removes the entry for this object in the static open files list.
  */
 void FileStream::remove()
 {
-	s_openFiles_.erase( fileStreamsIter_ );
-	fileStreamsIter_ = s_openFiles_.end();
+    s_openFiles_.erase(fileStreamsIter_);
+    fileStreamsIter_ = s_openFiles_.end();
 }
-
 
 FileStream::FileStreams FileStream::s_openFiles_;
 

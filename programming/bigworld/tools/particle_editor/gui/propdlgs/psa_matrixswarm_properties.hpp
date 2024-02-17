@@ -9,20 +9,22 @@ BW_BEGIN_NAMESPACE
 
 class MatrixSwarmPSA;
 
-
 class PsaMatrixSwarmProperties : public PsaProperties
 {
-public:
+  public:
     DECLARE_DYNCREATE(PsaMatrixSwarmProperties)
 
-    enum { IDD = IDD_PSA_MATRIXSWARM_PROPERTIES };
+    enum
+    {
+        IDD = IDD_PSA_MATRIXSWARM_PROPERTIES
+    };
 
     //
     // Constructor.
     //
     PsaMatrixSwarmProperties();
 
-	MatrixSwarmPSA * action();
+    MatrixSwarmPSA* action();
 
     //
     // Set the parameters.
@@ -31,13 +33,13 @@ public:
     //
     /*virtual*/ void SetParameters(SetOperation /*task*/);
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 
-private:
-	controls::EditNumeric	delay_;
+  private:
+    controls::EditNumeric delay_;
 };
 
 BW_END_NAMESPACE

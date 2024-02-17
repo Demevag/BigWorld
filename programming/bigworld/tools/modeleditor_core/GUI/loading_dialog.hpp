@@ -10,29 +10,31 @@ BW_BEGIN_NAMESPACE
 
 class CLoadingDialog : public CDialog
 {
-public:
-	CLoadingDialog( const BW::wstring& fileName );
-	~CLoadingDialog();
+  public:
+    CLoadingDialog(const BW::wstring& fileName);
+    ~CLoadingDialog();
 
-	void setRange( int num );
+    void setRange(int num);
 
-	void step();
+    void step();
 
-// Dialog Data
-	enum { IDD = IDD_LOADING };
+    // Dialog Data
+    enum
+    {
+        IDD = IDD_LOADING
+    };
 
-protected:
-	void DoDataExchange( CDataExchange* pDX );
-	BOOL OnInitDialog();
+  protected:
+    void DoDataExchange(CDataExchange* pDX);
+    BOOL OnInitDialog();
 
-	 BW::wstring fileName_;
+    BW::wstring fileName_;
 
-	 CProgressCtrl bar_;
+    CProgressCtrl bar_;
 
-// Implementation
-protected:
-	DECLARE_MESSAGE_MAP()
+    // Implementation
+  protected:
+    DECLARE_MESSAGE_MAP()
 };
 
 BW_END_NAMESPACE
-

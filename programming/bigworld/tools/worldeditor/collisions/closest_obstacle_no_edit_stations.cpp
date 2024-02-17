@@ -7,40 +7,27 @@ BW_BEGIN_NAMESPACE
 
 ClosestObstacleNoEditStations ClosestObstacleNoEditStations::s_default;
 
-
-/*virtual*/ int ClosestObstacleNoEditStations::operator()
-( 
-    CollisionObstacle   const &obstacle,
-    WorldTriangle   const &/*triangle*/, 
-    float           /*dist*/ 
+/*virtual*/ int ClosestObstacleNoEditStations::operator()(
+  CollisionObstacle const& obstacle,
+  WorldTriangle const& /*triangle*/,
+  float /*dist*/
 )
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	ChunkItem * pItem = obstacle.sceneObject().isType<ChunkItem>() ?
-		obstacle.sceneObject().getAs<ChunkItem>() : NULL;
-	MF_ASSERT( pItem );
-	if (!pItem)
-	{
-		return COLLIDE_ALL;
-	} 
-
-	if (
-		pItem->isEditorChunkStationNode()
-		||
-		pItem->isEditorChunkLink()
-		||
-		pItem->isEditorUserDataObject()
-		||
-		pItem->isEditorEntity()
-    )
-    {
+    ChunkItem* pItem = obstacle.sceneObject().isType<ChunkItem>()
+                         ? obstacle.sceneObject().getAs<ChunkItem>()
+                         : NULL;
+    MF_ASSERT(pItem);
+    if (!pItem) {
         return COLLIDE_ALL;
     }
-    else
-    {
+
+    if (pItem->isEditorChunkStationNode() || pItem->isEditorChunkLink() ||
+        pItem->isEditorUserDataObject() || pItem->isEditorEntity()) {
+        return COLLIDE_ALL;
+    } else {
         return COLLIDE_BEFORE;
     }
-}   
+}
 BW_END_NAMESPACE
-

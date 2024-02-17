@@ -9,14 +9,14 @@ BW_BEGIN_NAMESPACE
 
 class ForcedLodOverlay : public EditorRenderable
 {
-public:
-	explicit ForcedLodOverlay( EditorChunkTerrain * terrain );
+  public:
+    explicit ForcedLodOverlay(EditorChunkTerrain* terrain);
 
-	void render();
+    void render();
 
-private:
-	BW::vector<Moo::BaseTexturePtr> textures_;
-	EditorChunkTerrain* terrain_;
+  private:
+    BW::vector<Moo::BaseTexturePtr> textures_;
+    EditorChunkTerrain*             terrain_;
 };
 
 typedef SmartPointer<ForcedLodOverlay> ForcedLodOverlayPtr;

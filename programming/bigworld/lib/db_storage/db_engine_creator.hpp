@@ -10,7 +10,6 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -20,64 +19,60 @@ BW_BEGIN_NAMESPACE
  */
 class DatabaseEngineData
 {
-public:
-	DatabaseEngineData( Mercury::NetworkInterface & interface_,
-		Mercury::EventDispatcher & dispatcher,
-		bool isProduction );
+  public:
+    DatabaseEngineData(Mercury::NetworkInterface& interface_,
+                       Mercury::EventDispatcher&  dispatcher,
+                       bool                       isProduction);
 
-	Mercury::NetworkInterface & interface()
-		{ return *pInterface_; }
+    Mercury::NetworkInterface& interface() { return *pInterface_; }
 
-	Mercury::EventDispatcher & dispatcher()
-		{ return *pDispatcher_; }
+    Mercury::EventDispatcher& dispatcher() { return *pDispatcher_; }
 
-	bool isProduction()
-		{ return isProduction_; }
+    bool isProduction() { return isProduction_; }
 
-private:
-	Mercury::NetworkInterface * pInterface_;
-	Mercury::EventDispatcher * pDispatcher_;
-	bool isProduction_;
+  private:
+    Mercury::NetworkInterface* pInterface_;
+    Mercury::EventDispatcher*  pDispatcher_;
+    bool                       isProduction_;
 };
-
 
 /**
  *	This class provides a Factory interface so the DBApp can create a database
  *	engine interface on demand. This allows for link time registration of
  *	database types.
  *
- *	Each database type implements this interface to allow the creation 
+ *	Each database type implements this interface to allow the creation
  */
-class DatabaseEngineCreator : public IntrusiveObject< DatabaseEngineCreator >
+class DatabaseEngineCreator : public IntrusiveObject<DatabaseEngineCreator>
 {
-public:
-	DatabaseEngineCreator( const BW::string & typeName );
+  public:
+    DatabaseEngineCreator(const BW::string& typeName);
 
-	static IDatabase * createInstance( const BW::string type,
-									const DatabaseEngineData & dbEngineData );
+    static IDatabase* createInstance(const BW::string          type,
+                                     const DatabaseEngineData& dbEngineData);
 
-protected:
-	/**
-	 *	This virtual method allows the engine specific creator to return its
-	 *	Database engine implementation.
-	 *	
-	 *	@param dbEngineData  Database engine data structure containing the
-	 *						dispatcher and network interface to use when
-	 *						creating the database implementation.
-	 *
-	 *	@returns A pointer to an IDatabase interface for the engine created on
-	 *	         success, NULL on error.
-	 *
-	 */
-	virtual IDatabase * createImpl( DatabaseEngineData & dbEngineData ) const = 0;
+  protected:
+    /**
+     *	This virtual method allows the engine specific creator to return its
+     *	Database engine implementation.
+     *
+     *	@param dbEngineData  Database engine data structure containing the
+     *						dispatcher and network interface to use when
+     *						creating the database implementation.
+     *
+     *	@returns A pointer to an IDatabase interface for the engine created on
+     *	         success, NULL on error.
+     *
+     */
+    virtual IDatabase* createImpl(DatabaseEngineData& dbEngineData) const = 0;
 
-private:
-	DatabaseEngineCreator();
+  private:
+    DatabaseEngineCreator();
 
-	IDatabase * create( const BW::string type,
-							const DatabaseEngineData & dbEngineData ) const;
+    IDatabase* create(const BW::string          type,
+                      const DatabaseEngineData& dbEngineData) const;
 
-	BW::string typeName_;
+    BW::string typeName_;
 };
 
 BW_END_NAMESPACE

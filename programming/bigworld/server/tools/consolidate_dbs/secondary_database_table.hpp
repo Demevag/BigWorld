@@ -6,7 +6,6 @@
 #include <memory>
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class ConsolidationProgressReporter;
@@ -20,32 +19,30 @@ class SqliteStatement;
  */
 class SecondaryDatabaseTable
 {
-public:
-	SecondaryDatabaseTable( SecondaryDatabase & database, 
-			const BW::string & tableName );
-	bool init();
+  public:
+    SecondaryDatabaseTable(SecondaryDatabase& database,
+                           const BW::string&  tableName);
+    bool init();
 
-	~SecondaryDatabaseTable();
+    ~SecondaryDatabaseTable();
 
-	const BW::string & tableName() const
-		{ return tableName_; }
+    const BW::string& tableName() const { return tableName_; }
 
-	GameTime firstGameTime();
+    GameTime firstGameTime();
 
-	int numRows();
+    int numRows();
 
-	bool consolidate( PrimaryDatabaseUpdateQueue & primaryQueue,
-			ConsolidationProgressReporter & progressReporter,
-			bool & shouldAbort );
+    bool consolidate(PrimaryDatabaseUpdateQueue&    primaryQueue,
+                     ConsolidationProgressReporter& progressReporter,
+                     bool&                          shouldAbort);
 
-private:
-	SecondaryDatabase & 				database_;
-	BW::string 						tableName_;
-	std::auto_ptr< SqliteStatement > 	pGetDataQuery_;
-	std::auto_ptr< SqliteStatement > 	pGetNumRowsQuery_;
+  private:
+    SecondaryDatabase&             database_;
+    BW::string                     tableName_;
+    std::auto_ptr<SqliteStatement> pGetDataQuery_;
+    std::auto_ptr<SqliteStatement> pGetNumRowsQuery_;
 };
 
 BW_END_NAMESPACE
 
 #endif // CONSOLIDATE_DBS__SECONDARY_DATABASE_TABLE_HPP
-

@@ -7,7 +7,6 @@
 
 #include "cstdmf/bw_vector.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class DataDescription;
@@ -19,24 +18,22 @@ class EntityDescription;
  */
 class PropertyEventStamps
 {
-public:
-	void init( const EntityDescription & entityDescription );
-	void init( const EntityDescription & entityDescription,
-		   EventNumber lastEventNumber );
+  public:
+    void init(const EntityDescription& entityDescription);
+    void init(const EntityDescription& entityDescription,
+              EventNumber              lastEventNumber);
 
-	void set( const DataDescription & dataDescription,
-			EventNumber eventNumber );
+    void set(const DataDescription& dataDescription, EventNumber eventNumber);
 
-	EventNumber get( const DataDescription & dataDescription ) const;
+    EventNumber get(const DataDescription& dataDescription) const;
 
-	void addToStream( BinaryOStream & stream ) const;
-	void removeFromStream( BinaryIStream & stream );
+    void addToStream(BinaryOStream& stream) const;
+    void removeFromStream(BinaryIStream& stream);
 
-private:
-	typedef BW::vector< EventNumber > Stamps;
-	Stamps eventStamps_;
+  private:
+    typedef BW::vector<EventNumber> Stamps;
+    Stamps                          eventStamps_;
 };
-
 
 #ifdef CODE_INLINE
 #include "property_event_stamps.ipp"

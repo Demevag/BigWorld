@@ -7,7 +7,6 @@
 #include "network/common_message_handlers.hpp"
 #include "network/nub_exception.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -15,15 +14,15 @@ BW_BEGIN_NAMESPACE
  *	to be delivered.
  */
 template <>
-class MessageHandlerFinder< BaseApp >
+class MessageHandlerFinder<BaseApp>
 {
-public:
-	static BaseApp * find( const Mercury::Address & srcAddr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data )
-	{
-		return ServerApp::getApp< BaseAppMgr >( header ).findBaseApp( srcAddr );
-	}
+  public:
+    static BaseApp* find(const Mercury::Address&               srcAddr,
+                         const Mercury::UnpackedMessageHeader& header,
+                         BinaryIStream&                        data)
+    {
+        return ServerApp::getApp<BaseAppMgr>(header).findBaseApp(srcAddr);
+    }
 };
 
 BW_END_NAMESPACE

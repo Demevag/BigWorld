@@ -14,14 +14,14 @@ class EntityExtensionFactoryBase;
  */
 class EntityExtensionFactoryManager
 {
-public:
-	void add( EntityExtensionFactoryBase * pFactory );
+  public:
+    void add(EntityExtensionFactoryBase* pFactory);
 
-	size_t size() const	{ return factories_.size(); }
-	EntityExtensionFactoryBase * operator[]( int i ) { return factories_[i]; }
+    size_t                      size() const { return factories_.size(); }
+    EntityExtensionFactoryBase* operator[](int i) { return factories_[i]; }
 
-private:
-	BW::vector< EntityExtensionFactoryBase * > factories_;
+  private:
+    BW::vector<EntityExtensionFactoryBase*> factories_;
 };
 
 BW_END_NAMESPACE

@@ -7,7 +7,6 @@
 #include "network/channel.hpp"
 #include "network/interfaces.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class LoginApp;
@@ -18,35 +17,31 @@ class LoginApp;
  */
 class DatabaseReplyHandler : public Mercury::ReplyMessageHandler
 {
-public:
-	DatabaseReplyHandler(
-		LoginApp & loginApp,
-		const Mercury::Address & clientAddr,
-		Mercury::Channel * pChannel,
-		const Mercury::ReplyID replyID,
-		LogOnParamsPtr pParams );
+  public:
+    DatabaseReplyHandler(LoginApp&               loginApp,
+                         const Mercury::Address& clientAddr,
+                         Mercury::Channel*       pChannel,
+                         const Mercury::ReplyID  replyID,
+                         LogOnParamsPtr          pParams);
 
-	virtual ~DatabaseReplyHandler() {}
+    virtual ~DatabaseReplyHandler() {}
 
-	virtual void handleMessage( const Mercury::Address & source,
-		Mercury::UnpackedMessageHeader & header,
-		BinaryIStream & data,
-		void * arg );
+    virtual void handleMessage(const Mercury::Address&         source,
+                               Mercury::UnpackedMessageHeader& header,
+                               BinaryIStream&                  data,
+                               void*                           arg);
 
-	virtual void handleException( const Mercury::NubException & ne,
-		void * arg );
-	virtual void handleShuttingDown( const Mercury::NubException & ne,
-		void * arg );
+    virtual void handleException(const Mercury::NubException& ne, void* arg);
+    virtual void handleShuttingDown(const Mercury::NubException& ne, void* arg);
 
-private:
-	LoginApp & 			loginApp_;
-	Mercury::Address	clientAddr_;
-	Mercury::ChannelPtr pChannel_;
-	Mercury::ReplyID	replyID_;
-	LogOnParamsPtr		pParams_;
+  private:
+    LoginApp&           loginApp_;
+    Mercury::Address    clientAddr_;
+    Mercury::ChannelPtr pChannel_;
+    Mercury::ReplyID    replyID_;
+    LogOnParamsPtr      pParams_;
 };
 
 BW_END_NAMESPACE
 
 #endif // DatabaseReplyHandler_HPP
-

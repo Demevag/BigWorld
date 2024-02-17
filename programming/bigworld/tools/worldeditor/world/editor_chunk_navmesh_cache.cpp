@@ -19,55 +19,49 @@ BW_BEGIN_NAMESPACE
 
 int EditorChunkNavmeshCache_token = 0;
 
-
-ChunkCache::Instance<EditorChunkNavmeshCache>
-	EditorChunkNavmeshCache::instance( &EditorChunkNavmeshCacheBase::instance );
+ChunkCache::Instance<EditorChunkNavmeshCache> EditorChunkNavmeshCache::instance(
+  &EditorChunkNavmeshCacheBase::instance);
 
 EditorChunkNavmeshCache::~EditorChunkNavmeshCache()
 {
-	bw_safe_delete( navmeshView_ );
+    bw_safe_delete(navmeshView_);
 }
-void EditorChunkNavmeshCache::touch( Chunk& chunk )
+void EditorChunkNavmeshCache::touch(Chunk& chunk)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	EditorChunkNavmeshCache::instance( chunk );
+    EditorChunkNavmeshCache::instance(chunk);
 }
 
-
-void EditorChunkNavmeshCache::draw( Moo::DrawContext& drawContext )
+void EditorChunkNavmeshCache::draw(Moo::DrawContext& drawContext)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	bool drawMesh = Options::getOptionInt( "render/misc/drawNavMesh", 0 )
-		? true : false;
+    bool drawMesh =
+      Options::getOptionInt("render/misc/drawNavMesh", 0) ? true : false;
 
-	if (drawMesh && navmeshView_ &&
-		(!EditorChunkItem::hideAllOutside() || !chunk_.isOutsideChunk() ))
-	{
-		float currentGirthToDraw = 
-			Options::getOptionFloat( "render/misc/drawNavMeshGirth", 0.5f );
+    if (drawMesh && navmeshView_ &&
+        (!EditorChunkItem::hideAllOutside() || !chunk_.isOutsideChunk())) {
+        float currentGirthToDraw =
+          Options::getOptionFloat("render/misc/drawNavMeshGirth", 0.5f);
 
-		navmeshView_->addToChannel(	drawContext,
-			chunk_.boundingBox().centre(), currentGirthToDraw );
-	}
+        navmeshView_->addToChannel(
+          drawContext, chunk_.boundingBox().centre(), currentGirthToDraw);
+    }
 }
 
-
-bool EditorChunkNavmeshCache::load( DataSectionPtr chunk, DataSectionPtr cdata )
+bool EditorChunkNavmeshCache::load(DataSectionPtr chunk, DataSectionPtr cdata)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	navmeshView_ = NULL;
+    navmeshView_ = NULL;
 
-	if (EditorChunkNavmeshCacheBase::load( chunk, cdata ))
-	{
-		navmeshView_ = new NavmeshView( navmesh_, 1.5f );
-	}
+    if (EditorChunkNavmeshCacheBase::load(chunk, cdata)) {
+        navmeshView_ = new NavmeshView(navmesh_, 1.5f);
+    }
 
-	return navmeshView_ != NULL;
+    return navmeshView_ != NULL;
 }
-
 
 /**
  *	Do not calculate navmesh in WE.
@@ -75,39 +69,35 @@ bool EditorChunkNavmeshCache::load( DataSectionPtr chunk, DataSectionPtr cdata )
  */
 bool EditorChunkNavmeshCache::requireProcessingInBackground() const
 {
-	return false;
+    return false;
 }
 
-
-bool EditorChunkNavmeshCache::recalc( ChunkProcessorManager* manager,
-	UnsavedList& unsavedList )
+bool EditorChunkNavmeshCache::recalc(ChunkProcessorManager* manager,
+                                     UnsavedList&           unsavedList)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	navmeshView_ = NULL;
+    navmeshView_ = NULL;
 
-	return EditorChunkNavmeshCacheBase::recalc( manager, unsavedList );
+    return EditorChunkNavmeshCacheBase::recalc(manager, unsavedList);
 }
 
-
-void EditorChunkNavmeshCache::calcDone( ChunkProcessor* processor,
-	bool backgroundTaskResult, const BW::vector<unsigned char>& navmesh,
-	UnsavedList& unsavedList )
+void EditorChunkNavmeshCache::calcDone(ChunkProcessor* processor,
+                                       bool            backgroundTaskResult,
+                                       const BW::vector<unsigned char>& navmesh,
+                                       UnsavedList& unsavedList)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if ( ( currentProcessor_ == processor ) && backgroundTaskResult )
-	{
-		// navmesh_ hasn't been set yet
-		navmeshView_ = new NavmeshView( navmesh, 1.5f );
-	}
+    if ((currentProcessor_ == processor) && backgroundTaskResult) {
+        // navmesh_ hasn't been set yet
+        navmeshView_ = new NavmeshView(navmesh, 1.5f);
+    }
 
-	// If ( currentProcessor_ == processor )
-	// sets navmesh_ = navmesh etc
-	// then sets currentProcessor_ to NULL - do last
-	EditorChunkNavmeshCacheBase::calcDone(
-		processor, backgroundTaskResult, navmesh, unsavedList );
-
+    // If ( currentProcessor_ == processor )
+    // sets navmesh_ = navmesh etc
+    // then sets currentProcessor_ to NULL - do last
+    EditorChunkNavmeshCacheBase::calcDone(
+      processor, backgroundTaskResult, navmesh, unsavedList);
 }
 BW_END_NAMESPACE
-

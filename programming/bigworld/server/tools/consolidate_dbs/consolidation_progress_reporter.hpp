@@ -5,7 +5,6 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -15,46 +14,44 @@ BW_BEGIN_NAMESPACE
  */
 class ConsolidationProgressReporter : private SluggishProgressReporter
 {
-public:
+  public:
+    /**
+     *	Constructor.
+     */
+    ConsolidationProgressReporter(DBAppStatusReporter& reporter, int numDBs)
+      : SluggishProgressReporter(reporter)
+      , numDBs_(numDBs)
+      , doneDBs_(0)
+      , numEntitiesInCurDB_(0)
+      , doneEntitiesInCurDB_(0)
+    {
+    }
 
-	/**
-	 *	Constructor.
-	 */
-	ConsolidationProgressReporter( DBAppStatusReporter & reporter, int numDBs ) :
-		SluggishProgressReporter( reporter ),
-		numDBs_( numDBs ),
-		doneDBs_( 0 ),
-		numEntitiesInCurDB_( 0 ),
-		doneEntitiesInCurDB_( 0 )
-	{}
+    void onStartConsolidateDB(const BW::string& dbName, int numEntities)
+    {
+        ++doneDBs_;
+        curDBName_           = dbName;
+        numEntitiesInCurDB_  = numEntities;
+        doneEntitiesInCurDB_ = 0;
 
+        this->reportProgressNow();
+    }
 
-	void onStartConsolidateDB( const BW::string & dbName, int numEntities )
-	{
-		++doneDBs_;
-		curDBName_ = dbName;
-		numEntitiesInCurDB_ = numEntities;
-		doneEntitiesInCurDB_ = 0;
+    void onConsolidatedRow()
+    {
+        ++doneEntitiesInCurDB_;
+        this->reportProgress(); // SluggishProgressReporter method
+    }
 
-		this->reportProgressNow();
-	}
+  private:
+    virtual void reportProgressNow();
 
-
-	void onConsolidatedRow()
-	{
-		++doneEntitiesInCurDB_;
-		this->reportProgress();	// SluggishProgressReporter method
-	}
-
-private:
-	virtual void reportProgressNow();
-
-private:
-	int			numDBs_;
-	int			doneDBs_;	// Actualy counts the one currently being done
-	BW::string curDBName_;
-	int			numEntitiesInCurDB_;
-	int			doneEntitiesInCurDB_;
+  private:
+    int        numDBs_;
+    int        doneDBs_; // Actualy counts the one currently being done
+    BW::string curDBName_;
+    int        numEntitiesInCurDB_;
+    int        doneEntitiesInCurDB_;
 };
 
 BW_END_NAMESPACE

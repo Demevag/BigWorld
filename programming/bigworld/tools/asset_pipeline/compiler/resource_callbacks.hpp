@@ -7,7 +7,7 @@ BW_BEGIN_NAMESPACE
 
 struct ResourceCallbacks
 {
-	virtual void purgeResource( const StringRef & resourceId );
+    virtual void purgeResource(const StringRef& resourceId);
 };
 
 BW_END_NAMESPACE

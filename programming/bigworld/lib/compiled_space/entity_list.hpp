@@ -6,31 +6,27 @@
 
 #include "resmgr/datasection.hpp"
 
+namespace BW { namespace CompiledSpace {
 
-namespace BW {
-namespace CompiledSpace {
+    class COMPILED_SPACE_API EntityList
+    {
+      public:
+        EntityList();
+        ~EntityList();
 
+        bool read(BinaryFormat& reader, const FourCC& sectionMagic);
+        void close();
 
-class COMPILED_SPACE_API EntityList
-{
-public:
-	EntityList();
-	~EntityList();
+        bool isValid() const;
 
-	bool read( BinaryFormat& reader, const FourCC& sectionMagic );
-	void close();
+        const DataSectionPtr& dataSection();
 
-	bool isValid() const;
+      private:
+        BinaryFormat*         pReader_;
+        BinaryFormat::Stream* pStream_;
 
-	const DataSectionPtr& dataSection();
-
-private:
-	BinaryFormat* pReader_;
-	BinaryFormat::Stream* pStream_;
-
-	DataSectionPtr pPackedSection_;
-};
-
+        DataSectionPtr pPackedSection_;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW

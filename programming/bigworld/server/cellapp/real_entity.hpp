@@ -20,14 +20,12 @@
 
 #include <math.h>
 
-
 BW_BEGIN_NAMESPACE
 
 typedef SmartPointer<Entity> EntityPtr;
 
-namespace Mercury
-{
-	class Bundle;
+namespace Mercury {
+    class Bundle;
 } // end namespace Mercury
 
 class MemoryOStream;
@@ -35,7 +33,7 @@ class Space;
 class Witness;
 
 // From cell.hpp
-typedef BW::vector< EntityPtr >::size_type EntityRemovalHandle;
+typedef BW::vector<EntityPtr>::size_type EntityRemovalHandle;
 
 typedef SmartPointer<BaseEntityMailBox> BaseEntityMailBoxPtr;
 
@@ -45,221 +43,225 @@ typedef SmartPointer<BaseEntityMailBox> BaseEntityMailBoxPtr;
  */
 class RealEntity
 {
-	static RealEntity * getSelf( PyObject * self )
-	{
-		Entity * pEntity = (Entity*)self;
-		
-		if (pEntity->isDestroyed())
-		{
-			PyErr_SetString( PyExc_TypeError,
-				"Entity for RealEntity method no longer exists" );
-			return NULL;
-		}
-		
-		if (!pEntity->isRealToScript())
-		{
-			PyErr_Format( PyExc_TypeError,
-					"Failed to get real for Entity %d", int( pEntity->id() ) );
-			return NULL;
-		}
+    static RealEntity* getSelf(PyObject* self)
+    {
+        Entity* pEntity = (Entity*)self;
 
-		return pEntity->pReal();
-	}
+        if (pEntity->isDestroyed()) {
+            PyErr_SetString(PyExc_TypeError,
+                            "Entity for RealEntity method no longer exists");
+            return NULL;
+        }
 
-	PY_FAKE_PYOBJECTPLUS_BASE_DECLARE()
-	Py_FakeHeader( RealEntity, PyObjectPlus )
+        if (!pEntity->isRealToScript()) {
+            PyErr_Format(PyExc_TypeError,
+                         "Failed to get real for Entity %d",
+                         int(pEntity->id()));
+            return NULL;
+        }
 
-public:
-	/**
-	 *	This class is used to represent the location of a ghost.
-	 */
-	class Haunt
-	{
-	public:
-		Haunt( CellAppChannel * pChannel, GameTime creationTime ) :
-			pChannel_( pChannel ),
-			creationTime_( creationTime )
-		{}
+        return pEntity->pReal();
+    }
 
-		// A note about these accessors.  We don't need to guard their callers
-		// with ChannelSenders because having haunts guarantees that the
-		// underlying channel is regularly sent.  If haunts are destroyed and
-		// the channel becomes irregular, unsent data is sent immediately.
-		CellAppChannel & channel() { return *pChannel_; }
-		Mercury::Bundle & bundle() { return pChannel_->bundle(); }
-		const Mercury::Address & addr() const { return pChannel_->addr(); }
+    PY_FAKE_PYOBJECTPLUS_BASE_DECLARE()
+    Py_FakeHeader(RealEntity, PyObjectPlus)
 
-		void creationTime( GameTime time )	{ creationTime_ = time; }
-		GameTime creationTime() const		{ return creationTime_; }
+      public
+      :
+      /**
+       *	This class is used to represent the location of a ghost.
+       */
+      class Haunt
+    {
+      public:
+        Haunt(CellAppChannel* pChannel, GameTime creationTime)
+          : pChannel_(pChannel)
+          , creationTime_(creationTime)
+        {
+        }
 
-	private:
-		CellAppChannel * pChannel_;
-		GameTime creationTime_;
-	};
+        // A note about these accessors.  We don't need to guard their callers
+        // with ChannelSenders because having haunts guarantees that the
+        // underlying channel is regularly sent.  If haunts are destroyed and
+        // the channel becomes irregular, unsent data is sent immediately.
+        CellAppChannel&         channel() { return *pChannel_; }
+        Mercury::Bundle&        bundle() { return pChannel_->bundle(); }
+        const Mercury::Address& addr() const { return pChannel_->addr(); }
 
-	typedef BW::vector< Haunt > Haunts;
+        void     creationTime(GameTime time) { creationTime_ = time; }
+        GameTime creationTime() const { return creationTime_; }
 
-	static void addWatchers();
+      private:
+        CellAppChannel* pChannel_;
+        GameTime        creationTime_;
+    };
 
-	RealEntity( Entity & owner );
+    typedef BW::vector<Haunt> Haunts;
 
-	bool init( BinaryIStream & data, CreateRealInfo createRealInfo,
-			Mercury::ChannelVersion channelVersion =
-				Mercury::SEQ_NULL,
-			const Mercury::Address * pBadHauntAddr = NULL );
+    static void addWatchers();
 
-	void destroy( const Mercury::Address * pNextRealAddr = NULL );
+    RealEntity(Entity& owner);
 
-	void writeOffloadData( BinaryOStream & data, bool isTeleport );
+    bool init(BinaryIStream&          data,
+              CreateRealInfo          createRealInfo,
+              Mercury::ChannelVersion channelVersion = Mercury::SEQ_NULL,
+              const Mercury::Address* pBadHauntAddr  = NULL);
 
-	void enableWitness( BinaryIStream & data, Mercury::ReplyID replyID );
-	void disableWitness( bool isRestore = false );
+    void destroy(const Mercury::Address* pNextRealAddr = NULL);
 
-	Entity & entity()								{ return entity_; }
-	const Entity & entity() const					{ return entity_; }
+    void writeOffloadData(BinaryOStream& data, bool isTeleport);
 
-	Witness * pWitness()							{ return pWitness_; }
-	const Witness * pWitness() const				{ return pWitness_; }
+    void enableWitness(BinaryIStream& data, Mercury::ReplyID replyID);
+    void disableWitness(bool isRestore = false);
 
-	Haunts::iterator hauntsBegin() { return haunts_.begin(); }
-	Haunts::iterator hauntsEnd() { return haunts_.end(); }
-	int numHaunts() const { return haunts_.size(); }
+    Entity&       entity() { return entity_; }
+    const Entity& entity() const { return entity_; }
 
-	void addHaunt( CellAppChannel & channel );
-	Haunts::iterator delHaunt( Haunts::iterator iter );
+    Witness*       pWitness() { return pWitness_; }
+    const Witness* pWitness() const { return pWitness_; }
 
-    HistoryEvent * addHistoryEvent( uint8 type,
-		MemoryOStream & stream,
-		const MemberDescription & description,
-		int16 msgStreamSize,
-		HistoryEvent::Level level = FLT_MAX );
+    Haunts::iterator hauntsBegin() { return haunts_.begin(); }
+    Haunts::iterator hauntsEnd() { return haunts_.end(); }
+    int              numHaunts() const { return haunts_.size(); }
 
-	void backup();
-	void autoBackup();
+    void             addHaunt(CellAppChannel& channel);
+    Haunts::iterator delHaunt(Haunts::iterator iter);
 
-	friend PyObject * calcCellBackupData( PyObjectPtr pEnt );
-	void writeBackupProperties( BinaryOStream & data ) const;
+    HistoryEvent* addHistoryEvent(uint8                    type,
+                                  MemoryOStream&           stream,
+                                  const MemberDescription& description,
+                                  int16                    msgStreamSize,
+                                  HistoryEvent::Level      level = FLT_MAX);
 
-	void debugDump();
+    void backup();
+    void autoBackup();
 
-	void pyAdditionalMembers( const ScriptList & pList ) const
-		{ }
-	void pyAdditionalMethods( const ScriptList & pList ) const
-		{ }
+    friend PyObject* calcCellBackupData(PyObjectPtr pEnt);
+    void             writeBackupProperties(BinaryOStream& data) const;
 
-	void sendPhysicsCorrection();
-	void newPosition( const Vector3 & position );
+    void debugDump();
 
-	void addDelGhostMessage( Mercury::Bundle & bundle );
-	void deleteGhosts();
+    void pyAdditionalMembers(const ScriptList& pList) const {}
+    void pyAdditionalMethods(const ScriptList& pList) const {}
 
-	const Vector3 & velocity() const			{ return velocity_; }
+    void sendPhysicsCorrection();
+    void newPosition(const Vector3& position);
 
-	EntityRemovalHandle removalHandle() const		{ return removalHandle_; }
-	void removalHandle( EntityRemovalHandle h )		{ removalHandle_ = h; }
+    void addDelGhostMessage(Mercury::Bundle& bundle);
+    void deleteGhosts();
 
-	const EntityMailBoxRef & controlledByRef() const{ return controlledBy_; }
+    const Vector3& velocity() const { return velocity_; }
 
-	GameTime creationTime() const	{ return creationTime_; }
+    EntityRemovalHandle removalHandle() const { return removalHandle_; }
+    void removalHandle(EntityRemovalHandle h) { removalHandle_ = h; }
 
-	void delControlledBy( EntityID deadID );
+    const EntityMailBoxRef& controlledByRef() const { return controlledBy_; }
 
-	Mercury::UDPChannel & channel()	{ return *pChannel_; }
+    GameTime creationTime() const { return creationTime_; }
 
-	bool controlledBySelf() const	{ return entity_.id() == controlledBy_.id; }
-	bool controlledByOther() const
-			{ return !this->controlledBySelf() && (controlledBy_.id != 0); }
+    void delControlledBy(EntityID deadID);
 
-	void teleport( const EntityMailBoxRef & dstMailBoxRef );
+    Mercury::UDPChannel& channel() { return *pChannel_; }
 
-	// ---- Python methods ----
-	bool teleport( const EntityMailBoxRef & nearbyMBRef,
-		const Vector3 & position, const Vector3 & direction );
-	PY_AUTO_METHOD_DECLARE( RETOK, teleport, ARG( EntityMailBoxRef,
-		ARG( Vector3, ARG( Vector3, END ) ) ) )
+    bool controlledBySelf() const { return entity_.id() == controlledBy_.id; }
+    bool controlledByOther() const
+    {
+        return !this->controlledBySelf() && (controlledBy_.id != 0);
+    }
 
-	BaseEntityMailBoxPtr controlledBy();
-	void controlledBy( BaseEntityMailBoxPtr pNewMaster );
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(
-		BaseEntityMailBoxPtr, controlledBy, controlledBy )
+    void teleport(const EntityMailBoxRef& dstMailBoxRef);
 
+    // ---- Python methods ----
+    bool teleport(const EntityMailBoxRef& nearbyMBRef,
+                  const Vector3&          position,
+                  const Vector3&          direction);
+    PY_AUTO_METHOD_DECLARE(RETOK,
+                           teleport,
+                           ARG(EntityMailBoxRef,
+                               ARG(Vector3, ARG(Vector3, END))))
 
-	float artificialMinLoad() const
-		{ return entity_.profiler().artificialMinLoad(); }
-	void artificialMinLoad( float v )
-		{ entity_.profiler().artificialMinLoad( v ); }
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( float, artificialMinLoad, artificialMinLoad );
+    BaseEntityMailBoxPtr controlledBy();
+    void                 controlledBy(BaseEntityMailBoxPtr pNewMaster);
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(BaseEntityMailBoxPtr,
+                                     controlledBy,
+                                     controlledBy)
 
+    float artificialMinLoad() const
+    {
+        return entity_.profiler().artificialMinLoad();
+    }
+    void artificialMinLoad(float v) { entity_.profiler().artificialMinLoad(v); }
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(float,
+                                     artificialMinLoad,
+                                     artificialMinLoad);
 
-	bool isWitnessed() const;
-	PY_RO_ATTRIBUTE_DECLARE( isWitnessed(), isWitnessed )
+    bool isWitnessed() const;
+    PY_RO_ATTRIBUTE_DECLARE(isWitnessed(), isWitnessed)
 
-	PY_RO_ATTRIBUTE_DECLARE( !!pWitness_, hasWitness )
+    PY_RO_ATTRIBUTE_DECLARE(!!pWitness_, hasWitness)
 
-	PY_RW_ATTRIBUTE_DECLARE( shouldAutoBackup_, shouldAutoBackup )
+    PY_RW_ATTRIBUTE_DECLARE(shouldAutoBackup_, shouldAutoBackup)
 
-	/**
-	 *	This method sets the recording space entry ID, referring to the last
-	 *	time an entity was added to a recording.
-	 *
-	 *	@param value 	The space entry ID of the recording.
-	 */
-	void recordingSpaceEntryID( const SpaceEntryID & value ) 	
-	{ 
-		recordingSpaceEntryID_ = value;
-	}
+    /**
+     *	This method sets the recording space entry ID, referring to the last
+     *	time an entity was added to a recording.
+     *
+     *	@param value 	The space entry ID of the recording.
+     */
+    void recordingSpaceEntryID(const SpaceEntryID& value)
+    {
+        recordingSpaceEntryID_ = value;
+    }
 
-	/**
-	 *	This method returns the recording space entry ID, referring to the last
-	 *	time an entity was added to a recording.
-	 */
-	const SpaceEntryID & recordingSpaceEntryID() const 
-	{ 
-		return recordingSpaceEntryID_; 
-	}
+    /**
+     *	This method returns the recording space entry ID, referring to the last
+     *	time an entity was added to a recording.
+     */
+    const SpaceEntryID& recordingSpaceEntryID() const
+    {
+        return recordingSpaceEntryID_;
+    }
 
-private:
-	// ---- Private methods ----
-	~RealEntity();
+  private:
+    // ---- Private methods ----
+    ~RealEntity();
 
-	bool readOffloadData( BinaryIStream & data,
-		const Mercury::Address * pBadHauntAddr = NULL,
-		bool * pHasChangedSpace = NULL );
-	void readBackupData( BinaryIStream & data );
-	void readBackupDataInternal( BinaryIStream & data );
+    bool readOffloadData(BinaryIStream&          data,
+                         const Mercury::Address* pBadHauntAddr    = NULL,
+                         bool*                   pHasChangedSpace = NULL);
+    void readBackupData(BinaryIStream& data);
+    void readBackupDataInternal(BinaryIStream& data);
 
-	void writeBackupData( BinaryOStream & data ) const;
-	void writeBackupDataInternal( BinaryOStream & data ) const;
+    void writeBackupData(BinaryOStream& data) const;
+    void writeBackupDataInternal(BinaryOStream& data) const;
 
-	void setWitness( Witness * pWitness );
+    void setWitness(Witness* pWitness);
 
-	void notifyWardOfControlChange( bool hasControl );
+    void notifyWardOfControlChange(bool hasControl);
 
+    // ---- Private data ----
+    Entity& entity_;
 
+    Witness* pWitness_;
 
-	// ---- Private data ----
-	Entity & entity_;
+    Haunts haunts_;
 
-	Witness * pWitness_;
+    // Used by cell to quick remove the entity from the real entities.
+    EntityRemovalHandle removalHandle_;
 
-	Haunts haunts_;
+    EntityMailBoxRef controlledBy_;
 
-	// Used by cell to quick remove the entity from the real entities.
-	EntityRemovalHandle	removalHandle_;
+    Vector3  velocity_;
+    Vector3  positionSample_;
+    GameTime positionSampleTime_;
 
-	EntityMailBoxRef	controlledBy_;
+    GameTime creationTime_;
 
-	Vector3			velocity_;
-	Vector3			positionSample_;
-	GameTime		positionSampleTime_;
+    AutoBackupAndArchive::Policy shouldAutoBackup_;
 
-	GameTime		creationTime_;
+    Mercury::UDPChannel* pChannel_;
 
-	AutoBackupAndArchive::Policy shouldAutoBackup_;
-
-	Mercury::UDPChannel *		pChannel_;
-
-	SpaceEntryID 	recordingSpaceEntryID_;
+    SpaceEntryID recordingSpaceEntryID_;
 };
 
 BW_END_NAMESPACE

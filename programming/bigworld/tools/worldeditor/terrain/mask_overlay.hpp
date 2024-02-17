@@ -1,7 +1,6 @@
 #ifndef MASK_OVERLAY_HPP
 #define MASK_OVERLAY_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 
@@ -16,15 +15,14 @@ BW_BEGIN_NAMESPACE
  */
 class MaskOverlay : public EditorRenderable
 {
-public:
-	MaskOverlay( EditorChunkTerrainPtr pTerrain, 
-		const Moo::Image<uint8> & mask );
+  public:
+    MaskOverlay(EditorChunkTerrainPtr pTerrain, const Moo::Image<uint8>& mask);
 
-	/*virtual*/ void render();
+    /*virtual*/ void render();
 
-private:
-	EditorChunkTerrainPtr		pTerrain_;
-	Moo::ImageTextureARGBPtr	pTexture_;
+  private:
+    EditorChunkTerrainPtr    pTerrain_;
+    Moo::ImageTextureARGBPtr pTexture_;
 };
 
 BW_END_NAMESPACE

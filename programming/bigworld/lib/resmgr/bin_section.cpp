@@ -9,17 +9,16 @@
 #include "bin_section.hpp"
 #include "file_system.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "ResMgr", 0 )
+DECLARE_DEBUG_COMPONENT2("ResMgr", 0)
 
 BW_BEGIN_NAMESPACE
 
 namespace { // anonymous
 
-const uint32 BIN_SECTION_MAGIC = 0x42a14e65;
-SimpleMutex s_binSectionIntrospectLock;
+    const uint32 BIN_SECTION_MAGIC = 0x42a14e65;
+    SimpleMutex  s_binSectionIntrospectLock;
 
 } //  namespace anonymous
-
 
 // -----------------------------------------------------------------------------
 // Section: Documentation
@@ -75,12 +74,12 @@ SimpleMutex s_binSectionIntrospectLock;
  *	@param tag			The tag name of this section
  *	@return 			None
  */
-BinSection::BinSection( const BW::StringRef& tag, BinaryPtr pBinary ) :
-	tag_( tag.data(), tag.size() ),
-	binaryData_( pBinary ),
-	introspected_( false )
+BinSection::BinSection(const BW::StringRef& tag, BinaryPtr pBinary)
+  : tag_(tag.data(), tag.size())
+  , binaryData_(pBinary)
+  , introspected_(false)
 {
-	BW_GUARD;
+    BW_GUARD;
 }
 
 /**
@@ -88,9 +87,8 @@ BinSection::BinSection( const BW::StringRef& tag, BinaryPtr pBinary ) :
  */
 BinSection::~BinSection()
 {
-	BW_GUARD;
+    BW_GUARD;
 }
-
 
 /**
  *	This method returns the number of children of this section-
@@ -99,12 +97,11 @@ BinSection::~BinSection()
  */
 int BinSection::countChildren()
 {
-	BW_GUARD;
-	this->introspect();
+    BW_GUARD;
+    this->introspect();
 
-	return static_cast<int>(children_.size());
+    return static_cast<int>(children_.size());
 }
-
 
 /**
  *	Open the child with the given index
@@ -113,42 +110,42 @@ int BinSection::countChildren()
  *
  *	@return 		Pointer to the specified child.
  */
-DataSectionPtr BinSection::openChild( int index )
+DataSectionPtr BinSection::openChild(int index)
 {
-	BW_GUARD;
-	this->introspect();
+    BW_GUARD;
+    this->introspect();
 
-	if (uint32(index) < children_.size()) return children_[ index ];
-	return NULL;
+    if (uint32(index) < children_.size())
+        return children_[index];
+    return NULL;
 }
-
 
 class BinSectionCreator : public DataSectionCreator
 {
-public:
-	virtual DataSectionPtr create( DataSectionPtr pSection,
-									const BW::StringRef& tag )
-	{
-		BW_GUARD;
-		PROFILER_SCOPED( BinSectionCreator_create );
-		return new BinSection(tag, NULL);
-	}
+  public:
+    virtual DataSectionPtr create(DataSectionPtr       pSection,
+                                  const BW::StringRef& tag)
+    {
+        BW_GUARD;
+        PROFILER_SCOPED(BinSectionCreator_create);
+        return new BinSection(tag, NULL);
+    }
 
-	virtual DataSectionPtr load(DataSectionPtr pSection,
-									const BW::StringRef& tag,
-									BinaryPtr pBinary = NULL)
-	{
-		BW_GUARD;
-		PROFILER_SCOPED( BinSectionCreator_load );
-		return new BinSection(tag, pBinary);
-	}
+    virtual DataSectionPtr load(DataSectionPtr       pSection,
+                                const BW::StringRef& tag,
+                                BinaryPtr            pBinary = NULL)
+    {
+        BW_GUARD;
+        PROFILER_SCOPED(BinSectionCreator_load);
+        return new BinSection(tag, pBinary);
+    }
 };
 
 DataSectionCreator* BinSection::creator()
 {
-	BW_GUARD;
-	static BinSectionCreator s_creator;
-	return &s_creator;
+    BW_GUARD;
+    static BinSectionCreator s_creator;
+    return &s_creator;
 }
 
 /**
@@ -159,19 +156,18 @@ DataSectionCreator* BinSection::creator()
  *
  *	@return 	A DataSectionPtr to the newly created DataSection.
  */
-DataSectionPtr BinSection::newSection( const BW::StringRef & tag,
-										DataSectionCreator* creator )
+DataSectionPtr BinSection::newSection(const BW::StringRef& tag,
+                                      DataSectionCreator*  creator)
 {
-	BW_GUARD;
-	this->introspect();
+    BW_GUARD;
+    this->introspect();
 
-	DataSectionPtr pChild = new BinSection( tag, new BinaryBlock( NULL, 0, "BinaryBlock/BinSection" ) );
-	children_.push_back( pChild );
-	return pChild;
-	// TODO: Allow the creation of XML sections here...
-
+    DataSectionPtr pChild =
+      new BinSection(tag, new BinaryBlock(NULL, 0, "BinaryBlock/BinSection"));
+    children_.push_back(pChild);
+    return pChild;
+    // TODO: Allow the creation of XML sections here...
 }
-
 
 /**
  *	Find the child with the given tag name
@@ -182,24 +178,21 @@ DataSectionPtr BinSection::newSection( const BW::StringRef & tag,
  *	@return	A DataSectionPtr to the child section matching tag on success,
  *          NULL if the child is not found.
  */
-DataSectionPtr BinSection::findChild( const BW::StringRef & tag,
-										DataSectionCreator* creator )
+DataSectionPtr BinSection::findChild(const BW::StringRef& tag,
+                                     DataSectionCreator*  creator)
 {
-	BW_GUARD;
-	PROFILE_FILE_SCOPED( BinSection_findChild );
-	this->introspect();
+    BW_GUARD;
+    PROFILE_FILE_SCOPED(BinSection_findChild);
+    this->introspect();
 
-	for (uint i = 0; i < children_.size(); i++)
-	{
-		DataSectionPtr ds = children_[i];
-		if (ds->sectionName() == tag)
-		{
-			return ds;
-		}
-	}
-	return NULL;
+    for (uint i = 0; i < children_.size(); i++) {
+        DataSectionPtr ds = children_[i];
+        if (ds->sectionName() == tag) {
+            return ds;
+        }
+    }
+    return NULL;
 }
-
 
 /**
  * 	Erase the first child with the given tag name
@@ -208,19 +201,17 @@ DataSectionPtr BinSection::findChild( const BW::StringRef & tag,
  *
  *	@return 		NULL
  */
-void BinSection::delChild( const BW::StringRef & tag )
+void BinSection::delChild(const BW::StringRef& tag)
 {
-	BW_GUARD;
-	this->introspect();
+    BW_GUARD;
+    this->introspect();
 
-	for (uint i = 0; i < children_.size(); i++)
-	{
-		if (children_[i]->sectionName() == tag)
-		{
-			children_.erase( children_.begin() + i );
-			return;
-		}
-	}
+    for (uint i = 0; i < children_.size(); i++) {
+        if (children_[i]->sectionName() == tag) {
+            children_.erase(children_.begin() + i);
+            return;
+        }
+    }
 }
 
 /**
@@ -230,15 +221,15 @@ void BinSection::delChild( const BW::StringRef & tag )
  *
  *	@return 		NULL
  */
-void BinSection::delChild( DataSectionPtr pSection )
+void BinSection::delChild(DataSectionPtr pSection)
 {
-	BW_GUARD_PROFILER( BinSection_delChild );
-	this->introspect();
+    BW_GUARD_PROFILER(BinSection_delChild);
+    this->introspect();
 
-	Children::iterator found = std::find(
-		children_.begin(), children_.end(), pSection );
-	if (found != children_.end())
-		children_.erase( found );
+    Children::iterator found =
+      std::find(children_.begin(), children_.end(), pSection);
+    if (found != children_.end())
+        children_.erase(found);
 }
 
 /**
@@ -246,15 +237,14 @@ void BinSection::delChild( DataSectionPtr pSection )
  */
 void BinSection::delChildren()
 {
-	BW_GUARD;
-	SimpleMutexHolder sh( s_binSectionIntrospectLock );
+    BW_GUARD;
+    SimpleMutexHolder sh(s_binSectionIntrospectLock);
 
-	introspected_ = true;
-	children_.clear();
+    introspected_ = true;
+    children_.clear();
 
-	binaryData_ = new BinaryBlock( NULL, 0, "BinaryBlock/BinSection" );
+    binaryData_ = new BinaryBlock(NULL, 0, "BinaryBlock/BinSection");
 }
-
 
 /**
  *	This method returns the binary data owned by this section.
@@ -263,30 +253,29 @@ void BinSection::delChildren()
  */
 BinaryPtr BinSection::asBinary()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	bool needsInstrospect = false;
+    bool needsInstrospect = false;
 
-	{
-		SimpleMutexHolder sh( s_binSectionIntrospectLock );
+    {
+        SimpleMutexHolder sh(s_binSectionIntrospectLock);
 
-		// bundle up our children and children's children, etc.
-		// Have to introspect again after the recollect to avoid memory leaks,
-		// because otherwise the children will be kept alive and pointing to
-		// the old binary block!!! (kept in the pOwner of the children).
-		// TODO: see if this bit of code is actually needed. I'm keeping it
-		// in because there was a comment saying 'slow but safe', referring
-		// to the recollect() call to rebuild it.
-		needsInstrospect = introspected_;
-	}
+        // bundle up our children and children's children, etc.
+        // Have to introspect again after the recollect to avoid memory leaks,
+        // because otherwise the children will be kept alive and pointing to
+        // the old binary block!!! (kept in the pOwner of the children).
+        // TODO: see if this bit of code is actually needed. I'm keeping it
+        // in because there was a comment saying 'slow but safe', referring
+        // to the recollect() call to rebuild it.
+        needsInstrospect = introspected_;
+    }
 
-	if (needsInstrospect)
-	{
-		setBinary( this->recollect() );	
-		introspect();
-	}
+    if (needsInstrospect) {
+        setBinary(this->recollect());
+        introspect();
+    }
 
-	return binaryData_;
+    return binaryData_;
 }
 
 /**
@@ -296,20 +285,19 @@ BinaryPtr BinSection::asBinary()
  *
  * 	@return			true if succesful, false otherwise
  */
-bool BinSection::setBinary( BinaryPtr pBinary )
+bool BinSection::setBinary(BinaryPtr pBinary)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	SimpleMutexHolder sh( s_binSectionIntrospectLock );
+    SimpleMutexHolder sh(s_binSectionIntrospectLock);
 
-	binaryData_ = pBinary;
+    binaryData_ = pBinary;
 
-	introspected_ = false;
-	children_.clear();
+    introspected_ = false;
+    children_.clear();
 
-	return true;
+    return true;
 }
-
 
 /**
  * 	This method returns the name of the section
@@ -318,9 +306,8 @@ bool BinSection::setBinary( BinaryPtr pBinary )
  */
 BW::string BinSection::sectionName() const
 {
-	return tag_;
+    return tag_;
 }
-
 
 /**
  * 	This method returns the number of bytes used by this section.
@@ -329,46 +316,43 @@ BW::string BinSection::sectionName() const
  */
 int BinSection::bytes() const
 {
-	BW_GUARD;
-	if(binaryData_)
-		return binaryData_->len();
-	else
-		return 0;
+    BW_GUARD;
+    if (binaryData_)
+        return binaryData_->len();
+    else
+        return 0;
 }
 
 /**
  *	This method sets the parent used to save data
  */
-void BinSection::setParent( DataSectionPtr pParent )
+void BinSection::setParent(DataSectionPtr pParent)
 {
-	BW_GUARD;
-	parent_ = pParent;
+    BW_GUARD;
+    parent_ = pParent;
 }
-
 
 /**
  * 	This method saves the given section to a file.
  */
-bool BinSection::save( const BW::StringRef& saveAsFileName )
+bool BinSection::save(const BW::StringRef& saveAsFileName)
 {
-	BW_GUARD;
-	// change our allegiance if we're doing a save as
-	if (!saveAsFileName.empty())
-	{
-		BW::StringRef tag;
-		if (!DataSection::splitSaveAsFileName( saveAsFileName, parent_, tag ))
-			return false;
-		tag_.assign( tag.data(), tag.size() );
-	}
+    BW_GUARD;
+    // change our allegiance if we're doing a save as
+    if (!saveAsFileName.empty()) {
+        BW::StringRef tag;
+        if (!DataSection::splitSaveAsFileName(saveAsFileName, parent_, tag))
+            return false;
+        tag_.assign(tag.data(), tag.size());
+    }
 
-	// and now save
-	if (!parent_)
-	{
-		ERROR_MSG( "BinSection: Can't save a section without a parent.\n" );
-		return false;
-	}
+    // and now save
+    if (!parent_) {
+        ERROR_MSG("BinSection: Can't save a section without a parent.\n");
+        return false;
+    }
 
-	return parent_->saveChild( this, true );
+    return parent_->saveChild(this, true);
 }
 
 /**
@@ -377,86 +361,86 @@ bool BinSection::save( const BW::StringRef& saveAsFileName )
  */
 void BinSection::introspect()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	SimpleMutexHolder sh( s_binSectionIntrospectLock );
-	if (introspected_)
-	{
-		return;
-	}
+    SimpleMutexHolder sh(s_binSectionIntrospectLock);
+    if (introspected_) {
+        return;
+    }
 
-	introspected_ = true;
+    introspected_ = true;
 
-	{
-		PROFILER_SCOPED( BinSection_introspect );
+    {
+        PROFILER_SCOPED(BinSection_introspect);
 
-		if (!binaryData_) return;
-		if (binaryData_->len() < int(sizeof(int) + sizeof(int)*2)) return;
+        if (!binaryData_)
+            return;
+        if (binaryData_->len() < int(sizeof(int) + sizeof(int) * 2))
+            return;
 
-		char * data = (char*)binaryData_->data();
-		int len = binaryData_->len();
+        char* data = (char*)binaryData_->data();
+        int   len  = binaryData_->len();
 
-		int entryDataOffset = 0;
-		int entryNameLenPad = 0;
-		if (*(uint32*)data == BIN_SECTION_MAGIC)
-		{
-			entryDataOffset = 4;
-			entryNameLenPad = 3;
-		}
+        int entryDataOffset = 0;
+        int entryNameLenPad = 0;
+        if (*(uint32*)data == BIN_SECTION_MAGIC) {
+            entryDataOffset = 4;
+            entryNameLenPad = 3;
+        }
 
-		// read the index info
-		int indexLen = *(int*)(data + len - sizeof(int));
-		int offset = len - sizeof(int) - indexLen;
+        // read the index info
+        int indexLen = *(int*)(data + len - sizeof(int));
+        int offset   = len - sizeof(int) - indexLen;
 
-		// make sure it is valid
-		if (offset < entryDataOffset || offset >= len-int(sizeof(int)))
-			return;
+        // make sure it is valid
+        if (offset < entryDataOffset || offset >= len - int(sizeof(int)))
+            return;
 
-		// read the directory out of the file
-		while (offset <= len - (int)(sizeof(int) + sizeof(int)*2))
-		{
-			// read the lengths of directory entry
-			int entryDataLen = *(int*)(data+offset);
-			offset += sizeof(int);
-			if (((entryDataLen & (1<<31)) || entryNameLenPad != 0) &&
-				offset + sizeof(uint32)*4 <= len - (sizeof(int) + sizeof(int)))
-			{
-				// skip extended data
-				entryDataLen &= ~(1<<31);
-				// uint32 preloadLen, uint32 version, uint64 modified
-				offset += sizeof(uint32)*4;
-			}
-			int entryNameLen = *(int*)(data+offset);
-			offset += sizeof(int);
+        // read the directory out of the file
+        while (offset <= len - (int)(sizeof(int) + sizeof(int) * 2)) {
+            // read the lengths of directory entry
+            int entryDataLen = *(int*)(data + offset);
+            offset += sizeof(int);
+            if (((entryDataLen & (1 << 31)) || entryNameLenPad != 0) &&
+                offset + sizeof(uint32) * 4 <=
+                  len - (sizeof(int) + sizeof(int))) {
+                // skip extended data
+                entryDataLen &= ~(1 << 31);
+                // uint32 preloadLen, uint32 version, uint64 modified
+                offset += sizeof(uint32) * 4;
+            }
+            int entryNameLen = *(int*)(data + offset);
+            offset += sizeof(int);
 
-			// make sure they make sense
-			if (uint32(entryDataLen) > 256*1024*1028 ||
-				uint32(entryDataOffset + entryDataLen) >
-					uint32(len - sizeof(int) - indexLen) ||
-				uint32(entryNameLen) > 4096 ||
-				uint32(offset + entryNameLen) > uint32(len - sizeof(int)))
-			{
-				children_.clear();
-				return;
-			}
+            // make sure they make sense
+            if (uint32(entryDataLen) > 256 * 1024 * 1028 ||
+                uint32(entryDataOffset + entryDataLen) >
+                  uint32(len - sizeof(int) - indexLen) ||
+                uint32(entryNameLen) > 4096 ||
+                uint32(offset + entryNameLen) > uint32(len - sizeof(int))) {
+                children_.clear();
+                return;
+            }
 
-			// read its name
-			BW::string entryStr( data+offset, entryNameLen );
-			offset += (entryNameLen + entryNameLenPad) & (~entryNameLenPad);
+            // read its name
+            BW::string entryStr(data + offset, entryNameLen);
+            offset += (entryNameLen + entryNameLenPad) & (~entryNameLenPad);
 
-			// add it to our list of children
-			children_.push_back( DataSection::createAppropriateSection(
-				entryStr,
-				new BinaryBlock(
-					data+entryDataOffset, entryDataLen, "BinaryBlock/BinSection", binaryData_ ),
-					false, BinSection::creator() ) );
+            // add it to our list of children
+            children_.push_back(DataSection::createAppropriateSection(
+              entryStr,
+              new BinaryBlock(data + entryDataOffset,
+                              entryDataLen,
+                              "BinaryBlock/BinSection",
+                              binaryData_),
+              false,
+              BinSection::creator()));
 
-			// move on the data offset
-			entryDataOffset += (entryDataLen + 3) & (~3L);
-		}
-	}
+            // move on the data offset
+            entryDataOffset += (entryDataLen + 3) & (~3L);
+        }
+    }
 }
-
 
 /**
  *	This method collects up all the children of this section into
@@ -464,51 +448,47 @@ void BinSection::introspect()
  */
 BinaryPtr BinSection::recollect()
 {
-	BW_GUARD;
-	if (children_.empty())
-	{
-		return this->binaryData_;
-	}
+    BW_GUARD;
+    if (children_.empty()) {
+        return this->binaryData_;
+    }
 
-	uint32 bsz = 4;	// for magic
+    uint32 bsz = 4; // for magic
 
-	// collect our children
-	BW::vector<BinaryPtr> childBlocks;
-	for (uint i = 0; i < children_.size(); i++)
-	{
-		childBlocks.push_back( children_[i]->asBinary() );
-		bsz += (childBlocks.back()->len() + 3) & (~3L);
-	}
+    // collect our children
+    BW::vector<BinaryPtr> childBlocks;
+    for (uint i = 0; i < children_.size(); i++) {
+        childBlocks.push_back(children_[i]->asBinary());
+        bsz += (childBlocks.back()->len() + 3) & (~3L);
+    }
 
-	// build the directory
-	BW::string stream;
-	for (uint i = 0; i < children_.size(); i++)
-	{
-		const BW::string & sectName = children_[i]->sectionName();
-		int lens[6] = { childBlocks[i]->len(), 0, 0, 0, 0,
-			(int)sectName.length() };
-		stream.append( (char*)lens, sizeof(lens) );
-		stream.append( sectName.data(), lens[5] );
-		stream.append( (4-lens[5]) & 3, '\0' );
-	}
-	int streamLen = static_cast<int>(stream.length());
-	stream.append( (char*)&streamLen, sizeof(int) );
-	bsz += static_cast<int>(stream.length());
+    // build the directory
+    BW::string stream;
+    for (uint i = 0; i < children_.size(); i++) {
+        const BW::string& sectName = children_[i]->sectionName();
+        int               lens[6]  = { childBlocks[i]->len(), 0, 0, 0, 0,
+                                       (int)sectName.length() };
+        stream.append((char*)lens, sizeof(lens));
+        stream.append(sectName.data(), lens[5]);
+        stream.append((4 - lens[5]) & 3, '\0');
+    }
+    int streamLen = static_cast<int>(stream.length());
+    stream.append((char*)&streamLen, sizeof(int));
+    bsz += static_cast<int>(stream.length());
 
-	// now make the mega-block and return
-	BinaryPtr pBinary = new BinaryBlock( NULL, bsz, "BinaryBlock/BinSection" );
-	char * dataPtr = (char*)pBinary->data();
-	*((uint32*&)dataPtr)++ = BIN_SECTION_MAGIC;
-	for (uint i = 0; i < children_.size(); i++)
-	{
-		uint len = childBlocks[i]->len();
-		memcpy( dataPtr, childBlocks[i]->data(), len );
-		dataPtr += (len + 3) & (~3L);
-	}
-	memcpy( dataPtr, stream.data(), stream.length() );
+    // now make the mega-block and return
+    BinaryPtr pBinary = new BinaryBlock(NULL, bsz, "BinaryBlock/BinSection");
+    char*     dataPtr = (char*)pBinary->data();
+    *((uint32*&)dataPtr)++ = BIN_SECTION_MAGIC;
+    for (uint i = 0; i < children_.size(); i++) {
+        uint len = childBlocks[i]->len();
+        memcpy(dataPtr, childBlocks[i]->data(), len);
+        dataPtr += (len + 3) & (~3L);
+    }
+    memcpy(dataPtr, stream.data(), stream.length());
 
-	// and that's it
-	return pBinary;
+    // and that's it
+    return pBinary;
 }
 
 BW_END_NAMESPACE

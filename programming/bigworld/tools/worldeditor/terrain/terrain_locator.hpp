@@ -1,7 +1,6 @@
 #ifndef TERRAIN_LOCATOR_HPP
 #define TERRAIN_LOCATOR_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "worldeditor/collisions/collision_callbacks.hpp"
@@ -16,21 +15,19 @@ BW_BEGIN_NAMESPACE
  */
 class TerrainToolLocator : public ChunkObstacleToolLocator
 {
-	Py_Header( TerrainToolLocator, ChunkObstacleToolLocator )
+    Py_Header(TerrainToolLocator, ChunkObstacleToolLocator)
 
-public:
-	explicit TerrainToolLocator( PyTypeObject * pType = &s_type_ );
+      public : explicit TerrainToolLocator(PyTypeObject* pType = &s_type_);
 
-	virtual void calculatePosition( const Vector3 & worldRay, Tool & tool );
+    virtual void calculatePosition(const Vector3& worldRay, Tool& tool);
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-private:
-	ClosestTerrainObstacle terrainCallback_;
+  private:
+    ClosestTerrainObstacle terrainCallback_;
 
-	LOCATOR_FACTORY_DECLARE( TerrainToolLocator() )
+    LOCATOR_FACTORY_DECLARE(TerrainToolLocator())
 };
-
 
 /**
  *	This class implements a tool locator that sits on a terrain,
@@ -38,21 +35,19 @@ private:
  */
 class TerrainHoleToolLocator : public ChunkObstacleToolLocator
 {
-	Py_Header( TerrainHoleToolLocator, ChunkObstacleToolLocator )
+    Py_Header(TerrainHoleToolLocator, ChunkObstacleToolLocator)
 
-public:
-	explicit TerrainHoleToolLocator( PyTypeObject * pType = &s_type_ );
+      public : explicit TerrainHoleToolLocator(PyTypeObject* pType = &s_type_);
 
-	virtual void calculatePosition( const Vector3 & worldRay, Tool & tool );
+    virtual void calculatePosition(const Vector3& worldRay, Tool& tool);
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-private:
-	ClosestTerrainObstacle terrainCallback_;
+  private:
+    ClosestTerrainObstacle terrainCallback_;
 
-	LOCATOR_FACTORY_DECLARE( TerrainHoleToolLocator() )
+    LOCATOR_FACTORY_DECLARE(TerrainHoleToolLocator())
 };
-
 
 /**
  *	This class implements a tool locator that finds the chunk a tool is in,
@@ -60,18 +55,17 @@ private:
  */
 class TerrainChunkLocator : public ChunkObstacleToolLocator
 {
-	Py_Header( TerrainChunkLocator, ChunkObstacleToolLocator )
-	
-public:
-	explicit TerrainChunkLocator( PyTypeObject * pType = &s_type_ );
+    Py_Header(TerrainChunkLocator, ChunkObstacleToolLocator)
 
-	virtual void calculatePosition( const Vector3 & worldRay, Tool & tool );
-	PY_FACTORY_DECLARE()
+      public : explicit TerrainChunkLocator(PyTypeObject* pType = &s_type_);
 
-private:
-	ClosestTerrainObstacle terrainCallback_;
+    virtual void calculatePosition(const Vector3& worldRay, Tool& tool);
+    PY_FACTORY_DECLARE()
 
-	LOCATOR_FACTORY_DECLARE( TerrainChunkLocator() )
+  private:
+    ClosestTerrainObstacle terrainCallback_;
+
+    LOCATOR_FACTORY_DECLARE(TerrainChunkLocator())
 };
 
 BW_END_NAMESPACE

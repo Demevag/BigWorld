@@ -3,39 +3,40 @@
 
 #include <stdlib.h>
 
-namespace Testing
-{
+namespace Testing {
 
-extern float g_mangleProb;
+    extern float g_mangleProb;
 
-inline float frand()
-{
-	return ((float)random())/RAND_MAX;
-}
+    inline float frand()
+    {
+        return ((float)random()) / RAND_MAX;
+    }
 
-inline char& mangle( char &c )
-{
-	return c = (char)(random() & 0xff);
-}
+    inline char& mangle(char& c)
+    {
+        return c = (char)(random() & 0xff);
+    }
 
-inline void mangleSingleByte( void *data, size_t length )
-{
-	if (length > 0)
-	{
-		int offset = random() % length;
-		mangle( *((char*)data + offset) );
-	}
-}
-	
-template <class T>
-T& mangle( T &t )
-{
-	mangleSingleByte( &t, sizeof( t ) );
-	return t;
-}
+    inline void mangleSingleByte(void* data, size_t length)
+    {
+        if (length > 0) {
+            int offset = random() % length;
+            mangle(*((char*)data + offset));
+        }
+    }
 
-inline bool unlucky() { return frand() < g_mangleProb; }
-	
+    template <class T>
+    T& mangle(T& t)
+    {
+        mangleSingleByte(&t, sizeof(t));
+        return t;
+    }
+
+    inline bool unlucky()
+    {
+        return frand() < g_mangleProb;
+    }
+
 }; // namespace Testing
 
 #endif // MANGLE_HPP

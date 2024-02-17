@@ -15,10 +15,9 @@ BW_BEGIN_NAMESPACE
  *	@param	materialIDs	The list of materialIDs to be returned.
  *	@return	Success or failure.
  */
-bool generateBSP( const BW::string & visualName,
-		const BW::string & bspName,
-		BW::vector< BW::string > & materialIDs );
-
+bool generateBSP(const BW::string&       visualName,
+                 const BW::string&       bspName,
+                 BW::vector<BW::string>& materialIDs);
 
 BW_END_NAMESPACE
 

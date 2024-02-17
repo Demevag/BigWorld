@@ -11,44 +11,42 @@
 
 BW_BEGIN_NAMESPACE
 
-
 /**
  *	This class is a body of water as a chunk item on the server
  */
 class ServerChunkWater : public VeryLargeObject
 {
-public:
+  public:
+    ServerChunkWater(const BW::string& uid);
+    ~ServerChunkWater();
 
-	ServerChunkWater( const BW::string & uid );
-	~ServerChunkWater();
+    bool load(DataSectionPtr pSection, Chunk* pChunk);
 
-	bool load( DataSectionPtr pSection, Chunk * pChunk );
+    virtual void drawInChunk(Moo::DrawContext& drawContext, Chunk* pChunk) {}
 
-	virtual void drawInChunk( Moo::DrawContext& drawContext, Chunk* pChunk ) {}
+    virtual void addCollision(ChunkItemPtr item);
 
-	virtual void addCollision( ChunkItemPtr item );
+    virtual const Matrix& localTransform() { return transform_; }
+    const Vector3&        position() const { return position_; }
+    const Vector2&        size() const { return size_; }
+    float                 orientation() const { return orientation_; }
+    float                 depth() const { return depth_; }
 
-	virtual const Matrix & localTransform( ) { return transform_; }	
-	const Vector3 & position() const { return position_; }
-	const Vector2 & size() const { return size_; }
-	float orientation() const { return orientation_; }
-	float depth() const { return depth_; }
+  private:
+    static bool       create(Chunk*            pChunk,
+                             DataSectionPtr    pSection,
+                             const BW::string& uid);
+    static VLOFactory factory_;
 
-private:
+    Matrix  transform_;
+    Vector3 position_;
+    Vector2 size_;
+    float   orientation_;
+    float   depth_;
 
-	static bool create(
-		Chunk * pChunk, DataSectionPtr pSection, const BW::string & uid );
-	static VLOFactory factory_;
-
-	Matrix transform_;
-	Vector3 position_;
-	Vector2 size_;
-	float orientation_;		
-	float depth_;
-
-	RealWTriangleSet tris_;
-	BSPTree * pTree_;
-	ModelPtr pModel_;
+    RealWTriangleSet tris_;
+    BSPTree*         pTree_;
+    ModelPtr         pModel_;
 };
 
 BW_END_NAMESPACE

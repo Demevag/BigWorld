@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <sys/resource.h>
 
-#define MAX_BIT_RATE (1<<27)
+#define MAX_BIT_RATE (1 << 27)
 #define BIT_INCREMENT (MAX_BIT_RATE / 0xFF)
 #define MAX_PACKET_RATE 256000
 #define PACK_INCREMENT (MAX_PACKET_RATE / 0xFF)
@@ -67,27 +67,26 @@
 // Version 46:New server binary location / BW_CONFIG changed Hybrid -> hybrid
 // Version 47:Add MachinePlatformMessage
 // Version 48:Binary directory support for 'el' vs 'centos'/'rhel'
-// Version 49:New server binary location. Dropped 32 bit binary support for Linux
-// Version 50:Add PARAM_GET_VERSION to UserMessage.
+// Version 49:New server binary location. Dropped 32 bit binary support for
+// Linux Version 50:Add PARAM_GET_VERSION to UserMessage.
 
 // NOTE: This should stay in sync with the value in pycommon/messages.py
 #define BWMACHINED_VERSION 50
 
-
 BW_BEGIN_NAMESPACE
 
-extern const char * machinedConfFile;
-extern const char * bigworldConfFile;
+extern const char* machinedConfFile;
+extern const char* bigworldConfFile;
 
 // every platform should implement these
-void initProcessState( bool daemon );
+void initProcessState(bool daemon);
 void cleanupProcessState();
 // Returns the maximum Fd it added to one of the sets
-int getInterestingFds( fd_set *readfds, fd_set *writefds, fd_set *exceptfds );
-void handleInterestingFds( fd_set *readfds, fd_set *writefds, fd_set *exceptfds );
+int  getInterestingFds(fd_set* readfds, fd_set* writefds, fd_set* exceptfds);
+void handleInterestingFds(fd_set* readfds, fd_set* writefds, fd_set* exceptfds);
 
 // bool updateProcessStats(ThingData & td);
-void getProcessorSpeeds( BW::vector<float> &speeds );
+void getProcessorSpeeds(BW::vector<float>& speeds);
 
 class BWMachined;
 
@@ -95,20 +94,20 @@ class BWMachined;
 //  (having updated the values for PidMessage::pid_ and pidMessage::running_)
 // otherwise the machine-guard code has claimed it
 // and will dispose of it later
-bool startProcess( const char * bwBinaryDir,
-	const char * bwResPath,
-	const char * config,
-	const char * type,
-	MachineGuardMessage::UserId uid,
-	uint16 gid,
-	const char * home,
-	int argc,
-	const char ** argv,
-	BWMachined &machined,
-	PidMessageWithDestination * pPmwd );
+bool startProcess(const char*                 bwBinaryDir,
+                  const char*                 bwResPath,
+                  const char*                 config,
+                  const char*                 type,
+                  MachineGuardMessage::UserId uid,
+                  uint16                      gid,
+                  const char*                 home,
+                  int                         argc,
+                  const char**                argv,
+                  BWMachined&                 machined,
+                  PidMessageWithDestination*  pPmwd);
 
 struct ProcessInfo;
-bool validateProcessInfo( const ProcessInfo &processInfo );
+bool validateProcessInfo(const ProcessInfo& processInfo);
 
 /**
  * Structs used for maintaining high-resolution statistics.
@@ -117,78 +116,87 @@ bool validateProcessInfo( const ProcessInfo &processInfo );
 template <class T>
 class Stat
 {
-public:
-	Stat() : v1_(), v2_(), v1curr_( true ) {}
-	inline T& cur() { return v1curr_ ? v1_ : v2_; }
-	inline T& old() { return v1curr_ ? v2_ : v1_; }
-	inline T delta() const { return v1curr_ ? v1_ - v2_ : v2_ - v1_; }
-	inline void update (const T &t) {
-		if (v1curr_)
-			v2_ = t;
-		else
-			v1_ = t;
-		v1curr_ = !v1curr_;
-	}
-	inline T& next() {
-		v1curr_ = !v1curr_;
-		return this->cur();
-	}
-	inline bool state() const { return v1curr_; }
+  public:
+    Stat()
+      : v1_()
+      , v2_()
+      , v1curr_(true)
+    {
+    }
+    inline T&   cur() { return v1curr_ ? v1_ : v2_; }
+    inline T&   old() { return v1curr_ ? v2_ : v1_; }
+    inline T    delta() const { return v1curr_ ? v1_ - v2_ : v2_ - v1_; }
+    inline void update(const T& t)
+    {
+        if (v1curr_)
+            v2_ = t;
+        else
+            v1_ = t;
+        v1curr_ = !v1curr_;
+    }
+    inline T& next()
+    {
+        v1curr_ = !v1curr_;
+        return this->cur();
+    }
+    inline bool state() const { return v1curr_; }
 
-private:
-	T v1_, v2_;
-	bool v1curr_;
+  private:
+    T    v1_, v2_;
+    bool v1curr_;
 };
 
-typedef Stat< uint64 > HighResStat;
+typedef Stat<uint64> HighResStat;
 
 struct MaxStat
 {
-	HighResStat val, max;
+    HighResStat val, max;
 };
 
 struct InterfaceInfo
 {
-	BW::string name;
-	HighResStat bitsTotIn, bitsTotOut, packTotIn, packTotOut;
+    BW::string  name;
+    HighResStat bitsTotIn, bitsTotOut, packTotIn, packTotOut;
 };
 
 struct SystemInfo
 {
-	uint nCpus, cpuSpeed;
-	BW::vector< MaxStat > cpu;	//!< Per cpu load information
-	MaxStat iowait;		//!< Total time spent waiting for IO
-	MaxStat mem;		//!< System wide memory usage
+    uint                nCpus, cpuSpeed;
+    BW::vector<MaxStat> cpu;    //!< Per cpu load information
+    MaxStat             iowait; //!< Total time spent waiting for IO
+    MaxStat             mem;    //!< System wide memory usage
 
-	HighResStat packTotIn, packDropIn, packTotOut, packDropOut;
-	BW::vector< struct InterfaceInfo > ifInfo;
+    HighResStat packTotIn, packDropIn, packTotOut, packDropOut;
+    BW::vector<struct InterfaceInfo> ifInfo;
 
-	WholeMachineMessage m;
-	HighPrecisionMachineMessage hpm;
+    WholeMachineMessage         m;
+    HighPrecisionMachineMessage hpm;
 };
 
 struct ProcessInfo
 {
-	ProcessInfo() { starttime = 0; }
-	HighResStat cpu, mem;
-	int affinity;
+    ProcessInfo() { starttime = 0; }
+    HighResStat cpu, mem;
+    int         affinity;
 
-	ProcessStatsMessage m;
+    ProcessStatsMessage m;
 
-	// Time (since OS boot) that the process was started
-	unsigned long int starttime;
+    // Time (since OS boot) that the process was started
+    unsigned long int starttime;
 
-	// Platform specific implementation
-	void init( const ProcessMessage &pm );
+    // Platform specific implementation
+    void init(const ProcessMessage& pm);
 };
 
-bool updateProcessStats( ProcessInfo &pi );
+bool updateProcessStats(ProcessInfo& pi);
 
-bool raiseFileDescriptorHardLimit( unsigned long desiredLimit );
+bool raiseFileDescriptorHardLimit(unsigned long desiredLimit);
 
 typedef enum __rlimit_resource bw_rlimit_resource;
-int bw_prlimit( pid_t pid, bw_rlimit_resource resource, const struct rlimit *new_limit,
-	struct rlimit *old_limit );
+int                            bw_prlimit(pid_t                pid,
+                                          bw_rlimit_resource   resource,
+                                          const struct rlimit* new_limit,
+                                          struct rlimit*       old_limit);
 
 BW_END_NAMESPACE
 

@@ -4,7 +4,6 @@
 #include "cstdmf/concurrency.hpp"
 #include "cstdmf/singleton.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -12,18 +11,18 @@ BW_BEGIN_NAMESPACE
  */
 class WaypointStats
 {
-public:
-	static void addWaypoint();
-	static void removeWaypoint();
-	static void addEdges( uint numEdges );
-	static void addVertices( uint numVertices );
-	static void removeEdgesAndVertices( uint numEdges, uint vertices );
+  public:
+    static void addWaypoint();
+    static void removeWaypoint();
+    static void addEdges(uint numEdges);
+    static void addVertices(uint numVertices);
+    static void removeEdgesAndVertices(uint numEdges, uint vertices);
 #if ENABLE_WATCHERS
-	static void addWatchers();
+    static void addWatchers();
 #endif
 
-private:
-	WaypointStats(); // Never created
+  private:
+    WaypointStats(); // Never created
 };
 
 BW_END_NAMESPACE

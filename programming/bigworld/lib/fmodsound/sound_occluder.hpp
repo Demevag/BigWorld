@@ -1,16 +1,14 @@
 #ifndef SOUND_OCCLUDER_HPP
 #define SOUND_OCCLUDER_HPP
 
-
 #include "fmod_config.hpp"
 #if FMOD_SUPPORT
 
 #include "cstdmf/bw_namespace.hpp"
 #include "cstdmf/bw_vector.hpp"
 
-namespace FMOD
-{
-class Geometry;
+namespace FMOD {
+    class Geometry;
 }
 
 BW_BEGIN_NAMESPACE
@@ -19,8 +17,7 @@ class Model;
 class SuperModel;
 class Vector3;
 
-namespace Terrain
-{
+namespace Terrain {
     class TerrainHeightMap;
 }
 
@@ -29,31 +26,35 @@ namespace Terrain
 */
 class SoundOccluder
 {
-public:
+  public:
     SoundOccluder();
-    SoundOccluder( SuperModel * pSuperModel );
+    SoundOccluder(SuperModel* pSuperModel);
     ~SoundOccluder();
-
 
     const bool constructed() const { return (geometries_.size() > 0); }
 
-    bool construct( SuperModel * pSuperModel );
-    bool construct( Model *pModel );
-    bool construct( const Terrain::TerrainHeightMap& map, float blockSize, float directOcclusion, float reverbOcclusion );
-    bool setActive( bool active );
-    bool update( const Vector3& position, const Vector3& forward = Vector3::zero(), const Vector3& up = Vector3::zero() );
-	bool update( const Matrix& transform );
+    bool construct(SuperModel* pSuperModel);
+    bool construct(Model* pModel);
+    bool construct(const Terrain::TerrainHeightMap& map,
+                   float                            blockSize,
+                   float                            directOcclusion,
+                   float                            reverbOcclusion);
+    bool setActive(bool active);
+    bool update(const Vector3& position,
+                const Vector3& forward = Vector3::zero(),
+                const Vector3& up      = Vector3::zero());
+    bool update(const Matrix& transform);
 
-	void debugDraw();
+    void debugDraw();
 
-protected:
-    BW::vector<FMOD::Geometry *> geometries_;
+  protected:
+    BW::vector<FMOD::Geometry*> geometries_;
 
-private:    
+  private:
 };
 
 BW_END_NAMESPACE
 
-#endif //FMOD_SUPPORT
+#endif // FMOD_SUPPORT
 
-#endif //SOUND_OCCLUDER_HPP
+#endif // SOUND_OCCLUDER_HPP

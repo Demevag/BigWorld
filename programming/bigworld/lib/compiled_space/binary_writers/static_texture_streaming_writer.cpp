@@ -14,367 +14,342 @@
 #include "speedtree/speedtree_renderer.hpp"
 #include "model/super_model.hpp"
 
-namespace BW {
-namespace CompiledSpace {
+namespace BW { namespace CompiledSpace {
 
-class StaticTextureStreamingWriter::Detail
-{
-public:
-	static void convertUsagesToDefs(
-		StringTableWriter & strings,
-		AssetListWriter & assetList,
-		Moo::ModelTextureUsageContext & usages,
-		BW::vector<StaticTextureStreamingTypes::Usage> & defs )
-	{
-		const Moo::ModelTextureUsage * pUsages = NULL;
-		size_t numUsages = 0;
-		usages.getUsages( &pUsages, &numUsages );
+    class StaticTextureStreamingWriter::Detail
+    {
+      public:
+        static void convertUsagesToDefs(
+          StringTableWriter&                              strings,
+          AssetListWriter&                                assetList,
+          Moo::ModelTextureUsageContext&                  usages,
+          BW::vector<StaticTextureStreamingTypes::Usage>& defs)
+        {
+            const Moo::ModelTextureUsage* pUsages   = NULL;
+            size_t                        numUsages = 0;
+            usages.getUsages(&pUsages, &numUsages);
 
-		for (size_t index = 0; index < numUsages; ++index)
-		{
-			const Moo::ModelTextureUsage & usage = pUsages[index];
-			
-			Moo::BaseTexturePtr pTexture = usage.pTexture_;
-			if (!pTexture)
-			{
-				continue;
-			}
+            for (size_t index = 0; index < numUsages; ++index) {
+                const Moo::ModelTextureUsage& usage = pUsages[index];
 
-			const BW::string & resourceID = pTexture->resourceID();
+                Moo::BaseTexturePtr pTexture = usage.pTexture_;
+                if (!pTexture) {
+                    continue;
+                }
 
-			StaticTextureStreamingTypes::Usage def;
-			def.bounds_ = usage.bounds_;
-			def.uvDensity_ = usage.uvDensity_;
-			def.worldScale_ = usage.worldScale_;
-			def.resourceID_ = assetList.addAsset( 
-				AssetListTypes::ASSET_TYPE_TEXTURE,
-				resourceID,
-				strings);
+                const BW::string& resourceID = pTexture->resourceID();
 
-			defs.push_back( def );
-		}
-	}
+                StaticTextureStreamingTypes::Usage def;
+                def.bounds_     = usage.bounds_;
+                def.uvDensity_  = usage.uvDensity_;
+                def.worldScale_ = usage.worldScale_;
+                def.resourceID_ = assetList.addAsset(
+                  AssetListTypes::ASSET_TYPE_TEXTURE, resourceID, strings);
 
-	struct CachedUsages
-	{
-		AABB localBoundingBox_;
-		BW::map< Moo::BaseTexturePtr, float > textureUVDensity_;
-	};
+                defs.push_back(def);
+            }
+        }
 
-	typedef BW::unordered_map< BW::string, CachedUsages > Cache;
-	Cache modelCache_;
-	Cache treeCache_;
+        struct CachedUsages
+        {
+            AABB                                localBoundingBox_;
+            BW::map<Moo::BaseTexturePtr, float> textureUVDensity_;
+        };
 
-	void applyCachedUsages( const Matrix & worldTransform, 
-		const CachedUsages & usages, 
-		Moo::ModelTextureUsageGroup * usageGroup )
-	{
-		if (usages.localBoundingBox_.insideOut())
-		{
-			return;
-		}
+        typedef BW::unordered_map<BW::string, CachedUsages> Cache;
+        Cache                                               modelCache_;
+        Cache                                               treeCache_;
 
-		for (auto iter = usages.textureUVDensity_.begin();
-			iter != usages.textureUVDensity_.end(); 
-			++iter)
-		{
-			Moo::BaseTexturePtr texture = iter->first;
-			float density = iter->second;
-			
-			usageGroup->setTextureUsage( texture.get(), density );
-		}
+        void applyCachedUsages(const Matrix&                worldTransform,
+                               const CachedUsages&          usages,
+                               Moo::ModelTextureUsageGroup* usageGroup)
+        {
+            if (usages.localBoundingBox_.insideOut()) {
+                return;
+            }
 
-		AABB bounds = usages.localBoundingBox_;
-		bounds.transformBy( worldTransform );
+            for (auto iter = usages.textureUVDensity_.begin();
+                 iter != usages.textureUVDensity_.end();
+                 ++iter) {
+                Moo::BaseTexturePtr texture = iter->first;
+                float               density = iter->second;
 
-		usageGroup->setWorldScale_FromTransform( worldTransform );
-		usageGroup->setWorldBoundSphere( Sphere( bounds ) );
-		usageGroup->applyObjectChanges();
-	}
+                usageGroup->setTextureUsage(texture.get(), density);
+            }
 
-	void extractCachedUsageData( 
-		Moo::ModelTextureUsageContext * context,
-		CachedUsages * usages )
-	{
-		// Iterate over all the usages and extract textures and densities.
-		const Moo::ModelTextureUsage * pUsages = NULL;
-		size_t numUsages = 0;
-		context->getUsages( &pUsages, &numUsages );
+            AABB bounds = usages.localBoundingBox_;
+            bounds.transformBy(worldTransform);
 
-		for (size_t index = 0; index < numUsages; ++index)
-		{
-			const Moo::ModelTextureUsage & usage = pUsages[index];
+            usageGroup->setWorldScale_FromTransform(worldTransform);
+            usageGroup->setWorldBoundSphere(Sphere(bounds));
+            usageGroup->applyObjectChanges();
+        }
 
-			Moo::BaseTexturePtr pTexture = usage.pTexture_;
-			usages->textureUVDensity_[pTexture] = usage.uvDensity_;
-		}
-	}
+        void extractCachedUsageData(Moo::ModelTextureUsageContext* context,
+                                    CachedUsages*                  usages)
+        {
+            // Iterate over all the usages and extract textures and densities.
+            const Moo::ModelTextureUsage* pUsages   = NULL;
+            size_t                        numUsages = 0;
+            context->getUsages(&pUsages, &numUsages);
 
-	void generateUsageCache_model( const BW::vector< BW::string > & models,
-		CachedUsages * pUsages )
-	{
-		SuperModel superModel( models );
+            for (size_t index = 0; index < numUsages; ++index) {
+                const Moo::ModelTextureUsage& usage = pUsages[index];
 
-		BoundingBox modelBB;
-		superModel.localVisibilityBox( modelBB );
-		pUsages->localBoundingBox_ = modelBB;
+                Moo::BaseTexturePtr pTexture        = usage.pTexture_;
+                usages->textureUVDensity_[pTexture] = usage.uvDensity_;
+            }
+        }
 
-		Moo::ModelTextureUsageContext context;
-		Moo::ModelTextureUsageGroup::Data data;
-		Moo::ModelTextureUsageGroup usageGroup( data, context );
-		superModel.generateTextureUsage( usageGroup );
+        void generateUsageCache_model(const BW::vector<BW::string>& models,
+                                      CachedUsages*                 pUsages)
+        {
+            SuperModel superModel(models);
 
-		extractCachedUsageData( &context, pUsages );
-	}
+            BoundingBox modelBB;
+            superModel.localVisibilityBox(modelBB);
+            pUsages->localBoundingBox_ = modelBB;
 
-	void generateUsageCache_tree( const char * resource, uint32 seed,
-		CachedUsages * pUsages )
-	{
+            Moo::ModelTextureUsageContext     context;
+            Moo::ModelTextureUsageGroup::Data data;
+            Moo::ModelTextureUsageGroup       usageGroup(data, context);
+            superModel.generateTextureUsage(usageGroup);
+
+            extractCachedUsageData(&context, pUsages);
+        }
+
+        void generateUsageCache_tree(const char*   resource,
+                                     uint32        seed,
+                                     CachedUsages* pUsages)
+        {
 #if SPEEDTREE_SUPPORT
-		BW::speedtree::SpeedTreeRenderer speedtree;
-		speedtree.load( resource, seed, Matrix::identity );
+            BW::speedtree::SpeedTreeRenderer speedtree;
+            speedtree.load(resource, seed, Matrix::identity);
 
-		pUsages->localBoundingBox_ = speedtree.boundingBox();
+            pUsages->localBoundingBox_ = speedtree.boundingBox();
 
-		Moo::ModelTextureUsageContext context;
-		Moo::ModelTextureUsageGroup::Data data;
-		Moo::ModelTextureUsageGroup usageGroup( data, context );
-		speedtree.generateTextureUsage( usageGroup );
+            Moo::ModelTextureUsageContext     context;
+            Moo::ModelTextureUsageGroup::Data data;
+            Moo::ModelTextureUsageGroup       usageGroup(data, context);
+            speedtree.generateTextureUsage(usageGroup);
 
-		extractCachedUsageData( &context, pUsages );
+            extractCachedUsageData(&context, pUsages);
 #endif
-	}
+        }
 
-	const CachedUsages & fetchUsageData_tree( const char * resource, uint32 seed )
-	{
-		// Create the key for the cache
-		const char * separator = "||";
-		const uint numCharsInStringUint32 = 14; // billion with commas and negative
-		StringBuilder builder( strlen(resource) + 
-			strlen(separator) + numCharsInStringUint32 + 1);
-		builder.append( resource );
-		builder.append( separator );
-		builder.appendf( "%d", seed );
+        const CachedUsages& fetchUsageData_tree(const char* resource,
+                                                uint32      seed)
+        {
+            // Create the key for the cache
+            const char* separator = "||";
+            const uint  numCharsInStringUint32 =
+              14; // billion with commas and negative
+            StringBuilder builder(strlen(resource) + strlen(separator) +
+                                  numCharsInStringUint32 + 1);
+            builder.append(resource);
+            builder.append(separator);
+            builder.appendf("%d", seed);
 
-		// If this assertion is hit, then we didn't allocate enough space
-		MF_ASSERT( !builder.isFull() );
-		
-		// Lookup the usage in the cache
-		const char * key = builder.string();
-		auto findIter = treeCache_.find( key );
-		CachedUsages * pCachedUsages;
-		if (findIter != treeCache_.end())
-		{
-			pCachedUsages = &findIter->second;
-		}
-		else
-		{
-			pCachedUsages = &treeCache_[key];
-			generateUsageCache_tree( resource, seed, pCachedUsages );
-		}
+            // If this assertion is hit, then we didn't allocate enough space
+            MF_ASSERT(!builder.isFull());
 
-		return *pCachedUsages;
-	}
+            // Lookup the usage in the cache
+            const char*   key      = builder.string();
+            auto          findIter = treeCache_.find(key);
+            CachedUsages* pCachedUsages;
+            if (findIter != treeCache_.end()) {
+                pCachedUsages = &findIter->second;
+            } else {
+                pCachedUsages = &treeCache_[key];
+                generateUsageCache_tree(resource, seed, pCachedUsages);
+            }
 
-	const CachedUsages & fetchUsageData_model( 
-		const BW::vector< BW::string > & models )
-	{
-		// Create the key for the cache
-		BW::string key;
-		for (auto iter = models.begin(); iter != models.end(); ++iter)
-		{
-			const BW::string & model = *iter;
-			key += model + "||";
-		}
+            return *pCachedUsages;
+        }
 
-		// Lookup the usage in the cache
-		auto findIter = treeCache_.find( key );
-		CachedUsages * pCachedUsages;
-		if (findIter != treeCache_.end())
-		{
-			pCachedUsages = &findIter->second;
-		}
-		else
-		{
-			pCachedUsages = &treeCache_[key];
-			generateUsageCache_model( models, pCachedUsages );
-		}
+        const CachedUsages& fetchUsageData_model(
+          const BW::vector<BW::string>& models)
+        {
+            // Create the key for the cache
+            BW::string key;
+            for (auto iter = models.begin(); iter != models.end(); ++iter) {
+                const BW::string& model = *iter;
+                key += model + "||";
+            }
 
-		return *pCachedUsages;
-	}
-};
+            // Lookup the usage in the cache
+            auto          findIter = treeCache_.find(key);
+            CachedUsages* pCachedUsages;
+            if (findIter != treeCache_.end()) {
+                pCachedUsages = &findIter->second;
+            } else {
+                pCachedUsages = &treeCache_[key];
+                generateUsageCache_model(models, pCachedUsages);
+            }
 
-StaticTextureStreamingWriter::StaticTextureStreamingWriter() :
-	detail_( new Detail() )
-{
+            return *pCachedUsages;
+        }
+    };
 
-}
+    StaticTextureStreamingWriter::StaticTextureStreamingWriter()
+      : detail_(new Detail())
+    {
+    }
 
+    StaticTextureStreamingWriter::~StaticTextureStreamingWriter() {}
 
-StaticTextureStreamingWriter::~StaticTextureStreamingWriter()
-{
-}
+    bool StaticTextureStreamingWriter::initialize(
+      const DataSectionPtr& pSpaceSettings,
+      const CommandLine&    commandLine)
+    {
+        // Nothing required
+        return true;
+    }
 
+    void StaticTextureStreamingWriter::postProcess()
+    {
+        // Sort all the usages by the texture resource that
+        // they're defining usage for. This should improve cache performance
+        // when processing usages, as all the usages of the same texture
+        // will be processed together at the same time.
+        struct UsageCompare
+        {
+            bool operator()(const StaticTextureStreamingTypes::Usage& a,
+                            const StaticTextureStreamingTypes::Usage& b)
+            {
+                return a.resourceID_ < b.resourceID_;
+            }
+        };
+        std::sort(usages_.begin(), usages_.end(), UsageCompare());
 
-bool StaticTextureStreamingWriter::initialize( 
-	const DataSectionPtr & pSpaceSettings,
-	const CommandLine & commandLine )
-{
-	// Nothing required
-	return true;
-}
+        // TODO: At this point, could probably optimise the usage set even more
+        // and consolidate usages of the same texture that occupy the same
+        // region of space. This would reduce the number of iterations required
+        // during runtime.
 
+        TRACE_MSG("%d texture streaming usages baked.\n", usages_.size());
+    }
 
-void StaticTextureStreamingWriter::postProcess()
-{
-	// Sort all the usages by the texture resource that
-	// they're defining usage for. This should improve cache performance
-	// when processing usages, as all the usages of the same texture
-	// will be processed together at the same time.
-	struct UsageCompare
-	{
-		bool operator()( const StaticTextureStreamingTypes::Usage& a,
-			const StaticTextureStreamingTypes::Usage& b )
-		{
-			return a.resourceID_ < b.resourceID_;
-		}
-	};
-	std::sort( usages_.begin(), usages_.end(), UsageCompare() ); 
+    bool StaticTextureStreamingWriter::write(BinaryFormatWriter& writer)
+    {
+        BinaryFormatWriter::Stream* stream =
+          writer.appendSection(StaticTextureStreamingTypes::FORMAT_MAGIC,
+                               StaticTextureStreamingTypes::FORMAT_VERSION);
+        MF_ASSERT(stream != NULL);
 
-	// TODO: At this point, could probably optimise the usage set even more
-	// and consolidate usages of the same texture that occupy the same region
-	// of space. This would reduce the number of iterations required during
-	// runtime.
+        stream->write(usages_);
 
-	TRACE_MSG( "%d texture streaming usages baked.\n", usages_.size() );
-}
+        return true;
+    }
 
+    void StaticTextureStreamingWriter::convertModel(
+      const ConversionContext& ctx,
+      const DataSectionPtr&    pItemDS,
+      const BW::string&        uid)
+    {
+        const bool isShell = false;
+        addFromChunkModel(
+          pItemDS, ctx.chunkTransform, isShell, strings(), assets());
+    }
 
-bool StaticTextureStreamingWriter::write( BinaryFormatWriter& writer )
-{
-	BinaryFormatWriter::Stream * stream =
-		writer.appendSection(
-		StaticTextureStreamingTypes::FORMAT_MAGIC,
-		StaticTextureStreamingTypes::FORMAT_VERSION );
-	MF_ASSERT( stream != NULL );
+    void StaticTextureStreamingWriter::convertShell(
+      const ConversionContext& ctx,
+      const DataSectionPtr&    pItemDS,
+      const BW::string&        uid)
+    {
+        const bool isShell = true;
+        addFromChunkModel(
+          pItemDS, ctx.chunkTransform, isShell, strings(), assets());
+    }
 
-	stream->write( usages_ );
+    void StaticTextureStreamingWriter::convertSpeedTree(
+      const ConversionContext& ctx,
+      const DataSectionPtr&    pItemDS,
+      const BW::string&        uid)
+    {
+        addFromChunkTree(pItemDS, ctx.chunkTransform, strings(), assets());
+    }
 
-	return true;
-}
+    bool StaticTextureStreamingWriter::addFromChunkModel(
+      const DataSectionPtr& pItemDS,
+      const Matrix&         chunkTransform,
+      bool                  isShell,
+      StringTableWriter&    stringTable,
+      AssetListWriter&      assetList)
+    {
+        // Attempt to load the related supermodel and collect its
+        // texture usage data
+        MF_ASSERT(pItemDS != NULL);
 
+        // Models
+        BW::vector<BW::string> models;
+        pItemDS->readStrings("resource", models);
+        if (models.empty()) {
+            ERROR_MSG(
+              "StaticModelWriter: ChunkModel has no resources specified.\n");
+            return false;
+        }
 
-void StaticTextureStreamingWriter::convertModel( 
-	const ConversionContext & ctx,
-	const DataSectionPtr & pItemDS, const BW::string & uid )
-{
-	const bool isShell = false;
-	addFromChunkModel( pItemDS, ctx.chunkTransform, 
-		isShell, strings(), assets() );
-}
+        // Transform
+        Matrix worldTransform = chunkTransform;
+        worldTransform.preMultiply(
+          pItemDS->readMatrix34("transform", Matrix::identity));
 
+        // Now take this information and make it generate texture usage info:
+        Moo::ModelTextureUsageContext     context;
+        Moo::ModelTextureUsageGroup::Data data;
+        Moo::ModelTextureUsageGroup       usageGroup(data, context);
 
-void StaticTextureStreamingWriter::convertShell( 
-	const ConversionContext & ctx,
-	const DataSectionPtr & pItemDS, const BW::string & uid )
-{
-	const bool isShell = true;
-	addFromChunkModel( pItemDS, ctx.chunkTransform, 
-		isShell, strings(), assets() );
-}
+        const Detail::CachedUsages& usages =
+          detail_->fetchUsageData_model(models);
+        detail_->applyCachedUsages(worldTransform, usages, &usageGroup);
 
+        // Now convert the usages generated to definitions
+        Detail::convertUsagesToDefs(stringTable, assetList, context, usages_);
 
-void StaticTextureStreamingWriter::convertSpeedTree( 
-	const ConversionContext & ctx,
-	const DataSectionPtr & pItemDS, const BW::string & uid )
-{
-	addFromChunkTree( pItemDS, ctx.chunkTransform, 
-		strings(), assets() );
-}
+        return true;
+    }
 
+    bool StaticTextureStreamingWriter::addFromChunkTree(
+      const DataSectionPtr& pItemDS,
+      const Matrix&         chunkTransform,
+      StringTableWriter&    stringTable,
+      AssetListWriter&      assetList)
+    {
+        // Attempt to load the speedtree model and collect its usage data
+        MF_ASSERT(pItemDS != NULL);
 
-bool StaticTextureStreamingWriter::addFromChunkModel( 
-	const DataSectionPtr & pItemDS,
-	const Matrix & chunkTransform,
-	bool isShell,
-	StringTableWriter & stringTable,
-	AssetListWriter & assetList )
-{
-	// Attempt to load the related supermodel and collect its
-	// texture usage data
-	MF_ASSERT( pItemDS != NULL );
+        // SpeedTree
+        BW::string resource = pItemDS->readString("spt");
+        if (resource.empty()) {
+            ERROR_MSG("StaticTextureStreamingWriter: "
+                      "ChunkTree has no speedtree specified.\n");
+            return false;
+        }
 
-	// Models
-	BW::vector< BW::string > models;
-	pItemDS->readStrings( "resource", models );
-	if (models.empty())
-	{
-		ERROR_MSG( "StaticModelWriter: ChunkModel has no resources specified.\n" );
-		return false;
-	}
+        // Seed
+        uint32 seed = pItemDS->readInt("seed", 1);
 
-	// Transform
-	Matrix worldTransform = chunkTransform;
-	worldTransform.preMultiply(
-		pItemDS->readMatrix34( "transform", Matrix::identity ) );
+        // Transform
+        Matrix worldTransform = chunkTransform;
+        worldTransform.preMultiply(
+          pItemDS->readMatrix34("transform", Matrix::identity));
 
-	// Now take this information and make it generate texture usage info:
-	Moo::ModelTextureUsageContext context;
-	Moo::ModelTextureUsageGroup::Data data;
-	Moo::ModelTextureUsageGroup usageGroup( data, context );
+        // Now take this information and make it generate texture usage info:
 
-	const Detail::CachedUsages & usages = 
-		detail_->fetchUsageData_model( models );
-	detail_->applyCachedUsages( worldTransform, usages, &usageGroup );
+        Moo::ModelTextureUsageContext     context;
+        Moo::ModelTextureUsageGroup::Data data;
+        Moo::ModelTextureUsageGroup       usageGroup(data, context);
 
-	// Now convert the usages generated to definitions
-	Detail::convertUsagesToDefs( stringTable, assetList, context, usages_ );
-	
-	return true;
-}
+        const Detail::CachedUsages& usages =
+          detail_->fetchUsageData_tree(resource.c_str(), seed);
+        detail_->applyCachedUsages(worldTransform, usages, &usageGroup);
 
+        // Now convert the usages generated to definitions
+        Detail::convertUsagesToDefs(stringTable, assetList, context, usages_);
 
-bool StaticTextureStreamingWriter::addFromChunkTree( 
-	const DataSectionPtr & pItemDS,
-	const Matrix & chunkTransform,
-	StringTableWriter & stringTable,
-	AssetListWriter & assetList )
-{
-	// Attempt to load the speedtree model and collect its usage data
-	MF_ASSERT( pItemDS != NULL );
-
-	// SpeedTree
-	BW::string resource = pItemDS->readString( "spt" );
-	if (resource.empty())
-	{
-		ERROR_MSG( "StaticTextureStreamingWriter: "
-			"ChunkTree has no speedtree specified.\n" );
-		return false;
-	}
-
-	// Seed
-	uint32 seed = pItemDS->readInt( "seed", 1 );
-
-	// Transform
-	Matrix worldTransform = chunkTransform;
-	worldTransform.preMultiply(
-		pItemDS->readMatrix34( "transform", Matrix::identity ) );
-
-	// Now take this information and make it generate texture usage info:
-
-	Moo::ModelTextureUsageContext context;
-	Moo::ModelTextureUsageGroup::Data data;
-	Moo::ModelTextureUsageGroup usageGroup( data, context );
-	
-	const Detail::CachedUsages & usages = 
-		detail_->fetchUsageData_tree( resource.c_str(), seed );
-	detail_->applyCachedUsages( worldTransform, usages, &usageGroup );
-
-	// Now convert the usages generated to definitions
-	Detail::convertUsagesToDefs( stringTable, assetList, context, usages_ );
-
-	return true;
-}
+        return true;
+    }
 
 } // namespace CompiledSpace
 } // namespace BW

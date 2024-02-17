@@ -1,7 +1,6 @@
 #ifndef WE_INITIALISATION_HPP
 #define WE_INITIALISATION_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include <iostream>
@@ -16,35 +15,35 @@ class Renderer;
  */
 class Initialisation
 {
-public:
-	static bool initApp( HINSTANCE hInstance, HWND hWndApp, HWND hWndGraphics );
-	static void finiApp();
+  public:
+    static bool initApp(HINSTANCE hInstance, HWND hWndApp, HWND hWndGraphics);
+    static void finiApp();
 
-	static HINSTANCE s_hInstance;
-	static HWND s_hWndApp;
-	static HWND s_hWndGraphics;
+    static HINSTANCE s_hInstance;
+    static HWND      s_hWndApp;
+    static HWND      s_hWndGraphics;
 
-private:
-	static bool initGraphics( HINSTANCE hInstance, HWND hWnd );
-	static void finaliseGraphics();
+  private:
+    static bool initGraphics(HINSTANCE hInstance, HWND hWnd);
+    static void finaliseGraphics();
 
-	static bool initScripts();
-	static void finaliseScripts();
+    static bool initScripts();
+    static void finaliseScripts();
 
-	static bool initTiming();
-	static bool initConsoles();
-	static void initSound();
-	static bool initErrorHandling();
+    static bool initTiming();
+    static bool initConsoles();
+    static void initSound();
+    static bool initErrorHandling();
 
-	Initialisation(const Initialisation&);
-	Initialisation& operator=(const Initialisation&);
+    Initialisation(const Initialisation&);
+    Initialisation& operator=(const Initialisation&);
 
-	friend std::ostream& operator<<( std::ostream&, const Initialisation& );
+    friend std::ostream& operator<<(std::ostream&, const Initialisation&);
 
-private:
-	static std::auto_ptr<Renderer> renderer_;
+  private:
+    static std::auto_ptr<Renderer> renderer_;
 
-	static bool inited_;
+    static bool inited_;
 };
 
 BW_END_NAMESPACE
@@ -52,6 +51,5 @@ BW_END_NAMESPACE
 #ifdef CODE_INLINE
 #include "initialisation.ipp"
 #endif
-
 
 #endif // WE_INITIALISATION_HPP

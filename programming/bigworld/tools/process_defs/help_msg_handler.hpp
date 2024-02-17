@@ -12,18 +12,19 @@ BW_BEGIN_NAMESPACE
 // system to redirect the output captured from a script back to std::cerr.
 //
 
-class ProcessDefsHelpMsgHandler: public DebugMessageCallback
+class ProcessDefsHelpMsgHandler : public DebugMessageCallback
 {
-public:
+  public:
+    ProcessDefsHelpMsgHandler();
 
-	ProcessDefsHelpMsgHandler();
+    virtual ~ProcessDefsHelpMsgHandler();
 
-	virtual ~ProcessDefsHelpMsgHandler();
-
-	virtual bool handleMessage(
-		DebugMessagePriority messagePriority,
-		const char * pCategory, DebugMessageSource messageSource,
-		const LogMetaData & metaData, const char * pFormat, va_list argPtr );
+    virtual bool handleMessage(DebugMessagePriority messagePriority,
+                               const char*          pCategory,
+                               DebugMessageSource   messageSource,
+                               const LogMetaData&   metaData,
+                               const char*          pFormat,
+                               va_list              argPtr);
 };
 
 BW_END_NAMESPACE

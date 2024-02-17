@@ -5,33 +5,31 @@
 #include "resmgr/datasection.hpp"
 #include "cstdmf/smartpointer.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace VisualManipulator
-{
+namespace VisualManipulator {
 
-class Node;
-typedef SmartPointer<Node> NodePtr;
+    class Node;
+    typedef SmartPointer<Node> NodePtr;
 
-class Node : public ReferenceCount
-{
-public:
-	Node();
+    class Node : public ReferenceCount
+    {
+      public:
+        Node();
 
-	void save( DataSectionPtr pSection, bool recursive = true );
-	Matrix worldTransform() const;
+        void   save(DataSectionPtr pSection, bool recursive = true);
+        Matrix worldTransform() const;
 
-	bool isHardPoint() const;
+        bool isHardPoint() const;
 
-	Matrix transform;
-	BW::string identifier;
+        Matrix     transform;
+        BW::string identifier;
 
-	bool included;
+        bool included;
 
-	Node* parent;
-	BW::vector<NodePtr> children;
-};
+        Node*               parent;
+        BW::vector<NodePtr> children;
+    };
 
 }
 

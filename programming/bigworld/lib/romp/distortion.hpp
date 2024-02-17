@@ -11,12 +11,10 @@
 #include "pyscript/script.hpp"
 #include "pyscript/script_math.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Moo
-{
-	class EffectMaterial;
+namespace Moo {
+    class EffectMaterial;
 };
 
 /**
@@ -25,12 +23,13 @@ namespace Moo
  */
 class TextureSetter : public Moo::EffectConstantValue
 {
-public:
-	bool operator()(ID3DXEffect* pEffect, D3DXHANDLE constantHandle);
-	void map(DX::BaseTexture* pTexture );
-	ComObjectWrap<DX::BaseTexture> map();
-private:
-	ComObjectWrap<DX::BaseTexture> map_;
+  public:
+    bool operator()(ID3DXEffect* pEffect, D3DXHANDLE constantHandle);
+    void map(DX::BaseTexture* pTexture);
+    ComObjectWrap<DX::BaseTexture> map();
+
+  private:
+    ComObjectWrap<DX::BaseTexture> map_;
 };
 
 /**
@@ -49,78 +48,78 @@ private:
  *		- draw masks;  use alpha channel of render target
  *		to draw objects that should distort:
  *			- the water mask is explicitly drawn here
- *			- visuals registered with the distortion channel draw 'as a mask', i.e. unsorted polygon soup
+ *			- visuals registered with the distortion channel draw 'as a mask',
+ *i.e. unsorted polygon soup
  *		- pop full-screen render target
  *		- bind MRT depth and Distortion RT
  *		- draw the actual water
  *		- draw the distortion channel objects
  *		- unbind MRT depth
- *	
+ *
  */
 class Distortion : public Moo::DeviceCallback
 {
-	typedef Distortion This;
+    typedef Distortion This;
 
-public:
-	Distortion();
-	~Distortion();
+  public:
+    Distortion();
+    ~Distortion();
 
-	bool init();
-	void finz();
-	static bool isSupported();
-	bool isEnabled();
+    bool        init();
+    void        finz();
+    static bool isSupported();
+    bool        isEnabled();
 #ifdef EDITOR_ENABLED
-	void setEditorEnabled( bool state )			{ editorEnabled_ = state; }
+    void setEditorEnabled(bool state) { editorEnabled_ = state; }
 #endif
 
-	void tick( float dTime );
-	bool begin();
-	void end();
+    void tick(float dTime);
+    bool begin();
+    void end();
 
-	virtual bool recreateForD3DExDevice() const;
+    virtual bool recreateForD3DExDevice() const;
 
-	void deleteUnmanagedObjects();
-	uint drawCount() const;
-private:
-	void drawScene();
-	void drawMasks();
-	void drawDistortionChannel( bool clear = true );
-	void copyBackBuffer();
-	bool pushRT()
-	{
-		if (s_pRenderTexture_ && s_pRenderTexture_->push())
-		{
-			Moo::rc().beginScene();
-			this->setViewport();
-			return true;
-		}
-		return false;
-	}
-	void popRT()
-	{
-		if (s_pRenderTexture_)
-		{
-			Moo::rc().endScene();
-			s_pRenderTexture_->pop();
-		}
-	}
-	void setViewport();
+    void deleteUnmanagedObjects();
+    uint drawCount() const;
+
+  private:
+    void drawScene();
+    void drawMasks();
+    void drawDistortionChannel(bool clear = true);
+    void copyBackBuffer();
+    bool pushRT()
+    {
+        if (s_pRenderTexture_ && s_pRenderTexture_->push()) {
+            Moo::rc().beginScene();
+            this->setViewport();
+            return true;
+        }
+        return false;
+    }
+    void popRT()
+    {
+        if (s_pRenderTexture_) {
+            Moo::rc().endScene();
+            s_pRenderTexture_->pop();
+        }
+    }
+    void setViewport();
 #ifdef EDITOR_ENABLED
-	bool							editorEnabled_;
+    bool editorEnabled_;
 #endif
-	bool							inited_;
-	bool							watcherEnabled_;
-	float							dTime_;
-	Moo::VisualPtr					visual_;
-	EffectParameterCache			parameters_;
-	Moo::EffectMaterialPtr			effectMaterial_;
-	static Moo::RenderTargetPtr		s_pRenderTexture_;
+    bool                        inited_;
+    bool                        watcherEnabled_;
+    float                       dTime_;
+    Moo::VisualPtr              visual_;
+    EffectParameterCache        parameters_;
+    Moo::EffectMaterialPtr      effectMaterial_;
+    static Moo::RenderTargetPtr s_pRenderTexture_;
 
-	typedef Moo::GraphicsSetting::GraphicsSettingPtr GraphicsSettingPtr;
-	GraphicsSettingPtr distortionSettings_;
-	void setDistortionOption(int) {}
+    typedef Moo::GraphicsSetting::GraphicsSettingPtr GraphicsSettingPtr;
+    GraphicsSettingPtr                               distortionSettings_;
+    void                                             setDistortionOption(int) {}
 };
 
 BW_END_NAMESPACE
 
-#endif //DISTORTION_HPP
+#endif // DISTORTION_HPP

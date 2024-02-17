@@ -3,11 +3,11 @@
 
 BW_BEGIN_NAMESPACE
 
-bool isErrnoIgnorable();
-const char * lastNetworkError();
-const char * networkErrorMessage( int error );
+bool        isErrnoIgnorable();
+const char* lastNetworkError();
+const char* networkErrorMessage(int error);
 
-int getMaxBufferSize( bool isReadBuffer );
+int getMaxBufferSize(bool isReadBuffer);
 
 BW_END_NAMESPACE
 

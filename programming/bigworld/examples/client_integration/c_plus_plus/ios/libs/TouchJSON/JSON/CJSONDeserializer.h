@@ -29,23 +29,23 @@
 
 #import <Foundation/Foundation.h>
 
-extern NSString *const kJSONDeserializerErrorDomain /* = @"CJSONDeserializerErrorDomain" */;
+extern NSString* const
+  kJSONDeserializerErrorDomain /* = @"CJSONDeserializerErrorDomain" */;
 
-@protocol CDeserializerProtocol <NSObject>
+@protocol CDeserializerProtocol<NSObject>
 
-- (id)deserializeAsDictionary:(NSData *)inData error:(NSError **)outError;
+- (id)deserializeAsDictionary:(NSData*)inData error:(NSError**)outError;
 
 @end
 
 #pragma mark -
 
-@interface CJSONDeserializer : NSObject <CDeserializerProtocol> {
-
+@interface CJSONDeserializer : NSObject<CDeserializerProtocol> {
 }
 
 + (id)deserializer;
 
-- (id)deserializeAsDictionary:(NSData *)inData error:(NSError **)outError;
+- (id)deserializeAsDictionary:(NSData*)inData error:(NSError**)outError;
 
 @end
 
@@ -54,6 +54,6 @@ extern NSString *const kJSONDeserializerErrorDomain /* = @"CJSONDeserializerErro
 @interface CJSONDeserializer (CJSONDeserializer_Deprecated)
 
 /// You should switch to using deserializeAsDictionary:error: instead.
-- (id)deserialize:(NSData *)inData error:(NSError **)outError;
+- (id)deserialize:(NSData*)inData error:(NSError**)outError;
 
 @end

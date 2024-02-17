@@ -6,7 +6,6 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -15,19 +14,19 @@ BW_BEGIN_NAMESPACE
  */
 class ExecuteRawCommandTask : public MySqlBackgroundTask
 {
-public:
-	ExecuteRawCommandTask( const BW::string & command,
-			IDatabase::IExecuteRawCommandHandler & handler );
+  public:
+    ExecuteRawCommandTask(const BW::string&                     command,
+                          IDatabase::IExecuteRawCommandHandler& handler);
 
-	virtual void performBackgroundTask( MySql & conn );
-	virtual void performMainThreadTask( bool succeeded );
+    virtual void performBackgroundTask(MySql& conn);
+    virtual void performMainThreadTask(bool succeeded);
 
-protected:
-	void onRetry();
-	void onException( const DatabaseException & e );
+  protected:
+    void onRetry();
+    void onException(const DatabaseException& e);
 
-	BW::string									command_;
-	IDatabase::IExecuteRawCommandHandler &		handler_;
+    BW::string                            command_;
+    IDatabase::IExecuteRawCommandHandler& handler_;
 };
 
 BW_END_NAMESPACE

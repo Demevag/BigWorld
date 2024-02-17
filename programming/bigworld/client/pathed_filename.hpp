@@ -5,7 +5,6 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -15,37 +14,38 @@ BW_BEGIN_NAMESPACE
  */
 class PathedFilename
 {
-public:
-	enum PathBase
-	{
-		BASE_APP_DATA,			// The user's application data folder (as determined by the system).
-		BASE_LOCAL_APP_DATA,	// The user's app data folder on the local machine.
-		BASE_ROAMING_APP_DATA,	// The user's roaming (domain) app data folder.
-		BASE_MY_DOCS,			// The user's My Documents folder.
-		BASE_MY_PICTURES,		// The user's My Pictures folder.
-		BASE_CWD,				// The current working directory.
-		BASE_EXE_PATH,			// The directory containing the executable.
-		BASE_RES_TREE			// The first res specified in paths.xml.
-	};
+  public:
+    enum PathBase
+    {
+        BASE_APP_DATA, // The user's application data folder (as determined by
+                       // the system).
+        BASE_LOCAL_APP_DATA, // The user's app data folder on the local machine.
+        BASE_ROAMING_APP_DATA, // The user's roaming (domain) app data folder.
+        BASE_MY_DOCS,          // The user's My Documents folder.
+        BASE_MY_PICTURES,      // The user's My Pictures folder.
+        BASE_CWD,              // The current working directory.
+        BASE_EXE_PATH,         // The directory containing the executable.
+        BASE_RES_TREE          // The first res specified in paths.xml.
+    };
 
-public:
-	PathedFilename();
-	PathedFilename( const BW::string& filename, PathBase base );
-	PathedFilename( DataSectionPtr ds, 
-					const BW::string& defaultFilename, 
-					PathBase defaultBase );
+  public:
+    PathedFilename();
+    PathedFilename(const BW::string& filename, PathBase base);
+    PathedFilename(DataSectionPtr    ds,
+                   const BW::string& defaultFilename,
+                   PathBase          defaultBase);
 
-	void init( DataSectionPtr ds, 
-				const BW::string& defaultFilename, 
-				PathBase defaultBase );
+    void init(DataSectionPtr    ds,
+              const BW::string& defaultFilename,
+              PathBase          defaultBase);
 
-	BW::string resolveName() const;
+    BW::string resolveName() const;
 
-	static BW::string resolveBase( PathBase baseType );
+    static BW::string resolveBase(PathBase baseType);
 
-private:
-	BW::string filename_;
-	PathBase base_;
+  private:
+    BW::string filename_;
+    PathBase   base_;
 };
 
 BW_END_NAMESPACE

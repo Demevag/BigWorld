@@ -16,45 +16,47 @@ class Mutant;
 
 class MeApp
 {
-public:
+  public:
+    MeApp(IMainFrame* mainFrame, IModelEditorApp* editorApp);
+    ~MeApp();
 
-	MeApp( IMainFrame * mainFrame, IModelEditorApp * editorApp );
-	~MeApp();
+    void initCamera();
 
-	void initCamera();
-	
-	static MeApp & instance() { SINGLETON_MANAGER_WRAPPER( MeApp ) MF_ASSERT(s_instance_); return *s_instance_; }
-	
-	Floor*	floor();
-	Mutant*	mutant();
-	Lights*	lights();
-	ToolsCameraPtr camera();
+    static MeApp& instance()
+    {
+        SINGLETON_MANAGER_WRAPPER(MeApp) MF_ASSERT(s_instance_);
+        return *s_instance_;
+    }
 
-	Moo::LightContainerPtr blackLight() { return blackLight_; }
-	Moo::LightContainerPtr whiteLight() { return whiteLight_; }
+    Floor*         floor();
+    Mutant*        mutant();
+    Lights*        lights();
+    ToolsCameraPtr camera();
 
-	void saveModel();
-	void saveModelAs();
-	bool canExit( bool quitting );
-	void forceClean();
-	bool isDirty() const;
-private:
+    Moo::LightContainerPtr blackLight() { return blackLight_; }
+    Moo::LightContainerPtr whiteLight() { return whiteLight_; }
 
-	static MeApp *		s_instance_;
+    void saveModel();
+    void saveModelAs();
+    bool canExit(bool quitting);
+    void forceClean();
+    bool isDirty() const;
 
-	Floor*	floor_;
-	Mutant*	mutant_;
-	Lights*  lights_;
+  private:
+    static MeApp* s_instance_;
 
-	Moo::LightContainerPtr blackLight_;
-	Moo::LightContainerPtr whiteLight_;
+    Floor*  floor_;
+    Mutant* mutant_;
+    Lights* lights_;
 
-	ToolsCameraPtr		camera_;	
-	IModelEditorApp *	editorApp_;
-	IMainFrame *		mainFrame_;
+    Moo::LightContainerPtr blackLight_;
+    Moo::LightContainerPtr whiteLight_;
+
+    ToolsCameraPtr   camera_;
+    IModelEditorApp* editorApp_;
+    IMainFrame*      mainFrame_;
 };
 
 BW_END_NAMESPACE
-
 
 #endif // ME_APP_HPP

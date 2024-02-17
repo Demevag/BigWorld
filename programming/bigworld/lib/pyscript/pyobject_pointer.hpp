@@ -3,7 +3,6 @@
 
 #include "cstdmf/smartpointer.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 typedef SmartPointer<PyObject> PyObjectPtr;
@@ -12,15 +11,14 @@ typedef SmartPointer<PyObject> PyObjectPtr;
 // Section: SmartPointer glue
 // -----------------------------------------------------------------------------
 
-
 /**
  *	This template specialisation allows us to have a SmartPointer to
  *	ordinary an PyObject (PyObjectPlus works fine without these)
  */
 template <>
-inline void incrementReferenceCount( const PyObject & Q )
+inline void incrementReferenceCount(const PyObject& Q)
 {
-	Py_INCREF( const_cast<PyObject*>( &Q ) );	// Q guaranteed non-null
+    Py_INCREF(const_cast<PyObject*>(&Q)); // Q guaranteed non-null
 }
 
 /**
@@ -28,9 +26,9 @@ inline void incrementReferenceCount( const PyObject & Q )
  *	ordinary an PyObject (PyObjectPlus works fine without these)
  */
 template <>
-inline void decrementReferenceCount( const PyObject & Q )
+inline void decrementReferenceCount(const PyObject& Q)
 {
-	Py_DECREF( const_cast<PyObject*>( &Q ) );	// Q guaranteed non-null
+    Py_DECREF(const_cast<PyObject*>(&Q)); // Q guaranteed non-null
 }
 
 /**
@@ -38,9 +36,9 @@ inline void decrementReferenceCount( const PyObject & Q )
  *	an ordinary PyObject (PyObjectPlus works fine without these)
  */
 template <>
-inline bool hasZeroReferenceCount( const PyObject & Q )
+inline bool hasZeroReferenceCount(const PyObject& Q)
 {
-	return (const_cast<PyObject*>( &Q )->ob_refcnt == 0);	// Q guaranteed non-null
+    return (const_cast<PyObject*>(&Q)->ob_refcnt == 0); // Q guaranteed non-null
 }
 
 BW_END_NAMESPACE

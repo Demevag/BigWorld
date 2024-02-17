@@ -7,8 +7,7 @@ BW_BEGIN_NAMESPACE
 
 class LogOnStatus
 {
-public:
-
+  public:
     /// This enumeration contains the possible results of a logon attempt.  If
     /// you update this mapping, you need to make corresponding changes to
     /// bigworld/src/client/connection_control.cpp.
@@ -40,7 +39,7 @@ public:
         LOGIN_REJECTED_DB_NOT_READY,
         LOGIN_REJECTED_ILLEGAL_CHARACTERS,
         LOGIN_REJECTED_SERVER_NOT_READY,
-        LOGIN_REJECTED_UPDATER_NOT_READY,   // No longer used
+        LOGIN_REJECTED_UPDATER_NOT_READY, // No longer used
         LOGIN_REJECTED_NO_BASEAPPS,
         LOGIN_REJECTED_BASEAPP_OVERLOAD,
         LOGIN_REJECTED_CELLAPP_OVERLOAD,
@@ -64,72 +63,66 @@ public:
         LOGIN_REJECTED_NO_LOGINAPP_RESPONSE,
         LOGIN_REJECTED_NO_BASEAPP_RESPONSE,
 
-        LOGIN_REJECTED_IP_ADDRESS_BAN = 244, // Logins from this IP are banned till specified time.
-        LOGIN_REJECTED_INACCESSIBLE_REALM = 245, // Logins on specified realms are disabled.
-        LOGIN_REJECTED_REGISTRATION_NOT_ALLOWED = 246, // Registration in project is not allowed.
+        LOGIN_REJECTED_IP_ADDRESS_BAN =
+          244, // Logins from this IP are banned till specified time.
+        LOGIN_REJECTED_INACCESSIBLE_REALM =
+          245, // Logins on specified realms are disabled.
+        LOGIN_REJECTED_REGISTRATION_NOT_ALLOWED =
+          246, // Registration in project is not allowed.
         LOGIN_REJECTED_REGISTRATION_NOT_CONFIRMED = 247, // Email not confirmed
-        LOGIN_REJECTED_NOT_REGISTERED = 248,// Account not registered
-        LOGIN_REJECTED_ACTIVATING = 249, // Registration not completed
+        LOGIN_REJECTED_NOT_REGISTERED       = 248, // Account not registered
+        LOGIN_REJECTED_ACTIVATING           = 249, // Registration not completed
         LOGIN_REJECTED_UNABLE_TO_PARSE_JSON = 250, // Unable to parse JSON.
-        LOGIN_REJECTED_USERS_LIMIT = 251,   // Online users limit is reached.
-        LOGIN_REJECTED_LOGIN_QUEUE = 252,   // User is in the login queue.
+        LOGIN_REJECTED_USERS_LIMIT = 251, // Online users limit is reached.
+        LOGIN_REJECTED_LOGIN_QUEUE = 252, // User is in the login queue.
 
         LOGIN_CUSTOM_DEFINED_ERROR = 254,
-        LAST_SERVER_SIDE_VALUE = 255
+        LAST_SERVER_SIDE_VALUE     = 255
     };
 
     /// This is the default constructor.
-    LogOnStatus( Status status = NOT_SET ) :
-        status_( status )
+    LogOnStatus(Status status = NOT_SET)
+      : status_(status)
     {
     }
 
     /// This method returns true if the logon succeeded.
-    virtual bool succeeded() const
-    {
-        return status_ == LOGGED_ON;
-    }
+    virtual bool succeeded() const { return status_ == LOGGED_ON; }
 
     /// This method returns true if the logon failed.
     virtual bool fatal() const
     {
-        return
-            status_ == CONNECTION_FAILED ||
-            status_ == CANCELLED ||
-            status_ == UNKNOWN_ERROR;
+        return status_ == CONNECTION_FAILED || status_ == CANCELLED ||
+               status_ == UNKNOWN_ERROR;
     }
 
     /// This method returns true if the logon was successful, or is still
     /// pending.
     virtual bool okay() const
     {
-        return
-            status_ == NOT_SET ||
-            status_ == LOGGED_ON;
+        return status_ == NOT_SET || status_ == LOGGED_ON;
     }
 
     Status value() const { return status_; }
 
-    void value( Status status ) { status_ = status; }
+    void value(Status status) { status_ = status; }
 
-private:
+  private:
     Status status_;
 };
-
 
 /*
  *  Overloaded equals operator for comparing LogOnStatus'
  */
-inline bool operator==( LogOnStatus a, LogOnStatus b )
+inline bool operator==(LogOnStatus a, LogOnStatus b)
 {
     return a.value() == b.value();
 }
 
-
 /**
  *  Overloaded not-equals operator for comparing LogOnStatus'
  */
-inline bool operator!=( LogOnStatus a, LogOnStatus b )
+inline bool operator!=(LogOnStatus a, LogOnStatus b)
 {
     return a.value() != b.value();
 }

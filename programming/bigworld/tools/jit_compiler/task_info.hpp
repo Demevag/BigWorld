@@ -17,102 +17,97 @@ BW_BEGIN_NAMESPACE
 
 class TaskInfo : public std::enable_shared_from_this<TaskInfo>
 {
-public:
-	typedef void CallbackSignature(TaskInfoPtr);
-	typedef std::function<CallbackSignature> CallbackFunction;
+  public:
+    typedef void                             CallbackSignature(TaskInfoPtr);
+    typedef std::function<CallbackSignature> CallbackFunction;
 
-	enum LogDetailLevel
-	{
-		LOG_DETAIL_ALL,
-		LOG_DETAIL_ERRORS,
-		LOG_DETAIL_WARNINGS
-	};
+    enum LogDetailLevel
+    {
+        LOG_DETAIL_ALL,
+        LOG_DETAIL_ERRORS,
+        LOG_DETAIL_WARNINGS
+    };
 
-public:
-	TaskInfo();
-	explicit TaskInfo(const ConversionTask * task);
-	TaskInfo(TaskInfo && other);
-	~TaskInfo();
+  public:
+    TaskInfo();
+    explicit TaskInfo(const ConversionTask* task);
+    TaskInfo(TaskInfo&& other);
+    ~TaskInfo();
 
-	TaskInfo & operator=(TaskInfo && other);
+    TaskInfo& operator=(TaskInfo&& other);
 
-	bool operator==(const ConversionTask * other) const;
-	bool operator!=(const ConversionTask * other) const;
+    bool operator==(const ConversionTask* other) const;
+    bool operator!=(const ConversionTask* other) const;
 
+    Connection registerChangedCallback(CallbackFunction callback);
 
-	Connection registerChangedCallback(CallbackFunction callback);
+    // Setters
+    void setState(TaskInfoState state);
 
+    void appendToLog(const BW::WStringRef& message);
+    void clearLog();
 
-	// Setters
-	void setState(TaskInfoState state);
+    void addOutput(const BW::StringRef& output);
+    void clearOutputs();
 
-	void appendToLog(const BW::WStringRef & message);
-	void clearLog();
+    void addSubTask(TaskInfoPtr subTask);
+    void resolveSubTasks(TaskStore& store);
+    void clearSubTasks();
 
-	void addOutput(const BW::StringRef & output);
-	void clearOutputs();
+    void setErrors();
+    void setWarnings();
+    void clearErrorFlags();
 
-	void addSubTask(TaskInfoPtr subTask);
-	void resolveSubTasks(TaskStore & store);
-	void clearSubTasks();
+    // Simple Getters
+    const ConversionTask* conversionTask() const;
 
-	void setErrors();
-	void setWarnings();
-	void clearErrorFlags();
-	
+    TaskInfoState state() const;
 
-	// Simple Getters
-	const ConversionTask * conversionTask() const;
+    const BW::string& source() const;
+    uint64            converterId() const;
+    const BW::string& converterVersion() const;
+    const BW::string& converterParams() const;
 
-	TaskInfoState state() const;
+    const BW::wstring&             log() const;
+    const BW::vector<BW::string>&  outputs() const;
+    const BW::vector<TaskInfoPtr>& subTasks() const;
 
-	const BW::string & source() const;
-	uint64 converterId() const;
-	const BW::string & converterVersion() const;
-	const BW::string & converterParams() const;
+    bool hasFailed() const;
+    bool hasErrors() const;
+    bool hasWarnings() const;
 
-	const BW::wstring & log() const;
-	const BW::vector< BW::string > & outputs() const;
-	const BW::vector< TaskInfoPtr > & subTasks() const;
+    enum Result
+    {
+        RESULT_SUCCESS,
+        RESULT_WARNING,
+        RESULT_ERROR,
+    };
+    Result getResult() const;
 
-	bool hasFailed() const;
-	bool hasErrors() const;
-	bool hasWarnings() const;
+    // Pretty Getters
+    BW::wstring getFormattedName() const;
 
-	enum Result
-	{
-		RESULT_SUCCESS,
-		RESULT_WARNING,
-		RESULT_ERROR,
-	};
-	Result getResult() const;
+    BW::wstring getFormattedLog(LogDetailLevel detailLevel) const;
 
-	// Pretty Getters
-	BW::wstring getFormattedName() const;
+    BW::wstring getTextDump() const;
 
-	BW::wstring getFormattedLog( LogDetailLevel detailLevel ) const;
+  private:
+    TaskInfo(const TaskInfo& other);
+    TaskInfo& operator=(const TaskInfo& other);
 
-	BW::wstring getTextDump() const;
+    void emitChangedSignal();
 
-private:
-	TaskInfo(const TaskInfo & other);
-	TaskInfo & operator=(const TaskInfo & other);
+    const ConversionTask*   task_;
+    BW::vector<TaskInfoPtr> subTasks_;
 
-	void emitChangedSignal();
+    TaskInfoState          state_;
+    BW::wstring            log_;
+    BW::vector<BW::string> outputs_;
+    bool                   hasError_;
+    bool                   hasWarning_;
 
-
-	const ConversionTask * task_;
-	BW::vector< TaskInfoPtr > subTasks_;
-
-	TaskInfoState state_;
-	BW::wstring log_;
-	BW::vector< BW::string > outputs_;
-	bool hasError_;
-	bool hasWarning_;
-
-	Signal<CallbackSignature> changedSignal_;
+    Signal<CallbackSignature> changedSignal_;
 };
-
 
 BW_END_NAMESPACE
 

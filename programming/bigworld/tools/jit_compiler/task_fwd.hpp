@@ -10,20 +10,19 @@ BW_BEGIN_NAMESPACE
 
 enum TaskInfoState
 {
-	NONE,
-	CHECKING,
-	GENERATING_DEPENDENCIES,
-	CONVERTING,
+    NONE,
+    CHECKING,
+    GENERATING_DEPENDENCIES,
+    CONVERTING,
 };
 
 class TaskInfo;
 typedef std::shared_ptr<TaskInfo> TaskInfoPtr;
 
-
 enum TaskStoreAction
 {
-	ADDED,
-	REMOVED
+    ADDED,
+    REMOVED
 };
 
 class TaskStore;

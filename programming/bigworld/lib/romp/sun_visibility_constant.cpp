@@ -10,48 +10,46 @@
 
 BW_BEGIN_NAMESPACE
 
-
-static AutoConfigString s_sunVisibilityTestXML( "environment/sunVisibilityTestXML" );
+static AutoConfigString s_sunVisibilityTestXML(
+  "environment/sunVisibilityTestXML");
 
 //-- Sun visibility shared auto-constant.
 //--------------------------------------------------------------------------------------------------
 class SunVisibilityConstant : public Moo::EffectConstantValue
 {
-public:
-    SunVisibilityConstant(LensEffect& sunVisibilityTestEffect) : 
-      m_sunVisibilityTestEffect(sunVisibilityTestEffect)
+  public:
+    SunVisibilityConstant(LensEffect& sunVisibilityTestEffect)
+      : m_sunVisibilityTestEffect(sunVisibilityTestEffect)
     {
     }
 
     bool operator()(ID3DXEffect* pEffect, D3DXHANDLE constantHandle)
     {
         BW_GUARD;
-        pEffect->SetFloat(constantHandle, LensEffectManager::instance().sunVisibility());
+        pEffect->SetFloat(constantHandle,
+                          LensEffectManager::instance().sunVisibility());
         return true;
     }
 
-private:
+  private:
     LensEffect& m_sunVisibilityTestEffect;
 };
 
-SunVisibilityConstantSupport::SunVisibilityConstantSupport():
-m_added(false)
+SunVisibilityConstantSupport::SunVisibilityConstantSupport()
+  : m_added(false)
 {
-
 }
 
 void SunVisibilityConstantSupport::load()
 {
-    //Sun flare
-    DataSectionPtr pLensEffectsSection = BWResource::openSection( s_sunVisibilityTestXML );
-    if ( pLensEffectsSection )
-    {
-        m_sunVisibilityTestEffect.load( pLensEffectsSection );
-        m_sunVisibilityTestEffect.clampToFarPlane( true );
-    }
-    else
-    {
-        WARNING_MSG( "Could not find lens effects definitions for the Sun\n" );
+    // Sun flare
+    DataSectionPtr pLensEffectsSection =
+      BWResource::openSection(s_sunVisibilityTestXML);
+    if (pLensEffectsSection) {
+        m_sunVisibilityTestEffect.load(pLensEffectsSection);
+        m_sunVisibilityTestEffect.clampToFarPlane(true);
+    } else {
+        WARNING_MSG("Could not find lens effects definitions for the Sun\n");
     }
     createManagedObjects();
 }
@@ -59,14 +57,14 @@ void SunVisibilityConstantSupport::load()
 void SunVisibilityConstantSupport::createManagedObjects()
 {
     BW_GUARD;
-    if(m_added)
+    if (m_added)
         return;
 
     //-- register shared auto-constant.
     Moo::rc().effectVisualContext().registerAutoConstant(
-        Moo::EffectVisualContext::AUTO_CONSTANT_TYPE_PER_FRAME, "SunVisibility",
-        new SunVisibilityConstant(m_sunVisibilityTestEffect)
-        );
+      Moo::EffectVisualContext::AUTO_CONSTANT_TYPE_PER_FRAME,
+      "SunVisibility",
+      new SunVisibilityConstant(m_sunVisibilityTestEffect));
     m_added = true;
 }
 
@@ -77,8 +75,7 @@ void SunVisibilityConstantSupport::deleteManagedObjects()
 
     //-- unregister shared auto-constant.
     Moo::rc().effectVisualContext().unregisterAutoConstant(
-        Moo::EffectVisualContext::AUTO_CONSTANT_TYPE_PER_FRAME, "SunVisibility"
-        );
+      Moo::EffectVisualContext::AUTO_CONSTANT_TYPE_PER_FRAME, "SunVisibility");
 }
 
 BW_END_NAMESPACE

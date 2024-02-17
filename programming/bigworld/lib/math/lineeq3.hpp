@@ -12,22 +12,21 @@ BW_BEGIN_NAMESPACE
  */
 class LineEq3
 {
-public:
-	/// Constructors
-	LineEq3();
-	LineEq3( const Vector3& point1, const Vector3& point2 );
+  public:
+    /// Constructors
+    LineEq3();
+    LineEq3(const Vector3& point1, const Vector3& point2);
 
-	bool isValid() const;
-	void isValid( bool isValid );
+    bool isValid() const;
+    void isValid(bool isValid);
 
-	float perpDistance( const Vector3& point ) const;
+    float perpDistance(const Vector3& point) const;
 
-private:
-	bool		isValid_;
-	Vector3		point_;
-	Vector3		direction_;
+  private:
+    bool    isValid_;
+    Vector3 point_;
+    Vector3 direction_;
 };
-
 
 #include "lineeq3.ipp"
 

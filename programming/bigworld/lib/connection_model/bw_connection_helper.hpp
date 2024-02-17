@@ -6,7 +6,6 @@
 #include "connection/condemned_interfaces.hpp"
 #include "connection/login_challenge_factory.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BWEntityFactory;
@@ -25,43 +24,37 @@ class EntityDefConstants;
  *	Applications should create a single instance of this class. Instances can
  *	be used for:
  *
- * - creating connections 
+ * - creating connections
  * - calling update and updateServer on connection
  */
 
-
 class BWConnectionHelper
 {
-public:
-	BWConnectionHelper( BWEntityFactory & entityFactory,
-		BWSpaceDataStorage & spaceDataStorage, 
-		const EntityDefConstants & entityDefConstants );
-	~BWConnectionHelper();
-	
-	// Connection ticking
-	void update( BWConnection* pConnection, float dt );
-	void updateServer ( BWConnection* pConnection );
+  public:
+    BWConnectionHelper(BWEntityFactory&          entityFactory,
+                       BWSpaceDataStorage&       spaceDataStorage,
+                       const EntityDefConstants& entityDefConstants);
+    ~BWConnectionHelper();
 
-	BWServerConnection* createServerConnection(  
-		double initialClientTime );
+    // Connection ticking
+    void update(BWConnection* pConnection, float dt);
+    void updateServer(BWConnection* pConnection);
 
-	BWNullConnection * createNullConnection(
-		double initialClientTime, SpaceID spaceID );
+    BWServerConnection* createServerConnection(double initialClientTime);
 
-	BWReplayConnection * createReplayConnection(
-		double initialClientTime );
+    BWNullConnection* createNullConnection(double  initialClientTime,
+                                           SpaceID spaceID);
 
+    BWReplayConnection* createReplayConnection(double initialClientTime);
 
-private:
-	BWEntityFactory & entityFactory_;
-	BWSpaceDataStorage & spaceDataStorage_;
-	const EntityDefConstants & entityDefConstants_;
-	CondemnedInterfaces condemnedInterfaces_;
-	LoginChallengeFactories loginChallengeFactories_;
+  private:
+    BWEntityFactory&          entityFactory_;
+    BWSpaceDataStorage&       spaceDataStorage_;
+    const EntityDefConstants& entityDefConstants_;
+    CondemnedInterfaces       condemnedInterfaces_;
+    LoginChallengeFactories   loginChallengeFactories_;
 };
-
 
 BW_END_NAMESPACE
 
 #endif // BW_CONNECTION_HELPER_HPP
-

@@ -10,7 +10,6 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -18,25 +17,26 @@ BW_BEGIN_NAMESPACE
  */
 class SqliteStatement
 {
-public:
-	SqliteStatement( SqliteConnection & connection,
-			const BW::string & statement, int & result );
-	~SqliteStatement();
+  public:
+    SqliteStatement(SqliteConnection& connection,
+                    const BW::string& statement,
+                    int&              result);
+    ~SqliteStatement();
 
-	sqlite3_stmt * get();
+    sqlite3_stmt* get();
 
-	int reset();
+    int reset();
 
-	int step();
+    int step();
 
-	const unsigned char * textColumn( int column );
-	int intColumn( int column );
-	int64 int64Column( int column );
-	const void * blobColumn( int column, int * pSize );
-	int columnBytes( int column );
+    const unsigned char* textColumn(int column);
+    int                  intColumn(int column);
+    int64                int64Column(int column);
+    const void*          blobColumn(int column, int* pSize);
+    int                  columnBytes(int column);
 
-private:
-	sqlite3_stmt * pStmt_;
+  private:
+    sqlite3_stmt* pStmt_;
 };
 
 BW_END_NAMESPACE

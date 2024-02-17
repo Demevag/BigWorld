@@ -12,41 +12,42 @@ class ParticleSystem;
 
 class MpsProperties : public PropertyTable
 {
-	DECLARE_DYNCREATE(MpsProperties)
+    DECLARE_DYNCREATE(MpsProperties)
 
-public:
-    enum { IDD = IDD_MPS_PROPERTIES };
+  public:
+    enum
+    {
+        IDD = IDD_MPS_PROPERTIES
+    };
 
-	MpsProperties();  
+    MpsProperties();
 
-	/*virtual*/ ~MpsProperties();
+    /*virtual*/ ~MpsProperties();
 
-	virtual void DoDataExchange(CDataExchange* pDX); 
+    virtual void DoDataExchange(CDataExchange* pDX);
 
     MetaParticleSystemPtr metaPS();
 
-	virtual void OnInitialUpdate();
+    virtual void OnInitialUpdate();
 
-	afx_msg LRESULT OnChangePropertyItem(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnChangePropertyItem(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam);
 
     DECLARE_MESSAGE_MAP()
-	DECLARE_AUTO_TOOLTIP(MpsProperties, PropertyTable)
+    DECLARE_AUTO_TOOLTIP(MpsProperties, PropertyTable)
 
-private:
-	GeneralEditorPtr editor_;
-	bool elected_;
+  private:
+    GeneralEditorPtr editor_;
+    bool             elected_;
 
-	CButton ctlCheckDrawHelperModel_;
-	CEdit ctlEditHelperModelName_;
-	CComboBox ctlComboHelperModelHardpoint_;
-	bool ignoreControlChanges_;
+    CButton   ctlCheckDrawHelperModel_;
+    CEdit     ctlEditHelperModelName_;
+    CComboBox ctlComboHelperModelHardpoint_;
+    bool      ignoreControlChanges_;
 
-	afx_msg void OnCbClickedDrawHelperModel();
-	afx_msg void OnBnClickedChooseHelperModel();
-	afx_msg void OnCbnSelchangeCenterOnHardpoint();
+    afx_msg void OnCbClickedDrawHelperModel();
+    afx_msg void OnBnClickedChooseHelperModel();
+    afx_msg void OnCbnSelchangeCenterOnHardpoint();
 };
 
-
 BW_END_NAMESPACE
-

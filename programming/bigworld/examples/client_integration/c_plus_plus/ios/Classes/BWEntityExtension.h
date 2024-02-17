@@ -4,6 +4,6 @@
 @interface BWEntity (Cocos2D)
 
 @property (readonly) CGPoint position2d;
--(void) setPosition2d: (CGPoint) pos yaw:(float)aYaw;
+- (void)setPosition2d:(CGPoint)pos yaw:(float)aYaw;
 
 @end

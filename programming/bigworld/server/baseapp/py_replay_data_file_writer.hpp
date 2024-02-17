@@ -7,12 +7,9 @@
 
 #include "replay_data_file_writer.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-
 class PyReplayDataFileWriterListener;
-
 
 /*~ class NoModule.PyReplayDataFileWriter
  *	@components{ base }
@@ -38,93 +35,88 @@ class PyReplayDataFileWriterListener;
  */
 class PyReplayDataFileWriter : public PyObjectPlus
 {
-	Py_Header( PyReplayDataFileWriter, PyObjectPlus )
+    Py_Header(PyReplayDataFileWriter, PyObjectPlus)
 
-public:
-	PyReplayDataFileWriter( const BW::string & resourcePath,
-		BackgroundFileWriter * pWriter,
-		ChecksumSchemePtr pChecksumScheme,
-		uint numTicksToSign,
-		BWCompressionType compressionType,
-		const MD5::Digest & digest,
-		const ReplayMetaData & metaData,
-		PyTypeObject * pType = &PyReplayDataFileWriter::s_type_ );
+      public
+      : PyReplayDataFileWriter(
+          const BW::string&     resourcePath,
+          BackgroundFileWriter* pWriter,
+          ChecksumSchemePtr     pChecksumScheme,
+          uint                  numTicksToSign,
+          BWCompressionType     compressionType,
+          const MD5::Digest&    digest,
+          const ReplayMetaData& metaData,
+          PyTypeObject*         pType = &PyReplayDataFileWriter::s_type_);
 
-	PyReplayDataFileWriter( const BW::string & resourcePath,
-		BackgroundFileWriter * pWriter,
-		ChecksumSchemePtr pChecksumScheme,
-		const RecordingRecoveryData & recoveryData,
-		PyTypeObject * pType = &PyReplayDataFileWriter::s_type_ );
+    PyReplayDataFileWriter(
+      const BW::string&            resourcePath,
+      BackgroundFileWriter*        pWriter,
+      ChecksumSchemePtr            pChecksumScheme,
+      const RecordingRecoveryData& recoveryData,
+      PyTypeObject*                pType = &PyReplayDataFileWriter::s_type_);
 
-	~PyReplayDataFileWriter();
+    ~PyReplayDataFileWriter();
 
+    /**
+     *	This method returns whether this writer is finalising.
+     */
+    bool isFinalising() const
+    {
+        return pWriter_ ? pWriter_->isFinalising() : true;
+    }
 
-	/**
-	 *	This method returns whether this writer is finalising.
-	 */
-	bool isFinalising() const
-	{
-		return pWriter_ ? pWriter_->isFinalising() : true;
-	}
+    /**
+     *	This method returns whether this writer is closed.
+     */
+    bool isClosed() const { return pWriter_ ? pWriter_->isClosed() : true; }
 
+    PY_RO_ATTRIBUTE_DECLARE(resourcePath_, resourcePath);
 
-	/**
-	 *	This method returns whether this writer is closed.
-	 */
-	bool isClosed() const
-	{
-		return pWriter_ ? pWriter_->isClosed() : true;
-	}
+    PyObject* pyGet_path();
+    PY_RO_ATTRIBUTE_SET(path);
 
-	PY_RO_ATTRIBUTE_DECLARE( resourcePath_, resourcePath );
+    PY_RO_ATTRIBUTE_DECLARE(pWriter_->compressionType(), compressionType);
 
-	PyObject * pyGet_path();
-	PY_RO_ATTRIBUTE_SET( path );
+    PyObject* pyGet_numTicksWritten();
+    PY_RO_ATTRIBUTE_SET(numTicksWritten);
 
-	PY_RO_ATTRIBUTE_DECLARE( pWriter_->compressionType(), compressionType );
+    PyObject* pyGet_lastTickWritten();
+    PY_RO_ATTRIBUTE_SET(lastTickWritten);
 
-	PyObject * pyGet_numTicksWritten();
-	PY_RO_ATTRIBUTE_SET( numTicksWritten );
+    PyObject* pyGet_lastTickPendingWrite();
+    PY_RO_ATTRIBUTE_SET(lastTickPendingWrite);
 
-	PyObject * pyGet_lastTickWritten();
-	PY_RO_ATTRIBUTE_SET( lastTickWritten );
+    PyObject* pyGet_lastChunkPosition();
+    PY_RO_ATTRIBUTE_SET(lastChunkPosition);
 
-	PyObject * pyGet_lastTickPendingWrite();
-	PY_RO_ATTRIBUTE_SET( lastTickPendingWrite );
+    PyObject* pyGet_lastChunkLength();
+    PY_RO_ATTRIBUTE_SET(lastChunkLength);
 
-	PyObject * pyGet_lastChunkPosition();
-	PY_RO_ATTRIBUTE_SET( lastChunkPosition );
+    PyObject* pyGet_recoveryData();
+    PY_RO_ATTRIBUTE_SET(recoveryData);
 
-	PyObject * pyGet_lastChunkLength();
-	PY_RO_ATTRIBUTE_SET( lastChunkLength );
+    PyObject* pyGet_numTicksToSign();
+    PY_RO_ATTRIBUTE_SET(numTicksToSign);
 
-	PyObject * pyGet_recoveryData();
-	PY_RO_ATTRIBUTE_SET( recoveryData );
+    PY_RO_ATTRIBUTE_DECLARE(isFinalising(), isFinalising);
+    PY_RO_ATTRIBUTE_DECLARE(isClosed(), isClosed);
 
-	PyObject * pyGet_numTicksToSign();
-	PY_RO_ATTRIBUTE_SET( numTicksToSign );
+    PY_RO_ATTRIBUTE_DECLARE(pWriter_->hasError(), hasError);
 
+    PyObject* pyGet_errorString();
+    PY_RO_ATTRIBUTE_SET(errorString)
 
-	PY_RO_ATTRIBUTE_DECLARE( isFinalising(), isFinalising );
-	PY_RO_ATTRIBUTE_DECLARE( isClosed(), isClosed );
+    PY_METHOD_DECLARE(py_addTickData);
+    PY_METHOD_DECLARE(py_setListener);
+    PY_METHOD_DECLARE(py_close);
 
-	PY_RO_ATTRIBUTE_DECLARE( pWriter_->hasError(), hasError );
+  private:
+    BW::string            resourcePath_;
+    ReplayDataFileWriter* pWriter_;
 
-	PyObject * pyGet_errorString();
-	PY_RO_ATTRIBUTE_SET( errorString )
-
-	PY_METHOD_DECLARE( py_addTickData );
-	PY_METHOD_DECLARE( py_setListener );
-	PY_METHOD_DECLARE( py_close );
-private:
-	BW::string resourcePath_;
-	ReplayDataFileWriter * pWriter_;
-
-	PyReplayDataFileWriterListener * pListener_;
+    PyReplayDataFileWriterListener* pListener_;
 };
 
-
 BW_END_NAMESPACE
-
 
 #endif // PY_REPLAY_DATA_FILE_WRITER_HPP

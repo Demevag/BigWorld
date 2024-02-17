@@ -7,7 +7,6 @@
 
 #include "sky_light_map.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -18,21 +17,23 @@ BW_BEGIN_NAMESPACE
  * be drawn again using special shadow generation shaders.
  *
  * In order to capture the shadow information, the sky boxes are
- * transformed using an orthogonal projection into the sky light map. 
+ * transformed using an orthogonal projection into the sky light map.
  */
 class SkyDomeShadows : public SkyLightMap::IContributor
 {
-public:
-	SkyDomeShadows( class EnviroMinder& enviroMinder );
-	~SkyDomeShadows();
+  public:
+    SkyDomeShadows(class EnviroMinder& enviroMinder);
+    ~SkyDomeShadows();
 
-	static bool isAvailable();
+    static bool isAvailable();
 
-	bool needsUpdate()	{ return true; }
-	void render( SkyLightMap* lightMap,
-				Moo::EffectMaterialPtr material, float sunAngle );	
-private:	
-	class EnviroMinder& enviroMinder_;
+    bool needsUpdate() { return true; }
+    void render(SkyLightMap*           lightMap,
+                Moo::EffectMaterialPtr material,
+                float                  sunAngle);
+
+  private:
+    class EnviroMinder& enviroMinder_;
 };
 
 BW_END_NAMESPACE

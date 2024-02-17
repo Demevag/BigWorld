@@ -49,9 +49,7 @@
 #include "urlrequest/manager.hpp"
 #include "urlrequest/response.hpp"
 
-
-DECLARE_DEBUG_COMPONENT2( "Entity", 0 );
-
+DECLARE_DEBUG_COMPONENT2("Entity", 0);
 
 BW_BEGIN_NAMESPACE
 
@@ -62,19 +60,19 @@ const uint16 SPACE_DATA_WEATHER = 8192;
 // flag indicating environmental sync state of demo client
 static bool environmentSync = true;
 
-void setEnvironmentSync( bool sync )
+void setEnvironmentSync(bool sync)
 {
-	environmentSync = sync;
+    environmentSync = sync;
 }
 
-PY_AUTO_MODULE_FUNCTION( RETVOID, setEnvironmentSync, ARG( bool, END ), BigWorld )
+PY_AUTO_MODULE_FUNCTION(RETVOID, setEnvironmentSync, ARG(bool, END), BigWorld)
 
 bool getEnvironmentSync()
 {
-	return environmentSync;
+    return environmentSync;
 }
 
-PY_AUTO_MODULE_FUNCTION( RETDATA, getEnvironmentSync, END, BigWorld )
+PY_AUTO_MODULE_FUNCTION(RETDATA, getEnvironmentSync, END, BigWorld)
 
 #endif // ENABLE_ENVIRONMENT_SYNC
 
@@ -86,46 +84,41 @@ class EntityManager;
 /**
  *	 Default constructor.
  */
-EntityManager::EntityManager() :
-	entityIsDestroyedExceptionType_(),
-	pendingEntities_(),
-	pURLRequest_(),
-	pPyReplayHandler_(),
-	filterEnvironment_()
+EntityManager::EntityManager()
+  : entityIsDestroyedExceptionType_()
+  , pendingEntities_()
+  , pURLRequest_()
+  , pPyReplayHandler_()
+  , filterEnvironment_()
 {
-	ScriptPlayer::init();
+    ScriptPlayer::init();
 
-	PyObject * bigworldModule = PyImport_AddModule( "BigWorld" );
-	entityIsDestroyedExceptionType_ =
-		PyObjectPtr(
-			PyErr_NewException(
-				const_cast<char *>("BigWorld.EntityIsDestroyedException"),
-				NULL, NULL ),
-			PyObjectPtr::STEAL_REFERENCE );
+    PyObject* bigworldModule        = PyImport_AddModule("BigWorld");
+    entityIsDestroyedExceptionType_ = PyObjectPtr(
+      PyErr_NewException(
+        const_cast<char*>("BigWorld.EntityIsDestroyedException"), NULL, NULL),
+      PyObjectPtr::STEAL_REFERENCE);
 
-	Py_XINCREF(entityIsDestroyedExceptionType_.get());
-	PyModule_AddObject( bigworldModule, "EntityIsDestroyedException",
-		entityIsDestroyedExceptionType_.getObject() );
+    Py_XINCREF(entityIsDestroyedExceptionType_.get());
+    PyModule_AddObject(bigworldModule,
+                       "EntityIsDestroyedException",
+                       entityIsDestroyedExceptionType_.getObject());
 }
-
 
 /**
  *	 Destructor.
  */
-EntityManager::~EntityManager()
-{}
-
+EntityManager::~EntityManager() {}
 
 /**
  *	 Instance accessor.
  */
-EntityManager & EntityManager::instance()
+EntityManager& EntityManager::instance()
 {
-	static EntityManager ec;
+    static EntityManager ec;
 
-	return ec;
+    return ec;
 }
-
 
 BW_END_NAMESPACE
 #include "cstdmf/profile.hpp"
@@ -133,29 +126,29 @@ BW_BEGIN_NAMESPACE
 
 namespace // (anonymous)
 {
-class TickEntityVisitor : public EntityVisitor
-{
-public:
-	TickEntityVisitor( double timeNow, double timeLast ):
-		timeNow_( timeNow ),
-		timeLast_( timeLast )
-	{}
+    class TickEntityVisitor : public EntityVisitor
+    {
+      public:
+        TickEntityVisitor(double timeNow, double timeLast)
+          : timeNow_(timeNow)
+          , timeLast_(timeLast)
+        {
+        }
 
-	virtual ~TickEntityVisitor() {}
+        virtual ~TickEntityVisitor() {}
 
-	virtual bool onVisitEntity( Entity * pEntity )
-	{
-		pEntity->tick( timeNow_, timeLast_ );
-		return true;
-	}
-private:
-	double timeNow_;
-	double timeLast_;
+        virtual bool onVisitEntity(Entity* pEntity)
+        {
+            pEntity->tick(timeNow_, timeLast_);
+            return true;
+        }
 
-};
+      private:
+        double timeNow_;
+        double timeLast_;
+    };
 
 } // end namespace (anonymous)
-
 
 /**
  *	This function is called to call the tick functions of all the
@@ -165,90 +158,81 @@ private:
  *	@param	timeNow		current timestamp
  *	@param	timeLast	timestamp when this method was called last.
  */
-void EntityManager::tick( double timeNow, double timeLast )
+void EntityManager::tick(double timeNow, double timeLast)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// see if any of the entities waiting on prerequisites or vehicles
-	// are now ready
-	size_t i = 0;
-	while (i < pendingEntities_.size())
-	{
-		EntityPtr pEntity = pendingEntities_[i];
+    // see if any of the entities waiting on prerequisites or vehicles
+    // are now ready
+    size_t i = 0;
+    while (i < pendingEntities_.size()) {
+        EntityPtr pEntity = pendingEntities_[i];
 
-		bool isStillLoading = false;
+        bool isStillLoading = false;
 
-		IF_NOT_MF_ASSERT_DEV( !pEntity->isInWorld() )
-		{
-			// An entity got into the pending list twice due to a bug.
-			pEntity->abortLoadingPrerequisites();
-		}
+        IF_NOT_MF_ASSERT_DEV(!pEntity->isInWorld())
+        {
+            // An entity got into the pending list twice due to a bug.
+            pEntity->abortLoadingPrerequisites();
+        }
 
-		if (!pEntity->isInAoI())
-		{
-			MF_ASSERT( pEntity->isDestroyed() || pEntity->isPlayer() );
+        if (!pEntity->isInAoI()) {
+            MF_ASSERT(pEntity->isDestroyed() || pEntity->isPlayer());
 
-			// The player may lose its cell-side without being destroyed.
-			if (pEntity->isPlayer())
-			{
-				pEntity->abortLoadingPrerequisites();
-			}
+            // The player may lose its cell-side without being destroyed.
+            if (pEntity->isPlayer()) {
+                pEntity->abortLoadingPrerequisites();
+            }
 
-			// Destroyed entities abort their loaders, so we just need to
-			// drop them from our list when we see them.
-			MF_ASSERT( !pEntity->loadingPrerequisites() );
-		}
-		else
-		{
-			isStillLoading = pEntity->loadingPrerequisites() &&
-				!pEntity->checkPrerequisites();
-		}
+            // Destroyed entities abort their loaders, so we just need to
+            // drop them from our list when we see them.
+            MF_ASSERT(!pEntity->loadingPrerequisites());
+        } else {
+            isStillLoading =
+              pEntity->loadingPrerequisites() && !pEntity->checkPrerequisites();
+        }
 
-		if (isStillLoading)
-		{
-			++i;
-			continue;
-		}
+        if (isStillLoading) {
+            ++i;
+            continue;
+        }
 
-		std::swap<>( pendingEntities_[i], pendingEntities_.back() );
-		pendingEntities_.pop_back();
-	}
+        std::swap<>(pendingEntities_[i], pendingEntities_.back());
+        pendingEntities_.pop_back();
+    }
 
-	ConnectionControl & connectionControl = ConnectionControl::instance();
+    ConnectionControl& connectionControl = ConnectionControl::instance();
 
-	BWReplayConnection * pReplayConn = connectionControl.pReplayConnection();
+    BWReplayConnection* pReplayConn = connectionControl.pReplayConnection();
 
-	ReplayController * pReplayController;
+    ReplayController* pReplayController;
 
-	if (pReplayConn != NULL &&
-		(pReplayController = pReplayConn->pReplayController()) != NULL &&
-		pReplayController->getCurrentTick() == 1 &&
-		gWorldDrawEnabled &&
-		pendingEntities_.empty())
-	{
-		// The world has loaded and entity prerequisites have loaded,
-		// so proceed with the replay playback.
-		pReplayConn->onInitialDataProcessed();
-	}
+    if (pReplayConn != NULL &&
+        (pReplayController = pReplayConn->pReplayController()) != NULL &&
+        pReplayController->getCurrentTick() == 1 && gWorldDrawEnabled &&
+        pendingEntities_.empty()) {
+        // The world has loaded and entity prerequisites have loaded,
+        // so proceed with the replay playback.
+        pReplayConn->onInitialDataProcessed();
+    }
 
-	connectionControl.visitEntities( TickEntityVisitor( timeNow, timeLast ) );
+    connectionControl.visitEntities(TickEntityVisitor(timeNow, timeLast));
 }
-
 
 /**
  *	This method adds an Entity to our pendingEntities collection, so that its
  *	prerequisite loader will be ticked every tick
  */
-void EntityManager::addPendingEntity( EntityPtr pEntity )
+void EntityManager::addPendingEntity(EntityPtr pEntity)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	MF_ASSERT( std::find( pendingEntities_.begin(), pendingEntities_.end(),
-		pEntity ) == pendingEntities_.end() );
+    MF_ASSERT(std::find(pendingEntities_.begin(),
+                        pendingEntities_.end(),
+                        pEntity) == pendingEntities_.end());
 
-	pendingEntities_.push_back( pEntity );
+    pendingEntities_.push_back(pEntity);
 }
-
 
 /**
  *	This method is called when disconnecting from the server, to clean up
@@ -256,11 +240,10 @@ void EntityManager::addPendingEntity( EntityPtr pEntity )
  */
 void EntityManager::clearPendingEntities()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	pendingEntities_.clear();
+    pendingEntities_.clear();
 }
-
 
 /**
  *	This method sets the function which determines when the time
@@ -273,91 +256,95 @@ void EntityManager::clearPendingEntities()
  *	@param	gameSecondsPerSecond	number of game seconds ellapsed
  *									per real world seconds.
  */
-void EntityManager::setTimeInt( ClientSpacePtr pSpace, GameTime gameTime,
-	float initialTimeOfDay, float gameSecondsPerSecond )
+void EntityManager::setTimeInt(ClientSpacePtr pSpace,
+                               GameTime       gameTime,
+                               float          initialTimeOfDay,
+                               float          gameSecondsPerSecond)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	TimeOfDay & timeOfDay = *pSpace->enviro().timeOfDay();
-	timeOfDay.updateNotifiersOn( false );
+    TimeOfDay& timeOfDay = *pSpace->enviro().timeOfDay();
+    timeOfDay.updateNotifiersOn(false);
 
-	TRACE_MSG( "EntityManager::setTimeInt: gameTime %d initial %f gsec/sec %f\n",
-		gameTime, initialTimeOfDay, gameSecondsPerSecond );
+    TRACE_MSG("EntityManager::setTimeInt: gameTime %d initial %f gsec/sec %f\n",
+              gameTime,
+              initialTimeOfDay,
+              gameSecondsPerSecond);
 
-	float tod;
-	if ( gameSecondsPerSecond > 0.f )
-	{
-		BWServerConnection * pServerConnectionModel =
-			ConnectionControl::instance().pServerConnection();
-		MF_ASSERT( pServerConnectionModel );
-		const float updateFrequency = 
-			pServerConnectionModel->pServerConnection()->updateFrequency();
+    float tod;
+    if (gameSecondsPerSecond > 0.f) {
+        BWServerConnection* pServerConnectionModel =
+          ConnectionControl::instance().pServerConnection();
+        MF_ASSERT(pServerConnectionModel);
+        const float updateFrequency =
+          pServerConnectionModel->pServerConnection()->updateFrequency();
 
-		timeOfDay.secondsPerGameHour((1.0f / gameSecondsPerSecond) * 3600.0f);
-		DEBUG_MSG( "\tsec/ghour = %f\n", (1.0f / gameSecondsPerSecond) * 3600.0f );
-		// This gives us the time of day as in game seconds, since the start of time.
-		tod = initialTimeOfDay + ((float)gameTime /
-			updateFrequency *
-			(float)gameSecondsPerSecond);
-	}
-	else
-	{
-		timeOfDay.secondsPerGameHour(0.f);
-		DEBUG_MSG( "\tsec/ghour = 0.0\n" );
-		tod = initialTimeOfDay;
-	}
+        timeOfDay.secondsPerGameHour((1.0f / gameSecondsPerSecond) * 3600.0f);
+        DEBUG_MSG("\tsec/ghour = %f\n",
+                  (1.0f / gameSecondsPerSecond) * 3600.0f);
+        // This gives us the time of day as in game seconds, since the start of
+        // time.
+        tod = initialTimeOfDay +
+              ((float)gameTime / updateFrequency * (float)gameSecondsPerSecond);
+    } else {
+        timeOfDay.secondsPerGameHour(0.f);
+        DEBUG_MSG("\tsec/ghour = 0.0\n");
+        tod = initialTimeOfDay;
+    }
 
-	DEBUG_MSG( "\ttherefore tod in seconds = %f\n", tod );
+    DEBUG_MSG("\ttherefore tod in seconds = %f\n", tod);
 
-	// Set the time of day in hours.
-	timeOfDay.gameTime(tod / 3600.0f);
-	timeOfDay.tick(0.0f);
+    // Set the time of day in hours.
+    timeOfDay.gameTime(tod / 3600.0f);
+    timeOfDay.tick(0.0f);
 
-	timeOfDay.updateNotifiersOn( true );
+    timeOfDay.updateNotifiersOn(true);
 }
 
+void EntityManager::onTimeOfDay(SpaceID spaceID,
+                                float   initialTime,
+                                float   gameSecondsPerSecond)
+{
+    BW_GUARD;
 
-void EntityManager::onTimeOfDay( SpaceID spaceID, float initialTime,
-								float gameSecondsPerSecond )
-{	BW_GUARD;
+    ClientSpacePtr pSpace = SpaceManager::instance().space(spaceID);
 
-	ClientSpacePtr pSpace = SpaceManager::instance().space( spaceID );
+    MF_ASSERT(pSpace != NULL);
 
-	MF_ASSERT( pSpace != NULL );
-
-	// TODO: This shouldn't depend on having a ServerConnection, surely?
-	BWServerConnection * pServerConn;
-	if ((pServerConn = ConnectionControl::instance().pServerConnection())
+    // TODO: This shouldn't depend on having a ServerConnection, surely?
+    BWServerConnection* pServerConn;
+    if ((pServerConn = ConnectionControl::instance().pServerConnection())
 #if ENABLE_ENVIRONMENT_SYNC
-		&& environmentSync
+        && environmentSync
 #endif
-		)
-	{
-		this->setTimeInt( pSpace,
-			pServerConn->pServerConnection()->gameTimeOfLastMessage(),
-			initialTime, gameSecondsPerSecond );
-	}
+    ) {
+        this->setTimeInt(
+          pSpace,
+          pServerConn->pServerConnection()->gameTimeOfLastMessage(),
+          initialTime,
+          gameSecondsPerSecond);
+    }
 }
 
-
-void EntityManager::onUserSpaceData( SpaceID spaceID, uint16 key,
-	bool isInsertion, const BW::string & data )
+void EntityManager::onUserSpaceData(SpaceID           spaceID,
+                                    uint16            key,
+                                    bool              isInsertion,
+                                    const BW::string& data)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	ClientSpacePtr pSpace = SpaceManager::instance().space( spaceID );
+    ClientSpacePtr pSpace = SpaceManager::instance().space(spaceID);
 
-	MF_ASSERT( pSpace != NULL );
+    MF_ASSERT(pSpace != NULL);
 
-	if (key == SPACE_DATA_WEATHER && isInsertion)
-	{
-		Personality::instance().callMethod( "onWeatherChange",
-			ScriptArgs::create( spaceID, data ),
-			ScriptErrorPrint( "EntityManager::spaceData weather notifier: " ),
-			/* allowNullMethod */ true );
-	}
+    if (key == SPACE_DATA_WEATHER && isInsertion) {
+        Personality::instance().callMethod(
+          "onWeatherChange",
+          ScriptArgs::create(spaceID, data),
+          ScriptErrorPrint("EntityManager::spaceData weather notifier: "),
+          /* allowNullMethod */ true);
+    }
 }
-
 
 /*~ callback Entity.onGeometryMapped
  *
@@ -378,668 +365,625 @@ void EntityManager::onUserSpaceData( SpaceID spaceID, uint16 key,
  *	@param spaceID		id of the space the geometry is being mapped in to
  *	@param spaceName	name describing the space's geometry
  */
-void EntityManager::onGeometryMapping( SpaceID spaceID, Matrix mappingMatrix,
-	const BW::string & mappingName )
+void EntityManager::onGeometryMapping(SpaceID           spaceID,
+                                      Matrix            mappingMatrix,
+                                      const BW::string& mappingName)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	ClientSpacePtr pSpace = SpaceManager::instance().space( spaceID );
+    ClientSpacePtr pSpace = SpaceManager::instance().space(spaceID);
 
-	MF_ASSERT( pSpace != NULL );
+    MF_ASSERT(pSpace != NULL);
 
-	const SpaceDataMapping & spaceDataMapping = pSpace->spaceData();
+    const SpaceDataMapping& spaceDataMapping = pSpace->spaceData();
 
-	// Find the SpaceEntryID for this mapping.
-	// TODO: ClientSpace::addMapping shouldn't require a key. It should key off
-	// the mapping data.
-	SpaceDataMapping::DataEntryMap::const_iterator iMapping;
-	for (iMapping = spaceDataMapping.begin();
-		iMapping != spaceDataMapping.end(); ++iMapping)
-	{
-		if (iMapping->second.key() != SPACE_DATA_MAPPING_KEY_CLIENT_ONLY &&
-			iMapping->second.key() != SPACE_DATA_MAPPING_KEY_CLIENT_SERVER)
-		{
-			continue;
-		}
+    // Find the SpaceEntryID for this mapping.
+    // TODO: ClientSpace::addMapping shouldn't require a key. It should key off
+    // the mapping data.
+    SpaceDataMapping::DataEntryMap::const_iterator iMapping;
+    for (iMapping = spaceDataMapping.begin();
+         iMapping != spaceDataMapping.end();
+         ++iMapping) {
+        if (iMapping->second.key() != SPACE_DATA_MAPPING_KEY_CLIENT_ONLY &&
+            iMapping->second.key() != SPACE_DATA_MAPPING_KEY_CLIENT_SERVER) {
+            continue;
+        }
 
-		const BW::string & data = iMapping->second.data();
+        const BW::string& data = iMapping->second.data();
 
-		if (data.size() != mappingName.size() + sizeof( SpaceData_MappingData ))
-		{
-			continue;
-		}
+        if (data.size() != mappingName.size() + sizeof(SpaceData_MappingData)) {
+            continue;
+        }
 
-		SpaceData_MappingData & mappingData =
-			*(SpaceData_MappingData *)data.data();
-		Matrix & matrix = *(Matrix *)&mappingData.matrix[0][0];
+        SpaceData_MappingData& mappingData =
+          *(SpaceData_MappingData*)data.data();
+        Matrix& matrix = *(Matrix*)&mappingData.matrix[0][0];
 
-		if (matrix != mappingMatrix)
-		{
-			continue;
-		}
+        if (matrix != mappingMatrix) {
+            continue;
+        }
 
-		BW::string path( (char *)(&mappingData + 1),
-			data.size() - sizeof( SpaceData_MappingData ) );
+        BW::string path((char*)(&mappingData + 1),
+                        data.size() - sizeof(SpaceData_MappingData));
 
-		if (path != mappingName)
-		{
-			continue;
-		}
+        if (path != mappingName) {
+            continue;
+        }
 
-		break;
-	}
+        break;
+    }
 
-	MF_ASSERT( iMapping != spaceDataMapping.end() );
-	SpaceEntryID seid = iMapping->first;
+    MF_ASSERT(iMapping != spaceDataMapping.end());
+    SpaceEntryID seid = iMapping->first;
 
-	pSpace->addMapping( *(ClientSpace::GeometryMappingID*)&seid, mappingMatrix,
-		mappingName );
+    pSpace->addMapping(
+      *(ClientSpace::GeometryMappingID*)&seid, mappingMatrix, mappingName);
 
-	// tell the player about this if it is relevant to it
-	// this system probably wants to be expanded in future
-	Entity * pPlayer = ScriptPlayer::entity();
-	if (pPlayer && !pPlayer->isDestroyed() &&
-		pPlayer->pSpace() == pSpace)
-	{
-		pPlayer->pPyEntity().callMethod( "onGeometryMapped",
-			ScriptArgs::create( mappingName ), ScriptErrorPrint(),
-			/* allowNullMethod */ true );
-		ScriptPlayer::instance().updateWeatherParticleSystems(
-			pSpace->enviro().playerAttachments() );
-	}
+    // tell the player about this if it is relevant to it
+    // this system probably wants to be expanded in future
+    Entity* pPlayer = ScriptPlayer::entity();
+    if (pPlayer && !pPlayer->isDestroyed() && pPlayer->pSpace() == pSpace) {
+        pPlayer->pPyEntity().callMethod("onGeometryMapped",
+                                        ScriptArgs::create(mappingName),
+                                        ScriptErrorPrint(),
+                                        /* allowNullMethod */ true);
+        ScriptPlayer::instance().updateWeatherParticleSystems(
+          pSpace->enviro().playerAttachments());
+    }
 
-	Personality::instance().callMethod( "onGeometryMapped",
-		ScriptArgs::create( spaceID, mappingName ),
-		ScriptErrorPrint( "EntityManager::spaceData geometry notifier: " ),
-		/* allowNullMethod */ true );
+    Personality::instance().callMethod(
+      "onGeometryMapped",
+      ScriptArgs::create(spaceID, mappingName),
+      ScriptErrorPrint("EntityManager::spaceData geometry notifier: "),
+      /* allowNullMethod */ true);
 }
 
-
-void EntityManager::onGeometryMappingDeleted( SpaceID spaceID,
-	Matrix mappingMatrix, const BW::string & mappingName )
+void EntityManager::onGeometryMappingDeleted(SpaceID           spaceID,
+                                             Matrix            mappingMatrix,
+                                             const BW::string& mappingName)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	ClientSpacePtr pSpace = SpaceManager::instance().space( spaceID );
+    ClientSpacePtr pSpace = SpaceManager::instance().space(spaceID);
 
-	MF_ASSERT( pSpace != NULL );
+    MF_ASSERT(pSpace != NULL);
 
-	// TODO: ClientSpace::delMapping should not be keyed by EntryID.
-	// For now, search pSpace->getMappings() for a matching mapping. Any mapping
-	// that matches would be suitable.
-	// TODO: This is going behind the ClientSpace API's back as well.
-	// We can't search SpaceData like we do in onGeometryMapping, because it's
-	// already been deleted.
+    // TODO: ClientSpace::delMapping should not be keyed by EntryID.
+    // For now, search pSpace->getMappings() for a matching mapping. Any mapping
+    // that matches would be suitable.
+    // TODO: This is going behind the ClientSpace API's back as well.
+    // We can't search SpaceData like we do in onGeometryMapping, because it's
+    // already been deleted.
 
-	ChunkSpacePtr pChunkSpace =
-		ClientChunkSpaceAdapter::getChunkSpace( pSpace );
+    ChunkSpacePtr pChunkSpace = ClientChunkSpaceAdapter::getChunkSpace(pSpace);
 
-	MF_ASSERT( pChunkSpace != NULL );
+    MF_ASSERT(pChunkSpace != NULL);
 
-	const ChunkSpace::GeometryMappings & mappings = pChunkSpace->getMappings();
-	ChunkSpace::GeometryMappings::const_iterator iMapping;
+    const ChunkSpace::GeometryMappings& mappings = pChunkSpace->getMappings();
+    ChunkSpace::GeometryMappings::const_iterator iMapping;
 
-	for (iMapping = mappings.begin(); iMapping != mappings.end(); ++iMapping)
-	{
-		// "/" because GeometryMapping's constructor does it.
-		if (iMapping->second->path() == (mappingName + "/") &&
-			iMapping->second->mapper() == mappingMatrix)
-		{
-			break;
-		}
-	}
+    for (iMapping = mappings.begin(); iMapping != mappings.end(); ++iMapping) {
+        // "/" because GeometryMapping's constructor does it.
+        if (iMapping->second->path() == (mappingName + "/") &&
+            iMapping->second->mapper() == mappingMatrix) {
+            break;
+        }
+    }
 
-	if (iMapping == mappings.end())
-	{
-		ERROR_MSG( "EntityManager::onGeometryMappingDeleted: "
-				"Tried to delete a mapping which doesn't exist." );
-		return;
-	}
+    if (iMapping == mappings.end()) {
+        ERROR_MSG("EntityManager::onGeometryMappingDeleted: "
+                  "Tried to delete a mapping which doesn't exist.");
+        return;
+    }
 
-	pSpace->delMapping( *(ClientSpace::GeometryMappingID*)&(iMapping->first) );
+    pSpace->delMapping(*(ClientSpace::GeometryMappingID*)&(iMapping->first));
 }
-
 
 /*
  *	Override from BWEntitiesListener.
  */
 void EntityManager::onEntitiesReset()
 {
-	// TODO: Defer this until the space is destroyed so as to avoid hitching
-	// the frame rate.
-	PyGC_Collect();
+    // TODO: Defer this until the space is destroyed so as to avoid hitching
+    // the frame rate.
+    PyGC_Collect();
 }
-
 
 /**
  *	Finalises the EntityManager.
  */
 void EntityManager::fini()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// Clear entities in BWConnections
-	ConnectionControl::instance().fini();
+    // Clear entities in BWConnections
+    ConnectionControl::instance().fini();
 
-	ScriptPlayer::fini();
+    ScriptPlayer::fini();
 }
-
 
 /**
- *	This function returns the Python type object of the EntityIsDestroyedException.
+ *	This function returns the Python type object of the
+ *EntityIsDestroyedException.
  *
- *	@return	Returns a borrowed pointer to the EntityIsDestroyedException type object.
+ *	@return	Returns a borrowed pointer to the EntityIsDestroyedException type
+ *object.
  */
-PyObject * EntityManager::entityIsDestroyedExceptionType()
+PyObject* EntityManager::entityIsDestroyedExceptionType()
 {
-	return entityIsDestroyedExceptionType_.getObject();
+    return entityIsDestroyedExceptionType_.getObject();
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Replay handling
 // -----------------------------------------------------------------------------
-
 
 /**
  *	This class handles data retrieved from a URL request.
  */
 class ReplayURLHandler : public URL::Response
 {
-public:
-	/**
-	 *	Constructor.
-	 */
-	ReplayURLHandler( EntityManager & entityManager ) :
-			URL::Response(),
-			responseCode_( 0 ),
-			entityManager_( entityManager )
-	{
-	}
+  public:
+    /**
+     *	Constructor.
+     */
+    ReplayURLHandler(EntityManager& entityManager)
+      : URL::Response()
+      , responseCode_(0)
+      , entityManager_(entityManager)
+    {
+    }
 
+    /**
+     *	Destructor.
+     */
+    virtual ~ReplayURLHandler() {}
 
-	/**
-	 *	Destructor.
-	 */
-	virtual ~ReplayURLHandler() {}
+    // Overrides from URL::Response
+    virtual bool onResponseCode(long responseCode);
+    virtual bool onContentTypeHeader(const BW::string& contentType);
+    virtual bool onData(const char* data, size_t len);
+    virtual void onDone(int responseCode, const char* error);
 
-	// Overrides from URL::Response
-	virtual bool onResponseCode( long responseCode );
-	virtual bool onContentTypeHeader( const BW::string & contentType );
-	virtual bool onData( const char * data, size_t len );
-	virtual void onDone( int responseCode, const char * error );
-
-private:
-	long					responseCode_;
-	EntityManager &			entityManager_;
+  private:
+    long           responseCode_;
+    EntityManager& entityManager_;
 };
 
+/*
+ *	Override from URL::Response.
+ */
+bool ReplayURLHandler::onResponseCode(long responseCode)
+{
+    TRACE_MSG("ReplayURLHandler::onResponseCode: %ld\n", responseCode);
+
+    responseCode_ = responseCode;
+
+    bool       success = (responseCode == URL::RESPONSE_ERR_OK);
+    BW::string errorString;
+
+    if (responseCode == 0) {
+        ERROR_MSG("ReplayURLHandler::onResponseCode: Got response code of 0\n");
+
+        errorString = "Got unexpected response code of 0";
+    } else if (responseCode != URL::RESPONSE_ERR_OK) {
+        errorString = BW::string("Failed to retrieve URL: ") +
+                      URL::httpResponseCodeToString(responseCode);
+    }
+
+    if (!success) {
+        ReplayURLHandlerPtr pThisHolder(this);
+
+        entityManager_.replayURLRequestAborted();
+        entityManager_.callReplayCallback(/* shouldClear */ true,
+                                          ConnectionControl::STAGE_LOGIN,
+                                          "REPLAY_FAILED",
+                                          errorString);
+    }
+
+    // Return true even if we have error, no need for cURL to signal it now.
+    return true;
+}
 
 /*
  *	Override from URL::Response.
  */
-bool ReplayURLHandler::onResponseCode( long responseCode )
+bool ReplayURLHandler::onContentTypeHeader(const BW::string& contentType)
 {
-	TRACE_MSG( "ReplayURLHandler::onResponseCode: %ld\n",
-		responseCode );
+    // Should accept either binary/octet-stream as replay files would look to a
+    // web server. Should not accept e.g. text/html.
+    static const char EXPECTED_CONTENT_TYPE[] = "application/octet-stream";
 
-	responseCode_ = responseCode;
+    if (contentType != EXPECTED_CONTENT_TYPE) {
+        // We check later if the actual contents of the data indicate that this
+        // is not valid replay file.
+        NOTICE_MSG("ReplayURLHandler::onContentTypeHeader: "
+                   "Received invalid content type: \"%s\" (expected \"%s\")\n",
+                   contentType.c_str(),
+                   EXPECTED_CONTENT_TYPE);
 
-	bool success = (responseCode == URL::RESPONSE_ERR_OK);
-	BW::string errorString; 
-	
-	if (responseCode == 0)
-	{
-		ERROR_MSG( "ReplayURLHandler::onResponseCode: Got response code of 0\n" );
+        ReplayURLHandlerPtr pThisHolder(this);
 
-		errorString = "Got unexpected response code of 0";
-	}
-	else if (responseCode != URL::RESPONSE_ERR_OK)
-	{
-		errorString = BW::string( "Failed to retrieve URL: " ) +
-				URL::httpResponseCodeToString( responseCode );
-	}
+        entityManager_.replayURLRequestAborted();
+        entityManager_.callReplayCallback(
+          /* shouldClear */ true,
+          ConnectionControl::STAGE_LOGIN,
+          "CONNECTION_FAILED",
+          BW::string("URL has invalid content type: ") + contentType);
+    } else {
+        TRACE_MSG("ReplayURLHandler::onContentTypeHeader: %s\n",
+                  contentType.c_str());
+    }
 
-	if (!success)
-	{
-		ReplayURLHandlerPtr pThisHolder( this );
-
-		entityManager_.replayURLRequestAborted();
-		entityManager_.callReplayCallback( /* shouldClear */ true,
-			ConnectionControl::STAGE_LOGIN,
-			"REPLAY_FAILED", errorString );
-	}
-	
-	// Return true even if we have error, no need for cURL to signal it now.
-	return true;
+    return true;
 }
-
 
 /*
  *	Override from URL::Response.
  */
-bool ReplayURLHandler::onContentTypeHeader( const BW::string & contentType )
+bool ReplayURLHandler::onData(const char* data, size_t len)
 {
-	// Should accept either binary/octet-stream as replay files would look to a
-	// web server. Should not accept e.g. text/html.
-	static const char EXPECTED_CONTENT_TYPE[] = "application/octet-stream";
+    // If we had a bad response code, we should have been cancelled
+    // before now.
+    MF_ASSERT(responseCode_ == URL::RESPONSE_ERR_OK);
 
-	if (contentType != EXPECTED_CONTENT_TYPE )
-	{
-		// We check later if the actual contents of the data indicate that this
-		// is not valid replay file.
-		NOTICE_MSG( "ReplayURLHandler::onContentTypeHeader: "
-				"Received invalid content type: \"%s\" (expected \"%s\")\n",
-			contentType.c_str(), EXPECTED_CONTENT_TYPE );
+    MemoryIStream stream(data, static_cast<int>(len));
+    ConnectionControl::instance().pReplayConnection()->addReplayData(stream);
 
-		ReplayURLHandlerPtr pThisHolder( this );
-
-		entityManager_.replayURLRequestAborted();
-		entityManager_.callReplayCallback( /* shouldClear */ true,
-			ConnectionControl::STAGE_LOGIN, "CONNECTION_FAILED",
-			BW::string( "URL has invalid content type: " ) +
-				contentType );
-	}
-	else
-	{
-		TRACE_MSG( "ReplayURLHandler::onContentTypeHeader: %s\n",
-			contentType.c_str() );
-	}
-
-	return true;
+    return true;
 }
-
 
 /*
  *	Override from URL::Response.
  */
-bool ReplayURLHandler::onData( const char * data, size_t len )
+void ReplayURLHandler::onDone(int responseCode, const char* error)
 {
-	// If we had a bad response code, we should have been cancelled 
-	// before now.
-	MF_ASSERT( responseCode_ == URL::RESPONSE_ERR_OK );
+    bool success = (error == NULL) && (responseCode == URL::RESPONSE_ERR_OK);
 
-	MemoryIStream stream( data, static_cast<int>(len) );
-	ConnectionControl::instance().pReplayConnection()->addReplayData( stream );
+    BW::string errorString;
+    if (error != NULL) {
+        errorString = error;
+    } else if ((responseCode != URL::RESPONSE_ERR_OK) && (responseCode != 0)) {
+        errorString = "Bad response from server";
+    }
 
-	return true;
+    // Replay connection can be cleared between request cancel and done
+    BWReplayConnection* pReplayConn =
+      ConnectionControl::instance().pReplayConnection();
+
+    if (!success) {
+        ConnectionControl::LogOnStage stage =
+          (responseCode == 0) ? ConnectionControl::STAGE_LOGIN
+                              : ConnectionControl::STAGE_DISCONNECTED;
+
+        ReplayURLHandlerPtr pThisHolder(this);
+
+        if (pReplayConn) {
+            entityManager_.replayURLRequestAborted();
+        }
+
+        entityManager_.callReplayCallback(
+          /* shouldClear */ true, stage, "CONNECTION_FAILED", errorString);
+
+        return;
+    }
+
+    if (pReplayConn && pReplayConn->pReplayController()) {
+        pReplayConn->pReplayController()->replayDataFinalise();
+    }
+
+    entityManager_.replayURLRequestFinished();
 }
-
-
-/*
- *	Override from URL::Response.
- */
-void ReplayURLHandler::onDone( int responseCode, const char * error )
-{
-	bool success = (error == NULL) && (responseCode == URL::RESPONSE_ERR_OK);
-
-	BW::string errorString;
-	if (error != NULL)
-	{
-		errorString = error;
-	}
-	else if ((responseCode != URL::RESPONSE_ERR_OK) &&
-			(responseCode != 0))
-	{
-		errorString = "Bad response from server";
-	}
-
-	// Replay connection can be cleared between request cancel and done
-	BWReplayConnection * pReplayConn =
-		ConnectionControl::instance().pReplayConnection();
-
-	if (!success)
-	{
-		ConnectionControl::LogOnStage stage = (responseCode == 0) ?
-			ConnectionControl::STAGE_LOGIN :
-			ConnectionControl::STAGE_DISCONNECTED;
-
-		ReplayURLHandlerPtr pThisHolder( this );
-		
-		if (pReplayConn)
-		{
-			entityManager_.replayURLRequestAborted();
-		}
-
-		entityManager_.callReplayCallback( /* shouldClear */ true,
-			stage, "CONNECTION_FAILED",
-			errorString );
-		
-		return;
-	}
-
-	if (pReplayConn && pReplayConn->pReplayController())
-	{
-		pReplayConn->pReplayController()->replayDataFinalise();
-	}
-
-	entityManager_.replayURLRequestFinished();
-}
-
 
 /**
  *	This method calls a callback on the replay callback object.
  *
- *	@param shouldClear	Whether the replay handler should be cleared while it 
+ *	@param shouldClear	Whether the replay handler should be cleared while it
  *						is being called. This is typically true for the last
  *						callback.
  *	@param stage 		The connection stage.
  *	@param status 		The status code.
  *	@param message 		The message.
  */
-void EntityManager::callReplayCallback( bool shouldClear,
-		ConnectionControl::LogOnStage stage,
-		const char * status, const BW::string & message )
+void EntityManager::callReplayCallback(bool shouldClear,
+                                       ConnectionControl::LogOnStage stage,
+                                       const char*                   status,
+                                       const BW::string&             message)
 {
-	if (ConnectionControl::instance().pReplayConnection() == NULL)
-	{
-		MF_ASSERT( pURLRequest_ == NULL );
-		MF_ASSERT( pPyReplayHandler_ == NULL );
-		return;
-	}
+    if (ConnectionControl::instance().pReplayConnection() == NULL) {
+        MF_ASSERT(pURLRequest_ == NULL);
+        MF_ASSERT(pPyReplayHandler_ == NULL);
+        return;
+    }
 
-	this->callReplayHandler( shouldClear, "onProgress", 
-		Py_BuildValue( "(iss)", stage,
-		status, message.c_str() ) );
+    this->callReplayHandler(
+      shouldClear,
+      "onProgress",
+      Py_BuildValue("(iss)", stage, status, message.c_str()));
 }
 
-
 /**
- *	This method is called when the URL request failed for any reason. At this 
+ *	This method is called when the URL request failed for any reason. At this
  *	point, we're about to call EntityManager::callReplayCallback() to notify
  *	the callback if any is set.
  */
 void EntityManager::replayURLRequestAborted()
 {
-	BWReplayConnection * pReplayConn = 
-		ConnectionControl::instance().pReplayConnection();
-	MF_ASSERT( pReplayConn != NULL );
+    BWReplayConnection* pReplayConn =
+      ConnectionControl::instance().pReplayConnection();
+    MF_ASSERT(pReplayConn != NULL);
 
-	// Prevent a callback to EntityManager::onReplayTerminated, we end up
-	// in the same state as if it had been called.
-	pReplayConn->setHandler( NULL );
-	ConnectionControl::instance().stopReplay();
+    // Prevent a callback to EntityManager::onReplayTerminated, we end up
+    // in the same state as if it had been called.
+    pReplayConn->setHandler(NULL);
+    ConnectionControl::instance().stopReplay();
 
-	if (pURLRequest_)
-	{
-		pURLRequest_->cancel();
-		pURLRequest_ = NULL;
-	}
+    if (pURLRequest_) {
+        pURLRequest_->cancel();
+        pURLRequest_ = NULL;
+    }
 
-	this->replayURLRequestFinished();
+    this->replayURLRequestFinished();
 }
-
-
 
 /**
  *	This method is called when the URL request has completed.
  */
 void EntityManager::replayURLRequestFinished()
 {
-	pReplayURLHandler_ = NULL;
-	pURLRequest_ = NULL;
+    pReplayURLHandler_ = NULL;
+    pURLRequest_       = NULL;
 }
-
 
 /**
  *	This method calls the given function on the Python replay handler object.
  *
- *	@param shouldClear	Whether the replay handler should be cleared while it 
- *						is being called. This is typically true for the last
- *						callback.
- *	@param func 		The function name.
- *	@param args			A Python tuple of the arguments to pass to the 
- *						function.
- */
-void EntityManager::callReplayHandler( bool shouldClear, const char * func, 
-		PyObject * args )
-{
-	if (pPyReplayHandler_ == NULL)
-	{
-		return;
-	}
-
-	PyObjectPtr pPyReplayHandler = pPyReplayHandler_;
-	
-	if (shouldClear)
-	{
-		pPyReplayHandler_ = NULL;
-	}
-
-	Script::call(
-		PyObject_GetAttrString( pPyReplayHandler.get(), func ),
-		args,
-		"EntityManager::callReplayHandler: ",
-		true );
-}
-
-
-/**
- *	This method calls the given function on the Python replay handler object,
- *	returning is value cast as a bool.
- *
- *
- *	@param shouldClear	Whether the replay handler should be cleared while it 
+ *	@param shouldClear	Whether the replay handler should be cleared while it
  *						is being called. This is typically true for the last
  *						callback.
  *	@param func 		The function name.
  *	@param args			A Python tuple of the arguments to pass to the
  *						function.
  */
-bool EntityManager::callReplayHandlerBoolRet( bool shouldClear,
-		const char * func, PyObject * args )
+void EntityManager::callReplayHandler(bool        shouldClear,
+                                      const char* func,
+                                      PyObject*   args)
 {
-	if (pPyReplayHandler_ == NULL)
-	{
-		return false;
-	}
+    if (pPyReplayHandler_ == NULL) {
+        return;
+    }
 
-	bool handled = false;
-	
-	PyObjectPtr pPyReplayHandler = pPyReplayHandler_;
-	
-	if (shouldClear)
-	{
-		pPyReplayHandler_ = NULL;
-	}
+    PyObjectPtr pPyReplayHandler = pPyReplayHandler_;
 
-	PyObject * ret = Script::ask(
-		PyObject_GetAttrString( pPyReplayHandler.get(), func ),
-		args,
-		"EntityManager::callReplayHandlerBoolRet: " );
-	Script::setAnswer( ret, handled,
-		"EntityManager::callReplayHandlerBoolRet retval" );
+    if (shouldClear) {
+        pPyReplayHandler_ = NULL;
+    }
 
-	return handled;
+    Script::call(PyObject_GetAttrString(pPyReplayHandler.get(), func),
+                 args,
+                 "EntityManager::callReplayHandler: ",
+                 true);
 }
 
+/**
+ *	This method calls the given function on the Python replay handler object,
+ *	returning is value cast as a bool.
+ *
+ *
+ *	@param shouldClear	Whether the replay handler should be cleared while it
+ *						is being called. This is typically true for the last
+ *						callback.
+ *	@param func 		The function name.
+ *	@param args			A Python tuple of the arguments to pass to the
+ *						function.
+ */
+bool EntityManager::callReplayHandlerBoolRet(bool        shouldClear,
+                                             const char* func,
+                                             PyObject*   args)
+{
+    if (pPyReplayHandler_ == NULL) {
+        return false;
+    }
+
+    bool handled = false;
+
+    PyObjectPtr pPyReplayHandler = pPyReplayHandler_;
+
+    if (shouldClear) {
+        pPyReplayHandler_ = NULL;
+    }
+
+    PyObject* ret =
+      Script::ask(PyObject_GetAttrString(pPyReplayHandler.get(), func),
+                  args,
+                  "EntityManager::callReplayHandlerBoolRet: ");
+    Script::setAnswer(
+      ret, handled, "EntityManager::callReplayHandlerBoolRet retval");
+
+    return handled;
+}
 
 /*
  *	Override from BWReplayEventHandler.
  */
-void EntityManager::onReplayHeaderRead( const ReplayHeader & header )
+void EntityManager::onReplayHeaderRead(const ReplayHeader& header)
 {
-	this->callReplayCallback( /* shouldClear */ false,
-		ConnectionControl::STAGE_DATA, "LOGGED_ON_OFFLINE" );
+    this->callReplayCallback(/* shouldClear */ false,
+                             ConnectionControl::STAGE_DATA,
+                             "LOGGED_ON_OFFLINE");
 }
-
 
 /*
  *	Override from BWReplayEventHandler.
  */
-bool EntityManager::onReplayMetaData( const ReplayMetaData & metaData )
+bool EntityManager::onReplayMetaData(const ReplayMetaData& metaData)
 {
-	ScriptObject replayHandler( pPyReplayHandler_.get(),
-		ScriptObject::FROM_BORROWED_REFERENCE );
+    ScriptObject replayHandler(pPyReplayHandler_.get(),
+                               ScriptObject::FROM_BORROWED_REFERENCE);
 
-	ScriptObject method = replayHandler.getAttribute( "onReplayMetaData",
-		ScriptErrorClear() );
+    ScriptObject method =
+      replayHandler.getAttribute("onReplayMetaData", ScriptErrorClear());
 
-	if (!method.exists())
-	{
-		return true;
-	}
+    if (!method.exists()) {
+        return true;
+    }
 
-	ScriptDict metaDataDict = ScriptDict::create(
-		static_cast<int>( metaData.size() ) );
+    ScriptDict metaDataDict =
+      ScriptDict::create(static_cast<int>(metaData.size()));
 
-	ReplayMetaData::const_iterator iter = metaData.begin();
-	while (iter != metaData.end())
-	{
-		metaDataDict.setItem( iter->first.c_str(),
-			ScriptString::create( iter->second ),
-			ScriptErrorPrint() );
-		++iter;
-	}
+    ReplayMetaData::const_iterator iter = metaData.begin();
+    while (iter != metaData.end()) {
+        metaDataDict.setItem(iter->first.c_str(),
+                             ScriptString::create(iter->second),
+                             ScriptErrorPrint());
+        ++iter;
+    }
 
-	ScriptObject returnValue = method.callFunction(
-		ScriptArgs::create( metaDataDict ),
-		ScriptErrorPrint() );
+    ScriptObject returnValue =
+      method.callFunction(ScriptArgs::create(metaDataDict), ScriptErrorPrint());
 
-	return (returnValue.exists() &&
-		(returnValue.isNone() || returnValue.isTrue( ScriptErrorPrint() )));
+    return (returnValue.exists() &&
+            (returnValue.isNone() || returnValue.isTrue(ScriptErrorPrint())));
 }
-
 
 /*
  *	Override from BWReplayEventHandler.
  */
 void EntityManager::onReplayReachedEnd()
 {
-	this->callReplayHandler( /* shouldClear */ false, "onFinish",
-		PyTuple_New( 0 ) );
+    this->callReplayHandler(
+      /* shouldClear */ false, "onFinish", PyTuple_New(0));
 }
-
 
 /*
  *	Override from BWReplayEventHandler.
  */
-void EntityManager::onReplayError( const BW::string & error )
+void EntityManager::onReplayError(const BW::string& error)
 {
-	this->callReplayHandler( /* shouldClear */ false, "onError",
-		Py_BuildValue( "(s)", error.c_str() ) );
+    this->callReplayHandler(
+      /* shouldClear */ false, "onError", Py_BuildValue("(s)", error.c_str()));
 }
-
 
 /*
  *	Override from BWReplayEventHandler.
  */
-void EntityManager::onReplayEntityClientChanged( const BWEntity * pEntity )
+void EntityManager::onReplayEntityClientChanged(const BWEntity* pEntity)
 {
-	MF_ASSERT( pEntity != NULL );
-	MF_ASSERT( !pEntity->isDestroyed() );
+    MF_ASSERT(pEntity != NULL);
+    MF_ASSERT(!pEntity->isDestroyed());
 
-	PyEntityPtr pPyEntity =
-		static_cast< const Entity * >( pEntity )->pPyEntity();
+    PyEntityPtr pPyEntity = static_cast<const Entity*>(pEntity)->pPyEntity();
 
-	// TODO: Get hasBecomePlayer from somewhere.
-	bool hasBecomePlayer = true;
+    // TODO: Get hasBecomePlayer from somewhere.
+    bool hasBecomePlayer = true;
 
-	this->callReplayHandler( /* shouldClear */ false, "onPlayerStateChange",
-		Py_BuildValue( "(OB)",
-			static_cast< PyObject * >( pPyEntity.get() ),
-			uint8( hasBecomePlayer ) ) );
+    this->callReplayHandler(
+      /* shouldClear */ false,
+      "onPlayerStateChange",
+      Py_BuildValue("(OB)",
+                    static_cast<PyObject*>(pPyEntity.get()),
+                    uint8(hasBecomePlayer)));
 }
-
 
 /*
  *	Override from BWReplayEventHandler.
  */
-void EntityManager::onReplayEntityAoIChanged( const BWEntity * pWitness,
-	const BWEntity * pEntity, bool isEnter )
+void EntityManager::onReplayEntityAoIChanged(const BWEntity* pWitness,
+                                             const BWEntity* pEntity,
+                                             bool            isEnter)
 {
-	MF_ASSERT( pWitness != NULL );
-	MF_ASSERT( !pWitness->isDestroyed() );
-	MF_ASSERT( pEntity != NULL );
-	MF_ASSERT( !pEntity->isDestroyed() );
+    MF_ASSERT(pWitness != NULL);
+    MF_ASSERT(!pWitness->isDestroyed());
+    MF_ASSERT(pEntity != NULL);
+    MF_ASSERT(!pEntity->isDestroyed());
 
-	PyEntityPtr pPyWitness =
-		static_cast< const Entity * >( pWitness )->pPyEntity();
-	PyEntityPtr pPyEntity =
-		static_cast< const Entity * >( pEntity )->pPyEntity();
+    PyEntityPtr pPyWitness = static_cast<const Entity*>(pWitness)->pPyEntity();
+    PyEntityPtr pPyEntity  = static_cast<const Entity*>(pEntity)->pPyEntity();
 
-	this->callReplayHandler( /* shouldClear */ false, "onPlayerAoIChange",
-		Py_BuildValue( "(OOB)",
-			static_cast< PyObject * >( pPyWitness.get() ),
-			static_cast< PyObject * >( pPyEntity.get() ),
-			uint8( isEnter ) ) );
+    this->callReplayHandler(
+      /* shouldClear */ false,
+      "onPlayerAoIChange",
+      Py_BuildValue("(OOB)",
+                    static_cast<PyObject*>(pPyWitness.get()),
+                    static_cast<PyObject*>(pPyEntity.get()),
+                    uint8(isEnter)));
 }
-
 
 /*
  *	Override from BWReplayEventHandler.
  */
-void EntityManager::onReplayTicked( GameTime currentTick, GameTime totalTicks )
+void EntityManager::onReplayTicked(GameTime currentTick, GameTime totalTicks)
 {
-	this->callReplayHandler( /* shouldClear */ false, "onPostTick",
-		Py_BuildValue( "(ii)", currentTick, totalTicks ) );
+    this->callReplayHandler(/* shouldClear */ false,
+                            "onPostTick",
+                            Py_BuildValue("(ii)", currentTick, totalTicks));
 }
-
 
 /*
  *	Override from BWReplayEventHandler.
  */
-void EntityManager::onReplaySeek( double dTime )
+void EntityManager::onReplaySeek(double dTime)
 {
-	App::instance().skipGameTimeForward( dTime );
+    App::instance().skipGameTimeForward(dTime);
 }
-
 
 /*
  *	Override from BWReplayEventHandler.
  */
-void EntityManager::onReplayTerminated( ReplayTerminatedReason reason )
+void EntityManager::onReplayTerminated(ReplayTerminatedReason reason)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (pPyReplayHandler_)
-	{
-		switch( reason )
-		{
-		case BWReplayEventHandler::REPLAY_STOPPED_PLAYBACK:
-			this->callReplayCallback( /* shouldClear */ true,
-				ConnectionControl::STAGE_DISCONNECTED, "NOT_SET" );
-			break;
-		case BWReplayEventHandler::REPLAY_ABORTED_VERSION_MISMATCH:
-			this->callReplayCallback( /* shouldClear */ true,
-				ConnectionControl::STAGE_LOGIN, "LOGIN_BAD_PROTOCOL_VERSION" );
-			break;
-		case BWReplayEventHandler::REPLAY_ABORTED_ENTITYDEF_MISMATCH:
-			this->callReplayCallback( /* shouldClear */ true,
-				ConnectionControl::STAGE_LOGIN, "LOGIN_REJECTED_BAD_DIGEST" );
-			break;
-		case BWReplayEventHandler::REPLAY_ABORTED_METADATA_REJECTED:
-			// Although triggered from script, don't rely on it to call 
-			// BigWorld.disconnect().
-			this->callReplayCallback( /* shouldClear */ true,
-				ConnectionControl::STAGE_DISCONNECTED, "CONNECTION_FAILED" );
-			break;
-		case BWReplayEventHandler::REPLAY_ABORTED_CORRUPTED_DATA:
-			this->callReplayCallback( /* shouldClear */ true,
-				ConnectionControl::STAGE_DISCONNECTED, "CONNECTION_FAILED" );
-			break;
+    if (pPyReplayHandler_) {
+        switch (reason) {
+            case BWReplayEventHandler::REPLAY_STOPPED_PLAYBACK:
+                this->callReplayCallback(/* shouldClear */ true,
+                                         ConnectionControl::STAGE_DISCONNECTED,
+                                         "NOT_SET");
+                break;
+            case BWReplayEventHandler::REPLAY_ABORTED_VERSION_MISMATCH:
+                this->callReplayCallback(/* shouldClear */ true,
+                                         ConnectionControl::STAGE_LOGIN,
+                                         "LOGIN_BAD_PROTOCOL_VERSION");
+                break;
+            case BWReplayEventHandler::REPLAY_ABORTED_ENTITYDEF_MISMATCH:
+                this->callReplayCallback(/* shouldClear */ true,
+                                         ConnectionControl::STAGE_LOGIN,
+                                         "LOGIN_REJECTED_BAD_DIGEST");
+                break;
+            case BWReplayEventHandler::REPLAY_ABORTED_METADATA_REJECTED:
+                // Although triggered from script, don't rely on it to call
+                // BigWorld.disconnect().
+                this->callReplayCallback(/* shouldClear */ true,
+                                         ConnectionControl::STAGE_DISCONNECTED,
+                                         "CONNECTION_FAILED");
+                break;
+            case BWReplayEventHandler::REPLAY_ABORTED_CORRUPTED_DATA:
+                this->callReplayCallback(/* shouldClear */ true,
+                                         ConnectionControl::STAGE_DISCONNECTED,
+                                         "CONNECTION_FAILED");
+                break;
 
-		default:
-			ERROR_MSG( "EntityManager::onReplayTerminated: "
-					"Got unknown reason: %d, disconnecting\n",
-				int( reason ) );
+            default:
+                ERROR_MSG("EntityManager::onReplayTerminated: "
+                          "Got unknown reason: %d, disconnecting\n",
+                          int(reason));
 
-			this->callReplayCallback( /* shouldClear */ true,
-				ConnectionControl::STAGE_DISCONNECTED, "CONNECTION_FAILED" );
-		}
+                this->callReplayCallback(/* shouldClear */ true,
+                                         ConnectionControl::STAGE_DISCONNECTED,
+                                         "CONNECTION_FAILED");
+        }
 
-		pPyReplayHandler_ = NULL;
-	}
+        pPyReplayHandler_ = NULL;
+    }
 
-	if (pURLRequest_ != NULL)
-	{
-		URL::Manager::instance()->cancelRequest( pURLRequest_ );
-		pURLRequest_ = NULL;
-	}
+    if (pURLRequest_ != NULL) {
+        URL::Manager::instance()->cancelRequest(pURLRequest_);
+        pURLRequest_ = NULL;
+    }
 
-	this->clearPendingEntities();
+    this->clearPendingEntities();
 }
-
 
 /**
  *	This method starts a replay playback from a file on disk.
@@ -1056,25 +1000,24 @@ void EntityManager::onReplayTerminated( ReplayTerminatedReason reason )
  *								NULL_SPACE_ID with Python Error set if something
  *								failed.
  */
-SpaceID EntityManager::startReplayFromFile( const BW::string & fileName,
-	const BW::string & publicKey, PyObjectPtr pReplayHandler,
-	int volatileInjectionPeriod )
+SpaceID EntityManager::startReplayFromFile(const BW::string& fileName,
+                                           const BW::string& publicKey,
+                                           PyObjectPtr       pReplayHandler,
+                                           int volatileInjectionPeriod)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	SpaceID result = ConnectionControl::instance().startReplayFromFile(
-		fileName, this, publicKey, volatileInjectionPeriod );
+    SpaceID result = ConnectionControl::instance().startReplayFromFile(
+      fileName, this, publicKey, volatileInjectionPeriod);
 
-	if (result == NULL_SPACE_ID)
-	{
-		PyErr_SetString( PyExc_RuntimeError, "Already replaying" );
-		return NULL_SPACE_ID;
-	}
+    if (result == NULL_SPACE_ID) {
+        PyErr_SetString(PyExc_RuntimeError, "Already replaying");
+        return NULL_SPACE_ID;
+    }
 
-	pPyReplayHandler_ = pReplayHandler;
-	return result;
+    pPyReplayHandler_ = pReplayHandler;
+    return result;
 }
-
 
 /**
  *	This method starts a replay playback from a URL.
@@ -1094,80 +1037,80 @@ SpaceID EntityManager::startReplayFromFile( const BW::string & fileName,
  *								NULL_SPACE_ID with Python Error set if something
  *								failed.
  */
-SpaceID EntityManager::startReplayFromURL( const BW::string & url,
-	const BW::string & cacheFileName, bool shouldKeepCache,
-	const BW::string & publicKey, PyObjectPtr pReplayHandler,
-	int volatileInjectionPeriod )
+SpaceID EntityManager::startReplayFromURL(const BW::string& url,
+                                          const BW::string& cacheFileName,
+                                          bool              shouldKeepCache,
+                                          const BW::string& publicKey,
+                                          PyObjectPtr       pReplayHandler,
+                                          int volatileInjectionPeriod)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	pPyReplayHandler_ = pReplayHandler;
+    pPyReplayHandler_ = pReplayHandler;
 
-	SpaceID result = ConnectionControl::instance().startReplayFromStream(
-		cacheFileName, shouldKeepCache, this, publicKey,
-		volatileInjectionPeriod );
+    SpaceID result = ConnectionControl::instance().startReplayFromStream(
+      cacheFileName, shouldKeepCache, this, publicKey, volatileInjectionPeriod);
 
-	if (result == NULL_SPACE_ID)
-	{
-		PyErr_SetString( PyExc_RuntimeError, "Already replaying" );
-		return NULL_SPACE_ID;
-	}
+    if (result == NULL_SPACE_ID) {
+        PyErr_SetString(PyExc_RuntimeError, "Already replaying");
+        return NULL_SPACE_ID;
+    }
 
-	MF_ASSERT( pURLRequest_ == NULL );
-	pReplayURLHandler_ = new ReplayURLHandler( *this );
+    MF_ASSERT(pURLRequest_ == NULL);
+    pReplayURLHandler_ = new ReplayURLHandler(*this);
 
-	if (!URL::Manager::instance()->fetchURL( url,
-			/* pResponse */pReplayURLHandler_.get(),
-			/* pHeaders */NULL, URL::METHOD_GET,
-			/* connectTimeoutInSeconds */0.f, /* pPostData */NULL,
-			&pURLRequest_ ))
-	{
-		// So we don't call the "replay stopped safely" callback.
-		pPyReplayHandler_ = NULL;
+    if (!URL::Manager::instance()->fetchURL(
+          url,
+          /* pResponse */ pReplayURLHandler_.get(),
+          /* pHeaders */ NULL,
+          URL::METHOD_GET,
+          /* connectTimeoutInSeconds */ 0.f,
+          /* pPostData */ NULL,
+          &pURLRequest_)) {
+        // So we don't call the "replay stopped safely" callback.
+        pPyReplayHandler_ = NULL;
 
-		ConnectionControl::instance().stopReplay();
+        ConnectionControl::instance().stopReplay();
 
-		PyErr_SetString( PyExc_ValueError, "Could not fetch URL" );
+        PyErr_SetString(PyExc_ValueError, "Could not fetch URL");
 
-		return NULL_SPACE_ID;
-	}
+        return NULL_SPACE_ID;
+    }
 
-	return result;
+    return result;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: BWStreamDataHandler overrides
 // -----------------------------------------------------------------------------
 
-void EntityManager::onStreamDataComplete( uint16 streamID,
-	const BW::string & rDescription, BinaryIStream & rData )
+void EntityManager::onStreamDataComplete(uint16            streamID,
+                                         const BW::string& rDescription,
+                                         BinaryIStream&    rData)
 {
-	// TODO: ScriptObject this up
-	BW_GUARD;
-	int len = rData.remainingLength();
+    // TODO: ScriptObject this up
+    BW_GUARD;
+    int len = rData.remainingLength();
 
-	if (len <= 0)
-	{
-		ERROR_MSG( "EntityManager::onStreamDataComplete: "
-			"Received zero length data\n" );
-		return;
-	}
+    if (len <= 0) {
+        ERROR_MSG("EntityManager::onStreamDataComplete: "
+                  "Received zero length data\n");
+        return;
+    }
 
-	const char *pData = (const char*)rData.retrieve( len );
+    const char* pData = (const char*)rData.retrieve(len);
 
-	ScriptObject func = Personality::getMember(
-		/*currentName*/ "onStreamComplete",
-		/*deprecatedName*/ "onProxyDataDownloadComplete" );
+    ScriptObject func = Personality::getMember(
+      /*currentName*/ "onStreamComplete",
+      /*deprecatedName*/ "onProxyDataDownloadComplete");
 
-	if (func)
-	{
-		func.callFunction( ScriptArgs::create( streamID, rDescription,
-				ScriptString::create( pData, len ) ),
-			ScriptErrorPrint( "EntityManager::onStreamDataComplete" ) );
-	}
+    if (func) {
+        func.callFunction(
+          ScriptArgs::create(
+            streamID, rDescription, ScriptString::create(pData, len)),
+          ScriptErrorPrint("EntityManager::onStreamDataComplete"));
+    }
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Python module functions
@@ -1177,7 +1120,7 @@ void EntityManager::onStreamDataComplete( uint16 streamID,
  *  Returns the entity with the given id, or None if not found.
  *  This function will search only entities that are currently in the world.
  *  An entity may be not in the world if the server indicates to the client that
- *  the entity has entered the player's area of interest but the client doesn't 
+ *  the entity has entered the player's area of interest but the client doesn't
  *  have enough information about that entity yet.
  *
  *  @param id An integer representing the id of the entity to return.
@@ -1187,23 +1130,21 @@ void EntityManager::onStreamDataComplete( uint16 streamID,
 /**
  *	Returns the entity with the given id, or None if not found.
  */
-static PyObjectPtr entity( EntityID id )
+static PyObjectPtr entity(EntityID id)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	Entity * pEntity = ConnectionControl::instance().findEntity( id );
+    Entity* pEntity = ConnectionControl::instance().findEntity(id);
 
-	if (pEntity == NULL)
-	{
-		return NULL;
-	}
+    if (pEntity == NULL) {
+        return NULL;
+    }
 
-	MF_ASSERT( !pEntity->isDestroyed() );
+    MF_ASSERT(!pEntity->isDestroyed());
 
-	return pEntity->pPyEntity();
+    return pEntity->pPyEntity();
 }
-PY_AUTO_MODULE_FUNCTION( RETDATA, entity,
-		ARG( EntityID, END ), BigWorld );
+PY_AUTO_MODULE_FUNCTION(RETDATA, entity, ARG(EntityID, END), BigWorld);
 
 /*~ function BigWorld createPlayerEntity
  *  Creates a new entity on the client and places it in the world. The
@@ -1238,70 +1179,66 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, entity,
 /**
  *	This function creates a player entity for a BWNullConnection-driven space.
  */
-static PyObject * createPlayerEntity( const BW::string & className,
-	const Position3D & position, const Vector3 & directionRPY,
-	const ScriptDict & properties )
+static PyObject* createPlayerEntity(const BW::string& className,
+                                    const Position3D& position,
+                                    const Vector3&    directionRPY,
+                                    const ScriptDict& properties)
 {
-	Direction3D direction( directionRPY );
+    Direction3D direction(directionRPY);
 
-	// Now find the index of this class
-	EntityType * pType = EntityType::find( className );
-	if (pType == NULL)
-	{
-		PyErr_Format( PyExc_ValueError, "Class %s is not an entity class",
-			className );
-		return NULL;
-	}
+    // Now find the index of this class
+    EntityType* pType = EntityType::find(className);
+    if (pType == NULL) {
+        PyErr_Format(
+          PyExc_ValueError, "Class %s is not an entity class", className);
+        return NULL;
+    }
 
-	BWNullConnection * pNullConn =
-		ConnectionControl::instance().pNullConnection();
-	if (pNullConn == NULL)
-	{
-		PyErr_Format( PyExc_ValueError, "Not running in offline mode" );
-		return NULL;
-	}
+    BWNullConnection* pNullConn =
+      ConnectionControl::instance().pNullConnection();
+    if (pNullConn == NULL) {
+        PyErr_Format(PyExc_ValueError, "Not running in offline mode");
+        return NULL;
+    }
 
-	if (pNullConn->pPlayer() != NULL)
-	{
-		PyErr_Format( PyExc_ValueError, "Player already created" );
-		return NULL;
-	}
+    if (pNullConn->pPlayer() != NULL) {
+        PyErr_Format(PyExc_ValueError, "Player already created");
+        return NULL;
+    }
 
-	// Create an offline-mode player entity
-	MemoryOStream stream( 4096 ); 
-	pType->prepareBasePlayerStream( stream, properties );
-	EntityID newEntityID =
-		pNullConn->createNewPlayerBaseEntity( pType->index(), stream );
+    // Create an offline-mode player entity
+    MemoryOStream stream(4096);
+    pType->prepareBasePlayerStream(stream, properties);
+    EntityID newEntityID =
+      pNullConn->createNewPlayerBaseEntity(pType->index(), stream);
 
-	if (newEntityID == NULL_ENTITY_ID)
-	{
-		PyErr_Format( PyExc_ValueError, 
-			"Failed to create new player base Entity of type %s",
-			className );
-		return NULL;
-	}
+    if (newEntityID == NULL_ENTITY_ID) {
+        PyErr_Format(PyExc_ValueError,
+                     "Failed to create new player base Entity of type %s",
+                     className);
+        return NULL;
+    }
 
-	stream.reset();
+    stream.reset();
 
-	pType->prepareCellPlayerStream( stream, properties );
+    pType->prepareCellPlayerStream(stream, properties);
 
-	if (!pNullConn->giveCellToPlayerBaseEntity( position, direction,
-		stream ))
-	{
-		PyErr_Format( PyExc_ValueError, 
-			"Failed to create new player cell Entity of type %s",
-			className );
-		return NULL;
-	}
+    if (!pNullConn->giveCellToPlayerBaseEntity(position, direction, stream)) {
+        PyErr_Format(PyExc_ValueError,
+                     "Failed to create new player cell Entity of type %s",
+                     className);
+        return NULL;
+    }
 
-	// TODO: We can change back to RETDATA and remove .newRef() when 
-	// RETDATA supports exceptions.
-	return ScriptObject::createFrom( newEntityID ).newRef();
+    // TODO: We can change back to RETDATA and remove .newRef() when
+    // RETDATA supports exceptions.
+    return ScriptObject::createFrom(newEntityID).newRef();
 }
-PY_AUTO_MODULE_FUNCTION( RETOWN, createPlayerEntity, ARG( BW::string,
-		ARG( Position3D, ARG( Vector3, ARG( ScriptDict, END ) ) ) ), 
-	BigWorld )
-
+PY_AUTO_MODULE_FUNCTION(
+  RETOWN,
+  createPlayerEntity,
+  ARG(BW::string, ARG(Position3D, ARG(Vector3, ARG(ScriptDict, END)))),
+  BigWorld)
 
 /*~ function BigWorld createEntity
  *  Creates a new entity on the client and places it in the world. The
@@ -1327,7 +1264,8 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, createPlayerEntity, ARG( BW::string,
  *  p = BigWorld.player()
  *  direction = ( 0, 0, p.yaw )
  *  properties = { 'modelType':2, 'text':'Created Info Entity'}
- *  BigWorld.createEntity( 'Info', p.spaceID, 0, p.position, direction, properties )
+ *  BigWorld.createEntity( 'Info', p.spaceID, 0, p.position, direction,
+ *properties )
  *  @}
  */
 /**
@@ -1336,86 +1274,86 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, createPlayerEntity, ARG( BW::string,
  *	player entity in an offline space, but this is a deprecated behaviour from
  *	pre-connection_model bwclient. Use createPlayerEntity instead.
  */
-static PyObject * createEntity( const BW::string & className, SpaceID spaceID,
-	EntityID vehicleID, const Position3D & position,
-	const Vector3 & directionRPY, const ScriptDict & properties )
+static PyObject* createEntity(const BW::string& className,
+                              SpaceID           spaceID,
+                              EntityID          vehicleID,
+                              const Position3D& position,
+                              const Vector3&    directionRPY,
+                              const ScriptDict& properties)
 {
-	Direction3D direction( directionRPY );
+    Direction3D direction(directionRPY);
 
-	if (spaceID == NULL_SPACE_ID)
-	{
-		PyErr_SetString( PyExc_ValueError, "Invalid space ID" );
-		return NULL;
-	}
-	
-	// Now find the index of this class
-	EntityType * pType = EntityType::find( className );
-	if (pType == NULL)
-	{
-		PyErr_Format( PyExc_ValueError, "Class %s is not an entity class", className );
-		return NULL;
-	}
+    if (spaceID == NULL_SPACE_ID) {
+        PyErr_SetString(PyExc_ValueError, "Invalid space ID");
+        return NULL;
+    }
 
-	ConnectionControl & connectionControl = ConnectionControl::instance();
-	SpaceManager  & spaceManager = SpaceManager::instance();
+    // Now find the index of this class
+    EntityType* pType = EntityType::find(className);
+    if (pType == NULL) {
+        PyErr_Format(
+          PyExc_ValueError, "Class %s is not an entity class", className);
+        return NULL;
+    }
 
-	BWConnection * pConnection = spaceManager.isLocalSpace( spaceID ) ?
-		connectionControl.pSpaceConnection( spaceID ) :
-		connectionControl.pConnection();
+    ConnectionControl& connectionControl = ConnectionControl::instance();
+    SpaceManager&      spaceManager      = SpaceManager::instance();
 
-	if (!pConnection)
-	{
-		PyErr_Format( PyExc_ValueError, 
-				"No server connection or client space with ID %d",
-			spaceID );
-		return NULL;
-	}
+    BWConnection* pConnection = spaceManager.isLocalSpace(spaceID)
+                                  ? connectionControl.pSpaceConnection(spaceID)
+                                  : connectionControl.pConnection();
 
-	BWNullConnection * pNullConnection = connectionControl.pNullConnection();
+    if (!pConnection) {
+        PyErr_Format(PyExc_ValueError,
+                     "No server connection or client space with ID %d",
+                     spaceID);
+        return NULL;
+    }
 
-	if (pNullConnection && pNullConnection->pPlayer() == NULL)
-	{
-		// Trying to create an offline-mode Player through the createEntity
-		// call. This is a fallback from pre-connection_model BWClient.
-		MF_ASSERT( spaceID != NULL_SPACE_ID );
-		if (vehicleID != NULL_ENTITY_ID)
-		{
-			// TODO: Is there a strong reason this doesn't work? Just a flaw
-			// in the BWNullConnection API? There's currently no Python way
-			// to add the vehicle to the space though.
-			WARNING_MSG( "createEntity: Trying to create a player entity "
-					"on a vehicle (ID %d), but that is unimplemented\n",
-				vehicleID );
-		}
-		return createPlayerEntity( className, position,
-			directionRPY, properties );
-	}
+    BWNullConnection* pNullConnection = connectionControl.pNullConnection();
 
+    if (pNullConnection && pNullConnection->pPlayer() == NULL) {
+        // Trying to create an offline-mode Player through the createEntity
+        // call. This is a fallback from pre-connection_model BWClient.
+        MF_ASSERT(spaceID != NULL_SPACE_ID);
+        if (vehicleID != NULL_ENTITY_ID) {
+            // TODO: Is there a strong reason this doesn't work? Just a flaw
+            // in the BWNullConnection API? There's currently no Python way
+            // to add the vehicle to the space though.
+            WARNING_MSG("createEntity: Trying to create a player entity "
+                        "on a vehicle (ID %d), but that is unimplemented\n",
+                        vehicleID);
+        }
+        return createPlayerEntity(
+          className, position, directionRPY, properties);
+    }
 
-	// Add a client-only entity to an existing space.
-	MemoryOStream stream( 4096 );
-	pType->prepareCreationStream( stream, properties );
+    // Add a client-only entity to an existing space.
+    MemoryOStream stream(4096);
+    pType->prepareCreationStream(stream, properties);
 
-	BWEntity * pNewEntity = pConnection->createLocalEntity( pType->index(),
-		spaceID, vehicleID, position, direction, stream );
+    BWEntity* pNewEntity = pConnection->createLocalEntity(
+      pType->index(), spaceID, vehicleID, position, direction, stream);
 
-	if (pNewEntity == NULL)
-	{
-		PyErr_Format( PyExc_ValueError, 
-			"Failed to create new Entity of type %s",
-			className );
-		return NULL;
-	}
+    if (pNewEntity == NULL) {
+        PyErr_Format(PyExc_ValueError,
+                     "Failed to create new Entity of type %s",
+                     className);
+        return NULL;
+    }
 
-	// TODO: We can change back to RETDATA and remove .newRef() when 
-	// RETDATA supports exceptions.
-	return ScriptObject::createFrom( pNewEntity->entityID() ).newRef();
+    // TODO: We can change back to RETDATA and remove .newRef() when
+    // RETDATA supports exceptions.
+    return ScriptObject::createFrom(pNewEntity->entityID()).newRef();
 }
-PY_AUTO_MODULE_FUNCTION( RETOWN, createEntity, ARG( BW::string,
-	NZARG( SpaceID, ARG( EntityID, ARG( Position3D, ARG( Vector3,
-	ARG( ScriptDict, END ) ) ) ) ) ), BigWorld )
-
-
+PY_AUTO_MODULE_FUNCTION(
+  RETOWN,
+  createEntity,
+  ARG(BW::string,
+      NZARG(SpaceID,
+            ARG(EntityID,
+                ARG(Position3D, ARG(Vector3, ARG(ScriptDict, END)))))),
+  BigWorld)
 
 /*~ function BigWorld destroyEntity
  *  Destroys an exiting client-side entity.
@@ -1430,37 +1368,34 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, createEntity, ARG( BW::string,
 /**
  *	Destroys an existing client-side entity
  */
-static bool destroyEntity( EntityID id )
+static bool destroyEntity(EntityID id)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (!BWEntities::isLocalEntity( id ))
-	{
-		PyErr_Format( PyExc_ValueError, "Not a client-only entity id" );
-		return false;
-	}
+    if (!BWEntities::isLocalEntity(id)) {
+        PyErr_Format(PyExc_ValueError, "Not a client-only entity id");
+        return false;
+    }
 
-	ConnectionControl & connectionControl = ConnectionControl::instance();
+    ConnectionControl& connectionControl = ConnectionControl::instance();
 
-	BWEntityPtr pEntity = connectionControl.findEntity( id );
-	if (!pEntity)
-	{
-		PyErr_Format( PyExc_ValueError, "Unknown entity id" );
-		return false;
-	}
+    BWEntityPtr pEntity = connectionControl.findEntity(id);
+    if (!pEntity) {
+        PyErr_Format(PyExc_ValueError, "Unknown entity id");
+        return false;
+    }
 
-	SpaceID spaceID = pEntity->spaceID();
-	MF_ASSERT( SpaceManager::instance().isLocalSpace( spaceID ) );
+    SpaceID spaceID = pEntity->spaceID();
+    MF_ASSERT(SpaceManager::instance().isLocalSpace(spaceID));
 
-	BWConnection * pConnection = connectionControl.pSpaceConnection( spaceID );
-	MF_ASSERT( pConnection );
+    BWConnection* pConnection = connectionControl.pSpaceConnection(spaceID);
+    MF_ASSERT(pConnection);
 
-	MF_VERIFY( pConnection->destroyLocalEntity( id ) );
+    MF_VERIFY(pConnection->destroyLocalEntity(id));
 
-	return true;
+    return true;
 }
-PY_AUTO_MODULE_FUNCTION( RETOK, destroyEntity, ARG( EntityID, END ), BigWorld );
-
+PY_AUTO_MODULE_FUNCTION(RETOK, destroyEntity, ARG(EntityID, END), BigWorld);
 
 // -----------------------------------------------------------------------------
 // Section: BWReplay Python interface
@@ -1471,7 +1406,6 @@ PY_AUTO_MODULE_FUNCTION( RETOK, destroyEntity, ARG( EntityID, END ), BigWorld );
  *
  *	The BWReplay module handles playback of recorded replay files.
  */
-
 
 /*~ function BWReplay.startPlayback
  *	@components{ client }
@@ -1515,9 +1449,8 @@ PY_AUTO_MODULE_FUNCTION( RETOK, destroyEntity, ARG( EntityID, END ), BigWorld );
  *	    self.currentPlaybackTime = currentTick / self.updateHz
  *
  *	  def onProgress( self, stage, status, message ):
- *	    # This method takes the same arguments as BigWorld.connect()'s progressFn
- *	    # to enable the values to be passed directly to it.
- *	    if stage == 2:
+ *	    # This method takes the same arguments as BigWorld.connect()'s
+ *progressFn # to enable the values to be passed directly to it. if stage == 2:
  *	      # Header has been loaded get our updateHz
  *	      self.updateHz = BWReplay.getUpdateHz()
  *
@@ -1554,80 +1487,77 @@ PY_AUTO_MODULE_FUNCTION( RETOK, destroyEntity, ARG( EntityID, END ), BigWorld );
  *	with stage as 6 (Disconnect).
  *
  */
-PyObject * startPlayback( const BW::string & url, const BW::string & publicKey,
-		PyObjectPtr handler, const BW::string & localFilename,
-		int volatileInjectionPeriod )
+PyObject* startPlayback(const BW::string& url,
+                        const BW::string& publicKey,
+                        PyObjectPtr       handler,
+                        const BW::string& localFilename,
+                        int               volatileInjectionPeriod)
 {
-	BW::string filename = localFilename;
+    BW::string filename = localFilename;
 
-	static const BW::string FILE_SCHEME( "file://" );
+    static const BW::string FILE_SCHEME("file://");
 
-	// For local files, we don't use libcURL - we can play directly from disk.
-	if (url.substr( 0, FILE_SCHEME.length() ) == FILE_SCHEME)
-	{
-		// We check for the existence of the URL host, which is allowed but
-		// the value is then ignored.
-		// Note that libcURL would parse a URL host as the first element of a
-		// relative path instead, in violation of RFC1738.
+    // For local files, we don't use libcURL - we can play directly from disk.
+    if (url.substr(0, FILE_SCHEME.length()) == FILE_SCHEME) {
+        // We check for the existence of the URL host, which is allowed but
+        // the value is then ignored.
+        // Note that libcURL would parse a URL host as the first element of a
+        // relative path instead, in violation of RFC1738.
 
-		size_t hostStart = FILE_SCHEME.length();
-		size_t pathStart = 0;
+        size_t hostStart = FILE_SCHEME.length();
+        size_t pathStart = 0;
 
-		if (url[hostStart] != '/')
-		{
-			pathStart = url.find( '/', hostStart ) + 1;
-		}
-		else
-		{
-			pathStart = hostStart + 1;
-		}
+        if (url[hostStart] != '/') {
+            pathStart = url.find('/', hostStart) + 1;
+        } else {
+            pathStart = hostStart + 1;
+        }
 
-		filename = url.substr( pathStart );
+        filename = url.substr(pathStart);
 
-		std::replace( filename.begin(), filename.end(), '/', '\\' );
-		std::replace( filename.begin(), filename.end(), '|', ':' );
+        std::replace(filename.begin(), filename.end(), '/', '\\');
+        std::replace(filename.begin(), filename.end(), '|', ':');
 
-		if (!BWResource::fileAbsolutelyExists( filename ))
-		{
-			PyErr_Format( PyExc_ValueError,
-				"File in local file URL does not exist: %s",
-				filename.c_str() );
+        if (!BWResource::fileAbsolutelyExists(filename)) {
+            PyErr_Format(PyExc_ValueError,
+                         "File in local file URL does not exist: %s",
+                         filename.c_str());
 
-			return NULL;
-		}
+            return NULL;
+        }
 
-		SpaceID result = EntityManager::instance().startReplayFromFile(
-			filename, publicKey, handler, volatileInjectionPeriod );
+        SpaceID result = EntityManager::instance().startReplayFromFile(
+          filename, publicKey, handler, volatileInjectionPeriod);
 
-		return (result != NULL_SPACE_ID) ? 
-			ScriptInt::create( result ).newRef() : 
-			NULL;
-	}
+        return (result != NULL_SPACE_ID) ? ScriptInt::create(result).newRef()
+                                         : NULL;
+    }
 
-	bool isCacheTemporary = true;
+    bool isCacheTemporary = true;
 
-	if (filename.empty())
-	{
-		filename = bw_wtoacp( getTempFilePathName() );
-		isCacheTemporary = false;
-	}
+    if (filename.empty()) {
+        filename         = bw_wtoacp(getTempFilePathName());
+        isCacheTemporary = false;
+    }
 
-	SpaceID result = EntityManager::instance().startReplayFromURL( url,
-		filename, /* shouldKeepCache */ !isCacheTemporary, publicKey, handler,
-		volatileInjectionPeriod );
+    SpaceID result = EntityManager::instance().startReplayFromURL(
+      url,
+      filename,
+      /* shouldKeepCache */ !isCacheTemporary,
+      publicKey,
+      handler,
+      volatileInjectionPeriod);
 
-	return (result != NULL_SPACE_ID) ? 
-		ScriptInt::create( result ).newRef() : 
-		NULL;
+    return (result != NULL_SPACE_ID) ? ScriptInt::create(result).newRef()
+                                     : NULL;
 }
-PY_AUTO_MODULE_FUNCTION( RETOWN, startPlayback,
-		ARG( BW::string,
-		ARG( BW::string,
-		NZARG( PyObjectPtr,
-		OPTARG( BW::string, "",
-		OPTARG( int, -1,
-			END ) )))), BWReplay );
-
+PY_AUTO_MODULE_FUNCTION(
+  RETOWN,
+  startPlayback,
+  ARG(BW::string,
+      ARG(BW::string,
+          NZARG(PyObjectPtr, OPTARG(BW::string, "", OPTARG(int, -1, END))))),
+  BWReplay);
 
 /*~ function BWReplay.stopPlayback
  *	@components{ client }
@@ -1636,31 +1566,28 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, startPlayback,
  */
 void stopPlayback()
 {
-	ConnectionControl::instance().stopReplay();
+    ConnectionControl::instance().stopReplay();
 }
 
-PY_AUTO_MODULE_FUNCTION( RETVOID, stopPlayback, END, BWReplay );
-
+PY_AUTO_MODULE_FUNCTION(RETVOID, stopPlayback, END, BWReplay);
 
 /*~ function BWReplay.getCurrentTick
  *	@components{ client }
  *
  *	@return The current tick index
  */
-int getCurrentTick( )
+int getCurrentTick()
 {
-	BWReplayConnection * pReplayConn =
-		ConnectionControl::instance().pReplayConnection();
-	if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL)
-	{
-		return -1;
-	}
+    BWReplayConnection* pReplayConn =
+      ConnectionControl::instance().pReplayConnection();
+    if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL) {
+        return -1;
+    }
 
-	return pReplayConn->pReplayController()->getCurrentTick();
+    return pReplayConn->pReplayController()->getCurrentTick();
 }
 
-PY_AUTO_MODULE_FUNCTION( RETDATA, getCurrentTick, END, BWReplay );
-
+PY_AUTO_MODULE_FUNCTION(RETDATA, getCurrentTick, END, BWReplay);
 
 /*~ function BWReplay.setCurrentTick
  *	@components{ client }
@@ -1671,60 +1598,55 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, getCurrentTick, END, BWReplay );
  *	@param newTick		The tick to move to
  *
  */
-bool setCurrentTick( int newTick )
+bool setCurrentTick(int newTick)
 {
-	BWReplayConnection * pReplayConn =
-		ConnectionControl::instance().pReplayConnection();
-	if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL)
-	{
-		PyErr_SetString( PyExc_ValueError, "Not currently replaying" );
-		return false;
-	}
+    BWReplayConnection* pReplayConn =
+      ConnectionControl::instance().pReplayConnection();
+    if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL) {
+        PyErr_SetString(PyExc_ValueError, "Not currently replaying");
+        return false;
+    }
 
-	return pReplayConn->pReplayController()->setCurrentTick( newTick );
+    return pReplayConn->pReplayController()->setCurrentTick(newTick);
 }
 
-PY_AUTO_MODULE_FUNCTION( RETOK, setCurrentTick, ARG( int, END ), BWReplay );
-
+PY_AUTO_MODULE_FUNCTION(RETOK, setCurrentTick, ARG(int, END), BWReplay);
 
 /*~ function BWReplay.getTotalTicks
  *	@components{ client }
  *
  *	@return The total number of ticks loaded
  */
-int getTotalTicks( )
+int getTotalTicks()
 {
-	BWReplayConnection * pReplayConn =
-		ConnectionControl::instance().pReplayConnection();
-	if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL)
-	{
-		return -1;
-	}
+    BWReplayConnection* pReplayConn =
+      ConnectionControl::instance().pReplayConnection();
+    if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL) {
+        return -1;
+    }
 
-	return pReplayConn->pReplayController()->numTicksTotal();
+    return pReplayConn->pReplayController()->numTicksTotal();
 }
 
-PY_AUTO_MODULE_FUNCTION( RETDATA, getTotalTicks, END, BWReplay );
+PY_AUTO_MODULE_FUNCTION(RETDATA, getTotalTicks, END, BWReplay);
 
 /*~ function BWReplay.getNumLoadedTicks
  *	@components{ client }
  *
  *	@return The total number of ticks loaded
  */
-int getNumLoadedTicks( )
+int getNumLoadedTicks()
 {
-	BWReplayConnection * pReplayConn =
-		ConnectionControl::instance().pReplayConnection();
-	if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL)
-	{
-		return -1;
-	}
+    BWReplayConnection* pReplayConn =
+      ConnectionControl::instance().pReplayConnection();
+    if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL) {
+        return -1;
+    }
 
-	return pReplayConn->pReplayController()->numTicksLoaded();
+    return pReplayConn->pReplayController()->numTicksLoaded();
 }
 
-PY_AUTO_MODULE_FUNCTION( RETDATA, getNumLoadedTicks, END, BWReplay );
-
+PY_AUTO_MODULE_FUNCTION(RETDATA, getNumLoadedTicks, END, BWReplay);
 
 /*~ function BWReplay.isLoaded
  *	@components{ client }
@@ -1733,18 +1655,16 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, getNumLoadedTicks, END, BWReplay );
  */
 bool isLoaded()
 {
-	BWReplayConnection * pReplayConn =
-		ConnectionControl::instance().pReplayConnection();
-	if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL)
-	{
-		return false;
-	}
+    BWReplayConnection* pReplayConn =
+      ConnectionControl::instance().pReplayConnection();
+    if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL) {
+        return false;
+    }
 
-	return pReplayConn->pReplayController()->isLoaded();
+    return pReplayConn->pReplayController()->isLoaded();
 }
 
-PY_AUTO_MODULE_FUNCTION( RETDATA, isLoaded, END, BWReplay );
-
+PY_AUTO_MODULE_FUNCTION(RETDATA, isLoaded, END, BWReplay);
 
 /*~ function BWReplay.isPlaying
  *	@components{ client }
@@ -1753,97 +1673,86 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, isLoaded, END, BWReplay );
  */
 bool isPlaying()
 {
-	BWReplayConnection * pReplayConn =
-		ConnectionControl::instance().pReplayConnection();
-	if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL)
-	{
-		return false;
-	}
+    BWReplayConnection* pReplayConn =
+      ConnectionControl::instance().pReplayConnection();
+    if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL) {
+        return false;
+    }
 
-	return pReplayConn->pReplayController()->isPlaying();
+    return pReplayConn->pReplayController()->isPlaying();
 }
 
-PY_AUTO_MODULE_FUNCTION( RETDATA, isPlaying, END, BWReplay );
-
+PY_AUTO_MODULE_FUNCTION(RETDATA, isPlaying, END, BWReplay);
 
 /*~ function BWReplay.pausePlayback
  *	@components{ client }
  *
  *	This method will pause the playback.
  */
-void pausePlayback( )
+void pausePlayback()
 {
-	BWReplayConnection * pReplayConn =
-		ConnectionControl::instance().pReplayConnection();
-	if (pReplayConn == NULL)
-	{
-		return;
-	}
+    BWReplayConnection* pReplayConn =
+      ConnectionControl::instance().pReplayConnection();
+    if (pReplayConn == NULL) {
+        return;
+    }
 
-	pReplayConn->pauseReplay();
+    pReplayConn->pauseReplay();
 }
 
-PY_AUTO_MODULE_FUNCTION( RETVOID, pausePlayback, END, BWReplay );
-
+PY_AUTO_MODULE_FUNCTION(RETVOID, pausePlayback, END, BWReplay);
 
 /*~ function BWReplay.resumePlayback
  *	@components{ client }
  *
  *	This method will resume the playback.
  */
-void resumePlayback( )
+void resumePlayback()
 {
-	BWReplayConnection * pReplayConn =
-		ConnectionControl::instance().pReplayConnection();
-	if (pReplayConn == NULL)
-	{
-		return;
-	}
+    BWReplayConnection* pReplayConn =
+      ConnectionControl::instance().pReplayConnection();
+    if (pReplayConn == NULL) {
+        return;
+    }
 
-	pReplayConn->resumeReplay();
+    pReplayConn->resumeReplay();
 }
 
-PY_AUTO_MODULE_FUNCTION( RETVOID, resumePlayback, END, BWReplay );
-
+PY_AUTO_MODULE_FUNCTION(RETVOID, resumePlayback, END, BWReplay);
 
 /*~ function BWReplay.getSpeedScale
  *	@components{ client }
  *
  *	@return The current speed scale
  */
-float getSpeedScale( )
+float getSpeedScale()
 {
-	BWReplayConnection * pReplayConn =
-		ConnectionControl::instance().pReplayConnection();
-	if (pReplayConn == NULL)
-	{
-		return -1.f;
-	}
+    BWReplayConnection* pReplayConn =
+      ConnectionControl::instance().pReplayConnection();
+    if (pReplayConn == NULL) {
+        return -1.f;
+    }
 
-	return pReplayConn->speedScale();
+    return pReplayConn->speedScale();
 }
 
-PY_AUTO_MODULE_FUNCTION( RETDATA, getSpeedScale, END, BWReplay );
-
-
+PY_AUTO_MODULE_FUNCTION(RETDATA, getSpeedScale, END, BWReplay);
 
 /*~ function BWReplay.setSpeedScale
  *	@components{ client }
  *
  * @param scale		The speed scale to set the current speed scale to
  */
-void setSpeedScale( float scale )
+void setSpeedScale(float scale)
 {
-	BWReplayConnection * pReplayConn =
-		ConnectionControl::instance().pReplayConnection();
-	if (pReplayConn != NULL)
-	{
-		pReplayConn->speedScale( scale );
-	}
+    BWReplayConnection* pReplayConn =
+      ConnectionControl::instance().pReplayConnection();
+    if (pReplayConn != NULL) {
+        pReplayConn->speedScale(scale);
+    }
 }
 
-PY_AUTO_MODULE_FUNCTION( RETVOID, setSpeedScale,
-						ARG( float, END ), BWReplay );
+PY_AUTO_MODULE_FUNCTION(RETVOID, setSpeedScale, ARG(float, END), BWReplay);
 
 /*~ function BWReplay.handleKeyEvent
  *	@components{ client }
@@ -1854,17 +1763,15 @@ PY_AUTO_MODULE_FUNCTION( RETVOID, setSpeedScale,
  *
  *	@return True if handled, false otherwise
  */
-bool handleKeyEvent( const KeyEvent & keyEvent )
+bool handleKeyEvent(const KeyEvent& keyEvent)
 {
-	return EntityManager::instance().callReplayHandlerBoolRet(
-		/* shouldClear */ false,
-		"handleKeyEvent", 
-		Py_BuildValue( "(N)", Script::getData( keyEvent ) ) );
+    return EntityManager::instance().callReplayHandlerBoolRet(
+      /* shouldClear */ false,
+      "handleKeyEvent",
+      Py_BuildValue("(N)", Script::getData(keyEvent)));
 }
 
-PY_AUTO_MODULE_FUNCTION( RETDATA, handleKeyEvent,
-						ARG( KeyEvent, END ), BWReplay );
-
+PY_AUTO_MODULE_FUNCTION(RETDATA, handleKeyEvent, ARG(KeyEvent, END), BWReplay);
 
 /*~ function BWReplay.handleMouseEvent
  *	@components{ client }
@@ -1875,18 +1782,18 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, handleKeyEvent,
  *
  *	@return True if handled, false otherwise
  */
-bool handleMouseEvent( const MouseEvent & mouseEvent )
+bool handleMouseEvent(const MouseEvent& mouseEvent)
 {
-	return EntityManager::instance().callReplayHandlerBoolRet(
-		/* shouldClear */ false,
-		"handleMouseEvent", 
-		Py_BuildValue( "(N)",
-			Script::getData( mouseEvent ) ) );
+    return EntityManager::instance().callReplayHandlerBoolRet(
+      /* shouldClear */ false,
+      "handleMouseEvent",
+      Py_BuildValue("(N)", Script::getData(mouseEvent)));
 }
 
-PY_AUTO_MODULE_FUNCTION( RETDATA, handleMouseEvent,
-						ARG( MouseEvent, END ), BWReplay );
-
+PY_AUTO_MODULE_FUNCTION(RETDATA,
+                        handleMouseEvent,
+                        ARG(MouseEvent, END),
+                        BWReplay);
 
 /*~ function BWReplay.getUpdateHz
  *	@components{ client }
@@ -1895,18 +1802,16 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, handleMouseEvent,
  */
 int getUpdateHz()
 {
-	BWReplayConnection * pReplayConn =
-		ConnectionControl::instance().pReplayConnection();
-	if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL)
-	{
-		return -1;
-	}
+    BWReplayConnection* pReplayConn =
+      ConnectionControl::instance().pReplayConnection();
+    if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL) {
+        return -1;
+    }
 
-	return pReplayConn->pReplayController()->updateFrequency();
+    return pReplayConn->pReplayController()->updateFrequency();
 }
 
-PY_AUTO_MODULE_FUNCTION( RETDATA, getUpdateHz, END, BWReplay );
-
+PY_AUTO_MODULE_FUNCTION(RETDATA, getUpdateHz, END, BWReplay);
 
 /*~ function BWReplay.isSeekingToTick
  *	@components{ client }
@@ -1915,18 +1820,16 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, getUpdateHz, END, BWReplay );
  */
 bool isSeekingToTick()
 {
-	BWReplayConnection * pReplayConn =
-		ConnectionControl::instance().pReplayConnection();
-	if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL)
-	{
-		return false;
-	}
+    BWReplayConnection* pReplayConn =
+      ConnectionControl::instance().pReplayConnection();
+    if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL) {
+        return false;
+    }
 
-	return pReplayConn->pReplayController()->isSeekingToTick();
+    return pReplayConn->pReplayController()->isSeekingToTick();
 }
 
-PY_AUTO_MODULE_FUNCTION( RETDATA, isSeekingToTick, END, BWReplay );
-
+PY_AUTO_MODULE_FUNCTION(RETDATA, isSeekingToTick, END, BWReplay);
 
 /*~ function BWReplay.numTicksLoaded
  *	@components{ client }
@@ -1935,19 +1838,16 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, isSeekingToTick, END, BWReplay );
  */
 int numTicksLoaded()
 {
-	BWReplayConnection * pReplayConn =
-		ConnectionControl::instance().pReplayConnection();
-	if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL)
-	{
-		return false;
-	}
+    BWReplayConnection* pReplayConn =
+      ConnectionControl::instance().pReplayConnection();
+    if (pReplayConn == NULL || pReplayConn->pReplayController() == NULL) {
+        return false;
+    }
 
-
-	return pReplayConn->pReplayController()->numTicksLoaded();
+    return pReplayConn->pReplayController()->numTicksLoaded();
 }
 
-PY_AUTO_MODULE_FUNCTION( RETDATA, numTicksLoaded, END, BWReplay );
-
+PY_AUTO_MODULE_FUNCTION(RETDATA, numTicksLoaded, END, BWReplay);
 
 /*~ function BWReplay.getReplayHandler
  *	@components{ client }
@@ -1956,11 +1856,10 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, numTicksLoaded, END, BWReplay );
  */
 PyObjectPtr getReplayHandler()
 {
-	return EntityManager::instance().pPyReplayHandler();
+    return EntityManager::instance().pPyReplayHandler();
 }
 
-PY_AUTO_MODULE_FUNCTION( RETDATA, getReplayHandler, END, BWReplay );
-
+PY_AUTO_MODULE_FUNCTION(RETDATA, getReplayHandler, END, BWReplay);
 
 /*~ function BWReplay.spaceID
  *	@components{ client }
@@ -1970,20 +1869,17 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, getReplayHandler, END, BWReplay );
  */
 SpaceID spaceID()
 {
-	BWReplayConnection * pReplayConn;
+    BWReplayConnection* pReplayConn;
 
-	if ((pReplayConn = ConnectionControl::instance().pReplayConnection()))
-	{
-		return pReplayConn->spaceID();
-	}
+    if ((pReplayConn = ConnectionControl::instance().pReplayConnection())) {
+        return pReplayConn->spaceID();
+    }
 
-	return NULL_SPACE_ID;
+    return NULL_SPACE_ID;
 }
 
-PY_AUTO_MODULE_FUNCTION( RETDATA, spaceID, END, BWReplay );
+PY_AUTO_MODULE_FUNCTION(RETDATA, spaceID, END, BWReplay);
 
 BW_END_NAMESPACE
-
-
 
 // entity_manager.cpp

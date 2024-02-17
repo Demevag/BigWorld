@@ -1,7 +1,6 @@
 #ifndef SCALE_GIZMO_HPP
 #define SCALE_GIZMO_HPP
 
-
 #include "gizmo_manager.hpp"
 #include "solid_shape_mesh.hpp"
 #include "input/input.hpp"
@@ -9,14 +8,12 @@
 
 BW_BEGIN_NAMESPACE
 
-class	ScaleFloatProxy;
-class	ScaleMatrixProxy;
+class ScaleFloatProxy;
+class ScaleMatrixProxy;
 
-
-typedef SmartPointer<MatrixProxy>		MatrixProxyPtr;
-typedef SmartPointer<ScaleFloatProxy>	ScaleFloatProxyPtr;
-typedef SmartPointer<ScaleMatrixProxy>	ScaleMatrixProxyPtr;
-
+typedef SmartPointer<MatrixProxy>      MatrixProxyPtr;
+typedef SmartPointer<ScaleFloatProxy>  ScaleFloatProxyPtr;
+typedef SmartPointer<ScaleMatrixProxy> ScaleMatrixProxyPtr;
 
 class ScaleShapePart;
 
@@ -30,56 +27,55 @@ class ScaleShapePart;
  */
 class ScaleGizmo : public Gizmo
 {
-public:
-	enum Type
-	{
-		SCALE_XYZ,			// allow scaling in every direction
-		SCALE_UV			// only scale in uv (x-z) directions
-	};
+  public:
+    enum Type
+    {
+        SCALE_XYZ, // allow scaling in every direction
+        SCALE_UV   // only scale in uv (x-z) directions
+    };
 
-	ScaleGizmo
-	( 
-		MatrixProxyPtr		pMatrix, 
-		int					enablerModifier		= MODIFIER_ALT, 
-		float				scaleSpeedFactor	= 1.0f,
-		Type				type				= SCALE_XYZ
-	);
-	~ScaleGizmo();
+    ScaleGizmo(MatrixProxyPtr pMatrix,
+               int            enablerModifier  = MODIFIER_ALT,
+               float          scaleSpeedFactor = 1.0f,
+               Type           type             = SCALE_XYZ);
+    ~ScaleGizmo();
 
-	bool draw( Moo::DrawContext& drawContext, bool force );
-	bool intersects( const Vector3& origin, const Vector3& direction,
-														float& t, bool force );
-	void click( const Vector3& origin, const Vector3& direction );
-	void rollOver( const Vector3& origin, const Vector3& direction );
-	Matrix getCoordModifier() const;
+    bool   draw(Moo::DrawContext& drawContext, bool force);
+    bool   intersects(const Vector3& origin,
+                      const Vector3& direction,
+                      float&         t,
+                      bool           force);
+    void   click(const Vector3& origin, const Vector3& direction);
+    void   rollOver(const Vector3& origin, const Vector3& direction);
+    Matrix getCoordModifier() const;
 
-	Type type() const;
+    Type type() const;
 
-private:
-	ScaleGizmo( const ScaleGizmo& );				// not permitted
-	ScaleGizmo& operator=( const ScaleGizmo& );		// not permitted
+  private:
+    ScaleGizmo(const ScaleGizmo&);            // not permitted
+    ScaleGizmo& operator=(const ScaleGizmo&); // not permitted
 
-protected:
-	Matrix	objectTransform() const;	
-	Matrix	gizmoTransform() const;
-	Matrix  objectCoord() const;
+  protected:
+    Matrix objectTransform() const;
+    Matrix gizmoTransform() const;
+    Matrix objectCoord() const;
 
-	void init();
+    void init();
 
-	bool					active_;
-	bool					inited_;
-	SolidShapeMesh			selectionMesh_;
-	Moo::VisualPtr			drawMesh_;
-	ScaleShapePart *		currentPart_;
-	MatrixProxyPtr			pMatrix_;
-	Moo::Colour				lightColour_;
-	int						enablerModifier_;
-	float					scaleSpeedFactor_;
-	ScaleFloatProxyPtr		scaleXFloatProxy_;
-	ScaleFloatProxyPtr		scaleYFloatProxy_;
-	ScaleFloatProxyPtr		scaleZFloatProxy_;
-	ScaleMatrixProxyPtr		scaleMatrixProxy_;
-	Type					type_;
+    bool                active_;
+    bool                inited_;
+    SolidShapeMesh      selectionMesh_;
+    Moo::VisualPtr      drawMesh_;
+    ScaleShapePart*     currentPart_;
+    MatrixProxyPtr      pMatrix_;
+    Moo::Colour         lightColour_;
+    int                 enablerModifier_;
+    float               scaleSpeedFactor_;
+    ScaleFloatProxyPtr  scaleXFloatProxy_;
+    ScaleFloatProxyPtr  scaleYFloatProxy_;
+    ScaleFloatProxyPtr  scaleZFloatProxy_;
+    ScaleMatrixProxyPtr scaleMatrixProxy_;
+    Type                type_;
 };
 
 typedef SmartPointer<ScaleGizmo> ScaleGizmoPtr;

@@ -9,93 +9,79 @@
 #include "../result_set.hpp"
 #include "../wrapper.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
 // Section: ExecuteRawCommandTask
 // -----------------------------------------------------------------------------
 
-ExecuteRawCommandTask::ExecuteRawCommandTask( const BW::string & command,
-		IDatabase::IExecuteRawCommandHandler & handler ) :
-	MySqlBackgroundTask( "ExecuteRawCommandTask" ),
-	command_( command ),
-	handler_( handler )
+ExecuteRawCommandTask::ExecuteRawCommandTask(
+  const BW::string&                     command,
+  IDatabase::IExecuteRawCommandHandler& handler)
+  : MySqlBackgroundTask("ExecuteRawCommandTask")
+  , command_(command)
+  , handler_(handler)
 {
 }
-
 
 /**
  *	This method executes a raw database command.
  */
-void ExecuteRawCommandTask::performBackgroundTask( MySql & conn )
+void ExecuteRawCommandTask::performBackgroundTask(MySql& conn)
 {
-	const Query query( command_, /* shouldPartition */false );
+    const Query query(command_, /* shouldPartition */ false);
 
-	ResultSet resultSet;
-	query.execute( conn, &resultSet );
+    ResultSet resultSet;
+    query.execute(conn, &resultSet);
 
-	BinaryOStream & stream = handler_.response();
+    BinaryOStream& stream = handler_.response();
 
-	do
-	{
-		if (resultSet.hasResult())
-		{
-			stream << ""; // no error.
-			uint32 numFields =  uint32( resultSet.numFields() );
-			stream << numFields;
-			stream << uint32( resultSet.numRows() );
+    do {
+        if (resultSet.hasResult()) {
+            stream << ""; // no error.
+            uint32 numFields = uint32(resultSet.numFields());
+            stream << numFields;
+            stream << uint32(resultSet.numRows());
 
-			ResultRow row;
+            ResultRow row;
 
-			while (row.fetchNextFrom( resultSet ))
-			{
-				for (uint32 i = 0; i < numFields; ++i)
-				{
-					BlobOrNull value;
-					row.getField( i, value );
-					stream << value;
-				}
-			}
-		}
-		else
-		{
-			if (conn.fieldCount() == 0)
-			{
-				stream << BW::string();	// no error.
-				stream << int32( 0 ); 		// no fields.
-				stream << uint64( conn.affectedRows() );
-			}
-			else
-			{
-				// Otherwise an error occurred, and the call to
-				// nextResult() should raise the actual exception and
-				// onException() will be called.
-			}
-		}
-	}
-	while (conn.nextResult( &resultSet ));
+            while (row.fetchNextFrom(resultSet)) {
+                for (uint32 i = 0; i < numFields; ++i) {
+                    BlobOrNull value;
+                    row.getField(i, value);
+                    stream << value;
+                }
+            }
+        } else {
+            if (conn.fieldCount() == 0) {
+                stream << BW::string(); // no error.
+                stream << int32(0);     // no fields.
+                stream << uint64(conn.affectedRows());
+            } else {
+                // Otherwise an error occurred, and the call to
+                // nextResult() should raise the actual exception and
+                // onException() will be called.
+            }
+        }
+    } while (conn.nextResult(&resultSet));
 }
-
 
 void ExecuteRawCommandTask::onRetry()
 {
-	// Should rewind stream, if possible
+    // Should rewind stream, if possible
 }
 
-
-void ExecuteRawCommandTask::onException( const DatabaseException & e )
+void ExecuteRawCommandTask::onException(const DatabaseException& e)
 {
-	handler_.response() << e.what();
+    handler_.response() << e.what();
 }
-
 
 /**
  *	This method is called in the main thread after run() completes.
  */
-void ExecuteRawCommandTask::performMainThreadTask( bool succeeded )
+void ExecuteRawCommandTask::performMainThreadTask(bool succeeded)
 {
-	handler_.onExecuteRawCommandComplete();
+    handler_.onExecuteRawCommandComplete();
 }
 
 BW_END_NAMESPACE

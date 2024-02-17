@@ -1,4 +1,4 @@
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 #pragma once
 #endif
 
@@ -18,6 +18,5 @@ class Vector3;
 class Vector4;
 
 BW_END_NAMESPACE
-
 
 #endif // MATH_FORWARD_DECLARATIONS_HPP

@@ -5,20 +5,20 @@ BW_BEGIN_NAMESPACE
 
 class PeApp
 {
-public:
+  public:
     PeApp();
 
     ~PeApp();
 
-    static PeApp &instance();
+    static PeApp& instance();
 
-private:
+  private:
     // Not permitted
-    PeApp(PeApp const &);
-    PeApp &operator=(PeApp const &);
+    PeApp(PeApp const&);
+    PeApp& operator=(PeApp const&);
 
-private:
-    static PeApp        *s_instance;
+  private:
+    static PeApp* s_instance;
 };
 
 BW_END_NAMESPACE

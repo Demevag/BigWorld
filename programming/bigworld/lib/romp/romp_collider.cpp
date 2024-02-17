@@ -6,20 +6,17 @@ BW_BEGIN_NAMESPACE
 /*static*/ float RompCollider::NO_GROUND_COLLISION = -1000000.0f;
 /*static*/ RompCollider::CreationFunction RompCollider::s_defaultCreate = NULL;
 
-RompColliderPtr RompCollider::createDefault( FilterType filter )
+RompColliderPtr RompCollider::createDefault(FilterType filter)
 {
-	MF_ASSERT( s_defaultCreate );
-	return (*s_defaultCreate)( filter );
+    MF_ASSERT(s_defaultCreate);
+    return (*s_defaultCreate)(filter);
 }
 
-void RompCollider::setDefaultCreationFuction( 
-	CreationFunction func )
+void RompCollider::setDefaultCreationFuction(CreationFunction func)
 {
-	s_defaultCreate = func;
+    s_defaultCreate = func;
 }
 
 BW_END_NAMESPACE
 
-
 // romp_collider.cpp
-

@@ -2,8 +2,6 @@
 
 #include "cstdmf/guard.hpp"
 
-namespace BW
-{
-
+namespace BW {
 
 } // namespace BW

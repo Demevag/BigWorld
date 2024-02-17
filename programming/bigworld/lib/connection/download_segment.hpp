@@ -12,27 +12,24 @@ BW_BEGIN_NAMESPACE
  */
 class DownloadSegment
 {
-public:
-	DownloadSegment( const char *data, int len, int seq ) :
-		seq_( seq ),
-		data_( data, len )
-	{}
+  public:
+    DownloadSegment(const char* data, int len, int seq)
+      : seq_(seq)
+      , data_(data, len)
+    {
+    }
 
-	const char *data() { return data_.c_str(); }
-	unsigned int size() { return static_cast<uint>(data_.size()); }
+    const char*  data() { return data_.c_str(); }
+    unsigned int size() { return static_cast<uint>(data_.size()); }
 
-	bool operator< (const DownloadSegment &other)
-	{
-		return seq_ < other.seq_;
-	}
+    bool operator<(const DownloadSegment& other) { return seq_ < other.seq_; }
 
-	uint8 seq_;
+    uint8 seq_;
 
-protected:
-	BW::string data_;
+  protected:
+    BW::string data_;
 };
 
 BW_END_NAMESPACE
 
 #endif // DOWNLOAD_SEGMENT_HPP
-

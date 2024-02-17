@@ -6,12 +6,11 @@
 #include "pyscript/pyobject_plus.hpp"
 #include "script/script_object.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class PyEntity;
-typedef ScriptObjectPtr< PyEntity > PyEntityPtr;
-typedef WeakPyPtr< PyEntity > PyEntityWPtr;
+typedef ScriptObjectPtr<PyEntity> PyEntityPtr;
+typedef WeakPyPtr<PyEntity>       PyEntityWPtr;
 class EntityMethodDescriptions;
 
 /*~ class BigWorld.PyServer
@@ -21,7 +20,7 @@ class EntityMethodDescriptions;
  *  used to send method calls to the entity's cell and base instances,
  *  respectively. These cannot be created in script.
  *
- *  PyServer objects have no default attributes or methods, however BigWorld 
+ *  PyServer objects have no default attributes or methods, however BigWorld
  *  populates them with ServerCaller objects which represent the methods that
  *  can be called. These are built using information provided in the entity
  *  def files. A ServerCaller object can then be called as if it were the
@@ -37,23 +36,23 @@ class EntityMethodDescriptions;
  */
 class PyServer : public PyObjectPlus
 {
-	Py_Header( PyServer, PyObjectPlus )
+    Py_Header(PyServer, PyObjectPlus)
 
-public:
-	PyServer( PyEntity * pPyEntity,
-		const EntityMethodDescriptions & methods,
-		bool isProxyCaller,
-		PyTypeObject * pType = &PyServer::s_type_ );
-	~PyServer();
+      public
+      : PyServer(PyEntity*                       pPyEntity,
+                 const EntityMethodDescriptions& methods,
+                 bool                            isProxyCaller,
+                 PyTypeObject*                   pType = &PyServer::s_type_);
+    ~PyServer();
 
-	ScriptObject pyGetAttribute( const ScriptString & attrObj );
+    ScriptObject pyGetAttribute(const ScriptString& attrObj);
 
-	void pyAdditionalMembers( const ScriptList & pList ) const;
+    void pyAdditionalMembers(const ScriptList& pList) const;
 
-private:
-	PyEntityWPtr wpPyEntity_;
-	const EntityMethodDescriptions & methods_;
-	bool isProxyCaller_;
+  private:
+    PyEntityWPtr                    wpPyEntity_;
+    const EntityMethodDescriptions& methods_;
+    bool                            isProxyCaller_;
 };
 
 BW_END_NAMESPACE

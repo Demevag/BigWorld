@@ -18,49 +18,48 @@ class ReferenceCount;
 BW_END_NAMESPACE
 
 namespace BW {
-namespace Moo {
-	class Vertices;
-	typedef SmartPointer<Vertices> VerticesPtr;
-}
+    namespace Moo {
+        class Vertices;
+        typedef SmartPointer<Vertices> VerticesPtr;
+    }
 
-namespace CompiledSpace {
+    namespace CompiledSpace {
 
-class COMPILED_SPACE_API StaticGeometry
-{
-public:
-	StaticGeometry();
-	~StaticGeometry();
+        class COMPILED_SPACE_API StaticGeometry
+        {
+          public:
+            StaticGeometry();
+            ~StaticGeometry();
 
-	bool read( BinaryFormat& reader );
-	void close();
+            bool read(BinaryFormat& reader);
+            void close();
 
-	bool isValid() const;
-	size_t size() const;
-	bool empty() const;
+            bool   isValid() const;
+            size_t size() const;
+            bool   empty() const;
 
-	void loadGeometry();
+            void loadGeometry();
 
-	float percentLoaded() const;
+            float percentLoaded() const;
 
-private:
+          private:
+            BinaryFormat*         pReader_;
+            BinaryFormat::Stream* pStream_;
 
-	BinaryFormat* pReader_;
-	BinaryFormat::Stream* pStream_;
+            uint32 numEntriesPopulated_;
 
-	uint32 numEntriesPopulated_;
+            StringTable                                     stringTable_;
+            ExternalArray<StaticGeometryTypes::Entry>       entries_;
+            ExternalArray<StaticGeometryTypes::StreamEntry> streams_;
+            ExternalArray<StaticGeometryTypes::BufferEntry> bufferEntries_;
 
-	StringTable stringTable_;
-	ExternalArray<StaticGeometryTypes::Entry> entries_;
-	ExternalArray<StaticGeometryTypes::StreamEntry> streams_;
-	ExternalArray<StaticGeometryTypes::BufferEntry> bufferEntries_;
+            BW::vector<Moo::VerticesPtr> loadedResources_;
 
-	BW::vector<Moo::VerticesPtr> loadedResources_;
+          private:
+            class Detail;
+        };
 
-private:
-	class Detail;
-};
-
-} // namespace CompiledSpace
+    } // namespace CompiledSpace
 } // namespace BW
 
 #endif // COMPILED_SPACE_STATIC_GEOMETRY_HPP

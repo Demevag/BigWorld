@@ -10,7 +10,6 @@
 #include "occlusion_query_helper.hpp"
 #include "moo/device_callback.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class LensEffect;
@@ -29,31 +28,33 @@ class LensEffect;
  * results to the size of the sun, and directX occlusion queries are
  * used to record how many pixels of sun are visible.
  */
-class SkyDomeOccluder : public PhotonOccluder, public Moo::DeviceCallback
+class SkyDomeOccluder
+  : public PhotonOccluder
+  , public Moo::DeviceCallback
 {
-public:
-	SkyDomeOccluder( class EnviroMinder& enviroMinder );
-	~SkyDomeOccluder();
+  public:
+    SkyDomeOccluder(class EnviroMinder& enviroMinder);
+    ~SkyDomeOccluder();
 
-	static bool isAvailable();
+    static bool isAvailable();
 
-	virtual	float collides(
-			const Vector3 & photonSourcePosition,
-			const Vector3 & cameraPosition,
-			const LensEffect& le );
-	virtual void beginOcclusionTests();
-	virtual void endOcclusionTests();
+    virtual float collides(const Vector3&    photonSourcePosition,
+                           const Vector3&    cameraPosition,
+                           const LensEffect& le);
+    virtual void  beginOcclusionTests();
+    virtual void  endOcclusionTests();
 
-	virtual void deleteUnmanagedObjects();
-private:
-	void getLookAtSunViewMatrix( Matrix& out );
+    virtual void deleteUnmanagedObjects();
 
-	uint32 drawOccluders( float size );
+  private:
+    void getLookAtSunViewMatrix(Matrix& out);
 
-	UINT	lastResult_;
-	uint32	possiblePixels_;
-	OcclusionQueryHelper	helper_;
-	class EnviroMinder& enviroMinder_;
+    uint32 drawOccluders(float size);
+
+    UINT                 lastResult_;
+    uint32               possiblePixels_;
+    OcclusionQueryHelper helper_;
+    class EnviroMinder&  enviroMinder_;
 };
 
 BW_END_NAMESPACE

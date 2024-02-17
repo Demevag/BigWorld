@@ -7,45 +7,43 @@
 #include "chunk/chunk.hpp"
 #include "chunk/chunk_cache.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BWEntity;
 class EntityType;
 class MemoryOStream;
-typedef SmartPointer< BWEntity > BWEntityPtr;
+typedef SmartPointer<BWEntity> BWEntityPtr;
 
 /**
  *	This class is a static or client-side entity in a saved chunk.
  */
 class ChunkEntity : public ChunkItem
 {
-	DECLARE_CHUNK_ITEM( ChunkEntity )
+    DECLARE_CHUNK_ITEM(ChunkEntity)
 
-public:
-	ChunkEntity();
-	~ChunkEntity();
+  public:
+    ChunkEntity();
+    ~ChunkEntity();
 
-	bool load( DataSectionPtr pSection, Chunk * pChunk );
+    bool load(DataSectionPtr pSection, Chunk* pChunk);
 
-	virtual void toss( Chunk * pChunk );
+    virtual void toss(Chunk* pChunk);
 
-	void bind();
+    void bind();
 
-private:
-	ChunkEntity( const ChunkEntity& );
-	ChunkEntity& operator=( const ChunkEntity& );
+  private:
+    ChunkEntity(const ChunkEntity&);
+    ChunkEntity& operator=(const ChunkEntity&);
 
-	void makeEntity();
+    void makeEntity();
 
-	BWEntityPtr			pEntity_;
+    BWEntityPtr pEntity_;
 
-	bool				wasCreated_;
-	const EntityType *	pType_;
-	Matrix				worldTransform_;
-	DataSectionPtr		pPropertiesDS_;
+    bool              wasCreated_;
+    const EntityType* pType_;
+    Matrix            worldTransform_;
+    DataSectionPtr    pPropertiesDS_;
 };
-
 
 /**
  *	This class is a cache of ChunkEntities, so we can create their python
@@ -53,20 +51,20 @@ private:
  */
 class ChunkEntityCache : public ChunkCache
 {
-public:
-	ChunkEntityCache( Chunk & chunk );
-	~ChunkEntityCache();
+  public:
+    ChunkEntityCache(Chunk& chunk);
+    ~ChunkEntityCache();
 
-	virtual void bind( bool isUnbind );
+    virtual void bind(bool isUnbind);
 
-	void add( ChunkEntity * pEntity );
-	void del( ChunkEntity * pEntity );
+    void add(ChunkEntity* pEntity);
+    void del(ChunkEntity* pEntity);
 
-	static Instance<ChunkEntityCache> instance;
+    static Instance<ChunkEntityCache> instance;
 
-private:
-	typedef BW::vector< ChunkEntity * > ChunkEntities;
-	ChunkEntities	entities_;
+  private:
+    typedef BW::vector<ChunkEntity*> ChunkEntities;
+    ChunkEntities                    entities_;
 };
 
 BW_END_NAMESPACE

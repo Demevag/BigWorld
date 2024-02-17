@@ -18,8 +18,8 @@ BW_BEGIN_NAMESPACE
 class EditorEffectProperty;
 struct FenceInfo
 {
-	uint fenceId;
-	uint sectionId;
+    uint fenceId;
+    uint sectionId;
 };
 
 /**
@@ -27,170 +27,165 @@ struct FenceInfo
  */
 class EditorChunkModel : public EditorChunkModelBase
 {
-	DECLARE_EDITOR_CHUNK_ITEM_WITHOUT_DESCRIPTION( EditorChunkModel )
-	DECLARE_CHUNK_ITEM_ALIAS( EditorChunkModel, shell )
+    DECLARE_EDITOR_CHUNK_ITEM_WITHOUT_DESCRIPTION(EditorChunkModel)
+    DECLARE_CHUNK_ITEM_ALIAS(EditorChunkModel, shell)
 
+  public:
+    virtual InvalidateFlags edInvalidateFlags();
 
-public:
-	virtual InvalidateFlags edInvalidateFlags();
+    void clean();
 
-	void clean();
+    EditorChunkModel();
+    ~EditorChunkModel();
 
-	EditorChunkModel();
-	~EditorChunkModel();
+    virtual bool edShouldDraw() const;
+    virtual void tick(float dTime);
+    virtual void updateAnimations();
+    virtual void draw(Moo::DrawContext& drawContext);
 
-	virtual bool edShouldDraw() const;
-	virtual void tick( float dTime );
-	virtual void updateAnimations();
-	virtual void draw( Moo::DrawContext& drawContext );
+    bool load(DataSectionPtr pSection,
+              Chunk*         pChunk       = NULL,
+              BW::string*    pErrorString = NULL);
+    void loadModels(Chunk* chunk);
+    /** Called once after loading from the main thread */
+    void edPostLoad();
 
-	bool load( DataSectionPtr pSection, Chunk * pChunk = NULL,
-		BW::string * pErrorString = NULL );
-	void loadModels( Chunk* chunk );
-	/** Called once after loading from the main thread */
-	void edPostLoad();
+    virtual void toss(Chunk* pChunk);
+    virtual void syncInit();
 
-	virtual void toss( Chunk * pChunk );
-	virtual void syncInit();
+    virtual bool edSave(DataSectionPtr pSection);
+    virtual void edChunkSave();
 
-	virtual bool edSave( DataSectionPtr pSection );
-	virtual void edChunkSave();
+    virtual const Matrix& edTransform() { return transform_; }
+    virtual bool          edTransform(const Matrix& m, bool transient);
+    virtual void          edBounds(BoundingBox& bbRet) const;
 
-	virtual const Matrix & edTransform() { return transform_; }
-	virtual bool edTransform( const Matrix & m, bool transient );
-	virtual void edBounds( BoundingBox& bbRet ) const;
+    bool           edEdit(GeneralEditor& editor, ChunkItemPtr chunkItem);
+    virtual bool   edEdit(class GeneralEditor& editor);
+    virtual Chunk* edDropChunk(const Vector3& lpos);
 
-	bool edEdit(
-		GeneralEditor & editor, ChunkItemPtr chunkItem );
-	virtual bool edEdit( class GeneralEditor & editor );
-	virtual Chunk * edDropChunk( const Vector3 & lpos );
+    virtual Name edDescription();
 
-	virtual Name edDescription();
+    virtual int edNumTriangles() const;
 
-	virtual int edNumTriangles() const;
+    virtual int edNumPrimitives() const;
 
-	virtual int edNumPrimitives() const;
+    virtual BW::string edAssetName() const;
+    virtual BW::string edFilePath() const;
 
-	virtual BW::string edAssetName() const;
-	virtual BW::string edFilePath() const;
+    virtual BW::vector<BW::string> edCommand(const BW::string& path) const;
+    virtual bool                   edExecuteCommand(const BW::string&                 path,
+                                                    BW::vector<BW::string>::size_type index);
 
-	virtual BW::vector<BW::string> edCommand( const BW::string& path ) const;
-	virtual bool edExecuteCommand( const BW::string& path, BW::vector<BW::string>::size_type index );
+    virtual const char* sectionName();
 
-	virtual const char* sectionName();
+    /**
+     * Make sure we've got our own unique lighting data after being cloned
+     */
+    void edPostClone(EditorChunkItem* srcItem);
 
-	/**
-	 * Make sure we've got our own unique lighting data after being cloned
-	 */
-	void edPostClone( EditorChunkItem* srcItem );
+    /** Ensure lighting on the chunk is marked as dirty */
+    void edPostCreate();
 
-	/** Ensure lighting on the chunk is marked as dirty */
-	void edPostCreate();
+    /** If we've got a .lighting file, delete it */
+    void edPreDelete();
 
+    Vector3 edMovementDeltaSnaps();
+    float   edAngleSnaps();
 
-	/** If we've got a .lighting file, delete it */
-	void edPreDelete();
+    BW::string getModelName();
 
-	Vector3 edMovementDeltaSnaps();
-	float edAngleSnaps();
+    BW::string getAnimation() const { return animName_; }
+    bool       setAnimation(const BW::string& newAnimationName);
 
-	BW::string getModelName();
+    BW::string getDyeTints(const BW::string& dye) const;
+    bool       setDyeTints(const BW::string& dye, const BW::string& tint);
 
-	BW::string getAnimation() const { return animName_; }
-	bool setAnimation( const BW::string & newAnimationName );
+    float getAnimRateMultiplier() const { return animRateMultiplier_; }
+    bool  setAnimRateMultiplier(const float& f);
 
-	BW::string getDyeTints( const BW::string& dye ) const;
-	bool setDyeTints( const BW::string& dye, const BW::string& tint );
+    bool getOutsideOnly() const { return outsideOnly_; }
+    bool setOutsideOnly(const bool& outsideOnly);
 
-	float getAnimRateMultiplier() const { return animRateMultiplier_; }
-	bool setAnimRateMultiplier( const float& f );
+    bool getCastsShadow() const { return castsShadow_; }
+    bool setCastsShadow(const bool& castsShadow);
 
-	bool getOutsideOnly() const { return outsideOnly_; }
-	bool setOutsideOnly( const bool& outsideOnly );
+    virtual Moo::LightContainerPtr edVisualiseLightContainer();
 
-	bool getCastsShadow() const { return castsShadow_; }
-	bool setCastsShadow( const bool& castsShadow );
+    virtual void onReloaderReloaded(Reloader* pReloader);
+    virtual void onReloaderPreReload(Reloader* pReloader);
 
-	virtual Moo::LightContainerPtr edVisualiseLightContainer();
+    struct BigModelLoader
+    {
+        BigModelLoader() { EditorChunkModel::startBigModelLoad(); }
 
-	virtual void onReloaderReloaded( Reloader* pReloader );
-	virtual void onReloaderPreReload( Reloader* pReloader);
+        ~BigModelLoader() { EditorChunkModel::endBigModelLoad(); }
+    };
 
-	struct BigModelLoader
-	{
-		BigModelLoader()
-		{
-			EditorChunkModel::startBigModelLoad();
-		}
+  private:
+    EditorChunkModel(const EditorChunkModel&);
+    EditorChunkModel& operator=(const EditorChunkModel&);
 
-		~BigModelLoader()
-		{
-			EditorChunkModel::endBigModelLoad();
-		}
-	};
+    bool resourceIsOutsideOnly() const;
+    void pullInfoFromSuperModel();
 
-private:
-	EditorChunkModel( const EditorChunkModel& );
-	EditorChunkModel& operator=( const EditorChunkModel& );
+    bool isDrawingModels() const;
 
-	bool			resourceIsOutsideOnly() const;
-	void			pullInfoFromSuperModel();
+    bool                                  hasPostLoaded_;
+    BW::string                            animName_;
+    BW::map<BW::string, BW::string>       tintName_;
+    BW::map<BW::string, SuperModelDyePtr> tintMap_;
 
-	bool isDrawingModels() const;
+    StringHashMap<int>        collisionFlags_;
+    BW::vector<BW::string>    collisionFlagNames_;
+    static StringHashMap<int> s_materialKinds_;
 
-	bool								hasPostLoaded_;
-	BW::string							animName_;
-	BW::map<BW::string,BW::string>	tintName_;
-	BW::map<BW::string,SuperModelDyePtr> tintMap_;
-	
-	StringHashMap<int>	  				collisionFlags_;
-	BW::vector<BW::string>			collisionFlagNames_;
-	static StringHashMap<int>			s_materialKinds_;
+    uint primGroupCount_;
+    bool customBsp_; // if the user specified their own bsp
+    bool outsideOnly_;
 
-	uint								primGroupCount_;
-	bool								customBsp_;		// if the user specified their own bsp
-	bool								outsideOnly_;
+    static void startBigModelLoad();
+    static void endBigModelLoad();
 
-	static void startBigModelLoad();
-	static void endBigModelLoad();
-public:
-	FenceInfo *getFenceInfo(bool createIfNotExist, int fenceId = -1, int sectionId = -1);
-	void createFenceInfo();
-	void deleteFenceInfo( bool keepValues = false );
-	
-	EditorChunkModel *getPrevFenceSection();
-	virtual void edSelected( BW::vector<ChunkItemPtr>& selection );
-	static bool s_autoSelectFenceSections;
+  public:
+    FenceInfo* getFenceInfo(bool createIfNotExist,
+                            int  fenceId   = -1,
+                            int  sectionId = -1);
+    void       createFenceInfo();
+    void       deleteFenceInfo(bool keepValues = false);
 
-	// key: fenceId, value: list of models ordered by sectionId
-	static BW::map<uint, BW::vector<EditorChunkModel*> > s_fences;
+    EditorChunkModel* getPrevFenceSection();
+    virtual void      edSelected(BW::vector<ChunkItemPtr>& selection);
+    static bool       s_autoSelectFenceSections;
 
-private:
-	FenceInfo *pFenceInfo_;
-	bool isInScene_;
-	static bool s_isAutoSelectingFence;
+    // key: fenceId, value: list of models ordered by sectionId
+    static BW::map<uint, BW::vector<EditorChunkModel*>> s_fences;
 
-	class SuperModel*					pEditorModel_;
+  private:
+    FenceInfo*  pFenceInfo_;
+    bool        isInScene_;
+    static bool s_isAutoSelectingFence;
 
-	// for edDescription
-	Name desc_;
+    class SuperModel* pEditorModel_;
 
-	// is a model is not found, the standin is loaded
-	bool standinModel_;
-	DataSectionPtr originalSect_;
+    // for edDescription
+    Name desc_;
 
-	// animations available to be played in this model
-	BW::vector<BW::string> animationNames_;
-	BW::vector<BW::wstring> animationNamesW_;
+    // is a model is not found, the standin is loaded
+    bool           standinModel_;
+    DataSectionPtr originalSect_;
 
-	// dye and tint available to be played in this model
-	// map dye name to tints names vector
-	BW::map<BW::string, BW::vector<BW::string> > dyeTints_;
-	BW::map<BW::string, BW::vector<BW::wstring> > dyeTintsW_;
+    // animations available to be played in this model
+    BW::vector<BW::string>  animationNames_;
+    BW::vector<BW::wstring> animationNamesW_;
 
-	bool lastDrawEditorProxy_;
+    // dye and tint available to be played in this model
+    // map dye name to tints names vector
+    BW::map<BW::string, BW::vector<BW::string>>  dyeTints_;
+    BW::map<BW::string, BW::vector<BW::wstring>> dyeTintsW_;
+
+    bool lastDrawEditorProxy_;
 };
-
 
 typedef SmartPointer<EditorChunkModel> EditorChunkModelPtr;
 

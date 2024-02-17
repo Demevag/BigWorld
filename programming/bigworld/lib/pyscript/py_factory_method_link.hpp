@@ -12,24 +12,25 @@ BW_BEGIN_NAMESPACE
  *
  *	@see PyModuleMethodLink
  */
-class PyFactoryMethodLink :
-	public Script::InitTimeJob,
-	public Script::FiniTimeJob
+class PyFactoryMethodLink
+  : public Script::InitTimeJob
+  , public Script::FiniTimeJob
 {
-public:
-	PyFactoryMethodLink( const char * moduleName,
-		const char * methodName, PyTypeObject * pType );
-	~PyFactoryMethodLink();
+  public:
+    PyFactoryMethodLink(const char*   moduleName,
+                        const char*   methodName,
+                        PyTypeObject* pType);
+    ~PyFactoryMethodLink();
 
-	virtual void init();
-	virtual void fini();
+    virtual void init();
+    virtual void fini();
 
-private:
-	const char * moduleName_;
-	const char * methodName_;
-	PyTypeObject * pType_;
+  private:
+    const char*   moduleName_;
+    const char*   methodName_;
+    PyTypeObject* pType_;
 
-	const char * origTypeName_;
+    const char* origTypeName_;
 };
 
 BW_END_NAMESPACE

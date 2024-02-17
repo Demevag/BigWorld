@@ -5,57 +5,59 @@
 
 BW_BEGIN_NAMESPACE
 
-class CLodBar: public CWnd
+class CLodBar : public CWnd
 {
-public:
-	
-	static const int numPatterns = 3;
-	
-	CLodBar( CWnd* parent );
+  public:
+    static const int numPatterns = 3;
 
-	virtual ~CLodBar();
-	
-	float maxRange() { return maxRange_; }
+    CLodBar(CWnd* parent);
 
-	void setWidth( int w );
+    virtual ~CLodBar();
 
-	void locked( bool locked ) { locked_ = locked; }
-	
-	void redraw();
-	
-// Implementation
-protected:
-	DECLARE_MESSAGE_MAP()
-	
-private:
-	int mover( int pos );
-		
-	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
-	afx_msg LRESULT OnMouseLeave(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnPaint();
-		
-	CWnd* parent_;
-		
-	int width_, height_;
-	float maxRange_;
+    float maxRange() { return maxRange_; }
 
-	float posToDist_;
-	float posToDist( int pos ) { return (pos < 0) ? 0 : floorf(0.5f + pos * posToDist_); }
-	
-	float distToPos_;
-	int distToPos( float dist ) { return (int)(0.5f + dist * distToPos_); }
+    void setWidth(int w);
 
-	LODList* lodList_;
+    void locked(bool locked) { locked_ = locked; }
 
-	CBitmap lodBmp[numPatterns];
-	CBrush lodPat[numPatterns];
+    void redraw();
 
-	bool mouseInBar_;
-	int mover_;
+    // Implementation
+  protected:
+    DECLARE_MESSAGE_MAP()
 
-	bool locked_;
+  private:
+    int mover(int pos);
+
+    afx_msg void    OnLButtonDown(UINT nFlags, CPoint point);
+    afx_msg void    OnMouseMove(UINT nFlags, CPoint point);
+    afx_msg void    OnLButtonUp(UINT nFlags, CPoint point);
+    afx_msg LRESULT OnMouseLeave(WPARAM wParam, LPARAM lParam);
+    afx_msg void    OnPaint();
+
+    CWnd* parent_;
+
+    int   width_, height_;
+    float maxRange_;
+
+    float posToDist_;
+    float posToDist(int pos)
+    {
+        return (pos < 0) ? 0 : floorf(0.5f + pos * posToDist_);
+    }
+
+    float distToPos_;
+    int   distToPos(float dist) { return (int)(0.5f + dist * distToPos_); }
+
+    LODList* lodList_;
+
+    CBitmap lodBmp[numPatterns];
+    CBrush  lodPat[numPatterns];
+
+    bool mouseInBar_;
+    int  mover_;
+
+    bool locked_;
 };
 
 BW_END_NAMESPACE

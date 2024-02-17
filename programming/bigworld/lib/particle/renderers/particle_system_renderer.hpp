@@ -15,88 +15,90 @@
 #include "moo/vertex_formats.hpp"
 #include "cstdmf/bw_set.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BoundingBox;
 
-namespace Moo
-{
-	class DrawContext;
+namespace Moo {
+    class DrawContext;
 }
 /**
  *	This is the base class for displaying a particle system on screen.
  */
 class ParticleSystemRenderer : public ReferenceCount
 {
-public:
-	/// @name Constructor(s) and Destructor.
-	//@{
-	ParticleSystemRenderer();
-	virtual ~ParticleSystemRenderer();
-	//@}
+  public:
+    /// @name Constructor(s) and Destructor.
+    //@{
+    ParticleSystemRenderer();
+    virtual ~ParticleSystemRenderer();
+    //@}
 
+    ///	@name Renderer Interface Methods.
+    //@{
+    virtual void update(Particles::iterator beg,
+                        Particles::iterator end,
+                        float               dTime)
+    {
+    }
+    virtual void draw(Moo::DrawContext&   drawContext,
+                      const Matrix&       worldTransform,
+                      Particles::iterator beg,
+                      Particles::iterator end,
+                      const BoundingBox&  bb) = 0;
 
-	///	@name Renderer Interface Methods.
-	//@{
-	virtual void update( Particles::iterator beg,
-		Particles::iterator end, float dTime )	{}
-	virtual void draw( Moo::DrawContext& drawContext, const Matrix & worldTransform,
-		Particles::iterator beg,
-		Particles::iterator end,
-		const BoundingBox & bb ) = 0;
+    // Callback fn for ParticleSystemDrawItem sorted draw
+    virtual void realDraw(const Matrix&       worldTransform,
+                          Particles::iterator beg,
+                          Particles::iterator end) = 0;
 
-	//Callback fn for ParticleSystemDrawItem sorted draw
-	virtual void realDraw( const Matrix & worldTransform,
-		Particles::iterator beg,
-		Particles::iterator end ) = 0;
+    bool viewDependent() const;
+    void viewDependent(bool flag);
 
-	bool viewDependent() const;
-	void viewDependent( bool flag );
+    bool local() const;
+    void local(bool flag);
 
-	bool local() const;
-	void local( bool flag );
+    virtual bool         isMeshStyle() const { return false; }
+    virtual ParticlesPtr createParticleContainer() = 0;
 
-	virtual bool isMeshStyle() const	{ return false; }
-	virtual ParticlesPtr createParticleContainer() = 0;
-
-    virtual bool knowParticleRadius() const { return false; }
+    virtual bool  knowParticleRadius() const { return false; }
     virtual float particleRadius() const { return 0.0f; }
 
-	virtual size_t sizeInBytes() const = 0;
-	//@}	
+    virtual size_t sizeInBytes() const = 0;
+    //@}
 
-	void load( DataSectionPtr pSect );
-	void save( DataSectionPtr pSect ) const;
-	virtual ParticleSystemRenderer * clone() const = 0;
+    void                            load(DataSectionPtr pSect);
+    void                            save(DataSectionPtr pSect) const;
+    virtual ParticleSystemRenderer* clone() const = 0;
 
-	virtual const BW::string & nameID() const = 0;
+    virtual const BW::string& nameID() const = 0;
 
-	static ParticleSystemRenderer * createRendererOfType(
-		const BW::StringRef & type, DataSectionPtr ds = NULL );	
+    static ParticleSystemRenderer* createRendererOfType(
+      const BW::StringRef& type,
+      DataSectionPtr       ds = NULL);
 
-	// Return the resources required for a ParticleSystemRenderer
-	static void prerequisitesOfType( DataSectionPtr pSection, BW::set<BW::string>& output );
-	static void prerequisites( DataSectionPtr pSection, BW::set<BW::string>& output )	{};
+    // Return the resources required for a ParticleSystemRenderer
+    static void prerequisitesOfType(DataSectionPtr       pSection,
+                                    BW::set<BW::string>& output);
+    static void prerequisites(DataSectionPtr       pSection,
+                              BW::set<BW::string>& output){};
 
-protected:
-	virtual void loadInternal( DataSectionPtr pSect ) = 0;
-	virtual void saveInternal( DataSectionPtr pSect ) const = 0;
-	void clone( ParticleSystemRenderer * dest ) const;
+  protected:
+    virtual void loadInternal(DataSectionPtr pSect)       = 0;
+    virtual void saveInternal(DataSectionPtr pSect) const = 0;
+    void         clone(ParticleSystemRenderer* dest) const;
 
-	template < typename Serialiser >
-	void serialise( const Serialiser & ) const;
+    template <typename Serialiser>
+    void serialise(const Serialiser&) const;
 
-	virtual void setupRenderState() const;
+    virtual void setupRenderState() const;
 
-private:
-	bool viewDependent_;
-	bool local_;
+  private:
+    bool viewDependent_;
+    bool local_;
 };
 
-
 typedef SmartPointer<ParticleSystemRenderer> ParticleSystemRendererPtr;
-
 
 /**
  *	Helper struct used to load material in the background.
@@ -104,34 +106,37 @@ typedef SmartPointer<ParticleSystemRenderer> ParticleSystemRendererPtr;
 template <typename RenderT>
 struct BGUpdateData
 {
-	BGUpdateData(RenderT * spr) :
-		spr_(spr),
-		texture_(NULL)
-	{}
+    BGUpdateData(RenderT* spr)
+      : spr_(spr)
+      , texture_(NULL)
+    {
+    }
 
-	static void loadTexture(void * data)
-	{
-		BGUpdateData * updateData = static_cast<BGUpdateData *>(data);
-		updateData->texture_ = Moo::TextureManager::instance()->get(
-			updateData->spr_->textureName(), true, true, true, "texture/particle");
-	}
+    static void loadTexture(void* data)
+    {
+        BGUpdateData* updateData = static_cast<BGUpdateData*>(data);
+        updateData->texture_ =
+          Moo::TextureManager::instance()->get(updateData->spr_->textureName(),
+                                               true,
+                                               true,
+                                               true,
+                                               "texture/particle");
+    }
 
-	static void updateMaterial(void * data)
-	{
-		BGUpdateData * updateData = static_cast<BGUpdateData *>(data);
-		updateData->spr_->updateMaterial(updateData->texture_);
-		bw_safe_delete(updateData);
-	}
+    static void updateMaterial(void* data)
+    {
+        BGUpdateData* updateData = static_cast<BGUpdateData*>(data);
+        updateData->spr_->updateMaterial(updateData->texture_);
+        bw_safe_delete(updateData);
+    }
 
-	RenderT *                           spr_;
-	Moo::BaseTexturePtr                 texture_;
-	// std::auto_ptr<class BackgroundTask> task_;
+    RenderT*            spr_;
+    Moo::BaseTexturePtr texture_;
+    // std::auto_ptr<class BackgroundTask> task_;
 };
-
 
 class PyParticleSystemRenderer;
 typedef SmartPointer<PyParticleSystemRenderer> PyParticleSystemRendererPtr;
-
 
 /*~ class Pixie.PyParticleSystemRenderer
  *	ParticleSystemRenderer is an abstract base class for PyParticleSystem
@@ -139,38 +144,39 @@ typedef SmartPointer<PyParticleSystemRenderer> PyParticleSystemRendererPtr;
  */
 class PyParticleSystemRenderer : public PyObjectPlus
 {
-	Py_Header( PyParticleSystemRenderer, PyObjectPlus )
+    Py_Header(PyParticleSystemRenderer, PyObjectPlus)
 
-public:
-	/// @name Constructor(s) and Destructor.
-	//@{
-	PyParticleSystemRenderer( ParticleSystemRendererPtr pRenderer, PyTypeObject *pType = &s_type_ );
-	virtual ~PyParticleSystemRenderer()	{};
-	//@}
+      public
+      :
+      /// @name Constructor(s) and Destructor.
+      //@{
+      PyParticleSystemRenderer(ParticleSystemRendererPtr pRenderer,
+                               PyTypeObject*             pType = &s_type_);
+    virtual ~PyParticleSystemRenderer(){};
+    //@}
 
-	ParticleSystemRendererPtr pRenderer()	{ return pRenderer_; }
+    ParticleSystemRendererPtr pRenderer() { return pRenderer_; }
 
-	bool viewDependent() const	{ return pRenderer_->viewDependent(); }
-	void viewDependent( bool flag )	{ pRenderer_->viewDependent(flag); }
+    bool viewDependent() const { return pRenderer_->viewDependent(); }
+    void viewDependent(bool flag) { pRenderer_->viewDependent(flag); }
 
-	bool local() const			{ return pRenderer_->local(); }
-	void local( bool flag )		{ pRenderer_->local(flag); }
+    bool local() const { return pRenderer_->local(); }
+    void local(bool flag) { pRenderer_->local(flag); }
 
-	///	@name Python Interface to the ParticleSystemRenderer.
-	//@{
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( bool, viewDependent, viewDependent )
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( bool, local, local )
-	//@}	
+    ///	@name Python Interface to the ParticleSystemRenderer.
+    //@{
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(bool, viewDependent, viewDependent)
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(bool, local, local)
+    //@}
 
-	static PyParticleSystemRendererPtr createPyRenderer(ParticleSystemRendererPtr pRenderer);
+    static PyParticleSystemRendererPtr createPyRenderer(
+      ParticleSystemRendererPtr pRenderer);
 
-private:
-	ParticleSystemRendererPtr	pRenderer_;
+  private:
+    ParticleSystemRendererPtr pRenderer_;
 };
 
-
-PY_SCRIPT_CONVERTERS_DECLARE( PyParticleSystemRenderer )
-
+PY_SCRIPT_CONVERTERS_DECLARE(PyParticleSystemRenderer)
 
 #ifdef CODE_INLINE
 #include "particle_system_renderer.ipp"

@@ -25,120 +25,120 @@ class Quaternion;
 class Matrix : public MatrixBase
 {
 
-public:
-	Matrix();
-	
-	INLINE
-	Matrix( const Vector4& v0,
-			const Vector4& v1,
-			const Vector4& v2,
-			const Vector4& v3 );
+  public:
+    Matrix();
 
-	INLINE void	setZero();
-	INLINE void	setIdentity();
+    INLINE
+    Matrix(const Vector4& v0,
+           const Vector4& v1,
+           const Vector4& v2,
+           const Vector4& v3);
 
-	void	setScale( const float x, const float y, const float z );
-	void	setScale( const Vector3 & scale );
-	float	uniformScale() const;
-	Vector3	nonUniformScale() const;
+    INLINE void setZero();
+    INLINE void setIdentity();
 
-	void	setTranslate( const float x, const float y, const float z );
-	void	setTranslate( const Vector3 & pos );
+    void    setScale(const float x, const float y, const float z);
+    void    setScale(const Vector3& scale);
+    float   uniformScale() const;
+    Vector3 nonUniformScale() const;
 
-	void	setRotateX( const float angle );
-	void	setRotateY( const float angle );
-	void	setRotateZ( const float angle );
-	void	setRotate( const Quaternion & q );
+    void setTranslate(const float x, const float y, const float z);
+    void setTranslate(const Vector3& pos);
 
-	void	setRotate( float yaw, float pitch, float roll );
-	void	setRotateInverse( float yaw, float pitch, float roll );
+    void setRotateX(const float angle);
+    void setRotateY(const float angle);
+    void setRotateZ(const float angle);
+    void setRotate(const Quaternion& q);
 
-	void	multiply( const Matrix& m1, const Matrix& m2 );
-	void	preMultiply( const Matrix& m );
-	void	postMultiply( const Matrix& m );
+    void setRotate(float yaw, float pitch, float roll);
+    void setRotateInverse(float yaw, float pitch, float roll);
 
-	void	invertOrthonormal( const Matrix& m );
-	void	invertOrthonormal();
-	bool	invert( const Matrix& m );
-	bool	invert();
-	float	getDeterminant() const;
+    void multiply(const Matrix& m1, const Matrix& m2);
+    void preMultiply(const Matrix& m);
+    void postMultiply(const Matrix& m);
 
-	void	transpose( const Matrix & m );
-	void	transpose();
+    void  invertOrthonormal(const Matrix& m);
+    void  invertOrthonormal();
+    bool  invert(const Matrix& m);
+    bool  invert();
+    float getDeterminant() const;
 
-	void	lookAt( const Vector3& position,
-				const Vector3& direction, const Vector3& up );
+    void transpose(const Matrix& m);
+    void transpose();
 
-	float&	operator ()( uint32 column, uint32 row );
-	float	operator ()( uint32 column, uint32 row ) const;
+    void lookAt(const Vector3& position,
+                const Vector3& direction,
+                const Vector3& up);
 
-	Vector3	applyPoint( const Vector3& v2 ) const;
-	void	applyPoint( Vector3&v1, const Vector3& v2) const;
-	void	applyPoint( Vector4&v1, const Vector3& v2) const;
-	void	applyPoint( Vector4&v1, const Vector4& v2) const;
+    float& operator()(uint32 column, uint32 row);
+    float  operator()(uint32 column, uint32 row) const;
 
-	INLINE Vector3	applyVector( const Vector3& v2 ) const;
-	INLINE void		applyVector( Vector3& v1, const Vector3& v2 ) const;
+    Vector3 applyPoint(const Vector3& v2) const;
+    void    applyPoint(Vector3& v1, const Vector3& v2) const;
+    void    applyPoint(Vector4& v1, const Vector3& v2) const;
+    void    applyPoint(Vector4& v1, const Vector4& v2) const;
 
-	const Vector3 & applyToUnitAxisVector( int axis ) const;
-	const Vector3 & applyToOrigin() const;
+    INLINE Vector3 applyVector(const Vector3& v2) const;
+    INLINE void    applyVector(Vector3& v1, const Vector3& v2) const;
 
-	INLINE Vector3 & operator []( int i );
-	INLINE const Vector3 & operator []( int i ) const;
+    const Vector3& applyToUnitAxisVector(int axis) const;
+    const Vector3& applyToOrigin() const;
 
-	INLINE void				row( int i, const Vector4 & value );
-	INLINE const Vector4&	row( int i ) const;
+    INLINE Vector3&       operator[](int i);
+    INLINE const Vector3& operator[](int i) const;
 
-	Vector4 column( int i ) const;
-	void column( int i, const Vector4 & v );
+    INLINE void           row(int i, const Vector4& value);
+    INLINE const Vector4& row(int i) const;
 
-	void preRotateX(const float angle);
-	void preRotateY(const float angle);
-	void preRotateZ(const float angle);
-	void preTranslateBy(const Vector3 & v);
+    Vector4 column(int i) const;
+    void    column(int i, const Vector4& v);
 
-	void postRotateX(const float angle);
-	void postRotateY(const float angle);
-	void postRotateZ(const float angle);
-	void postTranslateBy(const Vector3 & v);
+    void preRotateX(const float angle);
+    void preRotateY(const float angle);
+    void preRotateZ(const float angle);
+    void preTranslateBy(const Vector3& v);
 
-	bool isMirrored() const;
-	bool isUniformlyScaled() const;
+    void postRotateX(const float angle);
+    void postRotateY(const float angle);
+    void postRotateZ(const float angle);
+    void postTranslateBy(const Vector3& v);
 
-	void orthogonalProjection( float w, float h, float zn, float zf );
-	void perspectiveProjection( float fov, float aspectRatio, 
-		float nearPlane, float farPlane );
+    bool isMirrored() const;
+    bool isUniformlyScaled() const;
 
-	void translation( const Vector3& v );
+    void orthogonalProjection(float w, float h, float zn, float zf);
+    void perspectiveProjection(float fov,
+                               float aspectRatio,
+                               float nearPlane,
+                               float farPlane);
 
-	float yaw() const;
-	float pitch() const;
-	float roll() const;
+    void translation(const Vector3& v);
 
-	BW::string desc(
-		const BW::string & rowStart = "[",
-		const BW::string & rowEnd = "]\n" ) const;
+    float yaw() const;
+    float pitch() const;
+    float roll() const;
 
-	static const Matrix identity;
+    BW::string desc(const BW::string& rowStart = "[",
+                    const BW::string& rowEnd   = "]\n") const;
 
-private:
+    static const Matrix identity;
+
+  private:
 };
 
-
-bool almostEqual( const Matrix & a, const Matrix & b,
-	const float epsilon = 0.0004f );
-
+bool almostEqual(const Matrix& a,
+                 const Matrix& b,
+                 const float   epsilon = 0.0004f);
 
 typedef Matrix Matrix34;
 typedef Matrix Matrix44;
 
 #ifdef CODE_INLINE
-	#include "matrix.ipp"
+#include "matrix.ipp"
 #endif
 
 BW_END_NAMESPACE
 
 #endif
-
 
 // matrix.hpp

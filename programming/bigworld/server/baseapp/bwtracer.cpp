@@ -8,13 +8,12 @@
 #include "network/network_interface.hpp"
 #include "network/packet_monitor.hpp"
 
-#ifndef _WIN32  // WIN32PORT
-#else //ifndef _WIN32  // WIN32PORT
+#ifndef _WIN32 // WIN32PORT
+#else          // ifndef _WIN32  // WIN32PORT
 #include <time.h>
-#endif //ndef _WIN32  // WIN32PORT
+#endif // ndef _WIN32  // WIN32PORT
 
 DECLARE_DEBUG_COMPONENT(0)
-
 
 BW_BEGIN_NAMESPACE
 
@@ -27,74 +26,71 @@ BW_BEGIN_NAMESPACE
  */
 class BWTracer : public Mercury::PacketMonitor
 {
-public:
-	BWTracer();
+  public:
+    BWTracer();
 
-	void startLogging( Mercury::NetworkInterface & interface,
-			const char* filename );
-	void stopLogging();
+    void startLogging(Mercury::NetworkInterface& interface,
+                      const char*                filename);
+    void stopLogging();
 
-	virtual void packetIn( const Mercury::Address & addr,
-			const Mercury::Packet & packet);
-	virtual void packetOut( const Mercury::Address& addr,
-			const Mercury::Packet & packet);
+    virtual void packetIn(const Mercury::Address& addr,
+                          const Mercury::Packet&  packet);
+    virtual void packetOut(const Mercury::Address& addr,
+                           const Mercury::Packet&  packet);
 
-	void setFlushMode( bool flushMode )		{ flushMode_ = flushMode; }
-	void setHexMode( bool hexMode )			{ hexMode_ = hexMode; }
-	void setFilterAddr( uint32 filterAddr )	{ filterAddr_ = filterAddr; }
+    void setFlushMode(bool flushMode) { flushMode_ = flushMode; }
+    void setHexMode(bool hexMode) { hexMode_ = hexMode; }
+    void setFilterAddr(uint32 filterAddr) { filterAddr_ = filterAddr; }
 
-private:
+  private:
+    // Helper functions
+    void  dumpTimeStamp();
+    void  dumpHeader();
+    void  dumpMessages();
+    void  hexDump();
+    int32 readVarLength(int bytes);
 
-	// Helper functions
-	void dumpTimeStamp();
-	void dumpHeader();
-	void dumpMessages();
-	void hexDump();
-	int32 readVarLength(int bytes);
+    // Client message handlers
+    int clientBandwidthNotification();
+    int clientTickSync();
+    int clientEnterAoI();
+    int clientLeaveAoI();
+    int clientCreateEntity();
 
-	// Client message handlers
-	int clientBandwidthNotification();
-	int clientTickSync();
-	int clientEnterAoI();
-	int clientLeaveAoI();
-	int clientCreateEntity();
+    // Proxy message handlers
+    int proxyAuthenticate();
+    int proxyAvatarUpdateImplicit();
+    int proxyAvatarUpdateExplicit();
+    int proxyRequestEntityUpdate();
+    int proxyEnableEntities();
 
-	// Proxy message handlers
-	int proxyAuthenticate();
-	int proxyAvatarUpdateImplicit();
-	int proxyAvatarUpdateExplicit();
-	int proxyRequestEntityUpdate();
-	int proxyEnableEntities();
+    // General message handlers
+    int entityMessage();
+    int replyMessage();
+    int piggybackMessage();
 
-	// General message handlers
-	int entityMessage();
-	int replyMessage();
-	int piggybackMessage();
+  private:
+    FILE*                      pFile_;
+    Mercury::NetworkInterface* pInterface_;
+    const char*                pData_;
+    int                        len_;
+    uint8                      msgId_;
+    bool                       flushMode_;
+    bool                       hexMode_;
+    uint32                     filterAddr_;
 
-private:
+    typedef int (BWTracer::*MsgHandler)();
 
-	FILE* 			pFile_;	
-	Mercury::NetworkInterface *	pInterface_;
-	const char* 	pData_;
-	int				len_;
-	uint8			msgId_;
-	bool			flushMode_;
-	bool			hexMode_;
-	uint32			filterAddr_;
+    struct MsgDef
+    {
+        MsgHandler handler;
+        int        minBytes;
+    };
 
-	typedef int (BWTracer::*MsgHandler)();
-
-	struct MsgDef
-	{
-		MsgHandler 	handler;
-		int			minBytes;
-	};
-
-	MsgDef*			msgTable_;
-	MsgDef			proxyMsg_[256];
-	MsgDef			clientMsg_[256];
+    MsgDef* msgTable_;
+    MsgDef  proxyMsg_[256];
+    MsgDef  clientMsg_[256];
 };
-
 
 // -----------------------------------------------------------------------------
 // Section: BWTracerHolder implementation
@@ -103,44 +99,39 @@ private:
 /**
  *	Constructor.
  */
-BWTracerHolder::BWTracerHolder() : pImpl_( NULL )
+BWTracerHolder::BWTracerHolder()
+  : pImpl_(NULL)
 {
 }
-
 
 /**
  *	Destructor.
  */
 BWTracerHolder::~BWTracerHolder()
 {
-	if (pImpl_)
-	{
-		pImpl_->stopLogging();
-		delete pImpl_;
-	}
+    if (pImpl_) {
+        pImpl_->stopLogging();
+        delete pImpl_;
+    }
 }
 
-void BWTracerHolder::init( Mercury::NetworkInterface & networkInterface )
+void BWTracerHolder::init(Mercury::NetworkInterface& networkInterface)
 {
-	if (BWConfig::get( "baseApp/packetLog/enable", false ))
-	{
-		TRACE_MSG( "BaseApp: Logging packets to proxy.log\n" );
-		pImpl_ = new BWTracer();
-		pImpl_->startLogging( networkInterface, "proxy.log" );
-		pImpl_->setFlushMode(
-				BWConfig::get( "baseApp/packetLog/flushMode", false ));
-		pImpl_->setHexMode(
-				BWConfig::get( "baseApp/packetLog/hexMode", false ) );
+    if (BWConfig::get("baseApp/packetLog/enable", false)) {
+        TRACE_MSG("BaseApp: Logging packets to proxy.log\n");
+        pImpl_ = new BWTracer();
+        pImpl_->startLogging(networkInterface, "proxy.log");
+        pImpl_->setFlushMode(
+          BWConfig::get("baseApp/packetLog/flushMode", false));
+        pImpl_->setHexMode(BWConfig::get("baseApp/packetLog/hexMode", false));
 
-		BW::string filterAddr = BWConfig::get( "baseApp/packetLog/addr" );
+        BW::string filterAddr = BWConfig::get("baseApp/packetLog/addr");
 
-		if (filterAddr != "")
-		{
-			pImpl_->setFilterAddr(inet_addr(filterAddr.c_str()));
-		}
-	}
+        if (filterAddr != "") {
+            pImpl_->setFilterAddr(inet_addr(filterAddr.c_str()));
+        }
+    }
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: BWTracer implementation
@@ -150,95 +141,92 @@ void BWTracerHolder::init( Mercury::NetworkInterface & networkInterface )
  * Constructor
  * Sets up message handling tables
  */
-BWTracer::BWTracer() :
-	pFile_(NULL),
-	pInterface_(NULL),
-	flushMode_(false),
-	hexMode_(false),
-	filterAddr_( 0 )
+BWTracer::BWTracer()
+  : pFile_(NULL)
+  , pInterface_(NULL)
+  , flushMode_(false)
+  , hexMode_(false)
+  , filterAddr_(0)
 {
-	memset(&proxyMsg_, 0, sizeof(proxyMsg_));
-	memset(&clientMsg_, 0, sizeof(clientMsg_));
-	MsgDef* m;
+    memset(&proxyMsg_, 0, sizeof(proxyMsg_));
+    memset(&clientMsg_, 0, sizeof(clientMsg_));
+    MsgDef* m;
 
-	m = &clientMsg_[ClientInterface::bandwidthNotification.id()];
-	m->handler = &BWTracer::clientBandwidthNotification;
-	m->minBytes = sizeof(ClientInterface::bandwidthNotificationArgs);
+    m           = &clientMsg_[ClientInterface::bandwidthNotification.id()];
+    m->handler  = &BWTracer::clientBandwidthNotification;
+    m->minBytes = sizeof(ClientInterface::bandwidthNotificationArgs);
 
-	m = &clientMsg_[ClientInterface::tickSync.id()];
-	m->handler = &BWTracer::clientTickSync;
-	m->minBytes = sizeof(ClientInterface::tickSyncArgs);
+    m           = &clientMsg_[ClientInterface::tickSync.id()];
+    m->handler  = &BWTracer::clientTickSync;
+    m->minBytes = sizeof(ClientInterface::tickSyncArgs);
 
-	m = &clientMsg_[ClientInterface::enterAoI.id()];
-	m->handler = &BWTracer::clientEnterAoI;
-	m->minBytes = sizeof(ClientInterface::enterAoIArgs);
+    m           = &clientMsg_[ClientInterface::enterAoI.id()];
+    m->handler  = &BWTracer::clientEnterAoI;
+    m->minBytes = sizeof(ClientInterface::enterAoIArgs);
 
-	m = &clientMsg_[ClientInterface::leaveAoI.id()];
-	m->handler = &BWTracer::clientLeaveAoI;
-	m->minBytes = 2;
+    m           = &clientMsg_[ClientInterface::leaveAoI.id()];
+    m->handler  = &BWTracer::clientLeaveAoI;
+    m->minBytes = 2;
 
-	m = &clientMsg_[ClientInterface::createEntity.id()];
-	m->handler = &BWTracer::clientCreateEntity;
-	m->minBytes = 2;
+    m           = &clientMsg_[ClientInterface::createEntity.id()];
+    m->handler  = &BWTracer::clientCreateEntity;
+    m->minBytes = 2;
 
-	clientMsg_[254].handler = &BWTracer::piggybackMessage;
-	clientMsg_[254].minBytes = 4;
-	clientMsg_[255].handler = &BWTracer::replyMessage;
-	clientMsg_[255].minBytes = 4;
+    clientMsg_[254].handler  = &BWTracer::piggybackMessage;
+    clientMsg_[254].minBytes = 4;
+    clientMsg_[255].handler  = &BWTracer::replyMessage;
+    clientMsg_[255].minBytes = 4;
 
-	m = &proxyMsg_[BaseAppExtInterface::authenticate.id()];
-	m->handler = &BWTracer::proxyAuthenticate;
-	m->minBytes = sizeof(BaseAppExtInterface::authenticateArgs);
+    m           = &proxyMsg_[BaseAppExtInterface::authenticate.id()];
+    m->handler  = &BWTracer::proxyAuthenticate;
+    m->minBytes = sizeof(BaseAppExtInterface::authenticateArgs);
 
-	m = &proxyMsg_[BaseAppExtInterface::avatarUpdateImplicit.id()];
-	m->handler = &BWTracer::proxyAvatarUpdateImplicit;
-	m->minBytes = sizeof(BaseAppExtInterface::avatarUpdateImplicitArgs);
+    m           = &proxyMsg_[BaseAppExtInterface::avatarUpdateImplicit.id()];
+    m->handler  = &BWTracer::proxyAvatarUpdateImplicit;
+    m->minBytes = sizeof(BaseAppExtInterface::avatarUpdateImplicitArgs);
 
-	m = &proxyMsg_[BaseAppExtInterface::avatarUpdateExplicit.id()];
-	m->handler = &BWTracer::proxyAvatarUpdateExplicit;
-	m->minBytes = sizeof(BaseAppExtInterface::avatarUpdateExplicitArgs);
+    m           = &proxyMsg_[BaseAppExtInterface::avatarUpdateExplicit.id()];
+    m->handler  = &BWTracer::proxyAvatarUpdateExplicit;
+    m->minBytes = sizeof(BaseAppExtInterface::avatarUpdateExplicitArgs);
 
-	m = &proxyMsg_[BaseAppExtInterface::requestEntityUpdate.id()];
-	m->handler = &BWTracer::proxyRequestEntityUpdate;
-	m->minBytes = 2; // sizeof(BaseAppExtInterface::requestEntityUpdateArgs);
+    m           = &proxyMsg_[BaseAppExtInterface::requestEntityUpdate.id()];
+    m->handler  = &BWTracer::proxyRequestEntityUpdate;
+    m->minBytes = 2; // sizeof(BaseAppExtInterface::requestEntityUpdateArgs);
 
-	m = &proxyMsg_[BaseAppExtInterface::enableEntities.id()];
-	m->handler = &BWTracer::proxyEnableEntities;
-	m->minBytes = 0;
+    m           = &proxyMsg_[BaseAppExtInterface::enableEntities.id()];
+    m->handler  = &BWTracer::proxyEnableEntities;
+    m->minBytes = 0;
 
-	proxyMsg_[254].handler = &BWTracer::piggybackMessage;
-	proxyMsg_[254].minBytes = 4;
-	proxyMsg_[255].handler = &BWTracer::replyMessage;
-	proxyMsg_[255].minBytes = 4;
+    proxyMsg_[254].handler  = &BWTracer::piggybackMessage;
+    proxyMsg_[254].minBytes = 4;
+    proxyMsg_[255].handler  = &BWTracer::replyMessage;
+    proxyMsg_[255].minBytes = 4;
 
-	for(int i = 128; i < 253; i++)
-	{
-		proxyMsg_[i].handler = &BWTracer::entityMessage;
-		proxyMsg_[i].minBytes = 2;
-		clientMsg_[i].handler = &BWTracer::entityMessage;
-		clientMsg_[i].minBytes = 2;
-	}
-
+    for (int i = 128; i < 253; i++) {
+        proxyMsg_[i].handler   = &BWTracer::entityMessage;
+        proxyMsg_[i].minBytes  = 2;
+        clientMsg_[i].handler  = &BWTracer::entityMessage;
+        clientMsg_[i].minBytes = 2;
+    }
 }
 
 /**
  * Open logfile and tell mercury to send us message
  */
-void BWTracer::startLogging( Mercury::NetworkInterface & interface,
-		const char* filename)
+void BWTracer::startLogging(Mercury::NetworkInterface& interface,
+                            const char*                filename)
 {
-	MF_ASSERT(pFile_ == NULL);
-	MF_ASSERT(pInterface_ == NULL);
-	pFile_ = fopen(filename, "w");
+    MF_ASSERT(pFile_ == NULL);
+    MF_ASSERT(pInterface_ == NULL);
+    pFile_ = fopen(filename, "w");
 
-	if(!pFile_)
-	{
-		WARNING_MSG("BWTracer: Failed to open %s\n", filename);
-		return;
-	}
+    if (!pFile_) {
+        WARNING_MSG("BWTracer: Failed to open %s\n", filename);
+        return;
+    }
 
-	pInterface_ = &interface;
-	pInterface_->setPacketMonitor( this );
+    pInterface_ = &interface;
+    pInterface_->setPacketMonitor(this);
 }
 
 /**
@@ -246,17 +234,15 @@ void BWTracer::startLogging( Mercury::NetworkInterface & interface,
  */
 void BWTracer::stopLogging()
 {
-	if (pFile_)
-	{
-		fclose( pFile_ );
-		pFile_ = NULL;
-	}
+    if (pFile_) {
+        fclose(pFile_);
+        pFile_ = NULL;
+    }
 
-	if (pInterface_)
-	{
-		pInterface_->setPacketMonitor( NULL );
-		pInterface_ = NULL;
-	}
+    if (pInterface_) {
+        pInterface_->setPacketMonitor(NULL);
+        pInterface_ = NULL;
+    }
 }
 
 #if 0
@@ -275,17 +261,15 @@ int BWTracer::clientAvatarUpdate()
 }
 #endif
 
-
-
 /**
  * Bandwidth to client
  */
 int BWTracer::clientBandwidthNotification()
 {
-	ClientInterface::bandwidthNotificationArgs args;
-	memcpy(&args, pData_, sizeof(args));
-	fprintf(pFile_, "bandwidthNotification: bps=%u\n", args.bps);
-	return sizeof(args);
+    ClientInterface::bandwidthNotificationArgs args;
+    memcpy(&args, pData_, sizeof(args));
+    fprintf(pFile_, "bandwidthNotification: bps=%u\n", args.bps);
+    return sizeof(args);
 }
 
 /**
@@ -293,10 +277,10 @@ int BWTracer::clientBandwidthNotification()
  */
 int BWTracer::clientTickSync()
 {
-	ClientInterface::tickSyncArgs args;
-	memcpy(&args, pData_, sizeof(args));
-	fprintf(pFile_, "tickSync: seq=%d\n", args.tickByte);
-	return sizeof(args);
+    ClientInterface::tickSyncArgs args;
+    memcpy(&args, pData_, sizeof(args));
+    fprintf(pFile_, "tickSync: seq=%d\n", args.tickByte);
+    return sizeof(args);
 }
 
 /**
@@ -304,10 +288,10 @@ int BWTracer::clientTickSync()
  */
 int BWTracer::clientEnterAoI()
 {
-	ClientInterface::enterAoIArgs args;
-	memcpy(&args, pData_, sizeof(args));
-	fprintf(pFile_, "enterAoI: id=%d\n", args.id);
-	return sizeof(args);
+    ClientInterface::enterAoIArgs args;
+    memcpy(&args, pData_, sizeof(args));
+    fprintf(pFile_, "enterAoI: id=%d\n", args.id);
+    return sizeof(args);
 }
 
 /**
@@ -315,12 +299,12 @@ int BWTracer::clientEnterAoI()
  */
 int BWTracer::clientLeaveAoI()
 {
-	int len = this->readVarLength( 2 );
-	EntityID id;
-	memcpy( &id, pData_ + 2, sizeof(id) );
-	fprintf(pFile_, "leaveAoI: id=%d\n", id );
+    int      len = this->readVarLength(2);
+    EntityID id;
+    memcpy(&id, pData_ + 2, sizeof(id));
+    fprintf(pFile_, "leaveAoI: id=%d\n", id);
 
-	return len + 2;
+    return len + 2;
 }
 
 /**
@@ -329,9 +313,9 @@ int BWTracer::clientLeaveAoI()
  */
 struct createEntityMsg
 {
-	EntityID id;
-	EntityTypeID entityTypeId;
-	float x, y, z;
+    EntityID     id;
+    EntityTypeID entityTypeId;
+    float        x, y, z;
 };
 
 /**
@@ -339,13 +323,19 @@ struct createEntityMsg
  */
 int BWTracer::clientCreateEntity()
 {
-	int len = this->readVarLength(2);
-	createEntityMsg args;
-	memcpy(&args, pData_+2, sizeof(args));
+    int             len = this->readVarLength(2);
+    createEntityMsg args;
+    memcpy(&args, pData_ + 2, sizeof(args));
 
-	fprintf(pFile_, "createEntity: id=%d type=%d pos=(%f, %f, %f) len %d\n",
-			args.id, args.entityTypeId, args.x, args.y, args.z, len);
-	return len + 2;
+    fprintf(pFile_,
+            "createEntity: id=%d type=%d pos=(%f, %f, %f) len %d\n",
+            args.id,
+            args.entityTypeId,
+            args.x,
+            args.y,
+            args.z,
+            len);
+    return len + 2;
 }
 
 /**
@@ -353,10 +343,10 @@ int BWTracer::clientCreateEntity()
  */
 int BWTracer::proxyAuthenticate()
 {
-	BaseAppExtInterface::authenticateArgs args;
-	memcpy(&args, pData_, sizeof(args));
-	fprintf(pFile_, "proxyAuthenticate: key=%d\n", args.key);
-	return sizeof(args);
+    BaseAppExtInterface::authenticateArgs args;
+    memcpy(&args, pData_, sizeof(args));
+    fprintf(pFile_, "proxyAuthenticate: key=%d\n", args.key);
+    return sizeof(args);
 }
 
 /**
@@ -364,13 +354,19 @@ int BWTracer::proxyAuthenticate()
  */
 int BWTracer::proxyAvatarUpdateImplicit()
 {
-	BaseAppExtInterface::avatarUpdateImplicitArgs args;
-	memcpy(&args, pData_, sizeof(args));
-	float yaw, pitch, roll;
-	args.dir.get( yaw, pitch, roll );
-	fprintf( pFile_, "avatarUpdate: pos=(%f, %f, %f) yaw=%f pitch=%f roll=%f\n",
-		args.pos.x, args.pos.y, args.pos.z, yaw, pitch, roll );
-	return sizeof(args);
+    BaseAppExtInterface::avatarUpdateImplicitArgs args;
+    memcpy(&args, pData_, sizeof(args));
+    float yaw, pitch, roll;
+    args.dir.get(yaw, pitch, roll);
+    fprintf(pFile_,
+            "avatarUpdate: pos=(%f, %f, %f) yaw=%f pitch=%f roll=%f\n",
+            args.pos.x,
+            args.pos.y,
+            args.pos.z,
+            yaw,
+            pitch,
+            roll);
+    return sizeof(args);
 }
 
 /**
@@ -378,13 +374,19 @@ int BWTracer::proxyAvatarUpdateImplicit()
  */
 int BWTracer::proxyAvatarUpdateExplicit()
 {
-	BaseAppExtInterface::avatarUpdateExplicitArgs args;
-	memcpy(&args, pData_, sizeof(args));
-	float yaw, pitch, roll;
-	args.dir.get( yaw, pitch, roll );
-	fprintf( pFile_, "avatarUpdate: pos=(%f, %f, %f) yaw=%f pitch=%f roll=%f\n",
-		args.pos.x, args.pos.y, args.pos.z, yaw, pitch, roll );
-	return sizeof(args);
+    BaseAppExtInterface::avatarUpdateExplicitArgs args;
+    memcpy(&args, pData_, sizeof(args));
+    float yaw, pitch, roll;
+    args.dir.get(yaw, pitch, roll);
+    fprintf(pFile_,
+            "avatarUpdate: pos=(%f, %f, %f) yaw=%f pitch=%f roll=%f\n",
+            args.pos.x,
+            args.pos.y,
+            args.pos.z,
+            yaw,
+            pitch,
+            roll);
+    return sizeof(args);
 }
 
 /**
@@ -399,12 +401,12 @@ int BWTracer::proxyRequestEntityUpdate()
 			args.id, args.lastUpdate);
 	return sizeof(args);
 #endif
-	int len = this->readVarLength(2);
-	EntityID id;
-	memcpy( &id, pData_+2, sizeof(id));
-	fprintf(pFile_, "requestEntityUpdate: id=%d\n", id );
+    int      len = this->readVarLength(2);
+    EntityID id;
+    memcpy(&id, pData_ + 2, sizeof(id));
+    fprintf(pFile_, "requestEntityUpdate: id=%d\n", id);
 
-	return len + 2;
+    return len + 2;
 }
 
 /**
@@ -412,8 +414,8 @@ int BWTracer::proxyRequestEntityUpdate()
  */
 int BWTracer::proxyEnableEntities()
 {
-	fprintf( pFile_, "enableEntities:\n" );
-	return 0;
+    fprintf(pFile_, "enableEntities:\n");
+    return 0;
 }
 
 /**
@@ -421,9 +423,9 @@ int BWTracer::proxyEnableEntities()
  */
 int BWTracer::entityMessage()
 {
-	int len = this->readVarLength(2);
-	fprintf(pFile_, "entityMessage %02X: len %d\n", msgId_, len);
-	return len + 2;
+    int len = this->readVarLength(2);
+    fprintf(pFile_, "entityMessage %02X: len %d\n", msgId_, len);
+    return len + 2;
 }
 
 /**
@@ -431,9 +433,9 @@ int BWTracer::entityMessage()
  */
 int BWTracer::replyMessage()
 {
-	int len = this->readVarLength(4);
-	fprintf(pFile_, "replyMessage: len %d\n", len);
-	return len + 4;
+    int len = this->readVarLength(4);
+    fprintf(pFile_, "replyMessage: len %d\n", len);
+    return len + 4;
 }
 
 /**
@@ -443,9 +445,9 @@ int BWTracer::replyMessage()
  */
 int BWTracer::piggybackMessage()
 {
-	int len = this->readVarLength(4);
-	fprintf(pFile_, "piggybackMessage: len %d\n", len);
-	return len + 4;
+    int len = this->readVarLength(4);
+    fprintf(pFile_, "piggybackMessage: len %d\n", len);
+    return len + 4;
 }
 
 /**
@@ -453,16 +455,14 @@ int BWTracer::piggybackMessage()
  */
 int32 BWTracer::readVarLength(int bytes)
 {
-	int32 len = 0;
+    int32 len = 0;
 
-	for(int i = 0; i < bytes; i++)
-	{
-		len <<= 8;
-		len += *(uint8*)&pData_[i];
-	}
-	return len;
+    for (int i = 0; i < bytes; i++) {
+        len <<= 8;
+        len += *(uint8*)&pData_[i];
+    }
+    return len;
 }
-
 
 /**
  * Display the header component of the current packet
@@ -470,79 +470,73 @@ int32 BWTracer::readVarLength(int bytes)
  */
 void BWTracer::dumpHeader()
 {
-	uint8 flags = (uint8)*pData_;
-	const char* backPack = pData_ + len_;
-	int i;
+    uint8       flags    = (uint8)*pData_;
+    const char* backPack = pData_ + len_;
+    int         i;
 
-	fprintf(pFile_, "Flags: ");
+    fprintf(pFile_, "Flags: ");
 
-	if(!flags)
-		fprintf(pFile_, "None");
-	if(flags & Mercury::Packet::FLAG_HAS_REQUESTS)
-		fprintf(pFile_, "HAS_REQUESTS ");
-	if(flags & Mercury::Packet::FLAG_HAS_ACKS)
-		fprintf(pFile_, "HAS_ACKS ");
-	if(flags & Mercury::Packet::FLAG_ON_CHANNEL)
-		fprintf(pFile_, "ON_CHANNEL ");
-	if(flags & Mercury::Packet::FLAG_IS_RELIABLE)
-		fprintf(pFile_, "IS_RELIABLE ");
-	if(flags & Mercury::Packet::FLAG_IS_FRAGMENT)
-		fprintf(pFile_, "IS_FRAGMENT ");
-	if(flags & Mercury::Packet::FLAG_HAS_SEQUENCE_NUMBER)
-		fprintf(pFile_, "HAS_SEQUENCE_NUMBER ");
+    if (!flags)
+        fprintf(pFile_, "None");
+    if (flags & Mercury::Packet::FLAG_HAS_REQUESTS)
+        fprintf(pFile_, "HAS_REQUESTS ");
+    if (flags & Mercury::Packet::FLAG_HAS_ACKS)
+        fprintf(pFile_, "HAS_ACKS ");
+    if (flags & Mercury::Packet::FLAG_ON_CHANNEL)
+        fprintf(pFile_, "ON_CHANNEL ");
+    if (flags & Mercury::Packet::FLAG_IS_RELIABLE)
+        fprintf(pFile_, "IS_RELIABLE ");
+    if (flags & Mercury::Packet::FLAG_IS_FRAGMENT)
+        fprintf(pFile_, "IS_FRAGMENT ");
+    if (flags & Mercury::Packet::FLAG_HAS_SEQUENCE_NUMBER)
+        fprintf(pFile_, "HAS_SEQUENCE_NUMBER ");
 
-	fprintf(pFile_, "\n");
+    fprintf(pFile_, "\n");
 
-	if(flags & Mercury::Packet::FLAG_HAS_ACKS)
-	{
-		fprintf(pFile_, "Acks: ");
-		int numAcks = *(char*)(backPack-=sizeof(char));
+    if (flags & Mercury::Packet::FLAG_HAS_ACKS) {
+        fprintf(pFile_, "Acks: ");
+        int numAcks = *(char*)(backPack -= sizeof(char));
 
-		for(i = 0; i < numAcks; i++)
-			fprintf(pFile_, "%d ", *(uint32*)(backPack-=sizeof(int32)));
-		fprintf(pFile_, "\n");
-	}
+        for (i = 0; i < numAcks; i++)
+            fprintf(pFile_, "%d ", *(uint32*)(backPack -= sizeof(int32)));
+        fprintf(pFile_, "\n");
+    }
 
-	if(flags & Mercury::Packet::FLAG_HAS_SEQUENCE_NUMBER)
-		fprintf(pFile_, "Seq: %d\n", *(int*)(backPack-=sizeof(int)));
+    if (flags & Mercury::Packet::FLAG_HAS_SEQUENCE_NUMBER)
+        fprintf(pFile_, "Seq: %d\n", *(int*)(backPack -= sizeof(int)));
 
-	if(flags & Mercury::Packet::FLAG_HAS_REQUESTS)
-	{
-		// Remove the request chain pointer
-		backPack -= sizeof(uint16);
-	}
+    if (flags & Mercury::Packet::FLAG_HAS_REQUESTS) {
+        // Remove the request chain pointer
+        backPack -= sizeof(uint16);
+    }
 
-	pData_++;
-	len_ = backPack - pData_;
+    pData_++;
+    len_ = backPack - pData_;
 };
-
 
 /**
  * Display all messages in the bundle
  */
 void BWTracer::dumpMessages()
 {
-	while(len_)
-	{
-		msgId_ = *(uint8*)pData_++;
-		len_--;
+    while (len_) {
+        msgId_ = *(uint8*)pData_++;
+        len_--;
 
-		if(len_ < msgTable_[msgId_].minBytes)
-		{
-			fprintf(pFile_, "Message %d truncated.\n", msgId_);
-			return;
-		}
+        if (len_ < msgTable_[msgId_].minBytes) {
+            fprintf(pFile_, "Message %d truncated.\n", msgId_);
+            return;
+        }
 
-		if(!msgTable_[msgId_].handler)
-		{
-			fprintf(pFile_, "No handler for message %d\n", msgId_);
-			return;
-		}
+        if (!msgTable_[msgId_].handler) {
+            fprintf(pFile_, "No handler for message %d\n", msgId_);
+            return;
+        }
 
-		int consumed = (this->*(msgTable_[msgId_].handler))();
-		pData_ += consumed;
-		len_ -= consumed;
-	}
+        int consumed = (this->*(msgTable_[msgId_].handler))();
+        pData_ += consumed;
+        len_ -= consumed;
+    }
 }
 
 /**
@@ -550,34 +544,31 @@ void BWTracer::dumpMessages()
  */
 void BWTracer::hexDump()
 {
-	int i, j;
+    int i, j;
 
-	for(i = 0; i < len_; i += 16)
-	{
-		fprintf(pFile_, "%04X: ", i);
+    for (i = 0; i < len_; i += 16) {
+        fprintf(pFile_, "%04X: ", i);
 
-		for(j = 0; j < 16; j++)
-		{
-			if(i+j < len_)
-				fprintf(pFile_, "%02X ", (uint8)pData_[i+j]);
-			else
-				fprintf(pFile_, "   ");
-		}
+        for (j = 0; j < 16; j++) {
+            if (i + j < len_)
+                fprintf(pFile_, "%02X ", (uint8)pData_[i + j]);
+            else
+                fprintf(pFile_, "   ");
+        }
 
-		fprintf(pFile_, " ");
+        fprintf(pFile_, " ");
 
-		for(j = 0; (j < 16) && (i+j < len_); j++)
-		{
-			if(pData_[i+j] >= ' ' && pData_[i+j] <= '~')
-				fprintf(pFile_, "%c", pData_[i+j]);
-			else
-				fprintf(pFile_, ".");
-		}
+        for (j = 0; (j < 16) && (i + j < len_); j++) {
+            if (pData_[i + j] >= ' ' && pData_[i + j] <= '~')
+                fprintf(pFile_, "%c", pData_[i + j]);
+            else
+                fprintf(pFile_, ".");
+        }
 
-		fprintf(pFile_, "\n");
-	}
+        fprintf(pFile_, "\n");
+    }
 
-	fprintf(pFile_, "\n");
+    fprintf(pFile_, "\n");
 }
 
 /**
@@ -585,65 +576,69 @@ void BWTracer::hexDump()
  */
 void BWTracer::dumpTimeStamp()
 {
-	time_t t;
-	struct tm* tm;
-	time(&t);
-	tm = localtime(&t);
-	fprintf(pFile_, "%02d:%02d:%02d: ", tm->tm_hour, tm->tm_min, tm->tm_sec);
+    time_t     t;
+    struct tm* tm;
+    time(&t);
+    tm = localtime(&t);
+    fprintf(pFile_, "%02d:%02d:%02d: ", tm->tm_hour, tm->tm_min, tm->tm_sec);
 }
-
-
 
 /**
  * Handle a packet from the client to the proxy
  */
-void BWTracer::packetIn(const Mercury::Address& addr, const Mercury::Packet& packet)
+void BWTracer::packetIn(const Mercury::Address& addr,
+                        const Mercury::Packet&  packet)
 {
-	if(filterAddr_ && addr.ip != filterAddr_)
-		return;
+    if (filterAddr_ && addr.ip != filterAddr_)
+        return;
 
-	pData_ = packet.data();
-	len_ = packet.totalSize();
-	msgTable_ = proxyMsg_;
+    pData_    = packet.data();
+    len_      = packet.totalSize();
+    msgTable_ = proxyMsg_;
 
-	this->dumpTimeStamp();
-	fprintf(pFile_, "Incoming packet from %s (%d bytes)\n", addr.c_str(), len_);
+    this->dumpTimeStamp();
+    fprintf(pFile_, "Incoming packet from %s (%d bytes)\n", addr.c_str(), len_);
 
-	if(hexMode_)
-		this->hexDump();
+    if (hexMode_)
+        this->hexDump();
 
-	this->dumpHeader();
-	this->dumpMessages();
-	fprintf(pFile_, "------------------------------------------------------------------------------\n\n");
+    this->dumpHeader();
+    this->dumpMessages();
+    fprintf(pFile_,
+            "------------------------------------------------------------------"
+            "------------\n\n");
 
-	if(flushMode_)
-		fflush(pFile_);
+    if (flushMode_)
+        fflush(pFile_);
 }
 
 /**
  * Handle a packet from the proxy to the client
  */
-void BWTracer::packetOut(const Mercury::Address& addr, const Mercury::Packet& packet)
+void BWTracer::packetOut(const Mercury::Address& addr,
+                         const Mercury::Packet&  packet)
 {
-	if(filterAddr_ && addr.ip != filterAddr_)
-		return;
+    if (filterAddr_ && addr.ip != filterAddr_)
+        return;
 
-	pData_ = packet.data();
-	len_ = packet.totalSize();
-	msgTable_ = clientMsg_;
+    pData_    = packet.data();
+    len_      = packet.totalSize();
+    msgTable_ = clientMsg_;
 
-	this->dumpTimeStamp();
-	fprintf(pFile_, "Outgoing packet to %s (%d bytes)\n", addr.c_str(), len_);
+    this->dumpTimeStamp();
+    fprintf(pFile_, "Outgoing packet to %s (%d bytes)\n", addr.c_str(), len_);
 
-	if(hexMode_)
-		this->hexDump();
+    if (hexMode_)
+        this->hexDump();
 
-	this->dumpHeader();
-	this->dumpMessages();
-	fprintf(pFile_, "------------------------------------------------------------------------------\n\n");
+    this->dumpHeader();
+    this->dumpMessages();
+    fprintf(pFile_,
+            "------------------------------------------------------------------"
+            "------------\n\n");
 
-	if(flushMode_)
-		fflush(pFile_);
+    if (flushMode_)
+        fflush(pFile_);
 }
 
 BW_END_NAMESPACE

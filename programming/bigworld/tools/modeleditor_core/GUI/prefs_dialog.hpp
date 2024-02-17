@@ -6,42 +6,44 @@ BW_BEGIN_NAMESPACE
 
 class CPrefsDlg : public CDialog
 {
-	DECLARE_AUTO_TOOLTIP( CPrefsDlg, CDialog )
+    DECLARE_AUTO_TOOLTIP(CPrefsDlg, CDialog)
 
-public:
-	CPrefsDlg( IMainFrame * mainFrame );
+  public:
+    CPrefsDlg(IMainFrame* mainFrame);
 
-	enum { IDD = IDD_PREFS };
+    enum
+    {
+        IDD = IDD_PREFS
+    };
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	
-public:
-	virtual BOOL OnInitDialog();
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 
-	void OnOK();
+  public:
+    virtual BOOL OnInitDialog();
 
-private:
-	afx_msg LRESULT OnShowTooltip(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnHideTooltip(WPARAM wParam, LPARAM lParam);
+    void OnOK();
 
-	CButton showSplashScreen_;
-	CButton loadLastModel_;
-	CButton loadLastLights_;
-	
-	CButton zoomOnLoad_;
-	CButton regenBBOnLoad_;
+  private:
+    afx_msg LRESULT OnShowTooltip(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnHideTooltip(WPARAM wParam, LPARAM lParam);
 
-	CButton animateZoom_;
-	CButton lockLOD_;
-	CButton invertMouse_;
+    CButton showSplashScreen_;
+    CButton loadLastModel_;
+    CButton loadLastLights_;
 
-	IMainFrame * mainFrame_;
+    CButton zoomOnLoad_;
+    CButton regenBBOnLoad_;
 
-public:
-	DECLARE_MESSAGE_MAP()
-	afx_msg void OnBnClickedPrefsInvertMouse();
+    CButton animateZoom_;
+    CButton lockLOD_;
+    CButton invertMouse_;
+
+    IMainFrame* mainFrame_;
+
+  public:
+    DECLARE_MESSAGE_MAP()
+    afx_msg void OnBnClickedPrefsInvertMouse();
 };
 
 BW_END_NAMESPACE
-

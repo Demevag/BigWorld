@@ -10,7 +10,6 @@ BW_BEGIN_NAMESPACE
 
 typedef SmartPointer<class MatrixProxy> MatrixProxyPtr;
 
-
 class RotationShapePart;
 
 /**
@@ -26,38 +25,40 @@ class RotationShapePart;
  */
 class RotationGizmo : public Gizmo
 {
-public:
-	RotationGizmo( MatrixProxyPtr pMatrix,
-		int enablerModifier = MODIFIER_SHIFT,
-		int disablerModifier = MODIFIER_CTRL |MODIFIER_ALT );
-	~RotationGizmo();
+  public:
+    RotationGizmo(MatrixProxyPtr pMatrix,
+                  int            enablerModifier = MODIFIER_SHIFT,
+                  int disablerModifier = MODIFIER_CTRL | MODIFIER_ALT);
+    ~RotationGizmo();
 
-	bool draw( Moo::DrawContext& drawContext, bool force );
-	bool intersects( const Vector3& origin, const Vector3& direction,
-														float& t, bool force );
-	void click( const Vector3& origin, const Vector3& direction );
-	void rollOver( const Vector3& origin, const Vector3& direction );
+    bool draw(Moo::DrawContext& drawContext, bool force);
+    bool intersects(const Vector3& origin,
+                    const Vector3& direction,
+                    float&         t,
+                    bool           force);
+    void click(const Vector3& origin, const Vector3& direction);
+    void rollOver(const Vector3& origin, const Vector3& direction);
 
-	Matrix getCoordModifier() const;
+    Matrix getCoordModifier() const;
 
-protected:
-	void init();
+  protected:
+    void init();
 
-	Matrix	objectTransform() const;
-	Matrix  objectCoord() const;
+    Matrix objectTransform() const;
+    Matrix objectCoord() const;
 
-	bool					active_;
-	bool					inited_;
-	SolidShapeMesh			selectionMesh_;
-	Moo::VisualPtr			drawMesh_;
-	RotationShapePart *		currentPart_;
-	MatrixProxyPtr			pMatrix_;
-	Moo::Colour				lightColour_;
-	int						enablerModifier_;
-	int						disablerModifier_;
+    bool               active_;
+    bool               inited_;
+    SolidShapeMesh     selectionMesh_;
+    Moo::VisualPtr     drawMesh_;
+    RotationShapePart* currentPart_;
+    MatrixProxyPtr     pMatrix_;
+    Moo::Colour        lightColour_;
+    int                enablerModifier_;
+    int                disablerModifier_;
 
-	RotationGizmo( const RotationGizmo& );
-	RotationGizmo& operator=( const RotationGizmo& );
+    RotationGizmo(const RotationGizmo&);
+    RotationGizmo& operator=(const RotationGizmo&);
 };
 
 typedef SmartPointer<RotationGizmo> RotationGizmoPtr;

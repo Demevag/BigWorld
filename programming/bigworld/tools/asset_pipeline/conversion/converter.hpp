@@ -16,33 +16,34 @@ class DependencyList;
 /// and converting assets.
 class Converter
 {
-public:
-	/// Constructor
-	/// \param params command line parameters for initialising the converter
-	Converter( const BW::string& params ) : params_( params ) {};
-	virtual ~Converter(){};
+  public:
+    /// Constructor
+    /// \param params command line parameters for initialising the converter
+    Converter(const BW::string& params)
+      : params_(params){};
+    virtual ~Converter(){};
 
-	/// builds the dependency list for a source file.
-	/// \param sourcefile the name of the source file on disk.
-	/// \param dependencies the dependency list to generate.
-	/// \return true if the dependency list was successfully generated
-	virtual bool createDependencies( const BW::string& sourcefile,
-									 const Compiler & compiler,
-									 DependencyList & dependencies ) = 0;
-	
-	/// convert a source file.
-	/// \param sourcefile the name of the source file on disk.
-	/// \param convertedFiles a list of filenames that were converted from the source file.
-	/// \return true if the source file was successfully converted.
-	virtual bool convert( const BW::string& sourcefile,
-						  const Compiler & compiler,
-						  BW::vector< BW::string > & intermediateFiles,
-						  BW::vector< BW::string > & outputFiles ) = 0;
+    /// builds the dependency list for a source file.
+    /// \param sourcefile the name of the source file on disk.
+    /// \param dependencies the dependency list to generate.
+    /// \return true if the dependency list was successfully generated
+    virtual bool createDependencies(const BW::string& sourcefile,
+                                    const Compiler&   compiler,
+                                    DependencyList&   dependencies) = 0;
 
-protected:
-	const BW::string& params_;
+    /// convert a source file.
+    /// \param sourcefile the name of the source file on disk.
+    /// \param convertedFiles a list of filenames that were converted from the
+    /// source file. \return true if the source file was successfully converted.
+    virtual bool convert(const BW::string&       sourcefile,
+                         const Compiler&         compiler,
+                         BW::vector<BW::string>& intermediateFiles,
+                         BW::vector<BW::string>& outputFiles) = 0;
+
+  protected:
+    const BW::string& params_;
 };
 
 BW_END_NAMESPACE
 
-#endif //ASSET_PIPELINE_CONVERTER
+#endif // ASSET_PIPELINE_CONVERTER

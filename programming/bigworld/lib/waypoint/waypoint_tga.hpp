@@ -12,26 +12,25 @@ BW_BEGIN_NAMESPACE
 
 struct WaypointTGAHeader
 {
-	unsigned char   extraLength 		PACKED;
-	unsigned char   colourMapType		PACKED;
-	unsigned char   imageType			PACKED;
-	unsigned short  colourMapStart		PACKED;
-	unsigned short  colourMapLength		PACKED;
-	unsigned char   colourMapDepth		PACKED;
-	unsigned short  x					PACKED;
-	unsigned short  y					PACKED;
-	unsigned short  width				PACKED;
-	unsigned short  height				PACKED;
-	unsigned char   bpp					PACKED;
-	unsigned char   imageDescriptor		PACKED;
+    unsigned char extraLength      PACKED;
+    unsigned char colourMapType    PACKED;
+    unsigned char imageType        PACKED;
+    unsigned short colourMapStart  PACKED;
+    unsigned short colourMapLength PACKED;
+    unsigned char colourMapDepth   PACKED;
+    unsigned short x               PACKED;
+    unsigned short y               PACKED;
+    unsigned short width           PACKED;
+    unsigned short height          PACKED;
+    unsigned char bpp              PACKED;
+    unsigned char imageDescriptor  PACKED;
 
-	// These fields stored in the 'extra data' part of the header.
+    // These fields stored in the 'extra data' part of the header.
 
-	Vector3			gridMin				PACKED;
-	float			gridResolution		PACKED;
+    Vector3 gridMin      PACKED;
+    float gridResolution PACKED;
 };
 
 BW_END_NAMESPACE
 
 #endif
-

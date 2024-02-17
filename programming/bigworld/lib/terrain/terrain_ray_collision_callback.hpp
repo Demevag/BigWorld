@@ -11,42 +11,41 @@ BW_BEGIN_NAMESPACE
 class CollisionState;
 class SceneObject;
 
-namespace Terrain
-{
+namespace Terrain {
 
-class BaseTerrainBlock;
+    class BaseTerrainBlock;
 
-class TerrainRayCollisionCallback : public Terrain::TerrainCollisionCallback
-{
-public:
-	TerrainRayCollisionCallback( CollisionState& cs,
-		const Matrix& transform,
-		const Matrix& inverseTransform,
-		const Terrain::BaseTerrainBlock& block_,
-		const SceneObject & sceneObject,
-		const Vector3& start, const Vector3& end );
+    class TerrainRayCollisionCallback : public Terrain::TerrainCollisionCallback
+    {
+      public:
+        TerrainRayCollisionCallback(CollisionState& cs,
+                                    const Matrix&   transform,
+                                    const Matrix&   inverseTransform,
+                                    const Terrain::BaseTerrainBlock& block_,
+                                    const SceneObject& sceneObject,
+                                    const Vector3&     start,
+                                    const Vector3&     end);
 
-	~TerrainRayCollisionCallback();
+        ~TerrainRayCollisionCallback();
 
+        virtual bool collide(const WorldTriangle& triangle, float dist);
 
-	virtual bool collide( const WorldTriangle& triangle, float dist );
+        bool finishedColliding() const;
 
-	bool finishedColliding() const;
+      private:
+        CollisionState&                  cs_;
+        const Terrain::BaseTerrainBlock& block_;
+        const SceneObject&               sceneObject_;
 
-private:
-	CollisionState& cs_;
-	const Terrain::BaseTerrainBlock& block_;
-	const SceneObject & sceneObject_;
+        Matrix  transform_;
+        Matrix  inverseTransform_;
+        Vector3 start_;
+        Vector3 end_;
+        Vector3 dir_;
+        float   dist_;
 
-	Matrix transform_;
-	Matrix inverseTransform_;
-	Vector3 start_;
-	Vector3 end_;
-	Vector3 dir_;
-	float dist_;
-
-	bool finishedColliding_;
-};
+        bool finishedColliding_;
+    };
 
 }
 

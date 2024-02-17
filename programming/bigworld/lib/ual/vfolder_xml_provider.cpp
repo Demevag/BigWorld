@@ -16,63 +16,59 @@ BW_BEGIN_NAMESPACE
  */
 VFolderXmlProvider::VFolderXmlProvider()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	init( L"" );
+    init(L"");
 }
-
 
 /**
  *	Constructor.
  *
  *	@param path		File path for the XML file containing the items.
  */
-VFolderXmlProvider::VFolderXmlProvider(	const BW::wstring& path )
+VFolderXmlProvider::VFolderXmlProvider(const BW::wstring& path)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	init( path );
+    init(path);
 }
-
 
 /**
  *	Destructor.
  */
 VFolderXmlProvider::~VFolderXmlProvider()
 {
-	BW_GUARD;
+    BW_GUARD;
 }
-
 
 /**
  *	This method initialises the provider to a new XML list.
  *
  *	@param path		File path for the XML file containing the items.
  */
-void VFolderXmlProvider::init( const BW::wstring& path )
+void VFolderXmlProvider::init(const BW::wstring& path)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	path_ = path;
-	StringUtils::toLowerCaseT( path_ );
-	std::replace( path_.begin(), path_.end(), L'/', L'\\' );
+    path_ = path;
+    StringUtils::toLowerCaseT(path_);
+    std::replace(path_.begin(), path_.end(), L'/', L'\\');
 
-	items_.clear();
+    items_.clear();
 
-	sort_ = false;
+    sort_ = false;
 
-	DataSectionPtr dataSection;
+    DataSectionPtr dataSection;
 
-	BW::string npath;
-	bw_wtoutf8( path_, npath );
-	dataSection = BWResource::openSection( npath );
+    BW::string npath;
+    bw_wtoutf8(path_, npath);
+    dataSection = BWResource::openSection(npath);
 
-	if ( !dataSection )
-		return;
-	
-	sort_ = dataSection->readBool( "sort", sort_ );
+    if (!dataSection)
+        return;
+
+    sort_ = dataSection->readBool("sort", sort_);
 }
-
 
 /**
  *	This method is called to prepare the enumerating of items in a VFolder
@@ -81,37 +77,38 @@ void VFolderXmlProvider::init( const BW::wstring& path )
  *	@param parent	Parent VFolder, if any.
  *	@return		True of there are items in it, false if empty.
  */
-bool VFolderXmlProvider::startEnumChildren( const VFolderItemDataPtr parent )
+bool VFolderXmlProvider::startEnumChildren(const VFolderItemDataPtr parent)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	DataSectionPtr dataSection;
+    DataSectionPtr dataSection;
 
-	items_.clear();
+    items_.clear();
 
-	BW::string npath;
-	bw_wtoutf8( path_, npath );
-	BWResource::instance().purge( npath );
-	dataSection = BWResource::openSection( npath );
+    BW::string npath;
+    bw_wtoutf8(path_, npath);
+    BWResource::instance().purge(npath);
+    dataSection = BWResource::openSection(npath);
 
-	if ( !dataSection )
-		return false;
+    if (!dataSection)
+        return false;
 
-	BW::vector<DataSectionPtr> sections;
-	dataSection->openSections( "item", sections );
-	filterHolder_->enableSearchText( false );
-	for( BW::vector<DataSectionPtr>::iterator s = sections.begin(); s != sections.end(); ++s )
-	{
-		AssetInfoPtr item = new AssetInfo( *s );
-		if ( !filterHolder_ || filterHolder_->filter( item->text(), item->longText() ) )
-			items_.push_back( item );
-	}
-	filterHolder_->enableSearchText( true );
+    BW::vector<DataSectionPtr> sections;
+    dataSection->openSections("item", sections);
+    filterHolder_->enableSearchText(false);
+    for (BW::vector<DataSectionPtr>::iterator s = sections.begin();
+         s != sections.end();
+         ++s) {
+        AssetInfoPtr item = new AssetInfo(*s);
+        if (!filterHolder_ ||
+            filterHolder_->filter(item->text(), item->longText()))
+            items_.push_back(item);
+    }
+    filterHolder_->enableSearchText(true);
 
-	itemsItr_ = items_.begin();
-	return true;
+    itemsItr_ = items_.begin();
+    return true;
 }
-
 
 /**
  *	This method is called to iterate to and get the next item.
@@ -120,26 +117,29 @@ bool VFolderXmlProvider::startEnumChildren( const VFolderItemDataPtr parent )
  *	@param img		Returns the thumbnail for the item, if available.
  *	@return		Next item in the provider.
  */
-VFolderItemDataPtr VFolderXmlProvider::getNextChild( ThumbnailManager& thumbnailManager, CImage& img )
+VFolderItemDataPtr VFolderXmlProvider::getNextChild(
+  ThumbnailManager& thumbnailManager,
+  CImage&           img)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if ( itemsItr_ == items_.end() )
-		return 0;
+    if (itemsItr_ == items_.end())
+        return 0;
 
-	if ( !(*itemsItr_)->thumbnail().empty() )
-		thumbnailManager.create( (*itemsItr_)->thumbnail(), img, 16, 16, folderTree_ );
-	else
-		thumbnailManager.create( (*itemsItr_)->longText(), img, 16, 16, folderTree_ );
+    if (!(*itemsItr_)->thumbnail().empty())
+        thumbnailManager.create(
+          (*itemsItr_)->thumbnail(), img, 16, 16, folderTree_);
+    else
+        thumbnailManager.create(
+          (*itemsItr_)->longText(), img, 16, 16, folderTree_);
 
-	VFolderXmlItemData* newItem = new VFolderXmlItemData( this,
-		*(*itemsItr_), XMLGROUP_ITEM, false, (*itemsItr_)->thumbnail() );
+    VFolderXmlItemData* newItem = new VFolderXmlItemData(
+      this, *(*itemsItr_), XMLGROUP_ITEM, false, (*itemsItr_)->thumbnail());
 
-	itemsItr_++;
+    itemsItr_++;
 
-	return newItem;
+    return newItem;
 }
-
 
 /**
  *	This method creates the thumbnail for an item.
@@ -148,21 +148,23 @@ VFolderItemDataPtr VFolderXmlProvider::getNextChild( ThumbnailManager& thumbnail
  *	@param data		Item data.
  *	@param img		Returns the thumbnail for the item, if available.
  */
-void VFolderXmlProvider::getThumbnail( ThumbnailManager& thumbnailManager, VFolderItemDataPtr data, CImage& img )
+void VFolderXmlProvider::getThumbnail(ThumbnailManager&  thumbnailManager,
+                                      VFolderItemDataPtr data,
+                                      CImage&            img)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if ( !data )
-		return;
+    if (!data)
+        return;
 
-	VFolderXmlItemData* xmlData = (VFolderXmlItemData*)data.getObject();
+    VFolderXmlItemData* xmlData = (VFolderXmlItemData*)data.getObject();
 
-	if ( !xmlData->thumb().empty() )
-		thumbnailManager.create( xmlData->thumb(), img, 16, 16, folderTree_ );
-	else
-		thumbnailManager.create( xmlData->assetInfo().longText(), img, 16, 16, folderTree_ );
+    if (!xmlData->thumb().empty())
+        thumbnailManager.create(xmlData->thumb(), img, 16, 16, folderTree_);
+    else
+        thumbnailManager.create(
+          xmlData->assetInfo().longText(), img, 16, 16, folderTree_);
 }
-
 
 /**
  *	This method returns a text description for the item, good for the dialog's
@@ -174,50 +176,51 @@ void VFolderXmlProvider::getThumbnail( ThumbnailManager& thumbnailManager, VFold
  *					which case it is noted in the descriptive text.
  *	@return		Descriptive text for the item.
  */
-const BW::wstring VFolderXmlProvider::getDescriptiveText( VFolderItemDataPtr data, int numItems, bool finished )
+const BW::wstring VFolderXmlProvider::getDescriptiveText(
+  VFolderItemDataPtr data,
+  int                numItems,
+  bool               finished)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if ( !data )
-		return L"";
+    if (!data)
+        return L"";
 
-	BW::wstring desc;
-	if ( data->assetInfo().description().empty() )
-		desc = data->assetInfo().longText();
-	else
-		desc = data->assetInfo().description();
+    BW::wstring desc;
+    if (data->assetInfo().description().empty())
+        desc = data->assetInfo().longText();
+    else
+        desc = data->assetInfo().description();
 
-	if ( data->isVFolder() )
-	{
-		desc = Localise( L"UAL/VFOLDER_XML_PROVIDER/NUM_ITEMS", getPath(), numItems );
-	}
+    if (data->isVFolder()) {
+        desc =
+          Localise(L"UAL/VFOLDER_XML_PROVIDER/NUM_ITEMS", getPath(), numItems);
+    }
 
-	return desc;
+    return desc;
 }
 
-bool VFolderXmlProvider::getListProviderInfo(
-	VFolderItemDataPtr data,
-	BW::wstring& retInitIdString,
-	ListProviderPtr& retListProvider,
-	bool& retItemClicked )
+bool VFolderXmlProvider::getListProviderInfo(VFolderItemDataPtr data,
+                                             BW::wstring&       retInitIdString,
+                                             ListProviderPtr&   retListProvider,
+                                             bool&              retItemClicked)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if ( !data || !listProvider_ )
-		return false;
+    if (!data || !listProvider_)
+        return false;
 
-	retItemClicked = !data->isVFolder();
+    retItemClicked = !data->isVFolder();
 
-	if ( retInitIdString == getPath() && retListProvider == listProvider_ )
-		return false;
+    if (retInitIdString == getPath() && retListProvider == listProvider_)
+        return false;
 
-	retListProvider = listProvider_;
-	((ListXmlProvider*)listProvider_.getObject())->init( getPath() );
-	retInitIdString = getPath();
+    retListProvider = listProvider_;
+    ((ListXmlProvider*)listProvider_.getObject())->init(getPath());
+    retInitIdString = getPath();
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method returns the path to the XML list file.
@@ -226,11 +229,10 @@ bool VFolderXmlProvider::getListProviderInfo(
  */
 BW::wstring VFolderXmlProvider::getPath()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return path_;
+    return path_;
 }
-
 
 /**
  *	This method returns true if the list is sorted, false if not.
@@ -239,10 +241,9 @@ BW::wstring VFolderXmlProvider::getPath()
  */
 bool VFolderXmlProvider::getSort()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return sort_;
+    return sort_;
 }
 
 BW_END_NAMESPACE
-

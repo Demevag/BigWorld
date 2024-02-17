@@ -6,111 +6,131 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace GUITABS
-{
+namespace GUITABS {
 
-typedef BW::list<PanelPtr>::iterator PanelItr;
+    typedef BW::list<PanelPtr>::iterator PanelItr;
 
-/**
- *  This class manages all panel layout functionality, keeping track of
- *  the tree structure of the nested splitter windows that contain docked
- *  panels as well as keeping a list of all panels, docked and floating.
- *  There is only one Dock in the current implementation, but it should be
- *  easy to extend Manager in order to get multiple Docks in an application,
- *  with the restriction that there can only be one Dock per app frame window.
- */
-class Dock : public ReferenceCount
-{
-public:
+    /**
+     *  This class manages all panel layout functionality, keeping track of
+     *  the tree structure of the nested splitter windows that contain docked
+     *  panels as well as keeping a list of all panels, docked and floating.
+     *  There is only one Dock in the current implementation, but it should be
+     *  easy to extend Manager in order to get multiple Docks in an application,
+     *  with the restriction that there can only be one Dock per app frame
+     * window.
+     */
+    class Dock : public ReferenceCount
+    {
+      public:
+        Dock(CFrameWnd* mainFrame, CWnd* mainView);
+        ~Dock();
 
-	Dock( CFrameWnd* mainFrame, CWnd* mainView );
-	~Dock();
+        CFrameWnd* getMainFrame();
+        CWnd*      getMainView();
 
-	CFrameWnd* getMainFrame();
-	CWnd* getMainView();
+        bool empty();
 
-	bool empty();
+        void dockTab(PanelPtr panel,
+                     TabPtr   tab,
+                     CWnd*    destPanel,
+                     InsertAt insertAt,
+                     int      srcX,
+                     int      srcY,
+                     int      dstX,
+                     int      dstY);
 
-	void dockTab( PanelPtr panel, TabPtr tab, CWnd* destPanel, InsertAt insertAt, int srcX, int srcY, int dstX, int dstY );
+        void dockPanel(PanelPtr panel,
+                       CWnd*    destPanel,
+                       InsertAt insertAt,
+                       int      srcX,
+                       int      srcY,
+                       int      dstX,
+                       int      dstY);
 
-	void dockPanel( PanelPtr panel, CWnd* destPanel, InsertAt insertAt, int srcX, int srcY, int dstX, int dstY );
+        void floatPanel(PanelPtr panel, int srcX, int srcY, int dstX, int dstY);
 
-	void floatPanel( PanelPtr panel, int srcX, int srcY, int dstX, int dstY );
-	
-	void attachAsTab( PanelPtr panel, CWnd* destPanel );
+        void attachAsTab(PanelPtr panel, CWnd* destPanel);
 
-	PanelPtr insertPanel( const BW::wstring & contentID, PanelHandle destPanel, InsertAt insertAt );
-	const PanelItr removePanel( PanelPtr panel );
+        PanelPtr       insertPanel(const BW::wstring& contentID,
+                                   PanelHandle        destPanel,
+                                   InsertAt           insertAt);
+        const PanelItr removePanel(PanelPtr panel);
 
-	void removePanel( const BW::wstring & contentID );
+        void removePanel(const BW::wstring& contentID);
 
-	PanelPtr getPanelByWnd( CWnd* ptr );
-	PanelPtr getPanelByHandle( PanelHandle handle );
+        PanelPtr getPanelByWnd(CWnd* ptr);
+        PanelPtr getPanelByHandle(PanelHandle handle);
 
-	bool load( DataSectionPtr section );
-	bool save( DataSectionPtr section );
+        bool load(DataSectionPtr section);
+        bool save(DataSectionPtr section);
 
-	void setActivePanel( PanelPtr panel );
+        void setActivePanel(PanelPtr panel);
 
-	void showPanel( PanelPtr panel, bool show );
-	void showPanel( const BW::wstring & contentID, bool show );
-	void showPanel( ContentPtr content, bool show );
+        void showPanel(PanelPtr panel, bool show);
+        void showPanel(const BW::wstring& contentID, bool show);
+        void showPanel(ContentPtr content, bool show);
 
-	ContentPtr getContent( const BW::wstring & contentID, int index = 0 );
+        ContentPtr getContent(const BW::wstring& contentID, int index = 0);
 
-	bool isContentVisible( const BW::wstring & contentID );
+        bool isContentVisible(const BW::wstring& contentID);
 
-	DockNodePtr getNodeByPoint( int x, int y );
+        DockNodePtr getNodeByPoint(int x, int y);
 
-	void togglePanelPos( PanelPtr panel );
-	void toggleTabPos( PanelPtr panel, TabPtr tab );
+        void togglePanelPos(PanelPtr panel);
+        void toggleTabPos(PanelPtr panel, TabPtr tab);
 
-	FloaterPtr getFloaterByWnd( CWnd* ptr );
-	
-	bool isDockVisible();
+        FloaterPtr getFloaterByWnd(CWnd* ptr);
 
-	void showDock( bool show );
+        bool isDockVisible();
 
-	void showFloaters( bool show );
+        void showDock(bool show);
 
-	void destroyFloater( FloaterPtr floater );
+        void showFloaters(bool show);
 
-	void broadcastMessage( UINT msg, WPARAM wParam, LPARAM lParam );
+        void destroyFloater(FloaterPtr floater);
 
-	void sendMessage( const BW::wstring & contentID, UINT msg, WPARAM wParam, LPARAM lParam );
+        void broadcastMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 
-	int getContentCount( const BW::wstring & contentID );
-	PanelPtr detachTabToPanel( PanelPtr panel, TabPtr tab );
+        void sendMessage(const BW::wstring& contentID,
+                         UINT               msg,
+                         WPARAM             wParam,
+                         LPARAM             lParam);
 
-	void rollupPanel( PanelPtr panel );
+        int      getContentCount(const BW::wstring& contentID);
+        PanelPtr detachTabToPanel(PanelPtr panel, TabPtr tab);
 
-	int getPanelIndex( PanelPtr panel );
-	PanelPtr getPanelByIndex( int index );
+        void rollupPanel(PanelPtr panel);
 
-	DockNodePtr nodeFactory( DataSectionPtr section );
+        int      getPanelIndex(PanelPtr panel);
+        PanelPtr getPanelByIndex(int index);
 
-	const BW::list< PanelPtr > & getPanels() { return panelList_; }
+        DockNodePtr nodeFactory(DataSectionPtr section);
 
-private:
-	bool dockVisible_;
-	DockNodePtr dockTreeRoot_;
-	BW::list<PanelPtr> panelList_;
-	BW::list<FloaterPtr> floaterList_;
-	typedef BW::list<FloaterPtr>::iterator FloaterItr;
-	CFrameWnd* mainFrame_;
-	int originalMainViewID_;
-	CWnd* mainView_;
+        const BW::list<PanelPtr>& getPanels() { return panelList_; }
 
-	void insertPanelIntoPanel( PanelPtr panel, CWnd* destPanel, InsertAt insertAt );
-	bool getNodeByWnd( CWnd* ptr, DockNodePtr& childNode, DockNodePtr& parentNode );
-	void removeNodeByWnd( CWnd* ptr );
-	void getLeaves( DockNodePtr node, BW::vector<DockNodePtr>& leaves );
-	bool buildPanelPosList( bool docked, DockNodePtr node, PanelPtr panel );
-	void savePanelDockPos( PanelPtr panel );
-	void restorePanelDockPos( PanelPtr panel );
-	void copyPanelRestorePosToTab( PanelPtr src, PanelPtr dstTab );
-};
+      private:
+        bool                                   dockVisible_;
+        DockNodePtr                            dockTreeRoot_;
+        BW::list<PanelPtr>                     panelList_;
+        BW::list<FloaterPtr>                   floaterList_;
+        typedef BW::list<FloaterPtr>::iterator FloaterItr;
+        CFrameWnd*                             mainFrame_;
+        int                                    originalMainViewID_;
+        CWnd*                                  mainView_;
 
+        void insertPanelIntoPanel(PanelPtr panel,
+                                  CWnd*    destPanel,
+                                  InsertAt insertAt);
+        bool getNodeByWnd(CWnd*        ptr,
+                          DockNodePtr& childNode,
+                          DockNodePtr& parentNode);
+        void removeNodeByWnd(CWnd* ptr);
+        void getLeaves(DockNodePtr node, BW::vector<DockNodePtr>& leaves);
+        bool buildPanelPosList(bool docked, DockNodePtr node, PanelPtr panel);
+        void savePanelDockPos(PanelPtr panel);
+        void restorePanelDockPos(PanelPtr panel);
+        void copyPanelRestorePosToTab(PanelPtr src, PanelPtr dstTab);
+    };
 
 } // namespace
 BW_END_NAMESPACE

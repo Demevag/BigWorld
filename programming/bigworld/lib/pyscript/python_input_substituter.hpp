@@ -12,9 +12,10 @@ BW_BEGIN_NAMESPACE
  */
 class PythonInputSubstituter
 {
-public:
-	static BW::string substitute( const BW::string & line,
-		PyObject* pModule = NULL, const char * funcName = "expandMacros" );
+  public:
+    static BW::string substitute(const BW::string& line,
+                                 PyObject*         pModule  = NULL,
+                                 const char*       funcName = "expandMacros");
 };
 
 BW_END_NAMESPACE

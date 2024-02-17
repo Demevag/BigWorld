@@ -9,56 +9,54 @@
 
 BW_BEGIN_NAMESPACE
 
-bool TexFormatConversionRule::createRootTask( const BW::StringRef& sourceFile,
-										      ConversionTask& task )
+bool TexFormatConversionRule::createRootTask(const BW::StringRef& sourceFile,
+                                             ConversionTask&      task)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (!isOutOfDateTexFormat( sourceFile ))
-	{
-		// Texformat doesn't need conversion
-		return false;
-	}
+    if (!isOutOfDateTexFormat(sourceFile)) {
+        // Texformat doesn't need conversion
+        return false;
+    }
 
-	// Create a task using the TexFormatConverter
-	task.converterId_ = TexFormatConverter::getTypeId();
-	task.converterVersion_ = TexFormatConverter::getVersion();
-	task.converterParams_ = "";
-	return true;
+    // Create a task using the TexFormatConverter
+    task.converterId_      = TexFormatConverter::getTypeId();
+    task.converterVersion_ = TexFormatConverter::getVersion();
+    task.converterParams_  = "";
+    return true;
 }
 
-bool TexFormatConversionRule::getSourceFile( const BW::StringRef& file,
-									         BW::string& sourcefile ) const
+bool TexFormatConversionRule::getSourceFile(const BW::StringRef& file,
+                                            BW::string& sourcefile) const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (!isOutOfDateTexFormat( file ))
-	{
-		// Texformat is already up to date - it doesnt have a source file.
-		return false;
-	}
+    if (!isOutOfDateTexFormat(file)) {
+        // Texformat is already up to date - it doesnt have a source file.
+        return false;
+    }
 
-	// The source file for an out of date BSP is itself
-	sourcefile = BWResource::resolveFilename( file );
-	return true;
+    // The source file for an out of date BSP is itself
+    sourcefile = BWResource::resolveFilename(file);
+    return true;
 }
 
-bool TexFormatConversionRule::isOutOfDateTexFormat( const BW::StringRef & resourceID ) const
+bool TexFormatConversionRule::isOutOfDateTexFormat(
+  const BW::StringRef& resourceID) const
 {
-	BW::StringRef ext = BWResource::getExtension( resourceID );
-	if (ext != "texformat")
-	{
-		return false;
-	}
+    BW::StringRef ext = BWResource::getExtension(resourceID);
+    if (ext != "texformat") {
+        return false;
+    }
 
-	DataSectionPtr pSection = BWResource::instance().rootSection()->openSection( resourceID );
-	if (pSection == NULL)
-	{
-		return true;
-	}
+    DataSectionPtr pSection =
+      BWResource::instance().rootSection()->openSection(resourceID);
+    if (pSection == NULL) {
+        return true;
+    }
 
-	int version = pSection->readInt( "version", 0 );
-	return version != TEXTURE_DETAIL_LEVEL_VERSION;
+    int version = pSection->readInt("version", 0);
+    return version != TEXTURE_DETAIL_LEVEL_VERSION;
 }
 
 BW_END_NAMESPACE

@@ -19,40 +19,35 @@ BW_BEGIN_NAMESPACE
  */
 class PyFont : public PyObjectPlus
 {
-	Py_Header( PyFont, PyObjectPlus )
+    Py_Header(PyFont, PyObjectPlus)
 
-public:
-	PyFont( CachedFontPtr pFont, PyTypeObject * pType = &s_type_ );
-	~PyFont();
+      public : PyFont(CachedFontPtr pFont, PyTypeObject* pType = &s_type_);
+    ~PyFont();
 
-	const BW::string name() const;
-	PY_RO_ATTRIBUTE_DECLARE( name(), name )
+    const BW::string name() const;
+    PY_RO_ATTRIBUTE_DECLARE(name(), name)
 
-	uint stringWidth(
-		const BW::wstring& theString,
-		bool multiline = false,
-		bool colourFormatting = false ) const;
+    uint stringWidth(const BW::wstring& theString,
+                     bool               multiline        = false,
+                     bool               colourFormatting = false) const;
 
-	PY_AUTO_METHOD_DECLARE(
-		RETDATA,
-		stringWidth,
-		ARG( BW::wstring, OPTARG( bool, false, OPTARG( bool, false, END ) ) )
-	);
+    PY_AUTO_METHOD_DECLARE(RETDATA,
+                           stringWidth,
+                           ARG(BW::wstring,
+                               OPTARG(bool, false, OPTARG(bool, false, END))));
 
-	PyObject* stringDimensions(
-		const BW::wstring& theString,
-		bool multiline,
-		bool colourFormatting ) const;
+    PyObject* stringDimensions(const BW::wstring& theString,
+                               bool               multiline,
+                               bool               colourFormatting) const;
 
-	PY_AUTO_METHOD_DECLARE(
-		RETOWN,
-		stringDimensions,
-		ARG( BW::wstring, OPTARG( bool, false, OPTARG( bool, false, END ) ) )
-	);
+    PY_AUTO_METHOD_DECLARE(RETOWN,
+                           stringDimensions,
+                           ARG(BW::wstring,
+                               OPTARG(bool, false, OPTARG(bool, false, END))));
 
-	PY_FACTORY_DECLARE()
-protected:
-	CachedFontPtr pFont_;
+    PY_FACTORY_DECLARE()
+  protected:
+    CachedFontPtr pFont_;
 };
 
 #ifdef CODE_INLINE

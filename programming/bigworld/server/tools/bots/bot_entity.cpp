@@ -12,102 +12,95 @@
 
 #include "network/msgtypes.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "BotEntity", 0 )
-
+DECLARE_DEBUG_COMPONENT2("BotEntity", 0)
 
 BW_BEGIN_NAMESPACE
 
 /**
  *	Constructor.
  */
- BotEntity:: BotEntity( const ClientApp & clientApp, const EntityType & type ):
-		Entity( clientApp, type )
+BotEntity::BotEntity(const ClientApp& clientApp, const EntityType& type)
+  : Entity(clientApp, type)
 {
 }
-
 
 /**
  *	Destructor.
  */
- BotEntity::~ BotEntity()
-{
-}
+BotEntity::~BotEntity() {}
 
- ScriptObject BotEntity::pPyEntity() const
- {
-	 return ScriptObject();
- }
+ScriptObject BotEntity::pPyEntity() const
+{
+    return ScriptObject();
+}
 
 /**
  *	This method handles a call to a method of the entity sent from the server.
  */
-void BotEntity::onMethod( int methodID, BinaryIStream & data )
+void BotEntity::onMethod(int methodID, BinaryIStream& data)
 {
-	data.finish();
+    data.finish();
 }
-
 
 /**
  *	This method handles a property update message from the server.
  */
-void BotEntity::onProperty( int propertyID, BinaryIStream & data,
-	bool isInitialising )
+void BotEntity::onProperty(int            propertyID,
+                           BinaryIStream& data,
+                           bool           isInitialising)
 {
-	// Consume exactly the right amount of data, because we are called
-	// repeatedly from onProperties
-	const DataDescription * pDD =
-		this->type().description().clientServerProperty( propertyID );
-	if (pDD != NULL)
-	{
-		ScriptDataSink sink;
-		MF_VERIFY( pDD->createFromStream( data, sink,
-			/* isPersistentOnly */ false ) );
+    // Consume exactly the right amount of data, because we are called
+    // repeatedly from onProperties
+    const DataDescription* pDD =
+      this->type().description().clientServerProperty(propertyID);
+    if (pDD != NULL) {
+        ScriptDataSink sink;
+        MF_VERIFY(pDD->createFromStream(data,
+                                        sink,
+                                        /* isPersistentOnly */ false));
 
-		ScriptObject pValue = sink.finalise();
-		MF_ASSERT( pValue );
-	}
+        ScriptObject pValue = sink.finalise();
+        MF_ASSERT(pValue);
+    }
 }
-
 
 /**
  *	This method is called when a nested property change has been sent from
  *	the server.
  */
-void BotEntity::onNestedProperty( BinaryIStream & data, bool isSlice,
-	bool isInitialising )
+void BotEntity::onNestedProperty(BinaryIStream& data,
+                                 bool           isSlice,
+                                 bool           isInitialising)
 {
-	data.finish();
+    data.finish();
 }
 
-bool BotEntity::initCellEntityFromStream( BinaryIStream & data )
+bool BotEntity::initCellEntityFromStream(BinaryIStream& data)
 {
-	data.finish();
-	return true;
+    data.finish();
+    return true;
 }
-
 
 /**
  *	This method is called when initialising the player from its base
  *	entity, and the BASE_AND_CLIENT properties are streamed.
  */
-bool BotEntity::initBasePlayerFromStream( BinaryIStream & data )
+bool BotEntity::initBasePlayerFromStream(BinaryIStream& data)
 {
-	data.finish();
-	return true;
+    data.finish();
+    return true;
 }
-
 
 /**
  *	This method is called when initialising the player from its cell
  *	entity, and OWN_CLIENT, OTHER_CLIENT and ALL_CLIENT properties are
  *	streamed.
  */
-bool BotEntity::initCellPlayerFromStream( BinaryIStream & data )
+bool BotEntity::initCellPlayerFromStream(BinaryIStream& data)
 {
-	data.finish();
-	return true;
+    data.finish();
+    return true;
 }
-
 
 /**
  *  This method is called when restoring the player from its cell entity.
@@ -116,40 +109,29 @@ bool BotEntity::initCellPlayerFromStream( BinaryIStream & data )
  *  ALL_CLIENT properties as per initBasePlayerFromStream and
  *  initCellPlayerFromStream.
  */
-bool BotEntity::restorePlayerFromStream( BinaryIStream & data )
+bool BotEntity::restorePlayerFromStream(BinaryIStream& data)
 {
-	data.finish();
-	return true;
+    data.finish();
+    return true;
 }
-
 
 /**
  *	This method is called when this entity becomes the player.
  */
-void BotEntity::onBecomePlayer()
-{
-}
-
+void BotEntity::onBecomePlayer() {}
 
 /**
  *	This method is called when this entity stops being the player.
  */
-void BotEntity::onBecomeNonPlayer()
-{
-}
-
+void BotEntity::onBecomeNonPlayer() {}
 
 /**
  *	This method is called when this entity is about to cease to exist, to
  *	give subclasses a chance to clean up any pending reference counting or
  *	similar.
  */
-void BotEntity::onDestroyed()
-{
-}
-
+void BotEntity::onDestroyed() {}
 
 BW_END_NAMESPACE
-
 
 // bot_entity.cpp

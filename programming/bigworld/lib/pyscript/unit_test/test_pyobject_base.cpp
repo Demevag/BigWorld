@@ -5,89 +5,84 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace
-{
-	
-class BaseObj : public PyObjectPlus
-{
-	Py_Header( BaseObj, PyObjectPlus )
+namespace {
 
-public:
-	BaseObj( PyTypeObject * pType, PyObject * ref = NULL );
-	~BaseObj();
+    class BaseObj : public PyObjectPlus
+    {
+        Py_Header(BaseObj, PyObjectPlus)
 
-	int pyTraverse( visitproc visit, void * arg );
-	int pyClear();
+          public : BaseObj(PyTypeObject* pType, PyObject* ref = NULL);
+        ~BaseObj();
 
-	static int s_instCount;
+        int pyTraverse(visitproc visit, void* arg);
+        int pyClear();
 
-private:
-	PyObject * ref_;
-};
+        static int s_instCount;
 
-int BaseObj::s_instCount = 0;
+      private:
+        PyObject* ref_;
+    };
 
-PY_BASETYPEOBJECT( BaseObj )
+    int BaseObj::s_instCount = 0;
 
-PY_BEGIN_METHODS( BaseObj )
-PY_END_METHODS()
+    PY_BASETYPEOBJECT(BaseObj)
 
-PY_BEGIN_ATTRIBUTES( BaseObj )
-PY_END_ATTRIBUTES()
+    PY_BEGIN_METHODS(BaseObj)
+    PY_END_METHODS()
 
+    PY_BEGIN_ATTRIBUTES(BaseObj)
+    PY_END_ATTRIBUTES()
 
-BaseObj::BaseObj( PyTypeObject * pType, PyObject * ref ) :
-	PyObjectPlus( pType, true ),
-	ref_(ref)
-{
-	Py_XINCREF(ref_);
-	TRACE_MSG( "BaseObj ctor\n" );
-	++s_instCount;
-}
+    BaseObj::BaseObj(PyTypeObject* pType, PyObject* ref)
+      : PyObjectPlus(pType, true)
+      , ref_(ref)
+    {
+        Py_XINCREF(ref_);
+        TRACE_MSG("BaseObj ctor\n");
+        ++s_instCount;
+    }
 
+    BaseObj::~BaseObj()
+    {
+        TRACE_MSG("BaseObj dtor\n");
+        Py_XDECREF(ref_);
+        --s_instCount;
+    }
 
-BaseObj::~BaseObj()
-{
-	TRACE_MSG( "BaseObj dtor\n" );
-	Py_XDECREF(ref_);
-	--s_instCount;
-}
+    int BaseObj::pyTraverse(visitproc visit, void* arg)
+    {
+        TRACE_MSG("BaseObj::pyTraverse\n");
+        Py_VISIT(ref_);
+        return 0; // TODO: check that parent shouldn't be called
+    }
 
-int BaseObj::pyTraverse( visitproc visit, void * arg )
-{
-	TRACE_MSG( "BaseObj::pyTraverse\n" );
-	Py_VISIT( ref_ );
-	return 0; // TODO: check that parent shouldn't be called
-}
-
-int BaseObj::pyClear()
-{
-	TRACE_MSG( "BaseObj::pyClear\n" );
-	Py_CLEAR( ref_ );
-	return 0; // TODO: check that parent shouldn't be called
-}
+    int BaseObj::pyClear()
+    {
+        TRACE_MSG("BaseObj::pyClear\n");
+        Py_CLEAR(ref_);
+        return 0; // TODO: check that parent shouldn't be called
+    }
 
 } // end anonymous namespace
 
-
-TEST_F( PyScriptUnitTestHarness, BaseCreation )
+TEST_F(PyScriptUnitTestHarness, BaseCreation)
 {
-	BaseObj::s_instCount = 0;
-	PyObject * obj = PyType_GenericAlloc( &BaseObj::s_type_, 0 );
-	CHECK( obj );
-	CHECK( BaseObj::Check( obj ) );
+    BaseObj::s_instCount = 0;
+    PyObject* obj        = PyType_GenericAlloc(&BaseObj::s_type_, 0);
+    CHECK(obj);
+    CHECK(BaseObj::Check(obj));
 
-	if (obj)
-	{
-		new ( obj ) BaseObj( &BaseObj::s_type_ );
-		while (PyGC_Collect() > 0);
-	}
-	
-	Py_XDECREF( obj );
-	while (PyGC_Collect() > 0);
-	CHECK_EQUAL( 0, BaseObj::s_instCount );
+    if (obj) {
+        new (obj) BaseObj(&BaseObj::s_type_);
+        while (PyGC_Collect() > 0)
+            ;
+    }
+
+    Py_XDECREF(obj);
+    while (PyGC_Collect() > 0)
+        ;
+    CHECK_EQUAL(0, BaseObj::s_instCount);
 }
-
 
 #if 0
 /* This test should be enabled when PY_TYPEOBJECT_SPECIALISE_GC macro is implemented*/

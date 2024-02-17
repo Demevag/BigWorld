@@ -5,17 +5,17 @@
 
 BW_USE_NAMESPACE
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
-	BW_SYSTEMSTAGE_MAIN();
+    BW_SYSTEMSTAGE_MAIN();
 
-	Allocator::setCrashOnLeak( true );
+    Allocator::setCrashOnLeak(true);
 
-	int ret = BWUnitTest::runTest( "cellapp", argc, argv );
+    int ret = BWUnitTest::runTest("cellapp", argc, argv);
 
-	DebugFilter::fini(); // prevent singleton leak.
+    DebugFilter::fini(); // prevent singleton leak.
 
-	return ret;
+    return ret;
 }
 
 // main.cpp

@@ -9,11 +9,9 @@
 
 #include "cstdmf/bw_set.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class EdgeGeometryMapping;
-
 
 /**
  *	This class maintains a collection of EdgeGeometryMapping instances for a
@@ -21,31 +19,34 @@ class EdgeGeometryMapping;
  */
 class EdgeGeometryMappings : public GeometryMappingFactory
 {
-public:
-	EdgeGeometryMappings( GeometryMapper & mapper );
-	~EdgeGeometryMappings();
+  public:
+    EdgeGeometryMappings(GeometryMapper& mapper);
+    ~EdgeGeometryMappings();
 
-	// Override form GeometryMappingFactory
-	virtual GeometryMapping * createMapping( ChunkSpacePtr pSpace,
-			const Matrix & m, const BW::string & path,
-			DataSectionPtr pSettings );
+    // Override form GeometryMappingFactory
+    virtual GeometryMapping* createMapping(ChunkSpacePtr     pSpace,
+                                           const Matrix&     m,
+                                           const BW::string& path,
+                                           DataSectionPtr    pSettings);
 
-	void removeMapping( EdgeGeometryMapping * pMapping );
+    void removeMapping(EdgeGeometryMapping* pMapping);
 
-	bool tickLoading( const Vector3 & minB, const Vector3 & maxB,
-			bool unloadOnly, SpaceID spaceID );
-	void prepareNewlyLoadedChunksForDelete();
-	void calcLoadedRect( BW::Rect & loadedRect ) const;
+    bool tickLoading(const Vector3& minB,
+                     const Vector3& maxB,
+                     bool           unloadOnly,
+                     SpaceID        spaceID);
+    void prepareNewlyLoadedChunksForDelete();
+    void calcLoadedRect(BW::Rect& loadedRect) const;
 
-	bool getLoadableRects( BW::list< BW::Rect > & rects ) const;
+    bool getLoadableRects(BW::list<BW::Rect>& rects) const;
 
-	bool isFullyUnloaded() const;
+    bool isFullyUnloaded() const;
 
-private:
-	typedef BW::set< EdgeGeometryMapping * > Mappings;
-	Mappings mappings_;
+  private:
+    typedef BW::set<EdgeGeometryMapping*> Mappings;
+    Mappings                              mappings_;
 
-	GeometryMapper & mapper_;
+    GeometryMapper& mapper_;
 };
 
 BW_END_NAMESPACE

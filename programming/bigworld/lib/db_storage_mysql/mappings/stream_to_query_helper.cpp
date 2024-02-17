@@ -3,7 +3,6 @@
 #include "../query_runner.hpp"
 #include "../wrapper.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
@@ -13,12 +12,11 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor.
  */
-ChildQuery::ChildQuery( MySql & connection, const Query & query ) :
-	queryRunner_( connection, query ),
-	helper_( connection, 0 )
+ChildQuery::ChildQuery(MySql& connection, const Query& query)
+  : queryRunner_(connection, query)
+  , helper_(connection, 0)
 {
 }
-
 
 /**
  *	This method places the ID of the parent DB record into the query string
@@ -28,17 +26,15 @@ ChildQuery::ChildQuery( MySql & connection, const Query & query ) :
  *	@param parentID  The ID of the record in the parent table this query is
  *	                 associated with.
  */
-void ChildQuery::execute( DatabaseID parentID )
+void ChildQuery::execute(DatabaseID parentID)
 {
-	queryRunner_.pushArg( parentID );
-	queryRunner_.execute( NULL );
+    queryRunner_.pushArg(parentID);
+    queryRunner_.execute(NULL);
 
-	if (helper_.hasBufferedQueries())
-	{
-		helper_.executeBufferedQueries( queryRunner_.connection().insertID() );
-	}
+    if (helper_.hasBufferedQueries()) {
+        helper_.executeBufferedQueries(queryRunner_.connection().insertID());
+    }
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: StreamToQueryHelper
@@ -47,29 +43,25 @@ void ChildQuery::execute( DatabaseID parentID )
 /**
  *	Constructor.
  */
-StreamToQueryHelper::StreamToQueryHelper( MySql & connection,
-		DatabaseID parentID ) :
-	connection_( connection ),
-	parentID_( parentID )
+StreamToQueryHelper::StreamToQueryHelper(MySql& connection, DatabaseID parentID)
+  : connection_(connection)
+  , parentID_(parentID)
 {
 }
-
 
 /**
  *	Destructor.
  */
 StreamToQueryHelper::~StreamToQueryHelper()
 {
-	BufferedQueries::iterator iter = bufferedQueries_.begin();
+    BufferedQueries::iterator iter = bufferedQueries_.begin();
 
-	while (iter != bufferedQueries_.end())
-	{
-		delete *iter;
+    while (iter != bufferedQueries_.end()) {
+        delete *iter;
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 /**
  *	This method executes any queries that have been delayed until a parent
@@ -78,18 +70,16 @@ StreamToQueryHelper::~StreamToQueryHelper()
  *	@param parentID  The ID of the parent record to associate with the buffered
  *	                 queries.
  */
-void StreamToQueryHelper::executeBufferedQueries( DatabaseID parentID )
+void StreamToQueryHelper::executeBufferedQueries(DatabaseID parentID)
 {
-	BufferedQueries::iterator iter = bufferedQueries_.begin();
+    BufferedQueries::iterator iter = bufferedQueries_.begin();
 
-	while (iter != bufferedQueries_.end())
-	{
-		(*iter)->execute( parentID );
+    while (iter != bufferedQueries_.end()) {
+        (*iter)->execute(parentID);
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 /**
  *	This method creates a child query for the query helper and buffers it to be
@@ -97,11 +87,11 @@ void StreamToQueryHelper::executeBufferedQueries( DatabaseID parentID )
  *
  *	@param query  The parent query for which a child will be created.
  */
-ChildQuery & StreamToQueryHelper::createChildQuery( const Query & query )
+ChildQuery& StreamToQueryHelper::createChildQuery(const Query& query)
 {
-	bufferedQueries_.push_back( new ChildQuery( connection_, query ) );
+    bufferedQueries_.push_back(new ChildQuery(connection_, query));
 
-	return *bufferedQueries_.back();
+    return *bufferedQueries_.back();
 }
 
 BW_END_NAMESPACE

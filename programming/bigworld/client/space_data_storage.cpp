@@ -17,37 +17,33 @@ BW_BEGIN_NAMESPACE
  *	@return	true unless the space was already known, in which case it may
  *			have stale data present.
  */
-bool SpaceDataStorage::addMapping( SpaceID spaceID )
+bool SpaceDataStorage::addMapping(SpaceID spaceID)
 {
-	if (knownSpaces_.find( spaceID ) != knownSpaces_.end())
-	{
-		return false;
-	}
+    if (knownSpaces_.find(spaceID) != knownSpaces_.end()) {
+        return false;
+    }
 
-	knownSpaces_[ spaceID ] = SpaceManager::instance().createSpace( spaceID );
+    knownSpaces_[spaceID] = SpaceManager::instance().createSpace(spaceID);
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This virtual method forgets all the data for the given SpaceID.
  *
  *	@param spaceID			The SpaceID to forget the data for
  */
-void SpaceDataStorage::clearMapping( SpaceID spaceID )
+void SpaceDataStorage::clearMapping(SpaceID spaceID)
 {
-	ClientSpaceMap::iterator iter = knownSpaces_.find( spaceID );
+    ClientSpaceMap::iterator iter = knownSpaces_.find(spaceID);
 
-	if (iter == knownSpaces_.end())
-	{
-		return;
-	}
+    if (iter == knownSpaces_.end()) {
+        return;
+    }
 
-	iter->second->clear();
-	knownSpaces_.erase( iter );
+    iter->second->clear();
+    knownSpaces_.erase(iter);
 }
-
 
 /**
  *	This virtual method retrieves a SpaceDataMapping for the given spaceID.
@@ -57,35 +53,30 @@ void SpaceDataStorage::clearMapping( SpaceID spaceID )
  *	@return	A SpaceDataMapping pointer, or NULL if no mapping exists for this
  *			SpaceID.
  */
-SpaceDataMapping * SpaceDataStorage::getMapping( SpaceID spaceID ) const
+SpaceDataMapping* SpaceDataStorage::getMapping(SpaceID spaceID) const
 {
-	ClientSpaceMap::const_iterator iClientSpaces = knownSpaces_.find( spaceID );
-	if (iClientSpaces == knownSpaces_.end())
-	{
-		return NULL;
-	}
+    ClientSpaceMap::const_iterator iClientSpaces = knownSpaces_.find(spaceID);
+    if (iClientSpaces == knownSpaces_.end()) {
+        return NULL;
+    }
 
-	return &(iClientSpaces->second->spaceData());
+    return &(iClientSpaces->second->spaceData());
 }
-
 
 /**
  *	This virtual method clears all mappings managed through this interface.
  */
 void SpaceDataStorage::clearAllMappings()
 {
-	ClientSpaceMap::iterator iter = knownSpaces_.begin();
+    ClientSpaceMap::iterator iter = knownSpaces_.begin();
 
-	while (iter != knownSpaces_.end())
-	{
-		iter->second->clear();
-		++iter;
-	}
+    while (iter != knownSpaces_.end()) {
+        iter->second->clear();
+        ++iter;
+    }
 
-	knownSpaces_.clear();
+    knownSpaces_.clear();
 }
-
-
 
 BW_END_NAMESPACE
 

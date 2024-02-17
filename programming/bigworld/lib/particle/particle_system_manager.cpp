@@ -6,7 +6,6 @@
 #include "moo/render_context.hpp"
 #include "space/space_manager.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // These need to be static as they have to be initialised before
@@ -16,18 +15,17 @@ static AutoConfigString s_meshAdditiveEffect("system/meshParticles/additive");
 static AutoConfigString s_meshBlendedEffect("system/meshParticles/blended");
 
 // Implementation of the singleton static pointer.
-BW_INIT_SINGLETON_STORAGE( ParticleSystemManager );
+BW_INIT_SINGLETON_STORAGE(ParticleSystemManager);
 
 /**
  *	Constructor
  */
-ParticleSystemManager::ParticleSystemManager():
-	pPointSpriteVertexShader_( NULL ),
-	pPointSpriteVertexDeclaration_( NULL ),
-	active_( true )
+ParticleSystemManager::ParticleSystemManager()
+  : pPointSpriteVertexShader_(NULL)
+  , pPointSpriteVertexDeclaration_(NULL)
+  , active_(true)
 {
 }
-
 
 /**
  *	This method initialises any objects that require initialisation in the
@@ -37,24 +35,28 @@ ParticleSystemManager::ParticleSystemManager():
  */
 bool ParticleSystemManager::doInit()
 {
-	BW_GUARD;
-	// Load the ManagedEffects for MeshParticleRenderer
-	meshSolidManagedEffect_ = Moo::EffectManager::instance().get( s_meshSolidEffect );
-	meshAdditiveManagedEffect_ = Moo::EffectManager::instance().get( s_meshAdditiveEffect );
-	meshBlendedManagedEffect_ = Moo::EffectManager::instance().get( s_meshBlendedEffect );
+    BW_GUARD;
+    // Load the ManagedEffects for MeshParticleRenderer
+    meshSolidManagedEffect_ =
+      Moo::EffectManager::instance().get(s_meshSolidEffect);
+    meshAdditiveManagedEffect_ =
+      Moo::EffectManager::instance().get(s_meshAdditiveEffect);
+    meshBlendedManagedEffect_ =
+      Moo::EffectManager::instance().get(s_meshBlendedEffect);
 
-	// Load vertex shader stuff for SpriteParticleRenderer
-	pPointSpriteVertexDeclaration_ = Moo::VertexDeclaration::get( "particle" );
+    // Load vertex shader stuff for SpriteParticleRenderer
+    pPointSpriteVertexDeclaration_ = Moo::VertexDeclaration::get("particle");
 
-	// Create any unmanaged resources
-	this->createUnmanagedObjects();
+    // Create any unmanaged resources
+    this->createUnmanagedObjects();
 
-	SpaceManager::instance().spaceDestroyed().add< ParticleSystemManager, 
-		&ParticleSystemManager::onSpaceDestroyed >( this );
+    SpaceManager::instance()
+      .spaceDestroyed()
+      .add<ParticleSystemManager, &ParticleSystemManager::onSpaceDestroyed>(
+        this);
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method finalises any objects that require finalises in the
@@ -64,40 +66,40 @@ bool ParticleSystemManager::doInit()
  */
 bool ParticleSystemManager::doFini()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	SpaceManager::instance().spaceDestroyed().remove< ParticleSystemManager, 
-		&ParticleSystemManager::onSpaceDestroyed >( this );
+    SpaceManager::instance()
+      .spaceDestroyed()
+      .remove<ParticleSystemManager, &ParticleSystemManager::onSpaceDestroyed>(
+        this);
 
-	// Clear and disable further caching of particle systems
-	cache_.shutdown();
+    // Clear and disable further caching of particle systems
+    cache_.shutdown();
 
-	// Free the ManagedEffects for MeshParticleRenderer
-	meshSolidManagedEffect_ = NULL;
-	meshAdditiveManagedEffect_ = NULL;
-	meshBlendedManagedEffect_ = NULL;
+    // Free the ManagedEffects for MeshParticleRenderer
+    meshSolidManagedEffect_    = NULL;
+    meshAdditiveManagedEffect_ = NULL;
+    meshBlendedManagedEffect_  = NULL;
 
-	// Free vertex shader stuff for SpriteParticleRenderer
-	// There's no way to free Moo::VertexDeclarations...
+    // Free vertex shader stuff for SpriteParticleRenderer
+    // There's no way to free Moo::VertexDeclarations...
 
-	// Release any unmanaged resources
-	this->deleteUnmanagedObjects();
+    // Release any unmanaged resources
+    this->deleteUnmanagedObjects();
 
-	return true;
+    return true;
 }
 
-MetaParticleSystemCache & ParticleSystemManager::loader()
+MetaParticleSystemCache& ParticleSystemManager::loader()
 {
-	return cache_;
+    return cache_;
 }
 
-
-void ParticleSystemManager::onSpaceDestroyed( SpaceManager *, ClientSpace * )
+void ParticleSystemManager::onSpaceDestroyed(SpaceManager*, ClientSpace*)
 {
-	// clear cache when space changes
-	cache_.clear();
+    // clear cache when space changes
+    cache_.clear();
 }
-
 
 /**
  *  This method provides the name of the effect to be applied to
@@ -105,10 +107,10 @@ void ParticleSystemManager::onSpaceDestroyed( SpaceManager *, ClientSpace * )
  *
  *  @return		const BW::string reference
  */
-const BW::string & ParticleSystemManager::meshSolidEffect() const
+const BW::string& ParticleSystemManager::meshSolidEffect() const
 {
-	BW_GUARD;
-	return s_meshSolidEffect;
+    BW_GUARD;
+    return s_meshSolidEffect;
 }
 
 /**
@@ -117,10 +119,10 @@ const BW::string & ParticleSystemManager::meshSolidEffect() const
  *
  *  @return		const BW::string reference
  */
-const BW::string & ParticleSystemManager::meshAdditiveEffect() const
+const BW::string& ParticleSystemManager::meshAdditiveEffect() const
 {
-	BW_GUARD;
-	return s_meshAdditiveEffect;
+    BW_GUARD;
+    return s_meshAdditiveEffect;
 }
 
 /**
@@ -129,10 +131,10 @@ const BW::string & ParticleSystemManager::meshAdditiveEffect() const
  *
  *  @return		const BW::string reference
  */
-const BW::string & ParticleSystemManager::meshBlendedEffect() const
+const BW::string& ParticleSystemManager::meshBlendedEffect() const
 {
-	BW_GUARD;
-	return s_meshBlendedEffect;
+    BW_GUARD;
+    return s_meshBlendedEffect;
 }
 
 /**
@@ -141,27 +143,27 @@ const BW::string & ParticleSystemManager::meshBlendedEffect() const
  */
 void ParticleSystemManager::createUnmanagedObjects()
 {
-	BW_GUARD;
-	if (pPointSpriteVertexShader_ != NULL)
-		this->deleteUnmanagedObjects();
+    BW_GUARD;
+    if (pPointSpriteVertexShader_ != NULL)
+        this->deleteUnmanagedObjects();
 
-	const char* pPointSpriteVertexShaderName = "shaders/xyzdp/particles_pc/0d0o0s.vso";
-	BinaryPtr pVertexShader = BWResource::instance().rootSection()->readBinary(
-		pPointSpriteVertexShaderName );
+    const char* pPointSpriteVertexShaderName =
+      "shaders/xyzdp/particles_pc/0d0o0s.vso";
+    BinaryPtr pVertexShader = BWResource::instance().rootSection()->readBinary(
+      pPointSpriteVertexShaderName);
 
-	if( pVertexShader )
-	{
-		// Try to create the shader.
-		HRESULT result = Moo::rc().device()->CreateVertexShader( (DWORD*)pVertexShader->data(), &pPointSpriteVertexShader_ );
-		if ( FAILED( result ) )
-		{
-			CRITICAL_MSG( "ParticleSystemManager::createUnmanagedObjects: "
-				"Couldn't create vertexshader from %s: 0x%08lx\n",
-				pPointSpriteVertexShaderName, result );
-		}
-	}
+    if (pVertexShader) {
+        // Try to create the shader.
+        HRESULT result = Moo::rc().device()->CreateVertexShader(
+          (DWORD*)pVertexShader->data(), &pPointSpriteVertexShader_);
+        if (FAILED(result)) {
+            CRITICAL_MSG("ParticleSystemManager::createUnmanagedObjects: "
+                         "Couldn't create vertexshader from %s: 0x%08lx\n",
+                         pPointSpriteVertexShaderName,
+                         result);
+        }
+    }
 }
-
 
 /**
  *	This method frees any resources that need to be recreated when
@@ -169,12 +171,11 @@ void ParticleSystemManager::createUnmanagedObjects()
  */
 void ParticleSystemManager::deleteUnmanagedObjects()
 {
-	BW_GUARD;
-	if ( pPointSpriteVertexShader_ )
-	{
-		pPointSpriteVertexShader_->Release();
-		pPointSpriteVertexShader_ = NULL;
-	}
+    BW_GUARD;
+    if (pPointSpriteVertexShader_) {
+        pPointSpriteVertexShader_->Release();
+        pPointSpriteVertexShader_ = NULL;
+    }
 }
 
 BW_END_NAMESPACE

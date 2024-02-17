@@ -29,100 +29,96 @@
 
 #include <asset_pipeline/conversion/converter.hpp>
 
-
 BW_BEGIN_NAMESPACE
 
 class Chunk;
 
-namespace CompiledSpace
-{
-	class BinaryFormatWriter;
+namespace CompiledSpace {
+    class BinaryFormatWriter;
 }
 
-class SpaceConverter : 
-	public Converter
+class SpaceConverter : public Converter
 {
-protected:
-	SPACECONVERTER_DLL SpaceConverter( const BW::string& params );
-	SPACECONVERTER_DLL virtual ~SpaceConverter();
+  protected:
+    SPACECONVERTER_DLL SpaceConverter(const BW::string& params);
+    SPACECONVERTER_DLL virtual ~SpaceConverter();
 
-public:
-	SPACECONVERTER_DLL virtual bool createDependencies( const BW::string & sourcefile,
-									 const Compiler & compiler,
-									 DependencyList & dependencies );
+  public:
+    SPACECONVERTER_DLL virtual bool createDependencies(
+      const BW::string& sourcefile,
+      const Compiler&   compiler,
+      DependencyList&   dependencies);
 
-	SPACECONVERTER_DLL virtual bool convert( const BW::string & sourcefile,
-						  const Compiler & compiler,
-						  BW::vector< BW::string > & intermediateFiles,
-						  BW::vector< BW::string > & outputFiles );
+    SPACECONVERTER_DLL virtual bool convert(
+      const BW::string&       sourcefile,
+      const Compiler&         compiler,
+      BW::vector<BW::string>& intermediateFiles,
+      BW::vector<BW::string>& outputFiles);
 
-protected:
+  protected:
+    typedef CompiledSpace::ChunkConverter::ConversionContext ConversionContext;
 
-	typedef CompiledSpace::ChunkConverter::ConversionContext ConversionContext;
+    SPACECONVERTER_DLL void addWriter(CompiledSpace::ISpaceWriter* pWriter);
 
-	SPACECONVERTER_DLL void addWriter( CompiledSpace::ISpaceWriter* pWriter );
+    SPACECONVERTER_DLL CompiledSpace::SettingsWriter& settings();
+    SPACECONVERTER_DLL CompiledSpace::StringTableWriter& stringTable();
+    SPACECONVERTER_DLL CompiledSpace::AssetListWriter& assetList();
+    SPACECONVERTER_DLL CompiledSpace::StaticGeometryWriter& staticGeometry();
+    SPACECONVERTER_DLL CompiledSpace::ChunkConverter& converter();
 
-	SPACECONVERTER_DLL CompiledSpace::SettingsWriter& settings();
-	SPACECONVERTER_DLL CompiledSpace::StringTableWriter& stringTable();
-	SPACECONVERTER_DLL CompiledSpace::AssetListWriter& assetList();
-	SPACECONVERTER_DLL CompiledSpace::StaticGeometryWriter& staticGeometry();
-	SPACECONVERTER_DLL CompiledSpace::ChunkConverter& converter();
+  private:
+    bool initializeWriters(const BW::string&     spaceDir,
+                           const DataSectionPtr& pSpaceSettings,
+                           CommandLine&          cmdLine);
+    void processChunks();
+    void postProcessWriters();
+    bool outputWriterData(CompiledSpace::BinaryFormatWriter& writer);
 
-private:
+    CompiledSpace::SettingsWriter       settings_;
+    CompiledSpace::StringTableWriter    stringTable_;
+    CompiledSpace::AssetListWriter      assetList_;
+    CompiledSpace::StaticGeometryWriter staticGeometry_;
 
-	bool initializeWriters( 
-		const BW::string& spaceDir,
-		const DataSectionPtr& pSpaceSettings,
-		CommandLine& cmdLine );
-	void processChunks();
-	void postProcessWriters();
-	bool outputWriterData( CompiledSpace::BinaryFormatWriter& writer );
-
-	CompiledSpace::SettingsWriter settings_;
-	CompiledSpace::StringTableWriter stringTable_;
-	CompiledSpace::AssetListWriter assetList_;
-	CompiledSpace::StaticGeometryWriter staticGeometry_;
-
-	typedef BW::vector< CompiledSpace::ISpaceWriter* > WriterList;
-	WriterList writers_;
-	CompiledSpace::ChunkConverter processor_;
+    typedef BW::vector<CompiledSpace::ISpaceWriter*> WriterList;
+    WriterList                                       writers_;
+    CompiledSpace::ChunkConverter                    processor_;
 };
 
-
-class DefaultSpaceConverter :
-	public SpaceConverter
+class DefaultSpaceConverter : public SpaceConverter
 {
-public:
-	SPACECONVERTER_DLL DefaultSpaceConverter( const BW::string& params );
-	SPACECONVERTER_DLL virtual ~DefaultSpaceConverter();
+  public:
+    SPACECONVERTER_DLL DefaultSpaceConverter(const BW::string& params);
+    SPACECONVERTER_DLL virtual ~DefaultSpaceConverter();
 
-public:
-	static uint64 getTypeId() { return s_TypeId; }
-	static const char * getVersion() { return s_Version; }
-	static const char * getTypeName() { return "SpaceConverter"; }
-	static Converter * createConverter( const BW::string& params ) { return new DefaultSpaceConverter( params ); }
+  public:
+    static uint64      getTypeId() { return s_TypeId; }
+    static const char* getVersion() { return s_Version; }
+    static const char* getTypeName() { return "SpaceConverter"; }
+    static Converter*  createConverter(const BW::string& params)
+    {
+        return new DefaultSpaceConverter(params);
+    }
 
-	static const uint64 s_TypeId;
-	static const char * s_Version;
+    static const uint64 s_TypeId;
+    static const char*  s_Version;
 
-private:
-
-	CompiledSpace::Terrain2Writer terrain2_;
-	CompiledSpace::StaticSceneWriter staticScene_;
-	CompiledSpace::StaticSceneWriter vloScene_;
-	CompiledSpace::StaticSceneModelWriter staticModels_;
+  private:
+    CompiledSpace::Terrain2Writer         terrain2_;
+    CompiledSpace::StaticSceneWriter      staticScene_;
+    CompiledSpace::StaticSceneWriter      vloScene_;
+    CompiledSpace::StaticSceneModelWriter staticModels_;
 #if SPEEDTREE_SUPPORT
-	CompiledSpace::StaticSceneSpeedTreeWriter speedTrees_;
+    CompiledSpace::StaticSceneSpeedTreeWriter speedTrees_;
 #endif
-	CompiledSpace::StaticSceneFlareWriter staticFlares_;
-	CompiledSpace::StaticSceneWaterWriter water_;
-	CompiledSpace::StaticSceneDecalWriter decals_;
-	CompiledSpace::ParticleSystemWriter particles_;
-	CompiledSpace::EntityWriter entities_;
-	CompiledSpace::LightSceneWriter lightWriter_;
-	CompiledSpace::StaticTextureStreamingWriter textureStreamingWriter_;
+    CompiledSpace::StaticSceneFlareWriter       staticFlares_;
+    CompiledSpace::StaticSceneWaterWriter       water_;
+    CompiledSpace::StaticSceneDecalWriter       decals_;
+    CompiledSpace::ParticleSystemWriter         particles_;
+    CompiledSpace::EntityWriter                 entities_;
+    CompiledSpace::LightSceneWriter             lightWriter_;
+    CompiledSpace::StaticTextureStreamingWriter textureStreamingWriter_;
 };
 
 BW_END_NAMESPACE
 
-#endif //ASSET_PIPELINE_SPACE_CONVERTER
+#endif // ASSET_PIPELINE_SPACE_CONVERTER

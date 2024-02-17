@@ -6,11 +6,10 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace VKMap 
-{
-	KeyCode::Key fromVKey( USHORT vkey, bool extended );
-	KeyCode::Key fromRawKey( RAWKEYBOARD* rkb );
-	USHORT toVKey( KeyCode::Key key );
+namespace VKMap {
+    KeyCode::Key fromVKey(USHORT vkey, bool extended);
+    KeyCode::Key fromRawKey(RAWKEYBOARD* rkb);
+    USHORT       toVKey(KeyCode::Key key);
 }
 
 BW_END_NAMESPACE

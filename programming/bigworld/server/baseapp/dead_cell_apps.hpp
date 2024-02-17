@@ -7,7 +7,6 @@
 #include "cstdmf/bw_list.hpp"
 #include "cstdmf/bw_vector.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class Bases;
@@ -15,32 +14,30 @@ class BinaryIStream;
 class DeadCellApp;
 class DyingCellApp;
 
-namespace Mercury
-{
-class Address;
-class NetworkInterface;
+namespace Mercury {
+    class Address;
+    class NetworkInterface;
 }
-
 
 /**
  *	This class handles identifying CellApps that have recently died.
  */
 class DeadCellApps
 {
-public:
-	bool isRecentlyDead( const Mercury::Address & addr ) const;
-	void addApp( const Mercury::Address & addr, BinaryIStream & data );
+  public:
+    bool isRecentlyDead(const Mercury::Address& addr) const;
+    void addApp(const Mercury::Address& addr, BinaryIStream& data);
 
-	void tick( const Bases & bases, Mercury::NetworkInterface & intInterface );
+    void tick(const Bases& bases, Mercury::NetworkInterface& intInterface);
 
-private:
-	void removeOldApps();
+  private:
+    void removeOldApps();
 
-	typedef BW::vector< shared_ptr< DeadCellApp > > Container;
-	Container apps_;
+    typedef BW::vector<shared_ptr<DeadCellApp>> Container;
+    Container                                   apps_;
 
-	typedef BW::list< shared_ptr< DyingCellApp > > DyingCellApps;
-	DyingCellApps dyingApps_;
+    typedef BW::list<shared_ptr<DyingCellApp>> DyingCellApps;
+    DyingCellApps                              dyingApps_;
 };
 
 BW_END_NAMESPACE

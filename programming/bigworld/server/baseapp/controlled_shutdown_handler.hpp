@@ -4,20 +4,18 @@
 #include "network/basictypes.hpp"
 #include "network/misc.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class Bases;
 class SqliteDatabase;
 
-namespace ControlledShutdown
-{
+namespace ControlledShutdown {
 
-void start( SqliteDatabase * pSecondaryDB,
-			const Bases & bases,
-			Bases & localServiceFragments,
-			Mercury::ReplyID replyID,
-			const Mercury::Address & srcAddr );
+    void start(SqliteDatabase*         pSecondaryDB,
+               const Bases&            bases,
+               Bases&                  localServiceFragments,
+               Mercury::ReplyID        replyID,
+               const Mercury::Address& srcAddr);
 
 } // namespace ControlledShutdown
 

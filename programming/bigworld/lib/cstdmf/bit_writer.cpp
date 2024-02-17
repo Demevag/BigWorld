@@ -14,11 +14,12 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor
  */
-BitWriter::BitWriter() : byteCount_( 0 ), bitsLeft_( 8 )
+BitWriter::BitWriter()
+  : byteCount_(0)
+  , bitsLeft_(8)
 {
-	memset( bytes_, 0, sizeof(bytes_) );
+    memset(bytes_, 0, sizeof(bytes_));
 }
-
 
 /**
  *	This method writes out a number of bits.
@@ -27,29 +28,25 @@ BitWriter::BitWriter() : byteCount_( 0 ), bitsLeft_( 8 )
  *	@param bits    The bits to add stored in the low bits
  *
  */
-void BitWriter::add( int numBits, int bits )
+void BitWriter::add(int numBits, int bits)
 {
-	uint32 dataHigh = bits << (32-numBits);
+    uint32 dataHigh = bits << (32 - numBits);
 
-	int bitAt = 0;
+    int bitAt = 0;
 
-	while (bitAt < numBits)
-	{
-		bytes_[byteCount_] |= (dataHigh>>(32-bitsLeft_));
-		dataHigh <<= bitsLeft_;
+    while (bitAt < numBits) {
+        bytes_[byteCount_] |= (dataHigh >> (32 - bitsLeft_));
+        dataHigh <<= bitsLeft_;
 
-		bitAt += bitsLeft_;
+        bitAt += bitsLeft_;
 
-		if (bitAt <= numBits)
-		{
-			bitsLeft_ = 8;
-			byteCount_++;
-		}
-		else
-		{
-			bitsLeft_ = bitAt-numBits;
-		}
-	}
+        if (bitAt <= numBits) {
+            bitsLeft_ = 8;
+            byteCount_++;
+        } else {
+            bitsLeft_ = bitAt - numBits;
+        }
+    }
 }
 
 BW_END_NAMESPACE

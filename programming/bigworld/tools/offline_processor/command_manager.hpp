@@ -5,48 +5,48 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace OfflineProcessor
-{
+namespace OfflineProcessor {
 
-struct CommandManagerDebugMessageCallback : public DebugMessageCallback
-{
-	virtual bool handleMessage(
-		DebugMessagePriority messagePriority, const char * pCategory,
-		DebugMessageSource messageSource, const LogMetaData & metaData,
-		const char * pFormat, va_list argPtr );
-	bool verbose_;
-};
-	
-/**
- *	Command Manager encapsulates all supported commands and
- *  provides a simple interface to run them
- */
-class CommandManager
-{
-public:
-	CommandManager();
-	// alternative constructor for unit tests
-	CommandManager( const char *testCommandLine ); 
-	~CommandManager();
+    struct CommandManagerDebugMessageCallback : public DebugMessageCallback
+    {
+        virtual bool handleMessage(DebugMessagePriority messagePriority,
+                                   const char*          pCategory,
+                                   DebugMessageSource   messageSource,
+                                   const LogMetaData&   metaData,
+                                   const char*          pFormat,
+                                   va_list              argPtr);
+        bool         verbose_;
+    };
 
-	bool	run();
+    /**
+     *	Command Manager encapsulates all supported commands and
+     *  provides a simple interface to run them
+     */
+    class CommandManager
+    {
+      public:
+        CommandManager();
+        // alternative constructor for unit tests
+        CommandManager(const char* testCommandLine);
+        ~CommandManager();
 
-private:
-	void	showAllSupportedCommands() const;
-	void	displayHelp( const char* helpCmd ) const;
-	void	init();
-	void	fini();
+        bool run();
 
-	Command*	selectCommand() const;
+      private:
+        void showAllSupportedCommands() const;
+        void displayHelp(const char* helpCmd) const;
+        void init();
+        void fini();
 
-	typedef BW::vector<Command*> ProcessorCommands;
+        Command* selectCommand() const;
 
-	ProcessorCommands	commands_;
-	CommandLine			applicationCommandLine_;
-	CommandManagerDebugMessageCallback debugCallback_;
-	bool	verbose_;
-};
+        typedef BW::vector<Command*> ProcessorCommands;
+
+        ProcessorCommands                  commands_;
+        CommandLine                        applicationCommandLine_;
+        CommandManagerDebugMessageCallback debugCallback_;
+        bool                               verbose_;
+    };
 
 } // namespace OfflineProcessor
 BW_END_NAMESPACE
-

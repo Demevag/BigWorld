@@ -5,7 +5,6 @@
 #include "cstdmf/value_or_null.hpp"
 #include "db_storage/billing_system.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -14,36 +13,36 @@ BW_BEGIN_NAMESPACE
  */
 class GetEntityKeyForAccountTask : public MySqlBackgroundTask
 {
-public:
-	GetEntityKeyForAccountTask( const BW::string & logOnName,
-		const BW::string & password,
-		bool shouldAcceptUnknownUsers,
-		bool shouldRememberUnknownUsers,
-		EntityTypeID entityTypeIDForUnknownUsers,
-		IGetEntityKeyForAccountHandler & handler );
+  public:
+    GetEntityKeyForAccountTask(const BW::string& logOnName,
+                               const BW::string& password,
+                               bool              shouldAcceptUnknownUsers,
+                               bool              shouldRememberUnknownUsers,
+                               EntityTypeID      entityTypeIDForUnknownUsers,
+                               IGetEntityKeyForAccountHandler& handler);
 
-	// MySqlBackgroundTask overrides
-	virtual void performBackgroundTask( MySql & conn );
-	virtual void performMainThreadTask( bool succeeded );
+    // MySqlBackgroundTask overrides
+    virtual void performBackgroundTask(MySql& conn);
+    virtual void performMainThreadTask(bool succeeded);
 
-protected:
-	void onException( const DatabaseException & e );
+  protected:
+    void onException(const DatabaseException& e);
 
-private:
-	// Input values
-	BW::string			logOnName_;
-	BW::string			password_;
+  private:
+    // Input values
+    BW::string logOnName_;
+    BW::string password_;
 
-	// Output values
-	LogOnStatus			loginStatus_;
-	ValueOrNull< EntityTypeID >		entityTypeID_;
-	EntityTypeID					defaultEntityTypeID_;
-	ValueOrNull< DatabaseID >		databaseID_;
+    // Output values
+    LogOnStatus               loginStatus_;
+    ValueOrNull<EntityTypeID> entityTypeID_;
+    EntityTypeID              defaultEntityTypeID_;
+    ValueOrNull<DatabaseID>   databaseID_;
 
-	bool shouldAcceptUnknownUsers_;
-	bool shouldRememberUnknownUsers_;
+    bool shouldAcceptUnknownUsers_;
+    bool shouldRememberUnknownUsers_;
 
-	IGetEntityKeyForAccountHandler & handler_;
+    IGetEntityKeyForAccountHandler& handler_;
 };
 
 BW_END_NAMESPACE

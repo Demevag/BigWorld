@@ -10,36 +10,37 @@
 BW_BEGIN_NAMESPACE
 
 class Tool;
-typedef SmartPointer<Tool>	ToolPtr;
-namespace Moo
-{
-	class DrawContext;
+typedef SmartPointer<Tool> ToolPtr;
+namespace Moo {
+    class DrawContext;
 }
 
 class Gizmo : public ReferenceCount
 {
-public:
-	const static int ALWAYS_ENABLED = -1;
+  public:
+    const static int ALWAYS_ENABLED = -1;
 
-	virtual ~Gizmo(){};
-	virtual void drawZBufferedStuff( bool force )	{};
-	virtual bool draw( Moo::DrawContext& drawContext, bool force ) = 0;
-	virtual bool intersects( const Vector3& origin, const Vector3& direction,
-													float& t, bool force ) = 0;
-	virtual void click( const Vector3& origin, const Vector3& direction ){};
-	virtual void rollOver( const Vector3& origin, const Vector3& direction ){};
-	virtual void setVisualOffsetMatrixProxy( MatrixProxyPtr matrix ){};
-protected:
-	virtual Matrix objectTransform() const = 0;
-	virtual Matrix gizmoTransform() const;
-	Matrix getCoordModifier() const;
-	virtual Matrix objectCoord() const;
-	virtual void pushTool( ToolPtr pTool );
+    virtual ~Gizmo(){};
+    virtual void drawZBufferedStuff(bool force){};
+    virtual bool draw(Moo::DrawContext& drawContext, bool force) = 0;
+    virtual bool intersects(const Vector3& origin,
+                            const Vector3& direction,
+                            float&         t,
+                            bool           force)                          = 0;
+    virtual void click(const Vector3& origin, const Vector3& direction){};
+    virtual void rollOver(const Vector3& origin, const Vector3& direction){};
+    virtual void setVisualOffsetMatrixProxy(MatrixProxyPtr matrix){};
+
+  protected:
+    virtual Matrix objectTransform() const = 0;
+    virtual Matrix gizmoTransform() const;
+    Matrix         getCoordModifier() const;
+    virtual Matrix objectCoord() const;
+    virtual void   pushTool(ToolPtr pTool);
 };
 
-typedef SmartPointer< Gizmo > GizmoPtr;
-typedef BW::vector< GizmoPtr > GizmoVector;
-
+typedef SmartPointer<Gizmo>  GizmoPtr;
+typedef BW::vector<GizmoPtr> GizmoVector;
 
 /**
  *	This class implements a named set of gizmos. Used by the GizmoManager
@@ -47,20 +48,19 @@ typedef BW::vector< GizmoPtr > GizmoVector;
  */
 class GizmoSet : public ReferenceCount
 {
-public:
-	GizmoSet();
+  public:
+    GizmoSet();
 
-	void clear();
-	void add( GizmoPtr gizmo );
+    void clear();
+    void add(GizmoPtr gizmo);
 
-	const GizmoVector& vector();
+    const GizmoVector& vector();
 
-private:
-	GizmoVector gizmos_;
+  private:
+    GizmoVector gizmos_;
 };
 
-typedef SmartPointer< GizmoSet > GizmoSetPtr;
-
+typedef SmartPointer<GizmoSet> GizmoSetPtr;
 
 /**
  *	This class manages a dynamic set of gizmos, and
@@ -76,41 +76,42 @@ typedef SmartPointer< GizmoSet > GizmoSetPtr;
  */
 class GizmoManager
 {
-	typedef GizmoManager This;
-public:
-	~GizmoManager();
+    typedef GizmoManager This;
 
-	static GizmoManager & instance();
+  public:
+    ~GizmoManager();
 
-	void	draw( Moo::DrawContext& drawContext );
-	bool	update( const Vector3& worldRay );
-	bool	click();
-	bool	rollOver();
+    static GizmoManager& instance();
 
-	void	addGizmo( GizmoPtr pGizmo );
-	void	removeGizmo( GizmoPtr pGizmo );
-	void	removeAllGizmo();
+    void draw(Moo::DrawContext& drawContext);
+    bool update(const Vector3& worldRay);
+    bool click();
+    bool rollOver();
 
-	void		forceGizmoSet( GizmoSetPtr gizmoSet );
-	GizmoSetPtr	forceGizmoSet();
+    void addGizmo(GizmoPtr pGizmo);
+    void removeGizmo(GizmoPtr pGizmo);
+    void removeAllGizmo();
 
-	const Vector3& getLastCameraPosition();
+    void        forceGizmoSet(GizmoSetPtr gizmoSet);
+    GizmoSetPtr forceGizmoSet();
 
-	PY_MODULE_STATIC_METHOD_DECLARE( py_gizmoUpdate )
-	PY_MODULE_STATIC_METHOD_DECLARE( py_gizmoClick )
+    const Vector3& getLastCameraPosition();
 
-private:
-	GizmoVector	gizmos_;
+    PY_MODULE_STATIC_METHOD_DECLARE(py_gizmoUpdate)
+    PY_MODULE_STATIC_METHOD_DECLARE(py_gizmoClick)
 
-	Vector3		lastWorldRay_;
-	Vector3		lastWorldOrigin_;
-	GizmoPtr	intersectedGizmo_;
+  private:
+    GizmoVector gizmos_;
 
-	GizmoSetPtr forcedGizmoSet_;
+    Vector3  lastWorldRay_;
+    Vector3  lastWorldOrigin_;
+    GizmoPtr intersectedGizmo_;
 
-	GizmoManager();
-	GizmoManager( const GizmoManager& );
-	GizmoManager& operator=( const GizmoManager& );
+    GizmoSetPtr forcedGizmoSet_;
+
+    GizmoManager();
+    GizmoManager(const GizmoManager&);
+    GizmoManager& operator=(const GizmoManager&);
 };
 
 BW_END_NAMESPACE

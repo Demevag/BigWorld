@@ -11,57 +11,79 @@ BW_BEGIN_NAMESPACE
 class ChunkItemGroup;
 typedef SmartPointer<ChunkItemGroup> ChunkItemGroupPtr;
 
-
 class WEPythonAdapter : public PythonAdapter
 {
-public:
-	WEPythonAdapter();
-	~WEPythonAdapter();
+  public:
+    WEPythonAdapter();
+    ~WEPythonAdapter();
 
-	void onPageControlTabSelect( const BW::string& fnPrefix, const BW::string& theTabName );
+    void onPageControlTabSelect(const BW::string& fnPrefix,
+                                const BW::string& theTabName);
 
-	void onBrowserObjectItemSelect( const BW::string& tabName, 
-							const BW::string& itemName, bool dblClick );
-	void onBrowserObjectItemAdd();
+    void onBrowserObjectItemSelect(const BW::string& tabName,
+                                   const BW::string& itemName,
+                                   bool              dblClick);
+    void onBrowserObjectItemAdd();
 
-	void onBrowserTextureItemSelect( const BW::string& itemName );
-	
-	void setTerrainPaintMode(int mode);
+    void onBrowserTextureItemSelect(const BW::string& itemName);
 
-    void setTerrainPaintBrush( TerrainPaintBrushPtr paintBrush );
+    void setTerrainPaintMode(int mode);
 
-	void onLimitSliderAdjust( const BW::string& name, float pos, float min, float max );
-	void limitSliderUpdate( LimitSlider* control, const BW::string& controlName );
+    void setTerrainPaintBrush(TerrainPaintBrushPtr paintBrush);
 
-	void selectFilterChange( const BW::string& value );
-	void selectFilterUpdate( CComboBox* comboList );
+    void onLimitSliderAdjust(const BW::string& name,
+                             float             pos,
+                             float             min,
+                             float             max);
+    void limitSliderUpdate(LimitSlider* control, const BW::string& controlName);
 
-	void coordFilterChange( const BW::string& value );
-	void coordFilterUpdate( CComboBox* comboList );
+    void selectFilterChange(const BW::string& value);
+    void selectFilterUpdate(CComboBox* comboList);
 
-	void projectLock(const BW::string& commitMessage);
-	void commitChanges(const BW::string& commitMessage, bool keepLocks);
-	void discardChanges(const BW::string& commitMessage, bool keepLocks);
-	void updateSpace();
-	void calculateMap();
-	void exportMap();
-	bool createSpaceLevelImage( const BW::string& path, int imgSize, int ChunkSizeX, int ChunkSizeY, float pixelsPerMetre, int topLeftGribPosX,  int topLeftGribPosY, int blockSize );
-	bool createSpaceSingleMap( const BW::string& path, int imgSize, int ChunkSizeX, int ChunkSizeY, int outputWidth, int outputHeight );
+    void coordFilterChange(const BW::string& value);
+    void coordFilterUpdate(CComboBox* comboList);
 
-	bool canSavePrefab();
-	void saveSelectionPrefab( BW::string fileName );
+    void projectLock(const BW::string& commitMessage);
+    void commitChanges(const BW::string& commitMessage, bool keepLocks);
+    void discardChanges(const BW::string& commitMessage, bool keepLocks);
+    void updateSpace();
+    void calculateMap();
+    void exportMap();
+    bool createSpaceLevelImage(const BW::string& path,
+                               int               imgSize,
+                               int               ChunkSizeX,
+                               int               ChunkSizeY,
+                               float             pixelsPerMetre,
+                               int               topLeftGribPosX,
+                               int               topLeftGribPosY,
+                               int               blockSize);
+    bool createSpaceSingleMap(const BW::string& path,
+                              int               imgSize,
+                              int               ChunkSizeX,
+                              int               ChunkSizeY,
+                              int               outputWidth,
+                              int               outputHeight);
 
-	void expandSpace( const BW::string& spacePath, const BW::string& blankCDataFilePath, int westCnt, int eastCnt, int northCnt, int southCnt, bool chunkWithTerrain );
+    bool canSavePrefab();
+    void saveSelectionPrefab(BW::string fileName);
 
-	void deleteChunkItems( ChunkItemGroupPtr group );
-	PyObjectPtr addChunkItem( const BW::string &resourceID );
-	void setSelection( ChunkItemGroupPtr group );
+    void expandSpace(const BW::string& spacePath,
+                     const BW::string& blankCDataFilePath,
+                     int               westCnt,
+                     int               eastCnt,
+                     int               northCnt,
+                     int               southCnt,
+                     bool              chunkWithTerrain);
 
-	void selectAll();
+    void        deleteChunkItems(ChunkItemGroupPtr group);
+    PyObjectPtr addChunkItem(const BW::string& resourceID);
+    void        setSelection(ChunkItemGroupPtr group);
 
-private:
-	void fillFilterKeys( CComboBox* comboList );
-	void fillCoordFilterKeys( CComboBox* comboList );
+    void selectAll();
+
+  private:
+    void fillFilterKeys(CComboBox* comboList);
+    void fillCoordFilterKeys(CComboBox* comboList);
 };
 
 BW_END_NAMESPACE

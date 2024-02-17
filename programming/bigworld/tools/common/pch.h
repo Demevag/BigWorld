@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 #include <iostream.h>
-#include <ShellAPI.hpp>	// Pascal unit
+#include <ShellAPI.hpp> // Pascal unit
 #include <dir.h>
 #include <time.h>
 #include <process.h>
@@ -24,5 +24,4 @@
 #include "scene_node_manipulator.h"
 #include "undo.h"*/
 
-
-#endif // INCLUDE_COMMON_PCH_H 
+#endif // INCLUDE_COMMON_PCH_H

@@ -10,38 +10,36 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class LogCommonMLDB
 {
-public:
-	virtual ~LogCommonMLDB() {}
+  public:
+    virtual ~LogCommonMLDB() {}
 
-	BW::string getHostByAddr( MessageLogger::IPAddress ipAddress );
-	const char * getComponentNameByAppTypeID(
-		MessageLogger::AppTypeID appTypeID ) const;
-	const char * getCategoryNameByID(
-		MessageLogger::CategoryID categoryID ) const;
+    BW::string  getHostByAddr(MessageLogger::IPAddress ipAddress);
+    const char* getComponentNameByAppTypeID(
+      MessageLogger::AppTypeID appTypeID) const;
+    const char* getCategoryNameByID(MessageLogger::CategoryID categoryID) const;
 
-protected:
-	bool initRootLogPath( const char *rootPath );
-	bool initCommonFiles( const char *mode );
-	bool initUserLogs( const char *mode );
+  protected:
+    bool initRootLogPath(const char* rootPath);
+    bool initCommonFiles(const char* mode);
+    bool initUserLogs(const char* mode);
 
-	virtual bool onUserLogInit( uint16 uid, const BW::string &username ) = 0;
+    virtual bool onUserLogInit(uint16 uid, const BW::string& username) = 0;
 
-	BW::string rootLogPath_;
+    BW::string rootLogPath_;
 
-	UnaryIntegerFile version_;
+    UnaryIntegerFile version_;
 
-	LogComponentNamesMLDB componentNames_;
+    LogComponentNamesMLDB componentNames_;
 
-	HostnamesMLDB hostnames_;
+    HostnamesMLDB hostnames_;
 
-	FormatStringsMLDB formatStrings_;
+    FormatStringsMLDB formatStrings_;
 
-	CategoriesMLDB categories_;
+    CategoriesMLDB categories_;
 };
 
 BW_END_NAMESPACE

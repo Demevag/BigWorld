@@ -17,50 +17,49 @@ bool EntityMemberStats::s_limitForBaseApp_;
 
 WatcherPtr EntityMemberStats::pWatcher()
 {
-	static WatcherPtr watchMe = NULL;
+    static WatcherPtr watchMe = NULL;
 
-	if (!watchMe)
-	{
-		watchMe = new DirectoryWatcher();
-		EntityMemberStats * pNull = NULL;
-		pNull->sentToOwnClient_.addWatchers( watchMe, "sentToOwnClient" );
-		if (!s_limitForBaseApp_)
-		{
-			pNull->sentToOtherClients_.addWatchers( watchMe, "sentToOtherClients" );
-			pNull->addedToHistoryQueue_.addWatchers( watchMe, "addedToHistoryQueue" );
-		}
+    if (!watchMe) {
+        watchMe                  = new DirectoryWatcher();
+        EntityMemberStats* pNull = NULL;
+        pNull->sentToOwnClient_.addWatchers(watchMe, "sentToOwnClient");
+        if (!s_limitForBaseApp_) {
+            pNull->sentToOtherClients_.addWatchers(watchMe,
+                                                   "sentToOtherClients");
+            pNull->addedToHistoryQueue_.addWatchers(watchMe,
+                                                    "addedToHistoryQueue");
+        }
 
-		pNull->sentToGhosts_.addWatchers( watchMe,
-				s_limitForBaseApp_ ? "sentToCell" : "sentToGhosts" );
+        pNull->sentToGhosts_.addWatchers(
+          watchMe, s_limitForBaseApp_ ? "sentToCell" : "sentToGhosts");
 
-		pNull->sentToBase_.addWatchers( watchMe, "sentToBase" );
-		pNull->received_.addWatchers( watchMe, "received" );
-		pNull->oversized_.addWatchers( watchMe, "oversized" );
-	}
-	return watchMe;
+        pNull->sentToBase_.addWatchers(watchMe, "sentToBase");
+        pNull->received_.addWatchers(watchMe, "received");
+        pNull->oversized_.addWatchers(watchMe, "oversized");
+    }
+    return watchMe;
 }
 
-EntityMemberStats::Stat::SubStat::Container * EntityMemberStats::Stat::s_pContainer;
+EntityMemberStats::Stat::SubStat::Container*
+  EntityMemberStats::Stat::s_pContainer;
 
-void EntityMemberStats::Stat::addWatchers( WatcherPtr watchMe, BW::string name )
+void EntityMemberStats::Stat::addWatchers(WatcherPtr watchMe, BW::string name)
 {
-	StatWatcherCreator::addWatchers( watchMe, 
-		(name + BW::string( "Messages" )).c_str(), messages_ );
-	StatWatcherCreator::addWatchers( watchMe, 
-		(name + BW::string( "Bytes" ) ).c_str(), bytes_ );
+    StatWatcherCreator::addWatchers(
+      watchMe, (name + BW::string("Messages")).c_str(), messages_);
+    StatWatcherCreator::addWatchers(
+      watchMe, (name + BW::string("Bytes")).c_str(), bytes_);
 }
 
-void EntityMemberStats::Stat::tickAll( double deltaTime )
+void EntityMemberStats::Stat::tickAll(double deltaTime)
 {
-	SubStat::Container::iterator iter = s_pContainer->begin();
+    SubStat::Container::iterator iter = s_pContainer->begin();
 
-	while (iter != s_pContainer->end())
-	{
-		(*iter)->tick( deltaTime );
-		++iter;
-	}
+    while (iter != s_pContainer->end()) {
+        (*iter)->tick(deltaTime);
+        ++iter;
+    }
 }
-
 
 /**
  *	This method ticks a fraction of the statistics. It is useful for spreading
@@ -70,18 +69,18 @@ void EntityMemberStats::Stat::tickAll( double deltaTime )
  *	@param total The total number of portions.
  *	@param deltaTime The time since this portion was last ticked.
  */
-void EntityMemberStats::Stat::tickSome( size_t index, size_t total,
-		double deltaTime )
+void EntityMemberStats::Stat::tickSome(size_t index,
+                                       size_t total,
+                                       double deltaTime)
 {
-	size_t size = s_pContainer ? s_pContainer->size() : 0;
+    size_t size = s_pContainer ? s_pContainer->size() : 0;
 
-	size_t start = index * size / total;
-	size_t end = (index + 1) * size / total;
+    size_t start = index * size / total;
+    size_t end   = (index + 1) * size / total;
 
-	for (size_t i = start; i < end; ++i)
-	{
-		(*s_pContainer)[ i ]->tick( deltaTime );
-	}
+    for (size_t i = start; i < end; ++i) {
+        (*s_pContainer)[i]->tick(deltaTime);
+    }
 }
 
 #endif // ENABLE_WATCHERS

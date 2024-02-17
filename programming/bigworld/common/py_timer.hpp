@@ -16,18 +16,19 @@ class PyTimer;
  */
 class PyTimerHandler : public TimerHandler
 {
-public:
-	PyTimerHandler( PyTimer & pyTimer ) :
-		pyTimer_( pyTimer ) {}
+  public:
+    PyTimerHandler(PyTimer& pyTimer)
+      : pyTimer_(pyTimer)
+    {
+    }
 
-private:
-	// Overrides
-	virtual void handleTimeout( TimerHandle handle, void * pUser );
-	virtual void onRelease( TimerHandle handle, void  * pUser );
+  private:
+    // Overrides
+    virtual void handleTimeout(TimerHandle handle, void* pUser);
+    virtual void onRelease(TimerHandle handle, void* pUser);
 
-	PyTimer & pyTimer_;
+    PyTimer& pyTimer_;
 };
-
 
 /**
  *	This class is used by PyObjects to add, remove and invoke expired
@@ -35,34 +36,34 @@ private:
  */
 class PyTimer
 {
-public:
-	PyTimer( PyObject * pyObject, int ownerID );
-	~PyTimer();
+  public:
+    PyTimer(PyObject* pyObject, int ownerID);
+    ~PyTimer();
 
-	PyObject * addTimer( PyObject * args );
-	PyObject * delTimer( PyObject * args );
+    PyObject* addTimer(PyObject* args);
+    PyObject* delTimer(PyObject* args);
 
-	void handleTimeout( TimerHandle handle, void * pUser );
-	void onTimerReleased( TimerHandle timerHandle );
+    void handleTimeout(TimerHandle handle, void* pUser);
+    void onTimerReleased(TimerHandle timerHandle);
 
-	void backUpTimers( BinaryOStream & stream );
-	void restoreTimers( BinaryIStream & stream );
+    void backUpTimers(BinaryOStream& stream);
+    void restoreTimers(BinaryIStream& stream);
 
-	void cancelAll();
+    void cancelAll();
 
-	void ownerID( int ownerID ) { ownerID_ = ownerID; }
+    void ownerID(int ownerID) { ownerID_ = ownerID; }
 
-private:
-	friend class PyTimerHandler;
-	PyTimerHandler timerHandler_;
+  private:
+    friend class PyTimerHandler;
+    PyTimerHandler timerHandler_;
 
-	int ownerID_;
+    int ownerID_;
 
-	bool isCancelled_;
+    bool isCancelled_;
 
-	PyObject * pyObject_;
+    PyObject* pyObject_;
 
-	ScriptTimers * pTimers_;
+    ScriptTimers* pTimers_;
 };
 
 BW_END_NAMESPACE

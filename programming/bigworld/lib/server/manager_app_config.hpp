@@ -3,7 +3,6 @@
 
 #include "server_app_config.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,16 +10,16 @@ BW_BEGIN_NAMESPACE
  */
 class ManagerAppConfig : public ServerAppConfig
 {
-public:
-	static ServerAppOption< bool > shutDownServerOnBadState;
-	static ServerAppOption< bool > shutDownServerOnBaseAppDeath;
-	static ServerAppOption< bool > shutDownServerOnCellAppDeath;
-	static ServerAppOption< bool > shutDownServerOnServiceAppDeath;
-	static ServerAppOption< bool > shutDownServerOnServiceDeath;
-	static ServerAppOption< bool > isBadStateWithNoServiceApps;
+  public:
+    static ServerAppOption<bool> shutDownServerOnBadState;
+    static ServerAppOption<bool> shutDownServerOnBaseAppDeath;
+    static ServerAppOption<bool> shutDownServerOnCellAppDeath;
+    static ServerAppOption<bool> shutDownServerOnServiceAppDeath;
+    static ServerAppOption<bool> shutDownServerOnServiceDeath;
+    static ServerAppOption<bool> isBadStateWithNoServiceApps;
 
-protected:
-	// static bool postInit() { return ServerAppConfig::postInit(); }
+  protected:
+    // static bool postInit() { return ServerAppConfig::postInit(); }
 };
 
 BW_END_NAMESPACE

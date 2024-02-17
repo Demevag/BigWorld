@@ -3,29 +3,27 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Terrain
-{
+namespace Terrain {
     class TerrainCollisionCallback;
     class TerrainHeightMap2;
     typedef SmartPointer<TerrainHeightMap2> TerrainHeightMap2Ptr;
 }
 
-namespace Terrain
-{
+namespace Terrain {
     /**
-     *	This class implements an aliased heightmap that allows sampling of a 
+     *	This class implements an aliased heightmap that allows sampling of a
      *  lower resolution of a parent TerrainHeightMap2.
      */
-    class AliasedHeightMap 
+    class AliasedHeightMap
     {
-    public:
+      public:
         AliasedHeightMap(uint32 level, TerrainHeightMap2Ptr pParent);
 
-        float height( uint32 x, uint32 z ) const;
+        float height(uint32 x, uint32 z) const;
 
-    private:
-        uint32                  level_;
-	    TerrainHeightMap2Ptr	pParent_;        
+      private:
+        uint32               level_;
+        TerrainHeightMap2Ptr pParent_;
     };
 
     typedef SmartPointer<AliasedHeightMap> AliasedHeightMapPtr;

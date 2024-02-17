@@ -5,7 +5,6 @@
 
 #include "cstdmf/timestamp.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -15,39 +14,39 @@ BW_BEGIN_NAMESPACE
  */
 class SluggishProgressReporter
 {
-public:
-	/**
-	 *	Constructor.
-	 */
-	SluggishProgressReporter( DBAppStatusReporter & reporter,
-			float reportInterval = 0.5 ) : // Half a second
-		reporter_( reporter ),
-		reportInterval_( uint64( reportInterval * stampsPerSecondD() ) ),
-		lastReportTime_( timestamp() )
-	{}
+  public:
+    /**
+     *	Constructor.
+     */
+    SluggishProgressReporter(DBAppStatusReporter& reporter,
+                             float                reportInterval = 0.5)
+      : // Half a second
+      reporter_(reporter)
+      , reportInterval_(uint64(reportInterval * stampsPerSecondD()))
+      , lastReportTime_(timestamp())
+    {
+    }
 
-	void reportProgress()
-	{
-		uint64 now = timestamp();
-		if ((now - lastReportTime_) > reportInterval_)
-		{
-			this->reportProgressNow();
-			lastReportTime_ = now;
-		}
-	}
+    void reportProgress()
+    {
+        uint64 now = timestamp();
+        if ((now - lastReportTime_) > reportInterval_) {
+            this->reportProgressNow();
+            lastReportTime_ = now;
+        }
+    }
 
-	// Should be overridden by derived class
-	virtual void reportProgressNow() = 0;
+    // Should be overridden by derived class
+    virtual void reportProgressNow() = 0;
 
-protected:
-	DBAppStatusReporter & reporter()
-		{ return reporter_; }
+  protected:
+    DBAppStatusReporter& reporter() { return reporter_; }
 
-private:
-	DBAppStatusReporter & reporter_;
+  private:
+    DBAppStatusReporter& reporter_;
 
-	uint64	reportInterval_;
-	uint64	lastReportTime_;
+    uint64 reportInterval_;
+    uint64 lastReportTime_;
 };
 
 BW_END_NAMESPACE

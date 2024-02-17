@@ -9,12 +9,10 @@
 #include "resmgr/datasection.hpp"
 #include "cstdmf/init_singleton.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class FontMetrics;
-typedef SmartPointer<FontMetrics>	FontMetricsPtr;
-
+typedef SmartPointer<FontMetrics> FontMetricsPtr;
 
 /**
  *	This class manages font resources.
@@ -28,84 +26,88 @@ typedef SmartPointer<FontMetrics>	FontMetricsPtr;
  */
 class FontManager : public Singleton<FontManager>
 {
-public:
-	FontManager();
-	virtual ~FontManager();
+  public:
+    FontManager();
+    virtual ~FontManager();
 
-	FontPtr			get( const BW::string& resourceName, bool cached = false );
-	CachedFontPtr	getCachedFont( const BW::string& resourceName );
-	const BW::string& findFontName( const Font& font );
-	void			setUVDivisor( const Font& font );
+    FontPtr           get(const BW::string& resourceName, bool cached = false);
+    CachedFontPtr     getCachedFont(const BW::string& resourceName);
+    const BW::string& findFontName(const Font& font);
+    void              setUVDivisor(const Font& font);
 
-	Moo::EffectMaterialPtr material() const	{ return material_; }
-	void			prepareMaterial( Font& font, uint32 colour, bool pixelSnap, D3DXHANDLE technique );
-	bool			begin( Font& font, D3DXHANDLE technique = NULL, bool pixelSnap = true );
-	void			end();
-	void			recreateAll();
+    Moo::EffectMaterialPtr material() const { return material_; }
+    void                   prepareMaterial(Font&      font,
+                                           uint32     colour,
+                                           bool       pixelSnap,
+                                           D3DXHANDLE technique);
+    bool begin(Font& font, D3DXHANDLE technique = NULL, bool pixelSnap = true);
+    void end();
+    void recreateAll();
 
-private:
+  private:
+    bool doInit();
+    bool doFini();
 
-	bool doInit();
-	bool doFini();
+    bool       createFont(DataSectionPtr pSection);
+    BW::string checkFontGenerated(DataSectionPtr fontDataSection);
 
-	bool			createFont( DataSectionPtr pSection );
-	BW::string		checkFontGenerated( DataSectionPtr fontDataSection );
+    class FontMapSetter : public Moo::EffectConstantValue
+    {
+      public:
+        FontMapSetter();
+        bool operator()(ID3DXEffect* pEffect, D3DXHANDLE constantHandle);
+        void pTexture(Moo::BaseTexturePtr p) { pTexture_ = p; }
 
-	class FontMapSetter : public Moo::EffectConstantValue
-	{
-	public:
-		FontMapSetter();
-		bool operator()(ID3DXEffect* pEffect, D3DXHANDLE constantHandle);
-		void pTexture( Moo::BaseTexturePtr p )	{ pTexture_ = p; }
-	private:
-		Moo::BaseTexturePtr pTexture_;
-	};
+      private:
+        Moo::BaseTexturePtr pTexture_;
+    };
 
-	class UVDivisorSetter : public Moo::EffectConstantValue
-	{
-	public:
-		UVDivisorSetter();
-		bool operator()(ID3DXEffect* pEffect, D3DXHANDLE constantHandle);
-		void value( float f )	{ value_ = f; }
-	private:
-		float	value_;
-	};
+    class UVDivisorSetter : public Moo::EffectConstantValue
+    {
+      public:
+        UVDivisorSetter();
+        bool operator()(ID3DXEffect* pEffect, D3DXHANDLE constantHandle);
+        void value(float f) { value_ = f; }
 
-	class FontColourSetter : public Moo::EffectConstantValue
-	{
-	public:
-		FontColourSetter();
-		bool operator()(ID3DXEffect* pEffect, D3DXHANDLE constantHandle);
-		void value( uint32 v );
+      private:
+        float value_;
+    };
 
-	private:
-		Vector4	value_;
-	};
+    class FontColourSetter : public Moo::EffectConstantValue
+    {
+      public:
+        FontColourSetter();
+        bool operator()(ID3DXEffect* pEffect, D3DXHANDLE constantHandle);
+        void value(uint32 v);
 
-	class FontPixelSnapSetter : public Moo::EffectConstantValue
-	{
-	public:
-		FontPixelSnapSetter();
-		bool operator()(ID3DXEffect* pEffect, D3DXHANDLE constantHandle);
-		void value( bool v ) { value_ = v; }
+      private:
+        Vector4 value_;
+    };
 
-	private:
-		bool value_;
-	};
+    class FontPixelSnapSetter : public Moo::EffectConstantValue
+    {
+      public:
+        FontPixelSnapSetter();
+        bool operator()(ID3DXEffect* pEffect, D3DXHANDLE constantHandle);
+        void value(bool v) { value_ = v; }
 
-	typedef StringHashMap<FontMetricsPtr> StringFontMetricsMap;
-	StringFontMetricsMap	fonts_;
-	SimpleMutex				mutex_;
-	Moo::EffectMaterialPtr	material_;
-	D3DXHANDLE				blendedTechnique_;
-	SmartPointer< FontMapSetter >		fontMapSetter_;
-	SmartPointer< UVDivisorSetter >		uvDivisorSetter_;
-	SmartPointer< FontColourSetter >	fontColourSetter_;
-	SmartPointer< FontPixelSnapSetter> 	pixelSnapSetter_;
-	Matrix					origView_, origProj_;
-	ULONG_PTR				gdiPlusToken_;
+      private:
+        bool value_;
+    };
+
+    typedef StringHashMap<FontMetricsPtr> StringFontMetricsMap;
+    StringFontMetricsMap                  fonts_;
+    SimpleMutex                           mutex_;
+    Moo::EffectMaterialPtr                material_;
+    D3DXHANDLE                            blendedTechnique_;
+    SmartPointer<FontMapSetter>           fontMapSetter_;
+    SmartPointer<UVDivisorSetter>         uvDivisorSetter_;
+    SmartPointer<FontColourSetter>        fontColourSetter_;
+    SmartPointer<FontPixelSnapSetter>     pixelSnapSetter_;
+    Matrix                                origView_, origProj_;
+    ULONG_PTR                             gdiPlusToken_;
 };
 
 BW_END_NAMESPACE
 
-#endif	//FONT_MANAGER_HPP
+#endif // FONT_MANAGER_HPP

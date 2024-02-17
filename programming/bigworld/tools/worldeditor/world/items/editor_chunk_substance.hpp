@@ -12,53 +12,54 @@
 
 BW_BEGIN_NAMESPACE
 
-class   Chunk;
-class   Model;
+class Chunk;
+class Model;
 typedef SmartPointer<Model> ModelPtr;
 
 /**
  *	This template class gives substance in the editor to items that
  *	are ordinarily without it.
  */
-template <class CI> class EditorChunkSubstance : public CI
+template <class CI>
+class EditorChunkSubstance : public CI
 {
-public:
-	EditorChunkSubstance();
-	~EditorChunkSubstance();
+  public:
+    EditorChunkSubstance();
+    ~EditorChunkSubstance();
 
-	bool load( DataSectionPtr pSection );
-	bool load( DataSectionPtr pSection, Chunk * pChunk );
+    bool load(DataSectionPtr pSection);
+    bool load(DataSectionPtr pSection, Chunk* pChunk);
 
-	void updateReprModel();
+    void updateReprModel();
 
-	virtual void toss( Chunk * pChunk );
+    virtual void toss(Chunk* pChunk);
 
-	virtual bool edShouldDraw();
+    virtual bool edShouldDraw();
 
-	virtual void updateAnimations();
-	virtual void draw( Moo::DrawContext& drawContext );
+    virtual void updateAnimations();
+    virtual void draw(Moo::DrawContext& drawContext);
 
-	virtual void edBounds( BoundingBox& bbRet ) const;
+    virtual void edBounds(BoundingBox& bbRet) const;
 
-	virtual const char * sectName() const = 0;
-	virtual bool isDrawFlagVisible() const = 0;
-	virtual const char * drawFlag() const = 0;
-	virtual ModelPtr reprModel() const = 0;
+    virtual const char* sectName() const          = 0;
+    virtual bool        isDrawFlagVisible() const = 0;
+    virtual const char* drawFlag() const          = 0;
+    virtual ModelPtr    reprModel() const         = 0;
 
-	virtual bool autoAddToSceneBrowser() const { return true; }
+    virtual bool autoAddToSceneBrowser() const { return true; }
 
-	virtual void addAsObstacle();	// usually don't override
+    virtual void addAsObstacle(); // usually don't override
 
-	virtual DataSectionPtr pOwnSect()	{ return pOwnSect_; }
-	virtual const DataSectionPtr pOwnSect()	const { return pOwnSect_; }
+    virtual DataSectionPtr       pOwnSect() { return pOwnSect_; }
+    virtual const DataSectionPtr pOwnSect() const { return pOwnSect_; }
 
-	bool reload();
+    bool reload();
 
-	virtual bool addYBounds( BoundingBox& bb ) const;
+    virtual bool addYBounds(BoundingBox& bb) const;
 
-protected:
-	DataSectionPtr	pOwnSect_;
-	SuperModel*		pReprSuperModel_;
+  protected:
+    DataSectionPtr pOwnSect_;
+    SuperModel*    pReprSuperModel_;
 };
 
 BW_END_NAMESPACE

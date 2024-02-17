@@ -11,17 +11,20 @@ class NodeClampPSA;
 
 class PsaNodeClampProperties : public PsaProperties
 {
-public:
+  public:
     DECLARE_DYNCREATE(PsaNodeClampProperties)
 
-    enum { IDD = IDD_PSA_NODECLAMP_PROPERTIES };
+    enum
+    {
+        IDD = IDD_PSA_NODECLAMP_PROPERTIES
+    };
 
     //
     // Constructor.
     //
     PsaNodeClampProperties();
 
-	NodeClampPSA *	action();
+    NodeClampPSA* action();
 
     //
     // Set the parameters.
@@ -30,12 +33,12 @@ public:
     //
     /*virtual*/ void SetParameters(SetOperation /*task*/);
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	DECLARE_MESSAGE_MAP()
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
+    DECLARE_MESSAGE_MAP()
 
-private:
-	controls::EditNumeric	delay_;
+  private:
+    controls::EditNumeric delay_;
 };
 
 BW_END_NAMESPACE

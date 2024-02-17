@@ -5,14 +5,12 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
-	class ProcessSocketStatsHelper;
+namespace Mercury {
+    class ProcessSocketStatsHelper;
 }
 
 class InitialConnectionFilter;
-typedef SmartPointer< InitialConnectionFilter > InitialConnectionFilterPtr;
-
+typedef SmartPointer<InitialConnectionFilter> InitialConnectionFilterPtr;
 
 /**
  *  Default PacketFilter for external interface of a BaseApp
@@ -20,34 +18,32 @@ typedef SmartPointer< InitialConnectionFilter > InitialConnectionFilterPtr;
  */
 class InitialConnectionFilter : public Mercury::PacketFilter
 {
-public:
-	// Factory method
-	static InitialConnectionFilterPtr create();
+  public:
+    // Factory method
+    static InitialConnectionFilterPtr create();
 
-	// Overrides from PacketFilter 
-	virtual Mercury::Reason recv( Mercury::PacketReceiver & receiver,
-						const Mercury::Address & addr, Mercury::Packet * pPacket,
-						Mercury::ProcessSocketStatsHelper * pStatsHelper );
+    // Overrides from PacketFilter
+    virtual Mercury::Reason recv(
+      Mercury::PacketReceiver&           receiver,
+      const Mercury::Address&            addr,
+      Mercury::Packet*                   pPacket,
+      Mercury::ProcessSocketStatsHelper* pStatsHelper);
 
-	virtual int maxSpareSize();
+    virtual int maxSpareSize();
 
+  protected:
+    InitialConnectionFilter() {}
+    // Only deletable via SmartPointer
+    virtual ~InitialConnectionFilter();
 
-protected:
+  private:
+    // Internal methods
 
-	InitialConnectionFilter() {}
-	// Only deletable via SmartPointer
-	virtual ~InitialConnectionFilter();
-
-private:
-	// Internal methods
-
-	// Prevent copy-construct or copy-assignment
-	InitialConnectionFilter( const InitialConnectionFilter & other );
-	InitialConnectionFilter & operator=( const InitialConnectionFilter & other );
-
+    // Prevent copy-construct or copy-assignment
+    InitialConnectionFilter(const InitialConnectionFilter& other);
+    InitialConnectionFilter& operator=(const InitialConnectionFilter& other);
 };
 
 BW_END_NAMESPACE
-
 
 #endif // INITIAL_CONNECTION_FILTER_HPP

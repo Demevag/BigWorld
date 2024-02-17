@@ -11,50 +11,49 @@ BW_BEGIN_NAMESPACE
 
 class BarrierPSA;
 
-
 // PsaBarrierProperties form view
 
 class PsaBarrierProperties : public PsaProperties
 {
-	DECLARE_DYNCREATE(PsaBarrierProperties)
+    DECLARE_DYNCREATE(PsaBarrierProperties)
 
-public:
-	PsaBarrierProperties(); 
-	virtual ~PsaBarrierProperties();
+  public:
+    PsaBarrierProperties();
+    virtual ~PsaBarrierProperties();
 
-	enum { IDD = IDD_PSA_BARRIER_PROPERTIES };
+    enum
+    {
+        IDD = IDD_PSA_BARRIER_PROPERTIES
+    };
 #ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+    virtual void AssertValid() const;
+    virtual void Dump(CDumpContext& dc) const;
 #endif
 
-	virtual void OnInitialUpdate();
+    virtual void OnInitialUpdate();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 
+  public:
+    BarrierPSA* action() { return static_cast<BarrierPSA*>(&*action_); }
+    void        SetParameters(SetOperation task);
 
-public:
-	BarrierPSA *	action() { return static_cast<BarrierPSA *>(&*action_); }
-	void			SetParameters(SetOperation task);
+    controls::CComboBoxAutoComplete barrierShape_;
+    controls::CComboBoxAutoComplete barrierReaction_;
 
-	controls::CComboBoxAutoComplete barrierShape_;
-	controls::CComboBoxAutoComplete barrierReaction_;
+    //	VectorGeneratorCustodian<BarrierPSA> barrierGeneratorCustodian_;
+    afx_msg void OnCbnSelchangePsaBarrierCombo();
 
-//	VectorGeneratorCustodian<BarrierPSA> barrierGeneratorCustodian_;
-	afx_msg void OnCbnSelchangePsaBarrierCombo();
+  private:
+    void setGizmo(BarrierPSA::Shape shapeType);
+    void populate();
 
-private:
-	void setGizmo(BarrierPSA::Shape shapeType);
-	void populate();
-
-	GizmoPtr		gizmo_;
-	bool			populated_;
-	controls::EditNumeric	delay_;
+    GizmoPtr              gizmo_;
+    bool                  populated_;
+    controls::EditNumeric delay_;
 };
 
-
 BW_END_NAMESPACE
-

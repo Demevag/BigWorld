@@ -8,29 +8,28 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class Consolidate
 {
-public:
-	Consolidate( BW::string dbFilename );
-	~Consolidate();
+  public:
+    Consolidate(BW::string dbFilename);
+    ~Consolidate();
 
-	bool transferTo( Mercury::Address & receivingAddress );
+    bool transferTo(Mercury::Address& receivingAddress);
 
-private:
-	bool prepareDBForSend();
-	bool readAndSendDB();
-	bool waitForDeleteCommand();
+  private:
+    bool prepareDBForSend();
+    bool readAndSendDB();
+    bool waitForDeleteCommand();
 
-	void error( BW::string errorStr, BW::string supplementalStr );
+    void error(BW::string errorStr, BW::string supplementalStr);
 
-	// Consolidation data
-	Endpoint endpoint_;
+    // Consolidation data
+    Endpoint endpoint_;
 
-	off_t sqliteSize_;
-	BW::string sqliteFilename_;
+    off_t      sqliteSize_;
+    BW::string sqliteFilename_;
 };
 
 BW_END_NAMESPACE

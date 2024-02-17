@@ -6,10 +6,10 @@
 
 BW_BEGIN_NAMESPACE
 
-EntityExtension *
-	EntityExtensionFactoryBase::getFrom( const BWEntity & entity ) const
+EntityExtension* EntityExtensionFactoryBase::getFrom(
+  const BWEntity& entity) const
 {
-	return entity.extensionInSlot( slot_ );
+    return entity.extensionInSlot(slot_);
 }
 
 BW_END_NAMESPACE

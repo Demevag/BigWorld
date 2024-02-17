@@ -8,53 +8,49 @@
 
 BW_BEGIN_NAMESPACE
 
-	class WorldTriangle;
-	class Vector3;
-	class SweepParams;
-	class CollisionState;
+class WorldTriangle;
+class Vector3;
+class SweepParams;
+class CollisionState;
 
 BW_END_NAMESPACE
 
-namespace BW
-{
+namespace BW {
 
-class ICollisionTypeHandler
-{
-public:
-	virtual ~ICollisionTypeHandler(){}
+    class ICollisionTypeHandler
+    {
+      public:
+        virtual ~ICollisionTypeHandler() {}
 
-	virtual bool doCollide( const SceneObject & object,
-		const Vector3 & source,
-		const Vector3 & extent,
-		const SweepParams& sp,
-		CollisionState & state ) const = 0;
+        virtual bool doCollide(const SceneObject& object,
+                               const Vector3&     source,
+                               const Vector3&     extent,
+                               const SweepParams& sp,
+                               CollisionState&    state) const = 0;
 
-	virtual bool doCollide( const SceneObject & object,
-		const WorldTriangle & source,
-		const Vector3 & extent,
-		const SweepParams& sp,
-		CollisionState & state ) const = 0;
-};
+        virtual bool doCollide(const SceneObject&   object,
+                               const WorldTriangle& source,
+                               const Vector3&       extent,
+                               const SweepParams&   sp,
+                               CollisionState&      state) const = 0;
+    };
 
+    class CollisionOperation
+      : public SceneObjectOperation<ICollisionTypeHandler>
+    {
+      public:
+        bool collide(const SceneObject& object,
+                     const Vector3&     source,
+                     const Vector3&     extent,
+                     const SweepParams& sp,
+                     CollisionState&    state) const;
 
-class CollisionOperation
-	: public SceneObjectOperation<ICollisionTypeHandler>
-{
-public:
-	bool collide( 
-		const SceneObject & object,
-		const Vector3 & source,
-		const Vector3 & extent,
-		const SweepParams& sp,
-		CollisionState & state ) const;
-
-	bool collide( 
-		const SceneObject & object,
-		const WorldTriangle & source,
-		const Vector3 & extent,
-		const SweepParams& sp,
-		CollisionState & state ) const;
-};
+        bool collide(const SceneObject&   object,
+                     const WorldTriangle& source,
+                     const Vector3&       extent,
+                     const SweepParams&   sp,
+                     CollisionState&      state) const;
+    };
 
 } // namespace BW
 

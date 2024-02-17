@@ -1,10 +1,8 @@
 #ifndef CANVAS_APP_HPP
 #define CANVAS_APP_HPP
 
-
 #include "cstdmf/main_loop_task.hpp"
 #include "adaptive_lod_controller.hpp"
-
 
 BW_BEGIN_NAMESPACE
 
@@ -15,43 +13,44 @@ class Distortion;
  */
 class CanvasApp : public MainLoopTask
 {
-public:
-	typedef BW::vector<BW::wstring> StringVector;
+  public:
+    typedef BW::vector<BW::wstring> StringVector;
 
-	CanvasApp();
-	~CanvasApp();
+    CanvasApp();
+    ~CanvasApp();
 
-	virtual bool init();
-	virtual void fini();
-	virtual void tick( float dGameTime, float dRenderTime );
-	virtual void draw();
+    virtual bool init();
+    virtual void fini();
+    virtual void tick(float dGameTime, float dRenderTime);
+    virtual void draw();
 
-	static CanvasApp instance;
+    static CanvasApp instance;
 
-	Distortion* distortion()			{ return distortion_; }	
+    Distortion* distortion() { return distortion_; }
 
-	void updateDistortionBuffer();
+    void updateDistortionBuffer();
 
-	const StringVector pythonConsoleHistory() const;
-	void setPythonConsoleHistory(const StringVector & history);
+    const StringVector pythonConsoleHistory() const;
+    void               setPythonConsoleHistory(const StringVector& history);
 
-private:
-	bool setPythonConsoleHistoryNow(const StringVector & history);	
+  private:
+    bool setPythonConsoleHistoryNow(const StringVector& history);
 
-	AdaptiveLODController	lodController_;
-	float gammaCorrectionOutside_;
-	float gammaCorrectionInside_;
-	float gammaCorrectionSpeed_;
+    AdaptiveLODController lodController_;
+    float                 gammaCorrectionOutside_;
+    float                 gammaCorrectionInside_;
+    float                 gammaCorrectionSpeed_;
 
-	Distortion *			distortion_;
+    Distortion* distortion_;
 
-	float	dGameTime_;
+    float dGameTime_;
 
-	StringVector history_;
-public:
-	uint32 drawSkyCtrl_;
+    StringVector history_;
 
-	void finishFilters();
+  public:
+    uint32 drawSkyCtrl_;
+
+    void finishFilters();
 };
 
 BW_END_NAMESPACE
@@ -59,4 +58,3 @@ BW_END_NAMESPACE
 #endif // CANVAS_APP_HPP
 
 // canvas_app.hpp
-

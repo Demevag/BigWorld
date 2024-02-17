@@ -8,7 +8,7 @@
 
 BW_BEGIN_NAMESPACE
 
-typedef WeakPyPtr< PyFilter > WeakPyFilterPtr;
+typedef WeakPyPtr<PyFilter> WeakPyFilterPtr;
 
 /**
  *	This class forms the base of all filters in the BigWorld client.
@@ -29,19 +29,19 @@ typedef WeakPyPtr< PyFilter > WeakPyFilterPtr;
  */
 class Filter : public MovementFilter
 {
-public:
-	Filter( PyFilter * pOwner );
-	virtual ~Filter();
+  public:
+    Filter(PyFilter* pOwner);
+    virtual ~Filter();
 
-protected:
-	const PyFilter * pOwner() const { return wpOwner_.get(); }
+  protected:
+    const PyFilter* pOwner() const { return wpOwner_.get(); }
 
-private:
-	// Disable copy-constructor and copy-assignment
-	Filter( const Filter & other );
-	Filter & operator=( const Filter & other );
+  private:
+    // Disable copy-constructor and copy-assignment
+    Filter(const Filter& other);
+    Filter& operator=(const Filter& other);
 
-	WeakPyFilterPtr wpOwner_;
+    WeakPyFilterPtr wpOwner_;
 };
 
 BW_END_NAMESPACE

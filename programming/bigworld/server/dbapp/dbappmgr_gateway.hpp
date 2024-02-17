@@ -10,7 +10,6 @@
 #include "server/common.hpp"
 #include "server/manager_app_gateway.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 typedef uint8 SharedDataType;
@@ -23,20 +22,20 @@ class DBApp;
  */
 class DBAppMgrGateway : public ManagerAppGateway
 {
-public:
-	DBAppMgrGateway( Mercury::NetworkInterface & interface );
-	const Mercury::Address & address() const 
-	{
-		return this->ManagerAppGateway::address();
-	}
+  public:
+    DBAppMgrGateway(Mercury::NetworkInterface& interface);
+    const Mercury::Address& address() const
+    {
+        return this->ManagerAppGateway::address();
+    }
 
-	void address( const Mercury::Address & address );
+    void address(const Mercury::Address& address);
 
-	void addDBApp( Mercury::ReplyMessageHandler * pReplyHandler );
-	void notifyServerStartupComplete();
-	void recoverDBApp( DBAppID id );
+    void addDBApp(Mercury::ReplyMessageHandler* pReplyHandler);
+    void notifyServerStartupComplete();
+    void recoverDBApp(DBAppID id);
 
-	void requestControlledShutDown();
+    void requestControlledShutDown();
 };
 
 BW_END_NAMESPACE

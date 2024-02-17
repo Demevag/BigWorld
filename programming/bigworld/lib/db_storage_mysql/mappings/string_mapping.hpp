@@ -3,7 +3,6 @@
 
 #include "string_like_mapping.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,16 +10,18 @@ BW_BEGIN_NAMESPACE
  */
 class StringMapping : public StringLikeMapping
 {
-public:
-	/**
-	 *	Constructor.
-	 */
-	StringMapping( const Namer & namer, const BW::string & propName,
-			ColumnIndexType indexType, uint charLength, 
-			DataSectionPtr pDefaultValue );
+  public:
+    /**
+     *	Constructor.
+     */
+    StringMapping(const Namer&      namer,
+                  const BW::string& propName,
+                  ColumnIndexType   indexType,
+                  uint              charLength,
+                  DataSectionPtr    pDefaultValue);
 
-	virtual bool isBinary() const	{ return true; }
-	virtual enum_field_types getColumnType() const;
+    virtual bool             isBinary() const { return true; }
+    virtual enum_field_types getColumnType() const;
 };
 
 BW_END_NAMESPACE

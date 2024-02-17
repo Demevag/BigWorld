@@ -12,27 +12,33 @@
 
 BW_BEGIN_NAMESPACE
 
-typedef BW::vector< Vector3 > PolygonBase;
+typedef BW::vector<Vector3> PolygonBase;
 
 /**
  *	This class is used to represent a polygon.
  */
-class WorldPolygon : public BW::vector< Vector3 >
+class WorldPolygon : public BW::vector<Vector3>
 {
-public:
-	WorldPolygon() : PolygonBase() {}
-	WorldPolygon( size_t size ) : PolygonBase( size ) {}
+  public:
+    WorldPolygon()
+      : PolygonBase()
+    {
+    }
+    WorldPolygon(size_t size)
+      : PolygonBase(size)
+    {
+    }
 
-	void split( const PlaneEq & planeEq,
-		WorldPolygon & frontPoly,
-		WorldPolygon & backPoly ) const;
+    void split(const PlaneEq& planeEq,
+               WorldPolygon&  frontPoly,
+               WorldPolygon&  backPoly) const;
 
-	bool chop( const PlaneEq & planeEq );
+    bool chop(const PlaneEq& planeEq);
 
-private:
+  private:
 };
 
-typedef BW::vector< WorldPolygon > WPolygonSet;
+typedef BW::vector<WorldPolygon> WPolygonSet;
 
 #ifdef CODE_INLINE
 #include "worldpoly.ipp"

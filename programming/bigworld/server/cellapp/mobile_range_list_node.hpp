@@ -5,7 +5,6 @@
 
 #include "cstdmf/bw_vector.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -14,32 +13,33 @@ BW_BEGIN_NAMESPACE
  */
 class MobileRangeListNode : public RangeListNode
 {
-public:
-	MobileRangeListNode( float x, float z, RangeListFlags wantsFlags,
-		RangeListFlags makesFlags,
-		RangeListOrder order = RANGE_LIST_ORDER_ENTITY );
+  public:
+    MobileRangeListNode(float          x,
+                        float          z,
+                        RangeListFlags wantsFlags,
+                        RangeListFlags makesFlags,
+                        RangeListOrder order = RANGE_LIST_ORDER_ENTITY);
 
-	/// RangeListNode overrides
-	float x() const;
-	float z() const;
+    /// RangeListNode overrides
+    float x() const;
+    float z() const;
 
-	BW::string debugString() const;
-	
-	/// Local methods
-	void setPosition( float newX, float newZ );
-	void remove();
+    BW::string debugString() const;
 
-	void addTrigger( RangeTrigger * pTrigger );
-	void modTrigger( RangeTrigger * pTrigger );
-	void delTrigger( RangeTrigger * pTrigger );
+    /// Local methods
+    void setPosition(float newX, float newZ);
+    void remove();
 
-private:
-	float x_;
-	float z_;
+    void addTrigger(RangeTrigger* pTrigger);
+    void modTrigger(RangeTrigger* pTrigger);
+    void delTrigger(RangeTrigger* pTrigger);
 
-	typedef BW::vector< RangeTrigger * > Triggers;
-	Triggers triggers_;
+  private:
+    float x_;
+    float z_;
 
+    typedef BW::vector<RangeTrigger*> Triggers;
+    Triggers                          triggers_;
 };
 
 BW_END_NAMESPACE

@@ -5,18 +5,16 @@
 #include "entity.hpp"
 #include "cell.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-CellProfiler::CellProfiler() :
-	currSmoothedLoad_( 0 ),
-	currRawLoad_( 0 ),
-	maxRawLoad_( 0 ),
-	accSmoothedLoad_( 0 ),
-	accRawLoad_( 0 )
+CellProfiler::CellProfiler()
+  : currSmoothedLoad_(0)
+  , currRawLoad_(0)
+  , maxRawLoad_(0)
+  , accSmoothedLoad_(0)
+  , accRawLoad_(0)
 {
 }
-
 
 #if ENABLE_WATCHERS
 
@@ -25,23 +23,20 @@ CellProfiler::CellProfiler() :
  */
 WatcherPtr CellProfiler::pWatcher()
 {
-	static DirectoryWatcherPtr pWatcher = NULL;
+    static DirectoryWatcherPtr pWatcher = NULL;
 
-	if (pWatcher == NULL)
-	{
-		pWatcher = new DirectoryWatcher();
+    if (pWatcher == NULL) {
+        pWatcher = new DirectoryWatcher();
 
-		pWatcher->addChild( "load",
-							makeWatcher( &CellProfiler::load ) );
+        pWatcher->addChild("load", makeWatcher(&CellProfiler::load));
 
-		pWatcher->addChild( "rawLoad",
-							makeWatcher( &CellProfiler::rawLoad ) );
+        pWatcher->addChild("rawLoad", makeWatcher(&CellProfiler::rawLoad));
 
-		pWatcher->addChild( "maxRawLoad",
-							makeWatcher( &CellProfiler::maxRawLoad ) );
-	}
+        pWatcher->addChild("maxRawLoad",
+                           makeWatcher(&CellProfiler::maxRawLoad));
+    }
 
-	return pWatcher;
+    return pWatcher;
 }
 
 #endif // ENABLE_WATCHERS

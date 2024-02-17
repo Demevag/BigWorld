@@ -15,38 +15,39 @@ class PsaSinkProperties : public PsaProperties
 {
     DECLARE_DYNCREATE(PsaSinkProperties)
 
-public:
-    enum { IDD = IDD_PSA_SINK_PROPERTIES };
+  public:
+    enum
+    {
+        IDD = IDD_PSA_SINK_PROPERTIES
+    };
 
-    PsaSinkProperties(); 
+    PsaSinkProperties();
 
     /*virtual*/ ~PsaSinkProperties();
 
-    SinkPSA * action();
+    SinkPSA* action();
 
     void SetParameters(SetOperation task);
 
-protected:
+  protected:
     /*virtual*/ void OnInitialUpdate();
 
-    /*virtual*/ void DoDataExchange(CDataExchange* pDX); 
+    /*virtual*/ void DoDataExchange(CDataExchange* pDX);
 
-	afx_msg void OnHScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar );
+    afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 
     DECLARE_MESSAGE_MAP()
 
-private:
-    controls::EditNumeric    maximumAge_;
-    controls::EditNumeric    minimumSpeed_;
-    CSliderCtrl     maximumAgeSlider_;
-    int             prevSliderPos_;
-    CButton			outsideOnly_;
-	controls::EditNumeric	delay_;
+  private:
+    controls::EditNumeric maximumAge_;
+    controls::EditNumeric minimumSpeed_;
+    CSliderCtrl           maximumAgeSlider_;
+    int                   prevSliderPos_;
+    CButton               outsideOnly_;
+    controls::EditNumeric delay_;
 
-public:
-	afx_msg void OnBnClickedPsaSinkOutsideOnly();
+  public:
+    afx_msg void OnBnClickedPsaSinkOutsideOnly();
 };
 
-
 BW_END_NAMESPACE
-

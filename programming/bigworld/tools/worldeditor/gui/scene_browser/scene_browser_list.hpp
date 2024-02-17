@@ -1,7 +1,6 @@
 #ifndef SCENE_BROWSER_LIST_HPP
 #define SCENE_BROWSER_LIST_HPP
 
-
 #include "world/item_info_db.hpp"
 #include "checkbox_helper.hpp"
 #include "list_selection.hpp"
@@ -20,166 +19,187 @@ class SetupItemsBackgroundTask;
  */
 class SceneBrowserList : public CListCtrl
 {
-public:
+  public:
+    // SceneBrowserList class declarations
 
-	// SceneBrowserList class declarations
+    typedef BW::list<ItemInfoDB::ItemPtr> ItemList;
 
-	typedef BW::list< ItemInfoDB::ItemPtr > ItemList;
+    SceneBrowserList();
+    virtual ~SceneBrowserList();
 
+    bool init(DataSectionPtr pDS);
 
-	SceneBrowserList();
-	virtual ~SceneBrowserList();
+    bool tick(bool forceTick = false);
 
-	bool init( DataSectionPtr pDS );
+    void load(DataSectionPtr pDS);
+    void save(DataSectionPtr pDS);
 
-	bool tick( bool forceTick = false );
+    void             groupBy(ListGroup* group);
+    const ListGroup* groupBy() const { return groupStates_.groupBy(); }
+    void             groups(ListGroups& retGroups) const
+    {
+        columnStates_.groups(retGroups);
+    }
 
-	void load( DataSectionPtr pDS );
-	void save( DataSectionPtr pDS );
+    int numItems() const { return numItems_; }
+    int numTris() const { return numTris_; }
+    int numPrimitives() const { return numPrimitives_; }
 
-	void groupBy( ListGroup * group );
-	const ListGroup * groupBy() const { return groupStates_.groupBy(); }
-	void groups( ListGroups & retGroups ) const
-										{ columnStates_.groups( retGroups ); }
+    int numSelectedItems() const { return selHelper_.numItems(); }
+    int numSelectedTris() const { return selHelper_.numSelectedTris(); }
+    int numSelectedPrimitives() const
+    {
+        return selHelper_.numSelectedPrimitives();
+    }
 
-	int numItems() const { return numItems_; }
-	int numTris() const { return numTris_; }
-	int numPrimitives() const { return numPrimitives_; }
+    bool            hasSelectionChanged() const { return selHelper_.changed(); }
+    void            clearSelectionChanged() { selHelper_.resetChanged(); }
+    const ItemList& selection(bool validate = true)
+    {
+        return selHelper_.selection(validate);
+    }
+    void selection(const BW::vector<ChunkItemPtr>& selection);
 
-	int numSelectedItems() const { return selHelper_.numItems(); }
-	int numSelectedTris() const { return selHelper_.numSelectedTris(); }
-	int numSelectedPrimitives() const
-								{ return selHelper_.numSelectedPrimitives(); }
+    void search(const BW::string& newSearch);
 
-	bool hasSelectionChanged() const { return selHelper_.changed(); }
-	void clearSelectionChanged() { selHelper_.resetChanged(); }
-	const ItemList & selection( bool validate = true )
-								{ return selHelper_.selection( validate ); }
-	void selection( const BW::vector< ChunkItemPtr > & selection );
+    bool needsTick() const;
 
-	void search( const BW::string & newSearch );
+    void scrollTo(ChunkItemPtr pItem);
 
-	bool needsTick() const;
+    ListSearchFilters& searchFilters() { return searchFilters_; }
 
-	void scrollTo( ChunkItemPtr pItem );
+    void currentItems(BW::vector<ChunkItemPtr>& chunkItems) const;
 
-	ListSearchFilters & searchFilters() { return searchFilters_; }
+    // MFC overrides
+    virtual void PreSubclassWindow();
 
-	void currentItems( BW::vector< ChunkItemPtr > & chunkItems ) const;
+    virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
 
-	// MFC overrides
-	virtual void PreSubclassWindow();
+  protected:
+    // MFC message handling
+    afx_msg void OnGetDispInfo(NMHDR* pNMHDR, LRESULT* pResult);
+    afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+    afx_msg void OnColumnClick(NMHDR* pNMHDR, LRESULT* pResult);
+    afx_msg void OnOdStateChanged(LPNMHDR pNMHDR, LRESULT* pResult);
+    afx_msg void OnItemChanged(LPNMHDR pNMHDR, LRESULT* pResult);
+    afx_msg void OnHdrColumnReorderEnd(NMHDR* pNMHDR, LRESULT* pResult);
+    afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
+    afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
+    DECLARE_MESSAGE_MAP()
 
-	virtual void DrawItem( LPDRAWITEMSTRUCT lpDrawItemStruct );
+    BOOL    OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
+    BOOL    PreTranslateMessage(MSG* pMsg);
+    INT_PTR OnToolHitTest(CPoint point, TOOLINFO* pTI) const;
 
-protected:
-	// MFC message handling
-	afx_msg void OnGetDispInfo( NMHDR* pNMHDR, LRESULT* pResult );
-	afx_msg void OnMouseMove( UINT nFlags, CPoint point );
-	afx_msg void OnColumnClick( NMHDR* pNMHDR, LRESULT* pResult );
-	afx_msg void OnOdStateChanged( LPNMHDR pNMHDR, LRESULT * pResult );
-	afx_msg void OnItemChanged( LPNMHDR pNMHDR, LRESULT * pResult );
-	afx_msg void OnHdrColumnReorderEnd( NMHDR *pNMHDR, LRESULT * pResult );
-	afx_msg void OnRButtonDown( UINT nFlags, CPoint point );
-	afx_msg void OnLButtonDblClk( UINT nFlags, CPoint point );
-	DECLARE_MESSAGE_MAP()
+  private:
+    // Typedefs
 
-	BOOL OnNotify( WPARAM wParam, LPARAM lParam, LRESULT * pResult );
-	BOOL PreTranslateMessage( MSG * pMsg );
-	INT_PTR OnToolHitTest( CPoint point, TOOLINFO * pTI ) const;
+    typedef BW::vector<ItemInfoDB::ItemPtr> ItemIndex;
+    typedef BW::map<uint64, bool>           ItemTextOverflow;
 
-private:
-	// Typedefs
+    // Member variables
 
-	typedef BW::vector< ItemInfoDB::ItemPtr > ItemIndex;
-	typedef BW::map< uint64, bool > ItemTextOverflow;
+    bool firstTick_; // used to ensure it's updated when first created.
+    ListGroupStates groupStates_;
+    ItemIndex       itemIndex_;
+    int             numItems_;
+    int             numTris_;
+    int             numPrimitives_;
 
+    ListColumnStates columnStates_;
 
-	// Member variables
+    ListSelection selHelper_;
 
-	bool firstTick_;	// used to ensure it's updated when first created.
-	ListGroupStates groupStates_;
-	ItemIndex itemIndex_;
-	int numItems_;
-	int numTris_;
-	int numPrimitives_;
+    bool ignoreSelMessages_;
 
-	ListColumnStates columnStates_;
+    ListColumns columns_; // columns existing in the ItemInfoDB
 
-	ListSelection selHelper_;
+    bool sortColumnAdded_;
 
-	bool ignoreSelMessages_;
+    BW::string search_;
+    bool       searchChanged_;
 
-	ListColumns columns_;				// columns existing in the ItemInfoDB
+    bool needsTick_;
 
-	bool sortColumnAdded_;
+    int lastMouseOverIdx_;
 
-	BW::string search_;
-	bool searchChanged_;
+    SmartPointer<SetupItemsBackgroundTask> pSetupItemsTask_;
 
-	bool needsTick_;
+    CheckboxHelper checkboxHelper_;
 
-	int lastMouseOverIdx_;
+    CImageList headerImgList_;
 
-	SmartPointer<SetupItemsBackgroundTask> pSetupItemsTask_;
+    CToolTipCtrl headerToolTips_;
 
-	CheckboxHelper checkboxHelper_;
+    ItemTextOverflow itemTextOverflow_;
 
-	CImageList headerImgList_;
+    ListSearchFilters searchFilters_;
 
-	CToolTipCtrl headerToolTips_;
+    // Methods
+    bool onLeftMouseDown(const CPoint& mouseDownPoint);
 
-	ItemTextOverflow itemTextOverflow_;
+    void updateColumns(bool reSort);
+    void updateColumnTooltips();
+    void updateSorting(int colIdx, int sorting, bool reSort);
 
-	ListSearchFilters searchFilters_;
+    int ctrlToCol(int ctrlIdx, bool assertOnOutOfBounds = true);
+    int colToCtrl(int colIdx, bool assertOnOutOfBounds = true);
 
+    void setupItems();
 
-	// Methods
-	bool onLeftMouseDown( const CPoint & mouseDownPoint );
+    ItemInfoDB::ItemPtr getItem(int index) const;
 
-	void updateColumns( bool reSort );
-	void updateColumnTooltips();
-	void updateSorting( int colIdx, int sorting, bool reSort );
-	
-	int ctrlToCol( int ctrlIdx, bool assertOnOutOfBounds = true );
-	int colToCtrl( int colIdx, bool assertOnOutOfBounds = true );
-	
-	void setupItems();
+    void drawInfoNumItems(const ItemInfoDB::ItemPtr& pItem,
+                          COLORREF                   textCol,
+                          COLORREF                   bgCol,
+                          CDC&                       dc,
+                          BW::string&                retText);
 
-	ItemInfoDB::ItemPtr getItem( int index ) const;
+    void drawNumItemsPostfix(CDC&                           dc,
+                             const BW::wstring&             mainText,
+                             int                            ctrlCol,
+                             const BW::vector<BW::wstring>& colText,
+                             const BW::string&              numItemsText,
+                             const RECT&                    itemRect);
 
-	void drawInfoNumItems( const ItemInfoDB::ItemPtr & pItem,
-		COLORREF textCol, COLORREF bgCol, CDC & dc, BW::string & retText );
+    void drawExpandCollapseBtn(bool         expanded,
+                               CDC&         dc,
+                               COLORREF     textCol,
+                               COLORREF     bgCol,
+                               const CRect& rect);
 
-	void drawNumItemsPostfix( CDC & dc, const BW::wstring & mainText,
-			int ctrlCol, const BW::vector<BW::wstring> & colText,
-			const BW::string & numItemsText, const RECT & itemRect );
+    void drawItemColours(bool      selected,
+                         int       idx,
+                         COLORREF& textCol,
+                         COLORREF& grayTextCol,
+                         COLORREF& bgCol,
+                         COLORREF& bgHiCol);
 
-	void drawExpandCollapseBtn( bool expanded, CDC & dc,
-						COLORREF textCol, COLORREF bgCol, const CRect & rect );
+    void drawItemColumn(CDC&               dc,
+                        int                ctrlCol,
+                        CRect&             rect,
+                        const BW::wstring& text,
+                        bool               selected,
+                        int                idx);
 
-	void drawItemColours( bool selected, int idx, COLORREF & textCol,
-				COLORREF & grayTextCol, COLORREF & bgCol, COLORREF & bgHiCol );
+    void checkboxRect(int idx, int ctrlIdx, CRect& retRect);
 
-	void drawItemColumn( CDC & dc, int ctrlCol, CRect & rect,
-						const BW::wstring & text, bool selected, int idx );
+    void restoreSelection();
 
-	void checkboxRect( int idx, int ctrlIdx, CRect & retRect );
+    bool handleItemClick(ItemInfoDB::ItemPtr pItem,
+                         int                 idx,
+                         int                 ctrlCol,
+                         const CPoint&       pt);
 
-	void restoreSelection();
+    void finishSetupItems();
 
-	bool handleItemClick( ItemInfoDB::ItemPtr pItem, int idx, int ctrlCol,
-														const CPoint & pt );
+    void finishSetupItemsThread();
 
-	void finishSetupItems();
+    ItemInfoDB::ComparerPtr currentComparer() const;
 
-	void finishSetupItemsThread();
-	
-	ItemInfoDB::ComparerPtr currentComparer() const;
+    void redraw();
 
-	void redraw();
-
-	void updateHeaderColumnWidth( NMHDR *pNMHDR );
+    void updateHeaderColumnWidth(NMHDR* pNMHDR);
 };
 
 BW_END_NAMESPACE

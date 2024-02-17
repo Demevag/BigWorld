@@ -3,7 +3,6 @@
 
 #include "cstdmf/main_loop_task.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,28 +10,27 @@ BW_BEGIN_NAMESPACE
  */
 class ProfilerApp : public MainLoopTask
 {
-public:
-	ProfilerApp();
-	~ProfilerApp();
+  public:
+    ProfilerApp();
+    ~ProfilerApp();
 
-	virtual bool init();
-	virtual void fini();
-	virtual void tick( float dGameTime, float dRenderTime );
-	virtual void draw();
+    virtual bool init();
+    virtual void fini();
+    virtual void tick(float dGameTime, float dRenderTime);
+    virtual void draw();
 
-	void				updateProfiler( float dTime );
-	void				updateCamera( float dTime );
+    void updateProfiler(float dTime);
+    void updateCamera(float dTime);
 
-	static ProfilerApp	instance;
+    static ProfilerApp instance;
 
-private:
+  private:
+    float cpuStall_;
 
-	float				cpuStall_;
+    float filteredDTime_;
+    float filteredFps_;
 
-	float				filteredDTime_;
-	float				filteredFps_;
-
-public:
+  public:
 };
 
 BW_END_NAMESPACE

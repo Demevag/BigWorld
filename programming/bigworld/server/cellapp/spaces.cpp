@@ -4,7 +4,6 @@
 #include "space.hpp"
 #include "cell_app_channel.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -12,36 +11,32 @@ BW_BEGIN_NAMESPACE
  */
 Spaces::~Spaces()
 {
-	INFO_MSG( "Spaces::~Spaces: going to free %zu spaces\n", container_.size() );	
-	
-	Container::iterator iter = container_.begin();
+    INFO_MSG("Spaces::~Spaces: going to free %zu spaces\n", container_.size());
 
-	while (iter != container_.end())
-	{
-		delete iter->second;
-		++iter;
-	}
+    Container::iterator iter = container_.begin();
+
+    while (iter != container_.end()) {
+        delete iter->second;
+        ++iter;
+    }
 }
 
-
-Space * Spaces::find( SpaceID id ) const
+Space* Spaces::find(SpaceID id) const
 {
 
-	Container::const_iterator iter = container_.find( id );
+    Container::const_iterator iter = container_.find(id);
 
-	return (iter != container_.end()) ? iter->second : NULL;
+    return (iter != container_.end()) ? iter->second : NULL;
 }
 
-
-Space * Spaces::create( SpaceID id )
+Space* Spaces::create(SpaceID id)
 {
-	MF_ASSERT( this->find( id ) == NULL );
+    MF_ASSERT(this->find(id) == NULL);
 
-	Space * pSpace = new Space( id );
-	container_[ id ] = pSpace;
-	return pSpace;
+    Space* pSpace  = new Space(id);
+    container_[id] = pSpace;
+    return pSpace;
 }
-
 
 /**
  *	This method prepares all chunks that are in the process of fully loading
@@ -49,16 +44,14 @@ Space * Spaces::create( SpaceID id )
  */
 void Spaces::prepareNewlyLoadedChunksForDelete()
 {
-	Container::iterator iter = container_.begin();
+    Container::iterator iter = container_.begin();
 
-	while (iter != container_.end())
-	{
-		iter->second->prepareNewlyLoadedChunksForDelete();
+    while (iter != container_.end()) {
+        iter->second->prepareNewlyLoadedChunksForDelete();
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 /**
  *	This method checks whether there are any chunks that need to be loaded or
@@ -66,71 +59,64 @@ void Spaces::prepareNewlyLoadedChunksForDelete()
  */
 void Spaces::tickChunks()
 {
-	AUTO_SCOPED_PROFILE( "chunksMainThread" );
-	SCOPED_PROFILE( TRANSIENT_LOAD_PROFILE );
+    AUTO_SCOPED_PROFILE("chunksMainThread");
+    SCOPED_PROFILE(TRANSIENT_LOAD_PROFILE);
 
-	Container::iterator iter = container_.begin();
+    Container::iterator iter = container_.begin();
 
-	while (iter != container_.end())
-	{
-		iter->second->chunkTick();
+    while (iter != container_.end()) {
+        iter->second->chunkTick();
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 /**
  *	This method deletes any spaces that have fully unloaded.
  */
 void Spaces::deleteOldSpaces()
 {
-	Container::iterator iter = container_.begin();
+    Container::iterator iter = container_.begin();
 
-	while (iter != container_.end())
-	{
-		Container::iterator currIter = iter;
-		++iter;
+    while (iter != container_.end()) {
+        Container::iterator currIter = iter;
+        ++iter;
 
-		Space * pSpace = currIter->second;
+        Space* pSpace = currIter->second;
 
-		if (pSpace->pCell() == NULL && pSpace->isFullyUnloaded())
-		{
-			// spaces only erased from container_ here
-			// (no reentrancy to invalidate iterators)
-			container_.erase( currIter );
-			delete pSpace;
-		}
-	}
+        if (pSpace->pCell() == NULL && pSpace->isFullyUnloaded()) {
+            // spaces only erased from container_ here
+            // (no reentrancy to invalidate iterators)
+            container_.erase(currIter);
+            delete pSpace;
+        }
+    }
 }
 
-
-void Spaces::writeRecoveryData( BinaryOStream & stream )
+void Spaces::writeRecoveryData(BinaryOStream& stream)
 {
-	stream << uint32( container_.size() );
+    stream << uint32(container_.size());
 
-	Container::iterator spaceIter = container_.begin();
+    Container::iterator spaceIter = container_.begin();
 
-	while (spaceIter != container_.end())
-	{
-		Space * pSpace = spaceIter->second;
-		pSpace->writeRecoveryData( stream );
+    while (spaceIter != container_.end()) {
+        Space* pSpace = spaceIter->second;
+        pSpace->writeRecoveryData(stream);
 
-		++spaceIter;
-	}
+        ++spaceIter;
+    }
 }
 
 WatcherPtr Spaces::pWatcher()
 {
-	WatcherPtr pWatcher = new MapWatcher<Container>( container_ );
-	pWatcher->addChild( "*", new BaseDereferenceWatcher( Space::pWatcher() ) );
+    WatcherPtr pWatcher = new MapWatcher<Container>(container_);
+    pWatcher->addChild("*", new BaseDereferenceWatcher(Space::pWatcher()));
 
-	return pWatcher;
+    return pWatcher;
 }
 
-
 /**
- *	This method checks whether there are other cells in the spaces that 
+ *	This method checks whether there are other cells in the spaces that
  *	we currently have.
  *
  *	@param remoteChannel	The remote CellAppChannel.
@@ -138,24 +124,20 @@ WatcherPtr Spaces::pWatcher()
  *	@return		true if other cells existing in our spaces on other CellApps,
  *				false otherwise.
  */
-bool Spaces::haveOtherCellsIn( const CellAppChannel & remoteChannel ) const
+bool Spaces::haveOtherCellsIn(const CellAppChannel& remoteChannel) const
 {
-	Container::const_iterator iter = container_.begin();
+    Container::const_iterator iter = container_.begin();
 
-	while (iter != container_.end())
-	{
-		if (iter->second->findCell( remoteChannel.addr() ) != NULL)
-		{
-			return true;
-		}
-		++iter;
-	}
+    while (iter != container_.end()) {
+        if (iter->second->findCell(remoteChannel.addr()) != NULL) {
+            return true;
+        }
+        ++iter;
+    }
 
-	return false;
+    return false;
 }
-
 
 BW_END_NAMESPACE
 
 // spaces.cpp
-

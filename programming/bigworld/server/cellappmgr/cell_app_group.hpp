@@ -8,7 +8,6 @@
 #include "cstdmf/bw_map.hpp"
 #include "cstdmf/bw_set.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class CellApp;
@@ -24,49 +23,52 @@ class Space;
  */
 class CellAppGroup
 {
-public:
-	CellAppGroup() : avgLoad_( -1.f ) {}
-	~CellAppGroup();
+  public:
+    CellAppGroup()
+      : avgLoad_(-1.f)
+    {
+    }
+    ~CellAppGroup();
 
-	void addCell();
-	void checkForUnderloaded( float loadLowerBound );
+    void addCell();
+    void checkForUnderloaded(float loadLowerBound);
 
-	void insert( CellApp * );
-	void join( CellAppGroup * pMainGroup );
+    void insert(CellApp*);
+    void join(CellAppGroup* pMainGroup);
 
-	size_t size() const				{ return set_.size(); }
+    size_t size() const { return set_.size(); }
 
-	float avgLoad( int ifNumRemoved = 0 ) const;
+    float avgLoad(int ifNumRemoved = 0) const;
 
-	BW::string asString() const;
+    BW::string asString() const;
 
-private:
-	bool cancelRetiringCellApp();
+  private:
+    bool cancelRetiringCellApp();
 
-	typedef BW::set< CellApp * > Set;
+    typedef BW::set<CellApp*> Set;
 
-	typedef Set::iterator iterator;
-	typedef Set::const_iterator const_iterator;
+    typedef Set::iterator       iterator;
+    typedef Set::const_iterator const_iterator;
 
-	const_iterator begin() const	{ return set_.begin(); }
-	iterator begin()				{ return set_.begin(); }
+    const_iterator begin() const { return set_.begin(); }
+    iterator       begin() { return set_.begin(); }
 
-	const_iterator end() const		{ return set_.end(); }
-	iterator end()					{ return set_.end(); }
+    const_iterator end() const { return set_.end(); }
+    iterator       end() { return set_.end(); }
 
-	bool isEmpty() const			{ return set_.empty(); }
+    bool isEmpty() const { return set_.empty(); }
 
-	Space * chooseConnectionSpace() const;
-	Space * chooseConnectionSpace( SpaceChooser & chooser ) const;
-	void visitSpaces( SpaceVisitor & visitor ) const;
+    Space* chooseConnectionSpace() const;
+    Space* chooseConnectionSpace(SpaceChooser& chooser) const;
+    void   visitSpaces(SpaceVisitor& visitor) const;
 
-	void updateCellAppsPerIP();
+    void updateCellAppsPerIP();
 
-	typedef BW::map< uint32, int > CellAppsPerIPMap;
-	CellAppsPerIPMap cellAppsPerIP_;
+    typedef BW::map<uint32, int> CellAppsPerIPMap;
+    CellAppsPerIPMap             cellAppsPerIP_;
 
-	float avgLoad_;
-	Set set_;
+    float avgLoad_;
+    Set   set_;
 };
 
 BW_END_NAMESPACE

@@ -17,221 +17,199 @@
 #include "animation_manager.ipp"
 #endif
 
-DECLARE_DEBUG_COMPONENT2( "Moo", 0 )
-
+DECLARE_DEBUG_COMPONENT2("Moo", 0)
 
 BW_BEGIN_NAMESPACE
 
-BW_SINGLETON_STORAGE( Moo::AnimationManager )
+BW_SINGLETON_STORAGE(Moo::AnimationManager)
 
+namespace Moo {
 
-namespace Moo
-{
+    AnimationManager::AnimationManager()
+      : fullHouse_(false)
+    {
+    }
 
-AnimationManager::AnimationManager() :
-	fullHouse_( false )
-{
-}
+    /**
+     *	This method retrieves the given animation resource, tied to the
+     *hierarchy starting from the input rootNode.
+     */
+    AnimationPtr AnimationManager::get(const BW::string& resourceID,
+                                       NodePtr           rootNode)
+    {
+        BW_GUARD;
+        IF_NOT_MF_ASSERT_DEV(rootNode)
+        {
+            return NULL;
+        }
 
+        /*	MEMORYSTATUS preStat;
+            GlobalMemoryStatus( &preStat );*/
 
-/**
- *	This method retrieves the given animation resource, tied to the hierarchy
- *	starting from the input rootNode.
- */
-AnimationPtr AnimationManager::get( const BW::string& resourceID, NodePtr rootNode )
-{
-	BW_GUARD;
-	IF_NOT_MF_ASSERT_DEV( rootNode )
-	{
-		return NULL;
-	}
+        AnimationPtr res;
 
-/*	MEMORYSTATUS preStat;
-	GlobalMemoryStatus( &preStat );*/
+        AnimationPtr found = this->find(resourceID);
+        if (found) {
+            res = new Animation(&*found, rootNode);
+        }
 
-	AnimationPtr res;
+        /*	static SIZE_T animationMem = 0;
+            MEMORYSTATUS postStat;
 
-	AnimationPtr found = this->find( resourceID );
-	if (found)
-	{
-		res = new Animation( &*found, rootNode );
-	}
+            GlobalMemoryStatus( &postStat );
+            animationMem += preStat.dwAvailPhys - postStat.dwAvailPhys;
+            TRACE_MSG( "AnimationManager: Loaded animation '%s' animations used
+           memory: %d\n", resourceID.c_str(), animationMem / 1024 );*/
 
-/*	static SIZE_T animationMem = 0;
-	MEMORYSTATUS postStat;
+        return res;
+    }
 
-	GlobalMemoryStatus( &postStat );
-	animationMem += preStat.dwAvailPhys - postStat.dwAvailPhys;
-	TRACE_MSG( "AnimationManager: Loaded animation '%s' animations used memory: %d\n",
-		resourceID.c_str(), animationMem / 1024 );*/
+    /**
+     *	This method retrieves the given animation resource, tied to the nodes
+     *	recorded in the input catalogue.
+     */
+    AnimationPtr AnimationManager::get(const BW::string& resourceID)
+    {
+        BW_GUARD;
+        /*	MEMORYSTATUS preStat;
+            GlobalMemoryStatus( &preStat );*/
 
-	return res;
-}
+        AnimationPtr res;
 
+        AnimationPtr found = this->find(resourceID);
+        if (found.getObject() != NULL) {
+            res = new Animation(&*found);
+        }
 
-/**
- *	This method retrieves the given animation resource, tied to the nodes
- *	recorded in the input catalogue.
- */
-AnimationPtr AnimationManager::get( const BW::string& resourceID )
-{
-	BW_GUARD;	
-/*	MEMORYSTATUS preStat;
-	GlobalMemoryStatus( &preStat );*/
+        /*	static SIZE_T animationMem = 0;
+            MEMORYSTATUS postStat;
 
-	AnimationPtr res;
+            GlobalMemoryStatus( &postStat );
+            animationMem += preStat.dwAvailPhys - postStat.dwAvailPhys;
+            TRACE_MSG( "AnimationManager: Loaded animation '%s' animations used
+           memory: %d\n", resourceID.c_str(), animationMem / 1024 );*/
 
-	AnimationPtr found = this->find( resourceID );
-	if (found.getObject() != NULL)
-	{
-		res = new Animation( &*found );
-	}
+        return res;
+    }
 
-/*	static SIZE_T animationMem = 0;
-	MEMORYSTATUS postStat;
+    /**
+     *	This method is used for testing purposes to get a blank animation object
+     *	for configuration.
+     *	@pre No animation resource using the specified name already exists in
+     *		the manager.
+     *	@return Pointer to a default-constructed Animation object that has had
+     *		the id @a resourceID set. It will be managed by this object.
+     */
+    AnimationPtr AnimationManager::getEmptyTestAnimation(
+      const BW::string& resourceID)
+    {
+        BW_GUARD;
 
-	GlobalMemoryStatus( &postStat );
-	animationMem += preStat.dwAvailPhys - postStat.dwAvailPhys;
-	TRACE_MSG( "AnimationManager: Loaded animation '%s' animations used memory: %d\n",
-		resourceID.c_str(), animationMem / 1024 );*/
+        AnimationPtr result;
 
-	return res;
-}
+        MF_ASSERT(this->find(resourceID).get() == NULL);
 
+        result = new Animation;
+        result->identifier(resourceID);
+        result->internalIdentifier(resourceID);
 
-/**
- *	This method is used for testing purposes to get a blank animation object
- *	for configuration.
- *	@pre No animation resource using the specified name already exists in
- *		the manager.
- *	@return Pointer to a default-constructed Animation object that has had
- *		the id @a resourceID set. It will be managed by this object.
- */
-AnimationPtr AnimationManager::getEmptyTestAnimation(
-	const BW::string& resourceID )
-{
-	BW_GUARD;
+        animationsLock_.grab();
+        animations_.insert(std::make_pair(resourceID, result.get()));
+        animationsLock_.give();
 
-	AnimationPtr result;
+        MF_ASSERT(this->find(resourceID).get() == result.get());
 
-	MF_ASSERT( this->find( resourceID ).get() == NULL );
+        return result;
+    }
 
-	result = new Animation;
-	result->identifier( resourceID );
-	result->internalIdentifier( resourceID );
-	
-	animationsLock_.grab();
-	animations_.insert( std::make_pair( resourceID, result.get() ) );
-	animationsLock_.give();
+    /**
+     *	This method removes the given animation from our map, if it is present
+     */
+    void AnimationManager::del(Animation* pAnimation)
+    {
+        BW_GUARD;
+        SimpleMutexHolder smh(animationsLock_);
 
-	MF_ASSERT( this->find( resourceID ).get() == result.get() );
+        for (AnimationMap::iterator it = animations_.begin();
+             it != animations_.end();
+             it++) {
+            if (it->second == pAnimation) {
+                animations_.erase(it);
+                break;
+            }
+        }
+    }
 
-	return result;
-}
+    /**
+     *	Set whether or not we have a full house
+     *	(and thus cannot load any new animations)
+     */
+    void AnimationManager::fullHouse(bool noMoreEntries)
+    {
+        fullHouse_ = noMoreEntries;
+    }
 
+    /**
+     *	This private method returns the animation manager's private copy of the
+     *	the input animation resource. The AnimationManager keeps a map of
+     *	animations that it has loaded, and if the input name exists in the
+     *vector, it returns that one; otherwise it loads a new one and returns it
+     *	(after storing it in the vector for next time).
+     */
+    AnimationPtr AnimationManager::find(const BW::string& resourceID)
+    {
+        BW_GUARD;
+        AnimationPtr res;
 
-/**
- *	This method removes the given animation from our map, if it is present
- */
-void AnimationManager::del( Animation * pAnimation )
-{
-	BW_GUARD;
-	SimpleMutexHolder smh( animationsLock_ );
+        {
+            SimpleMutexHolder      smh(animationsLock_);
+            AnimationMap::iterator it = animations_.find(resourceID);
+            if (it != animations_.end()) {
+                MF_ASSERT(it->second->refCount());
+                res = it->second;
+            }
+        }
 
-	for (AnimationMap::iterator it = animations_.begin();
-		it != animations_.end();
-		it++)
-	{
-		if (it->second == pAnimation)
-		{
-			animations_.erase( it );
-			break;
-		}
-	}
-}
+        if (!res) {
+            if (fullHouse_) {
+                CRITICAL_MSG("AnimationManager::getAnimationResource: "
+                             "Loading the animation '%s' into a full house!\n",
+                             resourceID.c_str());
+            }
 
+            res = new Animation;
 
-/**
- *	Set whether or not we have a full house
- *	(and thus cannot load any new animations)
- */
-void AnimationManager::fullHouse( bool noMoreEntries )
-{
-	fullHouse_ = noMoreEntries;
-}
+            if (!res->load(resourceID)) {
+                res = NULL; // will delete by refcount
+            } else {
+                SimpleMutexHolder smh(animationsLock_);
+                animations_.insert(std::make_pair(resourceID, &*res));
+            }
+        }
 
+        return res;
+    }
 
+    BW::string AnimationManager::resourceID(Animation* pAnim)
+    {
+        BW_GUARD;
+        while (pAnim->pMother_.getObject() != NULL) {
+            pAnim = pAnim->pMother_.getObject();
+        }
 
-/**
- *	This private method returns the animation manager's private copy of the
- *	the input animation resource. The AnimationManager keeps a map of
- *	animations that it has loaded, and if the input name exists in the vector,
- *	it returns that one; otherwise it loads a new one and returns it
- *	(after storing it in the vector for next time).
- */
-AnimationPtr AnimationManager::find( const BW::string & resourceID )
-{
-	BW_GUARD;
-	AnimationPtr res;
+        SimpleMutexHolder smh(animationsLock_);
 
-	{
-		SimpleMutexHolder smh( animationsLock_ );
-		AnimationMap::iterator it = animations_.find( resourceID );
-		if (it != animations_.end())
-		{
-			MF_ASSERT( it->second->refCount() );
-			res = it->second;
-		}
-	}
+        AnimationMap::iterator it  = animations_.begin();
+        AnimationMap::iterator end = animations_.end();
 
-	if (!res)
-	{
-		if (fullHouse_)
-		{
-			CRITICAL_MSG( "AnimationManager::getAnimationResource: "
-				"Loading the animation '%s' into a full house!\n",
-				resourceID.c_str() );
-		}
+        while (it != end) {
+            if (it->second == pAnim)
+                return it->first;
+            it++;
+        }
 
-		res = new Animation;
-
-		if (!res->load( resourceID ))
-		{
-			res = NULL;	// will delete by refcount
-		}
-		else
-		{
-			SimpleMutexHolder smh( animationsLock_ );
-			animations_.insert( std::make_pair( resourceID, &*res) );
-		}
-	}
-
-	return res;
-}
-
-BW::string AnimationManager::resourceID( Animation * pAnim )
-{
-	BW_GUARD;
-	while (pAnim->pMother_.getObject() != NULL)
-	{
-		pAnim = pAnim->pMother_.getObject();
-	}
-
-	SimpleMutexHolder smh( animationsLock_ );
-
-	AnimationMap::iterator it = animations_.begin();
-	AnimationMap::iterator end = animations_.end();
-
-	while (it != end)
-	{
-		if (it->second == pAnim)
-			return it->first;
-		it++;
-	}
-
-	return BW::string();
-}
-
+        return BW::string();
+    }
 
 } // namespace Moo
 

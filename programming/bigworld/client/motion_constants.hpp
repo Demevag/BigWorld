@@ -3,7 +3,6 @@
 
 #include "math/angle.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class Physics;
@@ -13,14 +12,14 @@ class Physics;
  */
 struct MotionConstants
 {
-	MotionConstants( const Physics & physics );
+    MotionConstants(const Physics& physics);
 
-	Angle		modelYaw;	// not really a constant
-	Angle		modelPitch;	// nor this...
-	float		modelWidth;
-	float		modelHeight;
-	float		modelDepth;
-	float		scrambleHeight;
+    Angle modelYaw;   // not really a constant
+    Angle modelPitch; // nor this...
+    float modelWidth;
+    float modelHeight;
+    float modelDepth;
+    float scrambleHeight;
 };
 
 BW_END_NAMESPACE

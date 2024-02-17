@@ -16,49 +16,58 @@ BW_BEGIN_NAMESPACE
  */
 class ChunkPlacer
 {
-	typedef ChunkPlacer This;
+    typedef ChunkPlacer This;
 
-public:
-	PY_MODULE_STATIC_METHOD_DECLARE( py_createChunk )
-	PY_MODULE_STATIC_METHOD_DECLARE( py_recreateChunks )
-	PY_MODULE_STATIC_METHOD_DECLARE( py_cloneAndAutoSnap )
-	PY_MODULE_STATIC_METHOD_DECLARE( py_deleteChunk )
-	PY_MODULE_STATIC_METHOD_DECLARE( py_createInsideChunkName )
-	PY_MODULE_STATIC_METHOD_DECLARE( py_chunkDataSection )
-	PY_MODULE_STATIC_METHOD_DECLARE( py_createInsideChunkDataSection )
-	PY_MODULE_STATIC_METHOD_DECLARE( py_cloneChunkDataSection )
-//	PY_MODULE_STATIC_METHOD_DECLARE( py_cloneChunks )
-	PY_MODULE_STATIC_METHOD_DECLARE( py_saveChunkTemplate )
-	PY_MODULE_STATIC_METHOD_DECLARE( py_saveChunkPrefab )
-	PY_MODULE_STATIC_METHOD_DECLARE( py_loadChunkPrefab )
+  public:
+    PY_MODULE_STATIC_METHOD_DECLARE(py_createChunk)
+    PY_MODULE_STATIC_METHOD_DECLARE(py_recreateChunks)
+    PY_MODULE_STATIC_METHOD_DECLARE(py_cloneAndAutoSnap)
+    PY_MODULE_STATIC_METHOD_DECLARE(py_deleteChunk)
+    PY_MODULE_STATIC_METHOD_DECLARE(py_createInsideChunkName)
+    PY_MODULE_STATIC_METHOD_DECLARE(py_chunkDataSection)
+    PY_MODULE_STATIC_METHOD_DECLARE(py_createInsideChunkDataSection)
+    PY_MODULE_STATIC_METHOD_DECLARE(py_cloneChunkDataSection)
+    //	PY_MODULE_STATIC_METHOD_DECLARE( py_cloneChunks )
+    PY_MODULE_STATIC_METHOD_DECLARE(py_saveChunkTemplate)
+    PY_MODULE_STATIC_METHOD_DECLARE(py_saveChunkPrefab)
+    PY_MODULE_STATIC_METHOD_DECLARE(py_loadChunkPrefab)
 
-	static DataSectionPtr utilCreateInsideChunkDataSection( Chunk * pNearbyChunk, BW::string& retNewChunkName );
-	static BW::string utilCreateInsideChunkName( Chunk * pNearbyChunk );
-	static void utilCloneChunkDataSection( Chunk* chunk, DataSectionPtr ds, const BW::string& newChunkName );
-	static void utilCloneChunkDataSection( DataSectionPtr sourceDataSection, DataSectionPtr ds, const BW::string& newChunkName );
-	static Chunk* utilCreateChunk( DataSectionPtr pDS, const BW::string& newChunkName, Matrix* m = NULL );
+    static DataSectionPtr utilCreateInsideChunkDataSection(
+      Chunk*      pNearbyChunk,
+      BW::string& retNewChunkName);
+    static BW::string utilCreateInsideChunkName(Chunk* pNearbyChunk);
+    static void       utilCloneChunkDataSection(Chunk*            chunk,
+                                                DataSectionPtr    ds,
+                                                const BW::string& newChunkName);
+    static void   utilCloneChunkDataSection(DataSectionPtr    sourceDataSection,
+                                            DataSectionPtr    ds,
+                                            const BW::string& newChunkName);
+    static Chunk* utilCreateChunk(DataSectionPtr    pDS,
+                                  const BW::string& newChunkName,
+                                  Matrix*           m = NULL);
 
-	/**
-	 *	Delete the given chunk, and add an undo operation to recreate it
-	 */
-	static bool deleteChunk( Chunk * pChunk );
+    /**
+     *	Delete the given chunk, and add an undo operation to recreate it
+     */
+    static bool deleteChunk(Chunk* pChunk);
 
-	/**
-	 *	Hide/Unhide the given chunk and its contained items.
-	 */
-	static bool chunkHidden( Chunk* pChunk, bool value );
+    /**
+     *	Hide/Unhide the given chunk and its contained items.
+     */
+    static bool chunkHidden(Chunk* pChunk, bool value);
 
-	/**
-	 *	Freeze/Unfreeze the given chunk and its contained items.
-	 */
-	static bool chunkFrozen( Chunk* pChunk, bool value );
+    /**
+     *	Freeze/Unfreeze the given chunk and its contained items.
+     */
+    static bool chunkFrozen(Chunk* pChunk, bool value);
 
-	/**
-	 *	Clone the given chunk, and add an undo operation to delete it
-	 */
-	static ChunkItem * cloneChunk(
-		Chunk * pChunk, const Matrix & newTransform,
-		EditorChunkItemLinkableManager::GuidToGuidMap & linkerCloneGuidMapping );
+    /**
+     *	Clone the given chunk, and add an undo operation to delete it
+     */
+    static ChunkItem* cloneChunk(
+      Chunk*                                         pChunk,
+      const Matrix&                                  newTransform,
+      EditorChunkItemLinkableManager::GuidToGuidMap& linkerCloneGuidMapping);
 };
 
 BW_END_NAMESPACE

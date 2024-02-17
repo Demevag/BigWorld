@@ -15,305 +15,274 @@
 
 #include "cstdmf/bw_vector.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace
-{
+namespace {
 
-// -----------------------------------------------------------------------------
-// Section: ControlledShutDownHandler
-// -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
+    // Section: ControlledShutDownHandler
+    // -----------------------------------------------------------------------------
 
-/**
- *	This class is used to handle shutting down in a controlled way. It writes
- *	the entities that have a database entry (i.e. non-zero databaseID) to the
- *	database. It only writes a few entities to the database at a time so that
- *	the database does not get flooded. It also finalises any active replay file
- *	data writers.
- */
-class ControlledShutDownHandler : public WriteToDBReplyHandler
-{
-public:
-	ControlledShutDownHandler();
-	void init( const Bases & bases,
-			Mercury::ReplyID replyID,
-			const Mercury::Address & srcAddr );
+    /**
+     *	This class is used to handle shutting down in a controlled way. It
+     *writes the entities that have a database entry (i.e. non-zero databaseID)
+     *to the database. It only writes a few entities to the database at a time
+     *so that the database does not get flooded. It also finalises any active
+     *replay file data writers.
+     */
+    class ControlledShutDownHandler : public WriteToDBReplyHandler
+    {
+      public:
+        ControlledShutDownHandler();
+        void init(const Bases&            bases,
+                  Mercury::ReplyID        replyID,
+                  const Mercury::Address& srcAddr);
 
-	virtual ~ControlledShutDownHandler() {};
+        virtual ~ControlledShutDownHandler(){};
 
-	void checkFinished();
+        void checkFinished();
 
-protected:
-	virtual void onInit( const Bases & bases ) = 0;
-	int numOutstanding_;
+      protected:
+        virtual void onInit(const Bases& bases) = 0;
+        int          numOutstanding_;
 
-private:
-	Mercury::ReplyID replyID_;
-	Mercury::Address srcAddr_;
-};
+      private:
+        Mercury::ReplyID replyID_;
+        Mercury::Address srcAddr_;
+    };
 
+    /**
+     *	Constructor.
+     */
+    ControlledShutDownHandler::ControlledShutDownHandler()
+      : numOutstanding_(0)
+      , replyID_(0)
+      , srcAddr_()
+    {
+    }
 
-/**
- *	Constructor.
- */
-ControlledShutDownHandler::ControlledShutDownHandler() :
-	numOutstanding_( 0 ),
-	replyID_( 0 ),
-	srcAddr_()
-{
-}
+    /**
+     *	This method initialises this handler. The real work is done in the
+     *derived classes.
+     */
+    void ControlledShutDownHandler::init(const Bases&            bases,
+                                         Mercury::ReplyID        replyID,
+                                         const Mercury::Address& srcAddr)
+    {
+        replyID_ = replyID;
+        srcAddr_ = srcAddr;
 
+        this->onInit(bases);
 
-/**
- *	This method initialises this handler. The real work is done in the derived
- *	classes.
- */
-void ControlledShutDownHandler::init( const Bases & bases,
-		Mercury::ReplyID replyID,
-		const Mercury::Address & srcAddr )
-{
-	replyID_ = replyID;
-	srcAddr_ = srcAddr;
+        ReplayDataFileWriter::closeAll(NULL, /* shouldFinalise */ true);
 
-	this->onInit( bases );
+        this->checkFinished();
+    }
 
-	ReplayDataFileWriter::closeAll( NULL, /* shouldFinalise */ true );
+    /**
+     *	This method checks whether the shutdown has finished. If it has, this
+     *object is deleted.
+     */
+    void ControlledShutDownHandler::checkFinished()
+    {
+        if (numOutstanding_ != 0) {
+            return;
+        }
 
-	this->checkFinished();
-}
+        BaseApp* pApp = BaseApp::pInstance();
 
+        if (pApp == NULL) {
+            ERROR_MSG(
+              "ControlledShutDownHandler::checkFinished: pApp is NULL\n");
+            return;
+        }
 
-/**
- *	This method checks whether the shutdown has finished. If it has, this object
- *	is deleted.
- */
-void ControlledShutDownHandler::checkFinished()
-{
-	if (numOutstanding_ != 0)
-	{
-		return;
-	}
+        BaseAppMgrGateway& baseAppMgr = pApp->baseAppMgr();
 
-	BaseApp * pApp = BaseApp::pInstance();
+        IF_NOT_MF_ASSERT_DEV(srcAddr_ == baseAppMgr.addr())
+        {
+            return;
+        }
 
-	if (pApp == NULL)
-	{
-		ERROR_MSG( "ControlledShutDownHandler::checkFinished: pApp is NULL\n" );
-		return;
-	}
+        baseAppMgr.bundle().startReply(replyID_);
+        baseAppMgr.send();
 
-	BaseAppMgrGateway & baseAppMgr = pApp->baseAppMgr();
+        pApp->callShutDownCallback(2);
 
-	IF_NOT_MF_ASSERT_DEV( srcAddr_ == baseAppMgr.addr() )
-	{
-		return;
-	}
+        delete this;
+        pApp->shutDown();
+    }
 
-	baseAppMgr.bundle().startReply( replyID_ );
-	baseAppMgr.send();
+    // -----------------------------------------------------------------------------
+    // Section: With secondary db
+    // -----------------------------------------------------------------------------
 
-	pApp->callShutDownCallback( 2 );
+    /**
+     *	This handler is used when there is a secondary database.
+     */
+    class ShutDownHandlerWithSecondaryDB : public ControlledShutDownHandler
+    {
+      public:
+        ShutDownHandlerWithSecondaryDB(SqliteDatabase& secondaryDB)
+          : secondaryDB_(secondaryDB)
+        {
+        }
 
-	delete this;
-	pApp->shutDown();
-}
+      protected:
+        virtual void onWriteToDBComplete(bool /*succeeded*/);
+        virtual void onInit(const Bases& bases);
 
+      private:
+        SqliteDatabase& secondaryDB_;
+    };
 
-// -----------------------------------------------------------------------------
-// Section: With secondary db
-// -----------------------------------------------------------------------------
+    /**
+     *	This method writes all of the entities to the secondary database.
+     */
+    void ShutDownHandlerWithSecondaryDB::onInit(const Bases& bases)
+    {
+        Bases::const_iterator iter = bases.begin();
 
-/**
- *	This handler is used when there is a secondary database.
- */
-class ShutDownHandlerWithSecondaryDB : public ControlledShutDownHandler
-{
-public:
-	ShutDownHandlerWithSecondaryDB( SqliteDatabase & secondaryDB ) :
-		secondaryDB_( secondaryDB )
-	{
-	}
+        while (iter != bases.end()) {
+            Base& currentBase = *iter->second;
 
-protected:
-	virtual void onWriteToDBComplete( bool /*succeeded*/ );
-	virtual void onInit( const Bases & bases );
+            // Increment now as during retirement writeToDB may erase the base
+            ++iter;
 
-private:
-	SqliteDatabase & secondaryDB_;
-};
+            if (currentBase.hasWrittenToDB()) {
+                currentBase.writeToDB(WRITE_BASE_CELL_DATA, this);
+                ++numOutstanding_;
+            }
+        }
 
+        secondaryDB_.commit();
+    }
 
-/**
- *	This method writes all of the entities to the secondary database.
- */
-void ShutDownHandlerWithSecondaryDB::onInit( const Bases & bases )
-{
-	Bases::const_iterator iter = bases.begin();
+    /**
+     *	This method is called when an entity has finished writing itself.
+     */
+    void ShutDownHandlerWithSecondaryDB::onWriteToDBComplete(bool /*succeeded*/)
+    {
+        --numOutstanding_;
+        this->checkFinished();
+    }
 
-	while (iter != bases.end())
-	{
-		Base & currentBase = *iter->second;
+    // -----------------------------------------------------------------------------
+    // Section: Without secondary db
+    // -----------------------------------------------------------------------------
 
-		// Increment now as during retirement writeToDB may erase the base
-		++iter;
+    /**
+     *	This handler is used when there is not a secondary database.
+     */
+    class ShutDownHandlerWithoutSecondaryDB : public ControlledShutDownHandler
+    {
+      protected:
+        virtual void onWriteToDBComplete(bool succeeded);
+        virtual void onInit(const Bases& bases);
 
-		if (currentBase.hasWrittenToDB())
-		{
-			currentBase.writeToDB( WRITE_BASE_CELL_DATA, this );
-			++numOutstanding_;
-		}
-	}
+      private:
+        BW::vector<BasePtr> bases_;
+    };
 
-	secondaryDB_.commit();
-}
+    /**
+     *	This method writes all of the entities to the database. It does a few at
+     *a time.
+     */
+    void ShutDownHandlerWithoutSecondaryDB::onInit(const Bases& bases)
+    {
+        // TODO: This could be made configurable
+        const int             MAX_OUTSTANDING = 5;
+        Bases::const_iterator iter            = bases.begin();
+        int                   leftSize        = bases.size();
 
+        while ((numOutstanding_ < MAX_OUTSTANDING) && (iter != bases.end())) {
+            Base& currentBase = *iter->second;
 
-/**
- *	This method is called when an entity has finished writing itself.
- */
-void ShutDownHandlerWithSecondaryDB::onWriteToDBComplete( bool /*succeeded*/ )
-{
-	--numOutstanding_;
-	this->checkFinished();
-}
+            // Increment now as during retirement writeToDB may erase the base
+            ++iter;
 
+            if (currentBase.hasWrittenToDB()) {
+                if (currentBase.writeToDB(WRITE_BASE_CELL_DATA, this)) {
+                    ++numOutstanding_;
+                }
+            }
 
-// -----------------------------------------------------------------------------
-// Section: Without secondary db
-// -----------------------------------------------------------------------------
+            --leftSize;
+        }
 
-/**
- *	This handler is used when there is not a secondary database.
- */
-class ShutDownHandlerWithoutSecondaryDB : public ControlledShutDownHandler
-{
-protected:
-	virtual void onWriteToDBComplete( bool succeeded );
-	virtual void onInit( const Bases & bases );
+        if (iter != bases.end()) {
+            MF_ASSERT(MAX_OUTSTANDING == numOutstanding_);
+            bases_.resize(leftSize);
 
-private:
-	BW::vector< BasePtr > bases_;
-};
+            for (int i = 0; i < leftSize; ++i) {
+                bases_[i] = iter->second;
+                ++iter;
+            }
 
+            MF_ASSERT(iter == bases.end());
+        }
+    }
 
-/**
- *	This method writes all of the entities to the database. It does a few at a
- *	time.
- */
-void ShutDownHandlerWithoutSecondaryDB::onInit( const Bases & bases )
-{
-	// TODO: This could be made configurable
-	const int MAX_OUTSTANDING = 5;
-	Bases::const_iterator iter = bases.begin();
-	int leftSize = bases.size();
+    /**
+     *	This method is called when an entity has finished writing itself.
+     */
+    void ShutDownHandlerWithoutSecondaryDB::onWriteToDBComplete(bool succeeded)
+    {
+        if (!succeeded) {
+            --numOutstanding_;
+            this->checkFinished();
+            return;
+        }
 
-	while ((numOutstanding_ < MAX_OUTSTANDING) && (iter != bases.end()))
-	{
-		Base & currentBase = *iter->second;
+        // Once an entity has been written to the database, we try to write
+        // another one to take its place.
 
-		// Increment now as during retirement writeToDB may erase the base
-		++iter;
+        bool isOkay = true;
 
-		if (currentBase.hasWrittenToDB())
-		{
-			if (currentBase.writeToDB( WRITE_BASE_CELL_DATA, this ))
-			{
-				++numOutstanding_;
-			}
-		}
+        do {
+            isOkay = true;
 
-		--leftSize;
-	}
+            if (!bases_.empty()) {
+                if (bases_.back()->isDestroyed() ||
+                    !bases_.back()->hasWrittenToDB() ||
+                    !bases_.back()->writeToDB(WRITE_BASE_CELL_DATA, this)) {
+                    isOkay = false;
+                }
 
-	if (iter != bases.end())
-	{
-		MF_ASSERT( MAX_OUTSTANDING == numOutstanding_ );
-		bases_.resize( leftSize );
-
-		for (int i = 0; i < leftSize; ++i)
-		{
-			bases_[i] = iter->second;
-			++iter;
-		}
-
-		MF_ASSERT( iter == bases.end() );
-	}
-}
-
-
-/**
- *	This method is called when an entity has finished writing itself.
- */
-void ShutDownHandlerWithoutSecondaryDB::onWriteToDBComplete( bool succeeded )
-{
-	if (!succeeded)
-	{
-		--numOutstanding_;
-		this->checkFinished();
-		return;
-	}
-	
-	// Once an entity has been written to the database, we try to write
-	// another one to take its place.
-
-	bool isOkay = true;
-
-	do
-	{
-		isOkay = true;
-
-		if (!bases_.empty())
-		{
-			if (bases_.back()->isDestroyed() ||
-				!bases_.back()->hasWrittenToDB() ||
-				!bases_.back()->writeToDB( WRITE_BASE_CELL_DATA, this ))
-			{
-				isOkay = false;
-			}
-
-			bases_.pop_back();
-		}
-		else
-		{
-			--numOutstanding_;
-			this->checkFinished();
-		}
-	}
-	while (!isOkay);
-}
+                bases_.pop_back();
+            } else {
+                --numOutstanding_;
+                this->checkFinished();
+            }
+        } while (!isOkay);
+    }
 
 } // anonymous namespace
-
 
 // -----------------------------------------------------------------------------
 // Section: ShutDownHandlerWithoutSecondaryDB
 // -----------------------------------------------------------------------------
 
-namespace ControlledShutdown
-{
+namespace ControlledShutdown {
 
-void start( SqliteDatabase * pSecondaryDB,
-			const Bases & bases,
-			Bases & localServiceFragments,
-			Mercury::ReplyID replyID,
-			const Mercury::Address & srcAddr )
-{
-	localServiceFragments.discardAll();
+    void start(SqliteDatabase*         pSecondaryDB,
+               const Bases&            bases,
+               Bases&                  localServiceFragments,
+               Mercury::ReplyID        replyID,
+               const Mercury::Address& srcAddr)
+    {
+        localServiceFragments.discardAll();
 
-	// This object deletes itself.
-	ControlledShutDownHandler * pHandler = NULL;
+        // This object deletes itself.
+        ControlledShutDownHandler* pHandler = NULL;
 
-	if (pSecondaryDB)
-	{
-		pHandler = new ShutDownHandlerWithSecondaryDB( *pSecondaryDB );
-	}
-	else
-	{
-		pHandler = new ShutDownHandlerWithoutSecondaryDB();
-	}
-	pHandler->init( bases, replyID, srcAddr );
-}
+        if (pSecondaryDB) {
+            pHandler = new ShutDownHandlerWithSecondaryDB(*pSecondaryDB);
+        } else {
+            pHandler = new ShutDownHandlerWithoutSecondaryDB();
+        }
+        pHandler->init(bases, replyID, srcAddr);
+    }
 
 } // namespace ControlledShutdown
 

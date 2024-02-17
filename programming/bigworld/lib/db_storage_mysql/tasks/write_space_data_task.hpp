@@ -6,7 +6,6 @@
 #include "cstdmf/memory_stream.hpp"
 #include "network/basictypes.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BinaryIStream;
@@ -18,23 +17,21 @@ class MySql;
  */
 class WriteSpaceDataTask : public MySqlBackgroundTask
 {
-public:
-	WriteSpaceDataTask( BinaryIStream & spaceData );
+  public:
+    WriteSpaceDataTask(BinaryIStream& spaceData);
 
+    // MySqlBackgroundTask overrides
+    virtual void performBackgroundTask(MySql& conn);
+    virtual void performMainThreadTask(bool succeeded);
 
-	// MySqlBackgroundTask overrides
-	virtual void performBackgroundTask( MySql & conn );
-	virtual void performMainThreadTask( bool succeeded );
+  protected:
+    virtual void onRetry();
 
-protected:
-	virtual void onRetry();
+  private:
+    uint32 writeSpaceDataStreamToDB(MySql& connection, BinaryIStream& stream);
 
-private:
-	uint32 writeSpaceDataStreamToDB( MySql & connection,
-		BinaryIStream & stream );
-
-	MemoryOStream	data_;
-	uint32			numSpaces_;
+    MemoryOStream data_;
+    uint32        numSpaces_;
 };
 
 BW_END_NAMESPACE

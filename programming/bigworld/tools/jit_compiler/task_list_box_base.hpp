@@ -15,19 +15,19 @@ struct ConversionTask;
 
 class TaskListBoxBase
 {
-public:
-	virtual void addTask(TaskInfoPtr task) = 0;
-	virtual void removeTask(TaskInfoPtr task) = 0;
+  public:
+    virtual void addTask(TaskInfoPtr task)    = 0;
+    virtual void removeTask(TaskInfoPtr task) = 0;
 
-protected:
-	TaskListBoxBase(TaskStore & store, MainMessageLoop & messageLoop);
+  protected:
+    TaskListBoxBase(TaskStore& store, MainMessageLoop& messageLoop);
 
-	void createDetailsDialog(HWND parentWindow, TaskInfoPtr taskInfo);
-	void openTaskApplication(TaskInfoPtr taskInfo);
-	void openTaskFolder(TaskInfoPtr taskInfo);
+    void createDetailsDialog(HWND parentWindow, TaskInfoPtr taskInfo);
+    void openTaskApplication(TaskInfoPtr taskInfo);
+    void openTaskFolder(TaskInfoPtr taskInfo);
 
-	TaskStore & store_;
-	MainMessageLoop & messageLoop_;
+    TaskStore&       store_;
+    MainMessageLoop& messageLoop_;
 };
 
 BW_END_NAMESPACE

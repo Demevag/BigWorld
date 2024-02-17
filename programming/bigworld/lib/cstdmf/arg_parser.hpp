@@ -7,7 +7,6 @@
 
 BW_BEGIN_NAMESPACE
 
-
 /**
  *	This class is an argument parser.
  *
@@ -30,49 +29,49 @@ BW_BEGIN_NAMESPACE
  */
 class ArgParser
 {
-public:
-	ArgParser( const char * name );
-	~ArgParser();
+  public:
+    ArgParser(const char* name);
+    ~ArgParser();
 
-	void add( const char * name, const char * help, bool isOptional = true );
+    void add(const char* name, const char* help, bool isOptional = true);
 
-	bool parse( int argc, char * argv[] );
+    bool parse(int argc, char* argv[]);
 
-	void printUsage();
+    void printUsage();
 
-	BW::string		get( const char * name, const BW::string & defaultValue );
-	unsigned int	get( const char * name, const unsigned int & defaultValue );
-	bool			get( const char * name, const bool & defaultValue );
+    BW::string   get(const char* name, const BW::string& defaultValue);
+    unsigned int get(const char* name, const unsigned int& defaultValue);
+    bool         get(const char* name, const bool& defaultValue);
 
-	bool isPresent( const char * name );
+    bool isPresent(const char* name);
 
-private:
+  private:
+    struct Arg
+    {
+        Arg(const char* n, const char* h, bool o)
+          : name(n)
+          , help(h)
+          , value(NULL)
+          , isOptional(o)
+          , isPresent(false)
+        {
+        }
 
-	struct Arg
-	{
-		Arg( const char * n, const char * h, bool o ) :
-			name( n ),
-			help( h ),
-			value( NULL ),
-			isOptional( o ),
-			isPresent( false )
-		{ }
+        const char* name;
+        const char* help;
+        char*       value;
+        bool        isOptional;
+        bool        isPresent;
+    };
 
-		const char * name;
-		const char * help;
-		char * value;
-		bool isOptional;
-		bool isPresent;
-	};
+    Arg* find(const char* name);
 
-	Arg * find( const char * name );
+    char* value(const char* name);
 
-	char * value( const char * name );
+    typedef StringHashMap<Arg*> ArgMap;
+    ArgMap                      args_;
 
-	typedef StringHashMap< Arg * > ArgMap;
-	ArgMap args_;
-
-	const char * programName_;
+    const char* programName_;
 };
 
 BW_END_NAMESPACE

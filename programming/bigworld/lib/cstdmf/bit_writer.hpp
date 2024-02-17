@@ -14,20 +14,20 @@ BW_BEGIN_NAMESPACE
  */
 class CSTDMF_DLL BitWriter
 {
-public:
-	BitWriter();
+  public:
+    BitWriter();
 
-	void add( int numBits, int bits );
+    void add(int numBits, int bits);
 
-	int		usedBytes() const 		{ return byteCount_ + (bitsLeft_ != 8); }
-	const void * bytes() const		{ return bytes_; }
+    int         usedBytes() const { return byteCount_ + (bitsLeft_ != 8); }
+    const void* bytes() const { return bytes_; }
 
-private:
-	int		byteCount_;
-	int		bitsLeft_;
+  private:
+    int byteCount_;
+    int bitsLeft_;
 
-	// TODO: Remove magic number. Maybe take a BinaryOStream instead.
-	uint8	bytes_[224];
+    // TODO: Remove magic number. Maybe take a BinaryOStream instead.
+    uint8 bytes_[224];
 };
 
 BW_END_NAMESPACE

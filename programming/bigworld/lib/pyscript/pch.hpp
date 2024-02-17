@@ -1,7 +1,7 @@
 #ifndef PYSCRIPT_PCH_HPP
 #define PYSCRIPT_PCH_HPP
 
-#if defined( SCRIPT_PYTHON )
+#if defined(SCRIPT_PYTHON)
 #include "script/first_include.hpp"
 #endif // SCRIPT_PYTHON
 

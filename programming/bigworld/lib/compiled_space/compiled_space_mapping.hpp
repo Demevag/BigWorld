@@ -26,135 +26,129 @@
 #include "static_texture_streaming_scene_provider.hpp"
 
 BW_BEGIN_NAMESPACE
-	
-	class TaskManager;
-	class AssetClient;
+
+class TaskManager;
+class AssetClient;
 
 BW_END_NAMESPACE
 
-namespace BW {
-namespace CompiledSpace {
+namespace BW { namespace CompiledSpace {
 
-class CompiledSpace;
-class ILoader;
+    class CompiledSpace;
+    class ILoader;
 
-class COMPILED_SPACE_API CompiledSpaceMapping
-{
-public:
-	enum State
-	{
-		STATE_UNLOADED,
-		STATE_LOADING,
-		STATE_FAILED_TO_LOAD,
-		STATE_LOADED
-	};
+    class COMPILED_SPACE_API CompiledSpaceMapping
+    {
+      public:
+        enum State
+        {
+            STATE_UNLOADED,
+            STATE_LOADING,
+            STATE_FAILED_TO_LOAD,
+            STATE_LOADED
+        };
 
-public:
-	CompiledSpaceMapping( const BW::string& path,
-		const Matrix& transform,
-		const DataSectionPtr& pSettings,
-		CompiledSpace& space,
-		AssetClient* pAssetClient );
-	virtual ~CompiledSpaceMapping();
+      public:
+        CompiledSpaceMapping(const BW::string&     path,
+                             const Matrix&         transform,
+                             const DataSectionPtr& pSettings,
+                             CompiledSpace&        space,
+                             AssetClient*          pAssetClient);
+        virtual ~CompiledSpaceMapping();
 
-	void addLoader( ILoader* pLoader );
-	void removeLoader( ILoader* pLoader );
+        void addLoader(ILoader* pLoader);
+        void removeLoader(ILoader* pLoader);
 
-	bool loadAsync( TaskManager& taskMgr );
-	void unloadSync();
+        bool loadAsync(TaskManager& taskMgr);
+        void unloadSync();
 
-	State state() const;
+        State state() const;
 
-	float loadStatus() const;
+        float loadStatus() const;
 
-	const AABB& boundingBox() const;
+        const AABB& boundingBox() const;
 
-private:
-	void loadBG();
-	void loadBGFinished();
+      private:
+        void loadBG();
+        void loadBGFinished();
 
-	void ensureSpaceCompiled();
+        void ensureSpaceCompiled();
 
-	void spawnEntities();
-	void removeEntities();
+        void spawnEntities();
+        void removeEntities();
 
-	void spawnUserDataObjects();
-	void removeUserDataObjects();
+        void spawnUserDataObjects();
+        void removeUserDataObjects();
 
-private:
-	BW::string path_;
-	Matrix transform_;
-	DataSectionPtr pSettings_;
+      private:
+        BW::string     path_;
+        Matrix         transform_;
+        DataSectionPtr pSettings_;
 
-	State state_;
-	AssetClient* pAssetClient_;
+        State        state_;
+        AssetClient* pAssetClient_;
 
-	class LoaderTask;
-	friend class LoaderTask;
-	LoaderTask* pTask_;
-	uint32 numFailures_;
+        class LoaderTask;
+        friend class LoaderTask;
+        LoaderTask* pTask_;
+        uint32      numFailures_;
 
-	uint64 loadStartTimestamp_;
+        uint64 loadStartTimestamp_;
 
-	EntityList entities_;
-	EntityList userDataObjects_;
-	
-	BW::vector<IEntityUDOFactory::EntityID> entityInstances_;
-	BW::vector<IEntityUDOFactory::UDOHandle> userDataObjectInstances_;
+        EntityList entities_;
+        EntityList userDataObjects_;
 
-protected:
-	CompiledSpace& space_;
-	BinaryFormat reader_;
-	CompiledSpaceSettings settings_;
-	StringTable stringTable_;
-	AssetList assetList_;
-	StaticGeometry staticGeometry_;
+        BW::vector<IEntityUDOFactory::EntityID>  entityInstances_;
+        BW::vector<IEntityUDOFactory::UDOHandle> userDataObjectInstances_;
 
-private:
-	typedef BW::vector<ILoader*> Loaders;
-	Loaders loaders_;
-};
+      protected:
+        CompiledSpace&        space_;
+        BinaryFormat          reader_;
+        CompiledSpaceSettings settings_;
+        StringTable           stringTable_;
+        AssetList             assetList_;
+        StaticGeometry        staticGeometry_;
 
+      private:
+        typedef BW::vector<ILoader*> Loaders;
+        Loaders                      loaders_;
+    };
 
-class COMPILED_SPACE_API DefaultCompiledSpaceMapping :
-	public CompiledSpaceMapping
-{
-public:
-	DefaultCompiledSpaceMapping( const BW::string& path,
-		const Matrix& transform,
-		const DataSectionPtr& pSettings,
-		CompiledSpace& space,
-		AssetClient* pAssetClient );
-	virtual ~DefaultCompiledSpaceMapping();
+    class COMPILED_SPACE_API DefaultCompiledSpaceMapping
+      : public CompiledSpaceMapping
+    {
+      public:
+        DefaultCompiledSpaceMapping(const BW::string&     path,
+                                    const Matrix&         transform,
+                                    const DataSectionPtr& pSettings,
+                                    CompiledSpace&        space,
+                                    AssetClient*          pAssetClient);
+        virtual ~DefaultCompiledSpaceMapping();
 
-	static CompiledSpaceMapping* create( 
-		const BW::string& path,
-		const Matrix& transform,
-		const DataSectionPtr& pSettings,
-		CompiledSpace& space,
-		AssetClient* pAssetClient );
+        static CompiledSpaceMapping* create(const BW::string&     path,
+                                            const Matrix&         transform,
+                                            const DataSectionPtr& pSettings,
+                                            CompiledSpace&        space,
+                                            AssetClient*          pAssetClient);
 
-protected:
-	StaticSceneProvider staticScene_;
-	StaticSceneProvider vloScene_;
-	Terrain2SceneProvider terrain2_;
-	ParticleSystemLoader particleLoader_;
-	LightSceneProvider lightScene_;
-	StaticTextureStreamingSceneProvider textureStreamingScene_;
+      protected:
+        StaticSceneProvider                 staticScene_;
+        StaticSceneProvider                 vloScene_;
+        Terrain2SceneProvider               terrain2_;
+        ParticleSystemLoader                particleLoader_;
+        LightSceneProvider                  lightScene_;
+        StaticTextureStreamingSceneProvider textureStreamingScene_;
 
-	StaticSceneModelHandler staticModels_;
+        StaticSceneModelHandler staticModels_;
 #if SPEEDTREE_SUPPORT
-	StaticSceneSpeedTreeHandler speedTrees_;
+        StaticSceneSpeedTreeHandler speedTrees_;
 #endif
-	StaticSceneFlareHandler flares_;
-	StaticSceneDecalHandler decals_;
-	StaticSceneWaterHandler water_;
-};
-
-
+        StaticSceneFlareHandler flares_;
+        StaticSceneDecalHandler decals_;
+        StaticSceneWaterHandler water_;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW
-
 
 #endif // COMPILED_SPACE_MAPPING_HPP

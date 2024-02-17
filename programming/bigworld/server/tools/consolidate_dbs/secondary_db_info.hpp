@@ -6,7 +6,6 @@
 #include "cstdmf/bw_string.hpp"
 #include "cstdmf/bw_vector.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -14,24 +13,25 @@ BW_BEGIN_NAMESPACE
  */
 class SecondaryDBInfo
 {
-public:
-	SecondaryDBInfo() : 
-			hostIP( 0 ), 
-			location()
-	{}
+  public:
+    SecondaryDBInfo()
+      : hostIP(0)
+      , location()
+    {
+    }
 
-	SecondaryDBInfo( uint32 ip, const BW::string & path ) :
-		hostIP( ip ),
-		location( path )
-	{}
+    SecondaryDBInfo(uint32 ip, const BW::string& path)
+      : hostIP(ip)
+      , location(path)
+    {
+    }
 
-	uint32		hostIP;
-	BW::string location;
+    uint32     hostIP;
+    BW::string location;
 };
 
-typedef BW::vector< SecondaryDBInfo > SecondaryDBInfos;
+typedef BW::vector<SecondaryDBInfo> SecondaryDBInfos;
 
 BW_END_NAMESPACE
 
 #endif // CONSOLIDATE_DBS_SECONDARY_DB_INFO_HPP
-

@@ -11,26 +11,30 @@ BW_BEGIN_NAMESPACE
  */
 class BlobDataType : public StringDataType
 {
-public:
-	BlobDataType( MetaDataType * pMeta );
+  public:
+    BlobDataType(MetaDataType* pMeta);
 
-protected:
-	virtual bool getDefaultValue( DataSink & output ) const;
+  protected:
+    virtual bool getDefaultValue(DataSink& output) const;
 
-	virtual bool addToSection( DataSource & source, DataSectionPtr pSection )
-			const;
-	virtual bool createFromSection( DataSectionPtr pSection,
-			DataSink & sink ) const;
+    virtual bool addToSection(DataSource&    source,
+                              DataSectionPtr pSection) const;
+    virtual bool createFromSection(DataSectionPtr pSection,
+                                   DataSink&      sink) const;
 
-	virtual bool fromStreamToSection( BinaryIStream & stream,
-			DataSectionPtr pSection, bool isPersistentOnly ) const;
-	virtual bool fromSectionToStream( DataSectionPtr pSection,
-				BinaryOStream & stream, bool isPersistentOnly ) const;
+    virtual bool fromStreamToSection(BinaryIStream& stream,
+                                     DataSectionPtr pSection,
+                                     bool           isPersistentOnly) const;
+    virtual bool fromSectionToStream(DataSectionPtr pSection,
+                                     BinaryOStream& stream,
+                                     bool           isPersistentOnly) const;
 
-	virtual void addToMD5( MD5 & md5 ) const;
+    virtual void addToMD5(MD5& md5) const;
 
-	virtual StreamElementPtr getStreamElement( size_t index,
-		size_t & size, bool & isNone, bool isPersistentOnly ) const;
+    virtual StreamElementPtr getStreamElement(size_t  index,
+                                              size_t& size,
+                                              bool&   isNone,
+                                              bool    isPersistentOnly) const;
 };
 
 BW_END_NAMESPACE

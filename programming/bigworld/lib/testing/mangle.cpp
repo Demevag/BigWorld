@@ -1,11 +1,10 @@
 #include "mangle.hpp"
 #include "cstdmf/debug.hpp"
 
-DECLARE_DEBUG_COMPONENT( 0 );
+DECLARE_DEBUG_COMPONENT(0);
 
-namespace Testing
-{
+namespace Testing {
 
-float g_mangleProb = 0.05;
+    float g_mangleProb = 0.05;
 
 };

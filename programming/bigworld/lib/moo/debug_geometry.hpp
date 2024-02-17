@@ -3,7 +3,6 @@
 #include "custom_mesh.hpp"
 #include "moo/vertex_formats.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -25,30 +24,28 @@ BW_BEGIN_NAMESPACE
  *	all geometry add / delete calls are ignored.  This
  *	allows you to examine a single frame of debug
  *	geometry.
- *	
+ *
  */
 class GeometryDebugMarker
 {
-public:
-	static GeometryDebugMarker& instance()
-	{
-		return s_instance;
-	}
+  public:
+    static GeometryDebugMarker& instance() { return s_instance; }
 
-	void increment();
-	void reset();
-	void draw();
-private:
-	GeometryDebugMarker();
-private:
-	static GeometryDebugMarker s_instance;
-	int	debugMarker_;
-	int drawMark_;
-	BW::vector<int> meshMarks_[2];
+    void increment();
+    void reset();
+    void draw();
+
+  private:
+    GeometryDebugMarker();
+
+  private:
+    static GeometryDebugMarker s_instance;
+    int                        debugMarker_;
+    int                        drawMark_;
+    BW::vector<int>            meshMarks_[2];
 };
 
-
-/** 
+/**
  *	This class allows you to visually
  *	debug geometric operations.
  *
@@ -64,45 +61,47 @@ private:
  */
 class DebugGeometry
 {
-public:
-	static DebugGeometry& instance()
-	{
-		return s_instance;
-	}
+  public:
+    static DebugGeometry& instance() { return s_instance; }
 
-	//Add a triangle
-	void add( const WorldTriangle& wt, uint32 colour );
-	//Add a triangular prism made from one triangle and an extrusion vector
-	void add( const WorldTriangle& wt, const Vector3& extent, uint32 colour );
-	//Add a box made from two triangles and an extrusion vector
-	void add( const WorldTriangle& wt, const WorldTriangle& wt2, const Vector3& extent, uint32 colour );
-	//Add a local-space triangle, and transform the vertices to world space
-	void add( const WorldTriangle& wt, const Matrix& m, uint32 colour );
-	//Add a line
-	void add( const Vector3& v1, const Vector3& v2, uint32 colour );
-	//Add a triangle
-	void add( const Vector3& v1, const Vector3& v2, const Vector3& v3, uint32 colour );
+    // Add a triangle
+    void add(const WorldTriangle& wt, uint32 colour);
+    // Add a triangular prism made from one triangle and an extrusion vector
+    void add(const WorldTriangle& wt, const Vector3& extent, uint32 colour);
+    // Add a box made from two triangles and an extrusion vector
+    void add(const WorldTriangle& wt,
+             const WorldTriangle& wt2,
+             const Vector3&       extent,
+             uint32               colour);
+    // Add a local-space triangle, and transform the vertices to world space
+    void add(const WorldTriangle& wt, const Matrix& m, uint32 colour);
+    // Add a line
+    void add(const Vector3& v1, const Vector3& v2, uint32 colour);
+    // Add a triangle
+    void add(const Vector3& v1,
+             const Vector3& v2,
+             const Vector3& v3,
+             uint32         colour);
 
-	void draw();
-protected:
-	//Draw range : useful in drawing debug tris only within certain debug markers.
-	void drawRange( int from, int to );
+    void draw();
 
-	DebugGeometry( bool readZ = false):
-	readZ_(readZ)
-	{
-	};
+  protected:
+    // Draw range : useful in drawing debug tris only within certain debug
+    // markers.
+    void drawRange(int from, int to);
 
-	void setMaterial();
+    DebugGeometry(bool readZ = false)
+      : readZ_(readZ){};
 
-	CustomMesh<Moo::VertexXYZL> mesh_;
-	bool	readZ_;
-	static DebugGeometry s_instance;
-	friend class GeometryDebugMarker;
+    void setMaterial();
+
+    CustomMesh<Moo::VertexXYZL> mesh_;
+    bool                        readZ_;
+    static DebugGeometry        s_instance;
+    friend class GeometryDebugMarker;
 };
 
-
-/** 
+/**
  *	This class allows you to visually
  *	debug geometric operations.
  *
@@ -120,19 +119,15 @@ protected:
  */
 class DebugGeometryZRead : public DebugGeometry
 {
-public:
-	static DebugGeometryZRead& instance()
-	{
-		return s_instance;
-	}
-private:
-	DebugGeometryZRead():
-		DebugGeometry(true)
-	{
-	};
+  public:
+    static DebugGeometryZRead& instance() { return s_instance; }
 
-	static DebugGeometryZRead s_instance;
-	friend class GeometryDebugMarker;
+  private:
+    DebugGeometryZRead()
+      : DebugGeometry(true){};
+
+    static DebugGeometryZRead s_instance;
+    friend class GeometryDebugMarker;
 };
 
 BW_END_NAMESPACE

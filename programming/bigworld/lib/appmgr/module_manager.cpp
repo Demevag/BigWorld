@@ -5,7 +5,7 @@
 #include "cstdmf/debug.hpp"
 #include "resmgr/bwresource.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Module", 0 );
+DECLARE_DEBUG_COMPONENT2("Module", 0);
 
 #ifndef CODE_INLINE
 #include "module_manager.ipp"
@@ -13,28 +13,22 @@ DECLARE_DEBUG_COMPONENT2( "Module", 0 );
 
 BW_BEGIN_NAMESPACE
 
-namespace
-{
-	ModuleManager *s_instance_ = NULL;
+namespace {
+    ModuleManager* s_instance_ = NULL;
 }
-
 
 /**
  *	Constuctor.
  */
-ModuleManager::ModuleManager()
-{
-}
-
+ModuleManager::ModuleManager() {}
 
 /**
  *	Destructor.
  */
 ModuleManager::~ModuleManager()
 {
-	this->popAll();
+    this->popAll();
 }
-
 
 /**
  *	This method ensures the singular existence of a ModuleManager, and returns
@@ -44,24 +38,21 @@ ModuleManager::~ModuleManager()
  */
 /*static*/ ModuleManager& ModuleManager::instance()
 {
-	SINGLETON_MANAGER_WRAPPER( ModuleManager )
-	if (s_instance_ == NULL)
-	{
-		s_instance_ = new ModuleManager();
-		REGISTER_SINGLETON( ModuleManager )
-	}
-	return *s_instance_;
+    SINGLETON_MANAGER_WRAPPER(ModuleManager)
+    if (s_instance_ == NULL) {
+        s_instance_ = new ModuleManager();
+        REGISTER_SINGLETON(ModuleManager)
+    }
+    return *s_instance_;
 }
-
 
 /**
  *	This method deletes the module manager instance.
  */
 /*static*/ void ModuleManager::fini()
 {
-	bw_safe_delete(s_instance_);
+    bw_safe_delete(s_instance_);
 }
-
 
 /**
  * This method removes all modules left on the module stack.
@@ -69,17 +60,15 @@ ModuleManager::~ModuleManager()
  */
 void ModuleManager::popAll()
 {
-	while ( currentModule() )
-	{
-		//NOTE - don't call our own pop method,
-		//simply because we don't want to resume
-		//any of the modules further down the stack
-		//when they become the next "current module"
-		currentModule()->onStop();
-		modules_.pop();
-	}
+    while (currentModule()) {
+        // NOTE - don't call our own pop method,
+        // simply because we don't want to resume
+        // any of the modules further down the stack
+        // when they become the next "current module"
+        currentModule()->onStop();
+        modules_.pop();
+    }
 }
-
 
 /**
  *	This method pushes a module onto the module stack.
@@ -90,44 +79,36 @@ void ModuleManager::popAll()
  *
  *	@see ModuleManager::push
  */
-bool
-ModuleManager::push( const BW::string& identifier )
+bool ModuleManager::push(const BW::string& identifier)
 {
-	Module* module =this->create( identifier.c_str() );
+    Module* module = this->create(identifier.c_str());
 
-	if ( module )
-	{
-		this->push( module );
-	}
-	else
-	{
-		//strip whitespace and try again
-		BW::string className = "";
-		for ( uint i = 0; i < identifier.size(); i++ )
-		{
-			if ( identifier[i] != 32 )
-				className += identifier[i];
-		}
+    if (module) {
+        this->push(module);
+    } else {
+        // strip whitespace and try again
+        BW::string className = "";
+        for (uint i = 0; i < identifier.size(); i++) {
+            if (identifier[i] != 32)
+                className += identifier[i];
+        }
 
-		module = this->create( className.c_str() );
+        module = this->create(className.c_str());
 
-		if ( module )
-		{
-			this->push( module );
-		}
-	}
+        if (module) {
+            this->push(module);
+        }
+    }
 
-	//coz the creator adds a reference,
-	//and our stack takes a reference, here
-	//we must remove the creation reference.
-	if (module)
-	{
-		module->decRef();
-	}
+    // coz the creator adds a reference,
+    // and our stack takes a reference, here
+    // we must remove the creation reference.
+    if (module) {
+        module->decRef();
+    }
 
-	return (module != NULL);
+    return (module != NULL);
 }
-
 
 /**
  * This method pushes a module onto the module stack.
@@ -137,18 +118,17 @@ ModuleManager::push( const BW::string& identifier )
  *
  * @param module the module that will be the new active module.
  */
-void ModuleManager::push( ModulePtr module )
+void ModuleManager::push(ModulePtr module)
 {
-	if (currentModule())
-		currentModule()->onPause();
+    if (currentModule())
+        currentModule()->onPause();
 
-	MF_ASSERT( module );
+    MF_ASSERT(module);
 
-	modules_.push( module );
+    modules_.push(module);
 
-	module->onStart();
+    module->onStart();
 }
-
 
 /**
  * This method returns the currently active module, or NULL if
@@ -158,12 +138,11 @@ void ModuleManager::push( ModulePtr module )
  */
 ModulePtr ModuleManager::currentModule()
 {
-	if ( modules_.empty() )
-		return NULL;
+    if (modules_.empty())
+        return NULL;
 
-	return modules_.top();
+    return modules_.top();
 }
-
 
 /**
  * This method removes the current module from the module stack.
@@ -173,28 +152,26 @@ ModulePtr ModuleManager::currentModule()
  */
 void ModuleManager::pop()
 {
-	int exitCode;
+    int exitCode;
 
-	ModulePtr current = currentModule();
+    ModulePtr current = currentModule();
 
-	if ( current )
-	{
-		exitCode = current->onStop();
-		modules_.pop();
-	}
+    if (current) {
+        exitCode = current->onStop();
+        modules_.pop();
+    }
 
-	if ( currentModule() )
-		currentModule()->onResume( exitCode );
+    if (currentModule())
+        currentModule()->onResume(exitCode);
 }
-
 
 /**
  *	Output streaming operator for ModuleManager.
  */
 std::ostream& operator<<(std::ostream& o, const ModuleManager& t)
 {
-	o << "ModuleManager\n";
-	return o;
+    o << "ModuleManager\n";
+    return o;
 }
 
 BW_END_NAMESPACE

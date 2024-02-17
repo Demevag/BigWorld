@@ -5,7 +5,6 @@
 
 #include "network/basictypes.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class PyDumbFilter;
@@ -19,37 +18,37 @@ class PyDumbFilter;
  */
 class DumbFilter : public Filter
 {
-public:
-	DumbFilter( PyDumbFilter * pOwner );
-	~DumbFilter() {}
+  public:
+    DumbFilter(PyDumbFilter* pOwner);
+    ~DumbFilter() {}
 
-	// Overrides from MovementFilter
-	void reset( double time );
+    // Overrides from MovementFilter
+    void reset(double time);
 
-	void input(	double time,
-				SpaceID spaceID,
-				EntityID vehicleID,
-				const Position3D & pos,
-				const Vector3 & posError,
-				const Direction3D & dir );
+    void input(double             time,
+               SpaceID            spaceID,
+               EntityID           vehicleID,
+               const Position3D&  pos,
+               const Vector3&     posError,
+               const Direction3D& dir);
 
-	void output( double time, MovementFilterTarget & target );
+    void output(double time, MovementFilterTarget& target);
 
-	bool getLastInput(	double & time,
-						SpaceID & spaceID,
-						EntityID & vehicleID,
-						Position3D & pos,
-						Vector3 & posError,
-						Direction3D & dir ) const;
+    bool getLastInput(double&      time,
+                      SpaceID&     spaceID,
+                      EntityID&    vehicleID,
+                      Position3D&  pos,
+                      Vector3&     posError,
+                      Direction3D& dir) const;
 
-private:
-	// Doxygen comments for all members can be found in the .cpp
-	double		time_;
-	SpaceID		spaceID_;
-	EntityID	vehicleID_;
-	Position3D	pos_;
-	Vector3		posError_;
-	Direction3D	dir_;
+  private:
+    // Doxygen comments for all members can be found in the .cpp
+    double      time_;
+    SpaceID     spaceID_;
+    EntityID    vehicleID_;
+    Position3D  pos_;
+    Vector3     posError_;
+    Direction3D dir_;
 };
 
 BW_END_NAMESPACE

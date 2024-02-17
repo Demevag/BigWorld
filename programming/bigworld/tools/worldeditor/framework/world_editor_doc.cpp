@@ -4,55 +4,44 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace
-{
-	WorldEditorDoc	*s_instance = NULL;
+namespace {
+    WorldEditorDoc* s_instance = NULL;
 }
-
 
 IMPLEMENT_DYNCREATE(WorldEditorDoc, CDocument)
 
 BEGIN_MESSAGE_MAP(WorldEditorDoc, CDocument)
 END_MESSAGE_MAP()
 
-
-
-WorldEditorDoc::WorldEditorDoc()
-{
-}
-
+WorldEditorDoc::WorldEditorDoc() {}
 
 /*static*/ WorldEditorDoc& WorldEditorDoc::instance()
 {
-	return *s_instance;
+    return *s_instance;
 }
-
 
 WorldEditorDoc::~WorldEditorDoc()
 {
-	s_instance = NULL;
+    s_instance = NULL;
 }
-
 
 BOOL WorldEditorDoc::OnNewDocument()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	ASSERT(!s_instance);
-	s_instance = this;
+    ASSERT(!s_instance);
+    s_instance = this;
 
-	if (!CDocument::OnNewDocument())
-		return FALSE;
+    if (!CDocument::OnNewDocument())
+        return FALSE;
 
-	return TRUE;
+    return TRUE;
 }
-
 
 void WorldEditorDoc::OnCloseDocument()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	CDocument::OnCloseDocument();
+    CDocument::OnCloseDocument();
 }
 BW_END_NAMESPACE
-

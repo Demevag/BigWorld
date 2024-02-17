@@ -7,7 +7,6 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -15,19 +14,19 @@ BW_BEGIN_NAMESPACE
  */
 class DBApp : public MachineGuardMessage::ReplyHandler
 {
-public:
-	DBApp( WatcherNub & watcherNub );
+  public:
+    DBApp(WatcherNub& watcherNub);
 
-	bool init();
+    bool init();
 
-	void setStatus( const BW::string & status );
+    void setStatus(const BW::string& status);
 
-	// MachineGuardMessage::ReplyHandler interface
-	bool onProcessStatsMessage( ProcessStatsMessage & psm, uint32 addr );
+    // MachineGuardMessage::ReplyHandler interface
+    bool onProcessStatsMessage(ProcessStatsMessage& psm, uint32 addr);
 
-private:
-	WatcherNub &		watcherNub_;
-	Mercury::Address	addr_;
+  private:
+    WatcherNub&      watcherNub_;
+    Mercury::Address addr_;
 };
 
 BW_END_NAMESPACE

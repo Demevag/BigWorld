@@ -13,12 +13,12 @@
 
 BW_BEGIN_NAMESPACE
 namespace Moo {
-	class LightContainer;
-	typedef SmartPointer< LightContainer > LightContainerPtr;
+    class LightContainer;
+    typedef SmartPointer<LightContainer> LightContainerPtr;
 }
 
 class DataSection;
-typedef SmartPointer< DataSection > DataSectionPtr;
+typedef SmartPointer<DataSection> DataSectionPtr;
 
 class OutsideLighting;
 
@@ -26,51 +26,52 @@ BW_END_NAMESPACE
 
 namespace BW {
 
-class EnviroMinderSceneProvider :
-	public SceneProvider,
-	public ITickSceneProvider,
-	public ILightSceneViewProvider
-{
-public:
-	EnviroMinderSceneProvider( SpaceID id );
-	virtual ~EnviroMinderSceneProvider();
+    class EnviroMinderSceneProvider
+      : public SceneProvider
+      , public ITickSceneProvider
+      , public ILightSceneViewProvider
+    {
+      public:
+        EnviroMinderSceneProvider(SpaceID id);
+        virtual ~EnviroMinderSceneProvider();
 
-	// ITickSceneProvider interfaces ...
-	void tick( float dTime );
-	void updateAnimations( float dTime );
+        // ITickSceneProvider interfaces ...
+        void tick(float dTime);
+        void updateAnimations(float dTime);
 
-	// ILightSceneViewProvider interfaces ...
-	size_t intersect( const ConvexHull & hull,
-		Moo::LightContainer & lightContainer ) const;
+        // ILightSceneViewProvider interfaces ...
+        size_t intersect(const ConvexHull&    hull,
+                         Moo::LightContainer& lightContainer) const;
 
-	size_t intersect( const AABB & bbox,
-		Moo::LightContainer & lightContainer ) const;
+        size_t intersect(const AABB&          bbox,
+                         Moo::LightContainer& lightContainer) const;
 
-	void debugDrawLights() const { }
+        void debugDrawLights() const {}
 
-	const Moo::DirectionalLightPtr & sunLight() const;
-	const Moo::Colour & ambientLight() const;
-	const Moo::LightContainerPtr & lights() const;
+        const Moo::DirectionalLightPtr& sunLight() const;
+        const Moo::Colour&              ambientLight() const;
+        const Moo::LightContainerPtr&   lights() const;
 
-	EnviroMinder & enviroMinder();
+        EnviroMinder& enviroMinder();
 
-	void loadEnvironment( const DataSectionPtr& pSpaceSettings );
-private:
-	// Scene view implementations
-	virtual void * getView(
-		const SceneTypeSystem::RuntimeTypeID & sceneInterfaceTypeID);
+        void loadEnvironment(const DataSectionPtr& pSpaceSettings);
 
-	void updateHeavenlyLighting();
+      private:
+        // Scene view implementations
+        virtual void* getView(
+          const SceneTypeSystem::RuntimeTypeID& sceneInterfaceTypeID);
 
-	size_t addEnviroLights( Moo::LightContainer & lightContainer ) const;
+        void updateHeavenlyLighting();
 
-	EnviroMinder environment_;
+        size_t addEnviroLights(Moo::LightContainer& lightContainer) const;
 
-	const OutsideLighting * pOutLight_;
-	Moo::DirectionalLightPtr sunLight_;
-	Moo::Colour	ambientLight_;
-	Moo::LightContainerPtr lights_;
-};
+        EnviroMinder environment_;
+
+        const OutsideLighting*   pOutLight_;
+        Moo::DirectionalLightPtr sunLight_;
+        Moo::Colour              ambientLight_;
+        Moo::LightContainerPtr   lights_;
+    };
 
 } // namespace BW
 

@@ -6,43 +6,42 @@
 
 BW_BEGIN_NAMESPACE
 
-TEST( BWResource_InitArgCArgV )
+TEST(BWResource_InitArgCArgV)
 {
-	BWResource bwResource;
-	int argc = 0;
-	BWResource::init( argc, NULL );
+    BWResource bwResource;
+    int        argc = 0;
+    BWResource::init(argc, NULL);
 
-	BWResource::fini();
-	LogMsg::fini();
+    BWResource::fini();
+    LogMsg::fini();
 }
 
-TEST( BWResource_InitArgCArgV2 )
+TEST(BWResource_InitArgCArgV2)
 {
-	BWResource bwResource;
-	int argc = 0;
-	BWResource::init( argc, NULL );
+    BWResource bwResource;
+    int        argc = 0;
+    BWResource::init(argc, NULL);
 
-	BWResource::fini();
-	LogMsg::fini();
+    BWResource::fini();
+    LogMsg::fini();
 }
 
-
-TEST( BWResource_InitArgCArgVTwice )
+TEST(BWResource_InitArgCArgVTwice)
 {
-	BWResource * pResource = new BWResource();
+    BWResource* pResource = new BWResource();
 
-	int argc = 0;
-	BWResource::init( argc, NULL );
+    int argc = 0;
+    BWResource::init(argc, NULL);
 
-	delete pResource;
-	BWResource::fini();
+    delete pResource;
+    BWResource::fini();
 
-	pResource = new BWResource();
-	BWResource::init( argc, NULL );
-	delete pResource;
-	BWResource::fini();
+    pResource = new BWResource();
+    BWResource::init(argc, NULL);
+    delete pResource;
+    BWResource::fini();
 
-	LogMsg::fini();
+    LogMsg::fini();
 }
 
 BW_END_NAMESPACE

@@ -13,43 +13,43 @@ class EntityEntryBlockingConditionImpl;
  */
 class EntityEntryBlockingConditionHandler
 {
-public: /// C++ housekeeping
-	EntityEntryBlockingConditionHandler(
-		EntityEntryBlockingConditionImpl * pImpl );
+  public: /// C++ housekeeping
+    EntityEntryBlockingConditionHandler(
+      EntityEntryBlockingConditionImpl* pImpl);
 
-	virtual ~EntityEntryBlockingConditionHandler();
+    virtual ~EntityEntryBlockingConditionHandler();
 
-public: /// EntityEntryBlockingConditionHandler interface
-	void abort();
+  public: /// EntityEntryBlockingConditionHandler interface
+    void abort();
 
-private: /// Interface for EntityEntryBlockingConditionImpl
-	friend class EntityEntryBlockingConditionImpl;
-	void onBlockingConditionCleared();
+  private: /// Interface for EntityEntryBlockingConditionImpl
+    friend class EntityEntryBlockingConditionImpl;
+    void onBlockingConditionCleared();
 
-private: /// Subclass virtual interface
-	/**
-	 *	This method is called to notify subclasses when the
-	 *	EntityEntryBlockingConditionImpl we are the callback for is being
-	 *	destroyed
-	 */
-	virtual void onConditionCleared() = 0;
+  private: /// Subclass virtual interface
+    /**
+     *	This method is called to notify subclasses when the
+     *	EntityEntryBlockingConditionImpl we are the callback for is being
+     *	destroyed
+     */
+    virtual void onConditionCleared() = 0;
 
-	/**
-	 *	This method is called by abort() to notify subclasses that we have been
-	 *	aborted and onBlockingConditionCleared will never be called
-	 */
-	virtual void onAborted() {};
+    /**
+     *	This method is called by abort() to notify subclasses that we have been
+     *	aborted and onBlockingConditionCleared will never be called
+     */
+    virtual void onAborted(){};
 
-private: /// C++ housekeeping
-	// Disallow copy-construct and assignment
-	EntityEntryBlockingConditionHandler(
-		const EntityEntryBlockingConditionHandler & other );
-	EntityEntryBlockingConditionHandler & operator =(
-		const EntityEntryBlockingConditionHandler & );
+  private: /// C++ housekeeping
+    // Disallow copy-construct and assignment
+    EntityEntryBlockingConditionHandler(
+      const EntityEntryBlockingConditionHandler& other);
+    EntityEntryBlockingConditionHandler& operator=(
+      const EntityEntryBlockingConditionHandler&);
 
-private:
-	EntityEntryBlockingConditionImpl * pImpl_;
-	bool hasTriggered_;
+  private:
+    EntityEntryBlockingConditionImpl* pImpl_;
+    bool                              hasTriggered_;
 };
 
 BW_END_NAMESPACE

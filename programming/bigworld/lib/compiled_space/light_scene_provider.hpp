@@ -21,71 +21,68 @@
 #include <moo/spot_light.hpp>
 #include <moo/pulse_light.hpp>
 
-namespace BW {
-namespace CompiledSpace {
+namespace BW { namespace CompiledSpace {
 
-	class StringTable;
+    class StringTable;
 
-	class LightSceneProvider :
-		public ILoader,
-		public SceneProvider,
-		public ILightSceneViewProvider,
-		public ITickSceneProvider
-	{
-	public:
-		typedef BW::vector<Moo::OmniLightPtr> MooOmniLightPtrArray;
-		typedef BW::vector<Moo::SpotLightPtr> MooSpotLightPtrArray;
-		typedef BW::vector<Moo::PulseLightPtr> MooPulseLightPtrArray;
-		
-		static void registerHandlers( Scene & scene );
+    class LightSceneProvider
+      : public ILoader
+      , public SceneProvider
+      , public ILightSceneViewProvider
+      , public ITickSceneProvider
+    {
+      public:
+        typedef BW::vector<Moo::OmniLightPtr>  MooOmniLightPtrArray;
+        typedef BW::vector<Moo::SpotLightPtr>  MooSpotLightPtrArray;
+        typedef BW::vector<Moo::PulseLightPtr> MooPulseLightPtrArray;
 
-	public:
-		LightSceneProvider();
-		virtual ~LightSceneProvider();
+        static void registerHandlers(Scene& scene);
 
-		// ILoader interface
-		bool doLoadFromSpace( ClientSpace * pSpace,
-			BinaryFormat& reader,
-			const DataSectionPtr& pSpaceSettings,
-			const Matrix& transform,
-			const StringTable& strings );
+      public:
+        LightSceneProvider();
+        virtual ~LightSceneProvider();
 
-		bool doBind();
-		void doUnload();
-		float percentLoaded() const;
+        // ILoader interface
+        bool doLoadFromSpace(ClientSpace*          pSpace,
+                             BinaryFormat&         reader,
+                             const DataSectionPtr& pSpaceSettings,
+                             const Matrix&         transform,
+                             const StringTable&    strings);
 
-		bool isValid() const;
+        bool  doBind();
+        void  doUnload();
+        float percentLoaded() const;
 
-		void forEachObject( const ConstSceneObjectCallback & function ) const;
-		void forEachObject( const SceneObjectCallback & function );
+        bool isValid() const;
 
-		//ILightSceneViewProvider interfaces...
-		size_t intersect( const ConvexHull & hull,
-			Moo::LightContainer & lightContainer ) const;
-		size_t intersect( const AABB & bbox,
-			Moo::LightContainer & lightContainer ) const;
-		void debugDrawLights() const;
+        void forEachObject(const ConstSceneObjectCallback& function) const;
+        void forEachObject(const SceneObjectCallback& function);
 
-		//ITickSceneProvider interfaces...
-		void tick( float dTime );
-		void updateAnimations( float dTime );
+        // ILightSceneViewProvider interfaces...
+        size_t intersect(const ConvexHull&    hull,
+                         Moo::LightContainer& lightContainer) const;
+        size_t intersect(const AABB&          bbox,
+                         Moo::LightContainer& lightContainer) const;
+        void   debugDrawLights() const;
 
-	private:
-		// Scene view implementations
-		virtual void * getView(
-			const SceneTypeSystem::RuntimeTypeID & sceneInterfaceTypeID);
+        // ITickSceneProvider interfaces...
+        void tick(float dTime);
+        void updateAnimations(float dTime);
 
-		BinaryFormat* pReader_;
-		BinaryFormat::Stream* pStream_;
+      private:
+        // Scene view implementations
+        virtual void* getView(
+          const SceneTypeSystem::RuntimeTypeID& sceneInterfaceTypeID);
 
-		MooOmniLightPtrArray omniLights_;
-		MooSpotLightPtrArray spotLights_;
-		MooPulseLightPtrArray pulseLights_;
-	};
+        BinaryFormat*         pReader_;
+        BinaryFormat::Stream* pStream_;
+
+        MooOmniLightPtrArray  omniLights_;
+        MooSpotLightPtrArray  spotLights_;
+        MooPulseLightPtrArray pulseLights_;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW
-
-
 
 #endif // _LIGHT_SCENE_PROVIDER_HPP

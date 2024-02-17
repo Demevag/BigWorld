@@ -5,9 +5,9 @@
 
 BW_USE_NAMESPACE
 
-int BIGWORLD_MAIN( int argc, char * argv[] )
+int BIGWORLD_MAIN(int argc, char* argv[])
 {
-	return bwMainT< CellApp >( argc, argv );
+    return bwMainT<CellApp>(argc, argv);
 }
 
 // main.cpp

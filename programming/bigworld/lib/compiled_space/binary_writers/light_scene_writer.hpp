@@ -16,48 +16,49 @@ class DataSection;
 typedef SmartPointer<DataSection> DataSectionPtr;
 BW_END_NAMESPACE
 
-namespace BW {
-namespace CompiledSpace {
+namespace BW { namespace CompiledSpace {
 
-class BinaryFormatWriter;
-class StringTableWriter;
+    class BinaryFormatWriter;
+    class StringTableWriter;
 
-class LightSceneWriter :
-	public ISpaceWriter
-{
-public:
-	LightSceneWriter();
-	~LightSceneWriter();
-	
-	virtual bool initialize( const DataSectionPtr& pSpaceSettings,
-		const CommandLine& commandLine );
-	virtual bool write( BinaryFormatWriter& writer );
+    class LightSceneWriter : public ISpaceWriter
+    {
+      public:
+        LightSceneWriter();
+        ~LightSceneWriter();
 
-	void convertOmniLight( const ConversionContext& ctx, 
-		const DataSectionPtr& pItemDS, const BW::string& uid );
-	void convertSpotLight( const ConversionContext& ctx, 
-		const DataSectionPtr& pItemDS, const BW::string& uid );
-	void convertPulseLight( const ConversionContext& ctx, 
-		const DataSectionPtr& pItemDS, const BW::string& uid );
+        virtual bool initialize(const DataSectionPtr& pSpaceSettings,
+                                const CommandLine&    commandLine);
+        virtual bool write(BinaryFormatWriter& writer);
 
-	void addOmniLight( const DataSectionPtr & pItemDS,
-		const Matrix & worldTransform );
-	void addSpotLight( const DataSectionPtr & pItemDS,
-		const Matrix & worldTransform );
-	void addPulseLight( const DataSectionPtr & pItemDS,
-		const Matrix & worldTransform, StringTableWriter & stringTable_ );
+        void convertOmniLight(const ConversionContext& ctx,
+                              const DataSectionPtr&    pItemDS,
+                              const BW::string&        uid);
+        void convertSpotLight(const ConversionContext& ctx,
+                              const DataSectionPtr&    pItemDS,
+                              const BW::string&        uid);
+        void convertPulseLight(const ConversionContext& ctx,
+                               const DataSectionPtr&    pItemDS,
+                               const BW::string&        uid);
 
-	AABB boundBox() const;
+        void addOmniLight(const DataSectionPtr& pItemDS,
+                          const Matrix&         worldTransform);
+        void addSpotLight(const DataSectionPtr& pItemDS,
+                          const Matrix&         worldTransform);
+        void addPulseLight(const DataSectionPtr& pItemDS,
+                           const Matrix&         worldTransform,
+                           StringTableWriter&    stringTable_);
 
-private:
-	BW::vector< LightSceneTypes::OmniLight > omniLights;
-	BW::vector< LightSceneTypes::SpotLight > spotLights;
-	BW::vector< LightSceneTypes::PulseLight > pulseLights;
-	BW::vector< Vector2 > pulseLightsAnimFrames;
-};
+        AABB boundBox() const;
+
+      private:
+        BW::vector<LightSceneTypes::OmniLight>  omniLights;
+        BW::vector<LightSceneTypes::SpotLight>  spotLights;
+        BW::vector<LightSceneTypes::PulseLight> pulseLights;
+        BW::vector<Vector2>                     pulseLightsAnimFrames;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW
-
 
 #endif // LIGHT_SCENE_WRITER_HPP

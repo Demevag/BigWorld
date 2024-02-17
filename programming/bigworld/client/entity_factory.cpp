@@ -10,7 +10,7 @@
 #include "connection_model/bw_entity.hpp"
 #include "connection_model/bw_entity_factory.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Entity", 0 );
+DECLARE_DEBUG_COMPONENT2("Entity", 0);
 
 BW_BEGIN_NAMESPACE
 
@@ -21,21 +21,19 @@ BW_BEGIN_NAMESPACE
 /*
  *	This method overrides BWEntityFactory::doCreate
  */
-BWEntity * EntityFactory::doCreate( EntityTypeID entityTypeID,
-	BWConnection * pConnection )
+BWEntity* EntityFactory::doCreate(EntityTypeID  entityTypeID,
+                                  BWConnection* pConnection)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	EntityType * pEntityType = EntityType::find( entityTypeID );
-	if (!pEntityType)
-	{
-		ERROR_MSG( "EntityFactory::doCreate: Bad type %d\n", entityTypeID );
-		return NULL;
-	}
+    EntityType* pEntityType = EntityType::find(entityTypeID);
+    if (!pEntityType) {
+        ERROR_MSG("EntityFactory::doCreate: Bad type %d\n", entityTypeID);
+        return NULL;
+    }
 
-	return new Entity( *pEntityType, pConnection );
+    return new Entity(*pEntityType, pConnection);
 }
-
 
 BW_END_NAMESPACE
 

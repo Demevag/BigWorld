@@ -16,7 +16,6 @@
 
 #include "cstdmf/bw_vector.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BinaryIStream;
@@ -27,223 +26,227 @@ class Chunk;
 class SpaceNode;
 
 class IPhysicalSpace;
-typedef SmartPointer< IPhysicalSpace > PhysicalSpacePtr;
+typedef SmartPointer<IPhysicalSpace> PhysicalSpacePtr;
 
 class Entity;
-typedef SmartPointer< Entity > EntityPtr;
+typedef SmartPointer<Entity> EntityPtr;
 
 // These do not need to be reference counted since they are added in the
 // construction and removed in destruction (or destroy) of entity.
-typedef BW::vector< EntityPtr >                 SpaceEntities;
-typedef SpaceEntities::size_type                 SpaceRemovalHandle;
+typedef BW::vector<EntityPtr>    SpaceEntities;
+typedef SpaceEntities::size_type SpaceRemovalHandle;
 
 class Watcher;
-typedef SmartPointer< Watcher > WatcherPtr;
+typedef SmartPointer<Watcher> WatcherPtr;
 
 class RangeTrigger;
-typedef BW::list< RangeTrigger * > RangeTriggerList;
+typedef BW::list<RangeTrigger*> RangeTriggerList;
 
 /**
  *	This class is used to represent a space.
  */
-class Space : public TimerHandler, public GeometryMapper
+class Space
+  : public TimerHandler
+  , public GeometryMapper
 {
-public:
-	Space( SpaceID id );
-	virtual ~Space();
+  public:
+    Space(SpaceID id);
+    virtual ~Space();
 
-	void reuse();
+    void reuse();
 
-	const CellInfo * pCellAt( float x, float z ) const;
-	void visitRect( const BW::Rect & rect, CellInfoVisitor & visitRect );
+    const CellInfo* pCellAt(float x, float z) const;
+    void            visitRect(const BW::Rect& rect, CellInfoVisitor& visitRect);
 
-	// ---- Accessors ----
-	SpaceID id() const						{ return id_; }
+    // ---- Accessors ----
+    SpaceID id() const { return id_; }
 
-	Cell * pCell() const					{ return pCell_; }
-	void pCell( Cell * pCell );
+    Cell* pCell() const { return pCell_; }
+    void  pCell(Cell* pCell);
 
-	ChunkSpacePtr pChunkSpace() const;
-	PhysicalSpacePtr pPhysicalSpace() const { return pPhysicalSpace_; }
+    ChunkSpacePtr    pChunkSpace() const;
+    PhysicalSpacePtr pPhysicalSpace() const { return pPhysicalSpace_; }
 
-	// ---- GeometryMapper ----
-	virtual void onSpaceGeometryLoaded(
-			SpaceID spaceID, const BW::string & name );
+    // ---- GeometryMapper ----
+    virtual void onSpaceGeometryLoaded(SpaceID spaceID, const BW::string& name);
 
-	virtual bool initialPoint( Vector3 & result ) const;
+    virtual bool initialPoint(Vector3& result) const;
 
-	float artificialMinLoad() const			{ return artificialMinLoad_; }
+    float artificialMinLoad() const { return artificialMinLoad_; }
 
-	// ---- Entity ----
-	void createGhost( const Mercury::Address & srcAddr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    // ---- Entity ----
+    void createGhost(const Mercury::Address&               srcAddr,
+                     const Mercury::UnpackedMessageHeader& header,
+                     BinaryIStream&                        data);
 
-		// ( EntityID id, ...
-	void createGhost( const EntityID entityID,
-					  BinaryIStream & data );
-		// ( TypeID type, Position3D & pos,
-		//  string & ghostState, Mercury::Address & owner );
+    // ( EntityID id, ...
+    void createGhost(const EntityID entityID, BinaryIStream& data);
+    // ( TypeID type, Position3D & pos,
+    //  string & ghostState, Mercury::Address & owner );
 
-	void addEntity( Entity * pEntity );
-	void removeEntity( Entity * pEntity );
-	void visitLargeEntities( float x, float z, RangeTrigger & visitor );
+    void addEntity(Entity* pEntity);
+    void removeEntity(Entity* pEntity);
+    void visitLargeEntities(float x, float z, RangeTrigger& visitor);
 
-	EntityPtr newEntity( EntityID id, EntityTypeID entityTypeID );
+    EntityPtr newEntity(EntityID id, EntityTypeID entityTypeID);
 
-	Entity * findNearestEntity( const Vector3 & position );
+    Entity* findNearestEntity(const Vector3& position);
 
-	// ---- Static methods ----
-	enum UpdateCellAppMgr
-	{
-		UPDATE_CELL_APP_MGR,
-		DONT_UPDATE_CELL_APP_MGR
-	};
+    // ---- Static methods ----
+    enum UpdateCellAppMgr
+    {
+        UPDATE_CELL_APP_MGR,
+        DONT_UPDATE_CELL_APP_MGR
+    };
 
-	enum DataEffected
-	{
-		ALREADY_EFFECTED,
-		NEED_TO_EFFECT
-	};
+    enum DataEffected
+    {
+        ALREADY_EFFECTED,
+        NEED_TO_EFFECT
+    };
 
-	static WatcherPtr pWatcher();
+    static WatcherPtr pWatcher();
 
-	// ---- Space data ----
-	void spaceData( BinaryIStream & data );
-	void allSpaceData( BinaryIStream & data );
+    // ---- Space data ----
+    void spaceData(BinaryIStream& data);
+    void allSpaceData(BinaryIStream& data);
 
-	void updateGeometry( BinaryIStream & data );
+    void updateGeometry(BinaryIStream& data);
 
-	void spaceGeometryLoaded( BinaryIStream & data );
+    void spaceGeometryLoaded(BinaryIStream& data);
 
-	void setLastMappedGeometry( const BW::string& lastMappedGeometry )
-	{ lastMappedGeometry_ = lastMappedGeometry; }
+    void setLastMappedGeometry(const BW::string& lastMappedGeometry)
+    {
+        lastMappedGeometry_ = lastMappedGeometry;
+    }
 
-	void shutDownSpace( BinaryIStream & data );
-	void requestShutDown();
+    void shutDownSpace(BinaryIStream& data);
+    void requestShutDown();
 
-	CellInfo * findCell( const Mercury::Address & addr ) const;
+    CellInfo* findCell(const Mercury::Address& addr) const;
 
-	SpaceNode * readTree( BinaryIStream & stream, const BW::Rect & rect );
+    SpaceNode* readTree(BinaryIStream& stream, const BW::Rect& rect);
 
-	bool spaceDataEntry( const SpaceEntryID & entryID, uint16 key,
-		const BW::string & value,
-		UpdateCellAppMgr cellAppMgrAction = UPDATE_CELL_APP_MGR,
-		DataEffected effected = NEED_TO_EFFECT );
+    bool spaceDataEntry(const SpaceEntryID& entryID,
+                        uint16              key,
+                        const BW::string&   value,
+                        UpdateCellAppMgr cellAppMgrAction = UPDATE_CELL_APP_MGR,
+                        DataEffected     effected         = NEED_TO_EFFECT);
 
-	void onLoadResourceFailed( const SpaceEntryID & entryID );
+    void onLoadResourceFailed(const SpaceEntryID& entryID);
 
-	int32 begDataSeq() const	{ return begDataSeq_; }
-	int32 endDataSeq() const	{ return endDataSeq_; }
+    int32 begDataSeq() const { return begDataSeq_; }
+    int32 endDataSeq() const { return endDataSeq_; }
 
-	const BW::string * dataBySeq( int32 seq,
-		SpaceEntryID & entryID, uint16 & key ) const;
-	int dataRecencyLevel( int32 seq ) const;
+    const BW::string* dataBySeq(int32         seq,
+                                SpaceEntryID& entryID,
+                                uint16&       key) const;
+    int               dataRecencyLevel(int32 seq) const;
 
-	const RangeList & rangeList() const	{ return rangeList_; }
-	const RangeTriggerList & appealRadiusList() const
-		{ return appealRadiusList_; }
+    const RangeList&        rangeList() const { return rangeList_; }
+    const RangeTriggerList& appealRadiusList() const
+    {
+        return appealRadiusList_;
+    }
 
-	void debugRangeList();
+    void debugRangeList();
 
-	SpaceEntities & spaceEntities() { return entities_; }
-	const SpaceEntities & spaceEntities() const { return entities_; }
+    SpaceEntities&       spaceEntities() { return entities_; }
+    const SpaceEntities& spaceEntities() const { return entities_; }
 
-	void writeDataToStream( BinaryOStream & steam ) const;
-	void readDataFromStream( BinaryIStream & stream );
+    void writeDataToStream(BinaryOStream& steam) const;
+    void readDataFromStream(BinaryIStream& stream);
 
-	void writeBounds( BinaryOStream & stream ) const;
+    void writeBounds(BinaryOStream& stream) const;
 
-	void chunkTick();
-	void calcLoadedRect( BW::Rect & loadedRect ) const;
-	void prepareNewlyLoadedChunksForDelete();
+    void chunkTick();
+    void calcLoadedRect(BW::Rect& loadedRect) const;
+    void prepareNewlyLoadedChunksForDelete();
 
-	bool isFullyUnloaded() const;
+    bool isFullyUnloaded() const;
 
-	float timeOfDay() const;
+    float timeOfDay() const;
 
-	bool isShuttingDown() const		{ return shuttingDownTimerHandle_.isSet(); }
+    bool isShuttingDown() const { return shuttingDownTimerHandle_.isSet(); }
 
-	void writeRecoveryData( BinaryOStream & stream ) const;
+    void writeRecoveryData(BinaryOStream& stream) const;
 
-	void setPendingCellDelete( const Mercury::Address & addr );
+    void setPendingCellDelete(const Mercury::Address& addr);
 
-	size_t numEntities() const	{ return entities_.size(); }
+    size_t numEntities() const { return entities_.size(); }
 
-	size_t numCells() const { return cellInfos_.size(); }
+    size_t numCells() const { return cellInfos_.size(); }
 
-	SpaceDataMapping & spaceDataMapping() { return spaceDataMapping_; }
+    SpaceDataMapping& spaceDataMapping() { return spaceDataMapping_; }
 
-	/**
-	 *  This method is called when new geometry mapping is read
-	 */
-	void onNewGeometryMapping()
-	{
-		shouldCheckLoadBounds_ = true;
-	}
+    /**
+     *  This method is called when new geometry mapping is read
+     */
+    void onNewGeometryMapping() { shouldCheckLoadBounds_ = true; }
 
-private:
-	typedef BW::map< Mercury::Address, SmartPointer< CellInfo > > CellInfos;
+  private:
+    typedef BW::map<Mercury::Address, SmartPointer<CellInfo>> CellInfos;
 
-	virtual void handleTimeout( TimerHandle handle, void * arg );
+    virtual void handleTimeout(TimerHandle handle, void* arg);
 
-	void writeChunkBounds( BinaryOStream & stream ) const;
+    void writeChunkBounds(BinaryOStream& stream) const;
 
-	void writeEntityBounds( BinaryOStream & stream ) const;
-	void writeEntityBoundsForEdge( BinaryOStream & stream,
-			bool isMax, bool isY ) const;
+    void writeEntityBounds(BinaryOStream& stream) const;
+    void writeEntityBoundsForEdge(BinaryOStream& stream,
+                                  bool           isMax,
+                                  bool           isY) const;
 
-	void updateLoadBounds();
-	void checkForShutDown();
+    void updateLoadBounds();
+    void checkForShutDown();
 
-	bool hasSingleCell() const;
+    bool hasSingleCell() const;
 
-	SpaceID	id_;
+    SpaceID id_;
 
-	Cell *	pCell_;
+    Cell* pCell_;
 
-	PhysicalSpacePtr pPhysicalSpace_;
+    PhysicalSpacePtr pPhysicalSpace_;
 
-	SpaceDataMapping spaceDataMapping_;
+    SpaceDataMapping spaceDataMapping_;
 
-	SpaceEntities	entities_;
-	CellInfos		cellInfos_;
+    SpaceEntities entities_;
+    CellInfos     cellInfos_;
 
-	RangeList			rangeList_;
-	RangeTriggerList	appealRadiusList_;
+    RangeList        rangeList_;
+    RangeTriggerList appealRadiusList_;
 
-	int32	begDataSeq_;
-	int32	endDataSeq_;
+    int32 begDataSeq_;
+    int32 endDataSeq_;
 
-	/**
-	 *	This is the information we record about recent data entries
-	 */
-	struct RecentDataEntry
-	{
-		SpaceEntryID	entryID;
-		GameTime		time;
-		uint16			key;
-	};
-	typedef BW::vector<RecentDataEntry> RecentDataEntries;
-	RecentDataEntries	recentData_;
-	// TODO: Need to clean out recent data every so often (say once a minute)
-	// Also don't let beg/endDataSeq go negative.
-	// Yes that will require extensive fixups.
+    /**
+     *	This is the information we record about recent data entries
+     */
+    struct RecentDataEntry
+    {
+        SpaceEntryID entryID;
+        GameTime     time;
+        uint16       key;
+    };
+    typedef BW::vector<RecentDataEntry> RecentDataEntries;
+    RecentDataEntries                   recentData_;
+    // TODO: Need to clean out recent data every so often (say once a minute)
+    // Also don't let beg/endDataSeq go negative.
+    // Yes that will require extensive fixups.
 
-	float	initialTimeOfDay_;
-	float	gameSecondsPerSecond_;
+    float initialTimeOfDay_;
+    float gameSecondsPerSecond_;
 
-	BW::string lastMappedGeometry_;
+    BW::string lastMappedGeometry_;
 
-	SpaceNode *	pCellInfoTree_;
+    SpaceNode* pCellInfoTree_;
 
-	TimerHandle shuttingDownTimerHandle_;
+    TimerHandle shuttingDownTimerHandle_;
 
-	float artificialMinLoad_;
-	bool shouldCheckLoadBounds_;
+    float artificialMinLoad_;
+    bool  shouldCheckLoadBounds_;
 
-public:
-	static uint32 s_allSpacesDataChangeSeq_;
+  public:
+    static uint32 s_allSpacesDataChangeSeq_;
 };
 
 BW_END_NAMESPACE

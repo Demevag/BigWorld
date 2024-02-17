@@ -9,18 +9,18 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor.
  */
-ManagerApp::ManagerApp( Mercury::EventDispatcher & mainDispatcher,
-			Mercury::NetworkInterface & interface ) :
-	ServerApp( mainDispatcher, interface )
+ManagerApp::ManagerApp(Mercury::EventDispatcher&  mainDispatcher,
+                       Mercury::NetworkInterface& interface)
+  : ServerApp(mainDispatcher, interface)
 {
 }
 
 /**
  *	This method adds the watchers associated with this class.
  */
-void ManagerApp::addWatchers( Watcher & watcher )
+void ManagerApp::addWatchers(Watcher& watcher)
 {
-	ServerApp::addWatchers( watcher );
+    ServerApp::addWatchers(watcher);
 }
 
 BW_END_NAMESPACE

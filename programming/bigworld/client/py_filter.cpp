@@ -5,43 +5,37 @@
 #include "app.hpp"
 #include "filter.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Entity", 0 )
-
+DECLARE_DEBUG_COMPONENT2("Entity", 0)
 
 BW_BEGIN_NAMESPACE
 
-PY_TYPEOBJECT_WITH_WEAKREF( PyFilter )
+PY_TYPEOBJECT_WITH_WEAKREF(PyFilter)
 
-PY_BEGIN_METHODS( PyFilter )
-	PY_METHOD( reset )
+PY_BEGIN_METHODS(PyFilter)
+PY_METHOD(reset)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( PyFilter )
+PY_BEGIN_ATTRIBUTES(PyFilter)
 PY_END_ATTRIBUTES()
 
-PY_SCRIPT_CONVERTERS( PyFilter )
-
+PY_SCRIPT_CONVERTERS(PyFilter)
 
 /**
  *	Constructor
  *
  *	@param	pType	The python object defining the type of the filter.
  */
-PyFilter::PyFilter( PyTypeObject * pType ) :
-	PyObjectPlusWithWeakReference( pType ),
-	pAttachedFilter_( NULL ),
-	isAttached_( false )
+PyFilter::PyFilter(PyTypeObject* pType)
+  : PyObjectPlusWithWeakReference(pType)
+  , pAttachedFilter_(NULL)
+  , isAttached_(false)
 {
 }
-
 
 /**
  *	Destructor
  */
-PyFilter::~PyFilter()
-{
-}
-
+PyFilter::~PyFilter() {}
 
 /*~ function Filter.reset
  *
@@ -60,42 +54,38 @@ PyFilter::~PyFilter()
 /**
  *	This method resets this filter to the input time.
  */
-void PyFilter::reset( double time )
+void PyFilter::reset(double time)
 {
-	if (pAttachedFilter_ != NULL)
-	{
-		pAttachedFilter_->reset( time );
-	}
+    if (pAttachedFilter_ != NULL) {
+        pAttachedFilter_->reset(time);
+    }
 }
-
 
 /**
  *	This method provides a new Filter instance from this PyFilter.
  */
-Filter * PyFilter::getFilter()
+Filter* PyFilter::getFilter()
 {
-	pAttachedFilter_ = this->getNewFilter();
-	return pAttachedFilter_;
+    pAttachedFilter_ = this->getNewFilter();
+    return pAttachedFilter_;
 }
-
 
 /**
  *	This method is called to notify us that our filter has been
  *	destroyed.
  */
-void PyFilter::onFilterDestroyed( Filter * pDestroyedFilter )
+void PyFilter::onFilterDestroyed(Filter* pDestroyedFilter)
 {
-	// Not sure if this can happen sensibly.
-	IF_NOT_MF_ASSERT_DEV( pDestroyedFilter == pAttachedFilter_ )
-	{
-		return;
-	}
+    // Not sure if this can happen sensibly.
+    IF_NOT_MF_ASSERT_DEV(pDestroyedFilter == pAttachedFilter_)
+    {
+        return;
+    }
 
-	this->onLosingAttachedFilter();
+    this->onLosingAttachedFilter();
 
-	pAttachedFilter_ = NULL;
+    pAttachedFilter_ = NULL;
 }
-
 
 /**
  *	Static helper method to get the current game time.
@@ -104,10 +94,9 @@ void PyFilter::onFilterDestroyed( Filter * pDestroyedFilter )
  */
 /* static */ double PyFilter::getTimeNow()
 {
-	BW_GUARD;
-	return App::instance().getGameTimeFrameStart();
+    BW_GUARD;
+    return App::instance().getGameTimeFrameStart();
 }
-
 
 BW_END_NAMESPACE
 

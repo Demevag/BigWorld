@@ -1,7 +1,6 @@
 #ifndef WORLD_EDITOR_DOC_HPP
 #define WORLD_EDITOR_DOC_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 
@@ -9,24 +8,24 @@ BW_BEGIN_NAMESPACE
 
 class WorldEditorDoc : public CDocument
 {
-protected: 
-	DECLARE_DYNCREATE(WorldEditorDoc)
+  protected:
+    DECLARE_DYNCREATE(WorldEditorDoc)
 
-	WorldEditorDoc();
-	
-public:
-	static WorldEditorDoc& instance();
+    WorldEditorDoc();
 
-	virtual ~WorldEditorDoc();
+  public:
+    static WorldEditorDoc& instance();
 
-	virtual BOOL OnNewDocument();
-	virtual void OnCloseDocument();
+    virtual ~WorldEditorDoc();
 
-protected:
-	DECLARE_MESSAGE_MAP()
+    virtual BOOL OnNewDocument();
+    virtual void OnCloseDocument();
 
-private:
-	static WorldEditorDoc	*s_instance_;
+  protected:
+    DECLARE_MESSAGE_MAP()
+
+  private:
+    static WorldEditorDoc* s_instance_;
 };
 
 BW_END_NAMESPACE

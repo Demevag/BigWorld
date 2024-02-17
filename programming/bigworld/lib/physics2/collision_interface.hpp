@@ -11,15 +11,16 @@ class CollisionState;
 
 class CollisionInterface
 {
-public:
-	virtual bool collide( const Vector3 & source, const Vector3 & extent,
-		CollisionState & state ) const = 0;
+  public:
+    virtual bool collide(const Vector3&  source,
+                         const Vector3&  extent,
+                         CollisionState& state) const = 0;
 
-	virtual bool collide( const WorldTriangle & source, const Vector3 & extent,
-		CollisionState & state ) const = 0;
+    virtual bool collide(const WorldTriangle& source,
+                         const Vector3&       extent,
+                         CollisionState&      state) const = 0;
 };
 
 BW_END_NAMESPACE
-
 
 #endif // COLLISION_INTERFACE_HPP

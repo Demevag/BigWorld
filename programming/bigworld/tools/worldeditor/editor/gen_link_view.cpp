@@ -4,69 +4,66 @@
 
 BW_BEGIN_NAMESPACE
 
-GenLinkView::GenLinkView( LinkProperty & property )
-: property_( property )
+GenLinkView::GenLinkView(LinkProperty& property)
+  : property_(property)
 {
 }
 
 StringPropertyItem* GenLinkView::item()
 {
-	return (StringPropertyItem*)&*(propertyItems_[0]);
+    return (StringPropertyItem*)&*(propertyItems_[0]);
 }
 
 void GenLinkView::elect()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (!(propTable_ = PropTable::table()))
-	{
-		return;
-	}
+    if (!(propTable_ = PropTable::table())) {
+        return;
+    }
 
-	CString linkValue = property_.link()->linkValue().c_str();
-	oldValue_ = linkValue;
-	StringPropertyItem* newItem = new StringPropertyItem(
-		property_.name(), linkValue, true);
-	newItem->setGroup( property_.getGroup() );
-	newItem->setChangeBuddy(this);
-	propertyItems_.push_back(newItem);
-	propTable_->addView( this );
+    CString linkValue = property_.link()->linkValue().c_str();
+    oldValue_         = linkValue;
+    StringPropertyItem* newItem =
+      new StringPropertyItem(property_.name(), linkValue, true);
+    newItem->setGroup(property_.getGroup());
+    newItem->setChangeBuddy(this);
+    propertyItems_.push_back(newItem);
+    propTable_->addView(this);
 }
 
 void GenLinkView::onSelect()
 {
-	BW_GUARD;
-	property_.select();
+    BW_GUARD;
+    property_.select();
 }
 
 bool GenLinkView::updateGUI()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	const CString newValue = property_.link()->linkValue().c_str();
-	if (newValue != oldValue_)
-	{
-		oldValue_ = newValue;
-		item()->set(newValue.GetString());
-	}		
-	return false;
+    const CString newValue = property_.link()->linkValue().c_str();
+    if (newValue != oldValue_) {
+        oldValue_ = newValue;
+        item()->set(newValue.GetString());
+    }
+    return false;
 }
 
-/*static*/ LinkProperty::View * GenLinkView::create( LinkProperty & property )
+/*static*/ LinkProperty::View* GenLinkView::create(LinkProperty& property)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return new GenLinkView( property );
+    return new GenLinkView(property);
 }
 
 PropertyManagerPtr GenLinkView::getPropertyManager() const
 {
-	BW_GUARD;
-	return property_.getPropertyManager();
+    BW_GUARD;
+    return property_.getPropertyManager();
 }
 
 // View factory initialiser.
 GenLinkView::Enroller GenLinkView::Enroller::s_instance;
 
 BW_END_NAMESPACE
-

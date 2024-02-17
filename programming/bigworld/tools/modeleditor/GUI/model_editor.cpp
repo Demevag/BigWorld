@@ -67,7 +67,7 @@
 
 #include "moo/reload.hpp"
 
-DECLARE_DEBUG_COMPONENT( 0 )
+DECLARE_DEBUG_COMPONENT(0)
 #include "me_error_macros.hpp"
 
 #include "model_editor.h"
@@ -86,13 +86,12 @@ DECLARE_DEBUG_COMPONENT( 0 )
 
 BW_BEGIN_NAMESPACE
 
-DECLARE_WATCHER_DATA( NULL )
-DECLARE_COPY_STACK_INFO( false )
+DECLARE_WATCHER_DATA(NULL)
+DECLARE_COPY_STACK_INFO(false)
 DEFINE_CREATE_EDITOR_PROPERTY_STUB
 
-
-DogWatch CModelEditorApp::s_updateWatch( "Page Updates" );
-static AutoConfigString s_LanguageFile( "system/language" );
+DogWatch                CModelEditorApp::s_updateWatch("Page Updates");
+static AutoConfigString s_LanguageFile("system/language");
 
 // The one and only CModelEditorApp object
 
@@ -103,815 +102,815 @@ CModelEditorApp theApp;
 BEGIN_MESSAGE_MAP(CModelEditorApp, CWinApp)
 END_MESSAGE_MAP()
 
-
 /**
  * TODO: to be documented.
  */
-template< class C >
-class AnimLoadFunctor: public AnimLoadCallback
+template <class C>
+class AnimLoadFunctor : public AnimLoadCallback
 {
-public:
-	typedef void (C::*Method)();
+  public:
+    typedef void (C::*Method)();
 
-	AnimLoadFunctor( C* instance, Method method ):
-		instance_(instance),
-		method_(method)
-	{}
+    AnimLoadFunctor(C* instance, Method method)
+      : instance_(instance)
+      , method_(method)
+    {
+    }
 
-	void execute()
-	{
-		BW_GUARD;
+    void execute()
+    {
+        BW_GUARD;
 
-		if ((instance_) && (method_))
-			(instance_->*method_)();
-	}
-private:
-	C* instance_;
-	Method method_;
+        if ((instance_) && (method_))
+            (instance_->*method_)();
+    }
+
+  private:
+    C*     instance_;
+    Method method_;
 };
 
-
-CModelEditorApp::CModelEditorApp():
-	mfApp_(NULL),
-	initDone_( false ),
-	pPythonAdapter_(NULL)
+CModelEditorApp::CModelEditorApp()
+  : mfApp_(NULL)
+  , initDone_(false)
+  , pPythonAdapter_(NULL)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	EnableHtmlHelp();
+    EnableHtmlHelp();
 
-	//Instanciate the Message handler to catch BigWorld messages
-	MsgHandler::instance();
+    // Instanciate the Message handler to catch BigWorld messages
+    MsgHandler::instance();
 }
-
 
 CModelEditorApp::~CModelEditorApp()
 {
-	BW_GUARD;
+    BW_GUARD;
 }
 
-//A method to allow the load error dialog to not interfere with loading
-/*static*/ UINT CModelEditorApp::loadErrorMsg( LPVOID lpvParam )
+// A method to allow the load error dialog to not interfere with loading
+/*static*/ UINT CModelEditorApp::loadErrorMsg(LPVOID lpvParam)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	const char* modelName = (char*)lpvParam;
+    const char* modelName = (char*)lpvParam;
 
-	::MessageBox( AfxGetApp()->m_pMainWnd->GetSafeHwnd(),
-		Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/ME_CRASHED", modelName), 
-		Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/MODEL_LOAD_ERROR"), MB_OK | MB_ICONERROR);
-	return 0;
+    ::MessageBox(
+      AfxGetApp()->m_pMainWnd->GetSafeHwnd(),
+      Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/ME_CRASHED", modelName),
+      Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/MODEL_LOAD_ERROR"),
+      MB_OK | MB_ICONERROR);
+    return 0;
 }
-
 
 // CModelEditorApp initialisation
-namespace
-{
-	wchar_t * s_pCmdLine = NULL;
+namespace {
+    wchar_t* s_pCmdLine = NULL;
 
 }
-
 
 BOOL CModelEditorApp::InitInstance()
 {
-	BW::Allocator::setSystemStage( BW::Allocator::SS_MAIN );
+    BW::Allocator::setSystemStage(BW::Allocator::SS_MAIN);
 
-	BOOL result = CallWithExceptionFilter( this, &CModelEditorApp::InternalInitInstance );
+    BOOL result =
+      CallWithExceptionFilter(this, &CModelEditorApp::InternalInitInstance);
 
-	if (!result)
-	{
-		MessageBox(
-			NULL,
-			L"ModelEditor failed to initailise itself correctly, please check the debug log for detailed information.",
-			L"ModelEditor",
-			MB_OK );
-	}
-	
-	return result;
+    if (!result) {
+        MessageBox(NULL,
+                   L"ModelEditor failed to initailise itself correctly, please "
+                   L"check the debug log for detailed information.",
+                   L"ModelEditor",
+                   MB_OK);
+    }
+
+    return result;
 }
 
 int CModelEditorApp::ExitInstance()
 {
-	BOOL result = CallWithExceptionFilter( this, &CModelEditorApp::InternalExitInstance );
-	BW::Allocator::setSystemStage( BW::Allocator::SS_POST_MAIN );
-	return result;
+    BOOL result =
+      CallWithExceptionFilter(this, &CModelEditorApp::InternalExitInstance);
+    BW::Allocator::setSystemStage(BW::Allocator::SS_POST_MAIN);
+    return result;
 }
 
 int CModelEditorApp::Run()
 {
-	return CallWithExceptionFilter( this, &CModelEditorApp::InternalRun );
+    return CallWithExceptionFilter(this, &CModelEditorApp::InternalRun);
 }
-
 
 BOOL CModelEditorApp::InternalInitInstance()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	Name::init();
+    Name::init();
 
-	waitForRestarting();
+    waitForRestarting();
 
-	//Let the user know something is going on
-	SetCursor( ::LoadCursor( NULL, IDC_WAIT ));
-	
-	CWinApp::InitInstance();
+    // Let the user know something is going on
+    SetCursor(::LoadCursor(NULL, IDC_WAIT));
 
-	size_t cmdLineSize = wcslen( this->m_lpCmdLine );
-	s_pCmdLine = new wchar_t[ cmdLineSize + 1 ];
-	// copy the command line for parsing
-	wcscpy( s_pCmdLine, this->m_lpCmdLine );
+    CWinApp::InitInstance();
 
-	// Initialise OLE libraries
-	if (!AfxOleInit())
-	{
-		AfxMessageBox(IDP_OLE_INIT_FAILED);
-		return FALSE;
-	}
-	AfxEnableControlContainer();
+    size_t cmdLineSize = wcslen(this->m_lpCmdLine);
+    s_pCmdLine         = new wchar_t[cmdLineSize + 1];
+    // copy the command line for parsing
+    wcscpy(s_pCmdLine, this->m_lpCmdLine);
 
-#ifdef USE_MEMHOOK
-	// Need to disable custom allocation so MFC doesn't get confused on exit
-	// trying to delete the doc template created classes below.
-	BW::Memhook::AllocFuncs sysAllocFuncs = { ::bw_malloc, ::free, ::bw_malloc_aligned, ::_aligned_free, ::realloc, ::_msize };
-	BW::Memhook::AllocFuncs bwAllocFuncs= BW::Memhook::allocFuncs();
-	BW::Memhook::allocFuncs( sysAllocFuncs );
-#endif
-
-	// Register the application's document templates.  Document templates
-	//  serve as the connection between documents, frame windows and views
-	CSingleDocTemplate* pDocTemplate;
-	pDocTemplate = new CSingleDocTemplate(
-		IDR_MAINFRAME,
-		RUNTIME_CLASS(CModelEditorDoc),
-		RUNTIME_CLASS(CMainFrame),       // main SDI frame window
-		RUNTIME_CLASS(CModelEditorView));
-	AddDocTemplate(pDocTemplate);
+    // Initialise OLE libraries
+    if (!AfxOleInit()) {
+        AfxMessageBox(IDP_OLE_INIT_FAILED);
+        return FALSE;
+    }
+    AfxEnableControlContainer();
 
 #ifdef USE_MEMHOOK
-	// Re-enabling custom allocation
-	BW::Memhook::allocFuncs( bwAllocFuncs );
+    // Need to disable custom allocation so MFC doesn't get confused on exit
+    // trying to delete the doc template created classes below.
+    BW::Memhook::AllocFuncs sysAllocFuncs = {
+        ::bw_malloc,     ::free,    ::bw_malloc_aligned,
+        ::_aligned_free, ::realloc, ::_msize
+    };
+    BW::Memhook::AllocFuncs bwAllocFuncs = BW::Memhook::allocFuncs();
+    BW::Memhook::allocFuncs(sysAllocFuncs);
 #endif
 
-	//Assume there will be nothing to load initially,
-	//Do it now since "parseCommandLineMF" may set it
-	modelToLoad_ = "";
-	modelToAdd_ = "";
-	
-	// Parse command line for standard shell commands, DDE, file open
-	MFCommandLineInfo cmdInfo;
-	ParseCommandLine(cmdInfo);
+    // Register the application's document templates.  Document templates
+    //  serve as the connection between documents, frame windows and views
+    CSingleDocTemplate* pDocTemplate;
+    pDocTemplate =
+      new CSingleDocTemplate(IDR_MAINFRAME,
+                             RUNTIME_CLASS(CModelEditorDoc),
+                             RUNTIME_CLASS(CMainFrame), // main SDI frame window
+                             RUNTIME_CLASS(CModelEditorView));
+    AddDocTemplate(pDocTemplate);
 
-	// initialise the MF file services (read in the command line arguments too)
-	if (!parseCommandLineMF())
-		return FALSE;
+#ifdef USE_MEMHOOK
+    // Re-enabling custom allocation
+    BW::Memhook::allocFuncs(bwAllocFuncs);
+#endif
 
-	if( !s_LanguageFile.value().empty() )
-		StringProvider::instance().load( BWResource::openSection( s_LanguageFile ) );
-	BW::vector<DataSectionPtr> languages;
+    // Assume there will be nothing to load initially,
+    // Do it now since "parseCommandLineMF" may set it
+    modelToLoad_ = "";
+    modelToAdd_  = "";
 
-	Options::pRoot()->openSections( "language", languages );
-	if (!languages.empty())
-	{
-		for( BW::vector<DataSectionPtr>::iterator iter = languages.begin(); iter != languages.end(); ++iter )
-			if( !(*iter)->asString().empty() )
-				StringProvider::instance().load( BWResource::openSection( (*iter)->asString() ) );
-	}
-	else
-	{
-		// Force English:
-		StringProvider::instance().load( BWResource::openSection("helpers/languages/modeleditor_gui_en.xml"));
-		StringProvider::instance().load( BWResource::openSection("helpers/languages/modeleditor_rc_en.xml" ));
-		StringProvider::instance().load( BWResource::openSection("helpers/languages/files_en.xml"          ));
-	}
+    // Parse command line for standard shell commands, DDE, file open
+    MFCommandLineInfo cmdInfo;
+    ParseCommandLine(cmdInfo);
 
-	BW::string currentLanguage = Options::getOptionString( "currentLanguage", "" );
-	BW::string currentCountry  = Options::getOptionString( "currentCountry", "" );
-	if ( currentLanguage != "" )
-		StringProvider::instance().setLanguages( bw_utf8tow( currentLanguage ), bw_utf8tow( currentCountry ) );
-	else
-		StringProvider::instance().setLanguage();
+    // initialise the MF file services (read in the command line arguments too)
+    if (!parseCommandLineMF())
+        return FALSE;
 
-	WindowTextNotifier::instance();
+    if (!s_LanguageFile.value().empty())
+        StringProvider::instance().load(
+          BWResource::openSection(s_LanguageFile));
+    BW::vector<DataSectionPtr> languages;
 
-	CooperativeMoo::init();
+    Options::pRoot()->openSections("language", languages);
+    if (!languages.empty()) {
+        for (BW::vector<DataSectionPtr>::iterator iter = languages.begin();
+             iter != languages.end();
+             ++iter)
+            if (!(*iter)->asString().empty())
+                StringProvider::instance().load(
+                  BWResource::openSection((*iter)->asString()));
+    } else {
+        // Force English:
+        StringProvider::instance().load(
+          BWResource::openSection("helpers/languages/modeleditor_gui_en.xml"));
+        StringProvider::instance().load(
+          BWResource::openSection("helpers/languages/modeleditor_rc_en.xml"));
+        StringProvider::instance().load(
+          BWResource::openSection("helpers/languages/files_en.xml"));
+    }
 
-	GUI::Manager::init();
+    BW::string currentLanguage =
+      Options::getOptionString("currentLanguage", "");
+    BW::string currentCountry = Options::getOptionString("currentCountry", "");
+    if (currentLanguage != "")
+        StringProvider::instance().setLanguages(bw_utf8tow(currentLanguage),
+                                                bw_utf8tow(currentCountry));
+    else
+        StringProvider::instance().setLanguage();
 
-	// Dispatch commands specified on the command line.  Will return FALSE if
-	// app was launched with /RegServer, /Register, /Unregserver or /Unregister.
-	// This also creates all the GUI windows
-	if (!ProcessShellCommand(cmdInfo))
-		return FALSE;
+    WindowTextNotifier::instance();
 
-	CMainFrame * mainFrame = (CMainFrame *)(m_pMainWnd);
-	CWnd* mainView = mainFrame->GetActiveView();
-	dynamic_cast< CModelEditorView * >( mainView )->setEditorApp( this );
+    CooperativeMoo::init();
 
-	// The one and only window has been initialised, so show and update it
-	m_pMainWnd->ShowWindow(SW_SHOWMAXIMIZED);
-	m_pMainWnd->UpdateWindow();
+    GUI::Manager::init();
 
-	// initialise the MF App components
-	ASSERT( !mfApp_ );
-	mfApp_ = new App;
+    // Dispatch commands specified on the command line.  Will return FALSE if
+    // app was launched with /RegServer, /Register, /Unregserver or /Unregister.
+    // This also creates all the GUI windows
+    if (!ProcessShellCommand(cmdInfo))
+        return FALSE;
 
-	ASSERT( !meShell_ );
-	meShell_ = new MeShell;
+    CMainFrame* mainFrame = (CMainFrame*)(m_pMainWnd);
+    CWnd*       mainView  = mainFrame->GetActiveView();
+    dynamic_cast<CModelEditorView*>(mainView)->setEditorApp(this);
 
-	HINSTANCE hInst = AfxGetInstanceHandle();
+    // The one and only window has been initialised, so show and update it
+    m_pMainWnd->ShowWindow(SW_SHOWMAXIMIZED);
+    m_pMainWnd->UpdateWindow();
 
-	if (!mfApp_->init(
-		hInst, m_pMainWnd->GetSafeHwnd(), mainView->GetSafeHwnd(),
-		mainFrame, MeShell::initApp ))
-	{
-		ERROR_MSG( "CModelEditorApp::InitInstance - init failed\n" );
-		return FALSE;
-	}
+    // initialise the MF App components
+    ASSERT(!mfApp_);
+    mfApp_ = new App;
 
-	//give a warning if there is no terrain info or space
-	ChunkSpacePtr pSpace = ChunkManager::instance().cameraSpace();
-	if (!pSpace || (pSpace && !pSpace->terrainSettings().exists()))
-	{
-		ERROR_MSG( "Could not open the default space. Terrain and Game Lighting preview will be disabled.\n");
-	}
+    ASSERT(!meShell_);
+    meShell_ = new MeShell;
 
-	ASSERT( !meApp_ );
-	meApp_ = new MeApp( mainFrame, this );
-	meApp_->mutant()->setAssetClient( meShell_->assetClient() );
+    HINSTANCE hInst = AfxGetInstanceHandle();
 
-	// need to load the adapter before the load thread begins, but after the modules
-	pPythonAdapter_ = new MEPythonAdapter();
+    if (!mfApp_->init(hInst,
+                      m_pMainWnd->GetSafeHwnd(),
+                      mainView->GetSafeHwnd(),
+                      mainFrame,
+                      MeShell::initApp)) {
+        ERROR_MSG("CModelEditorApp::InitInstance - init failed\n");
+        return FALSE;
+    }
 
-	// Prepare the GUI
-	GUI::Manager::instance().optionFunctor().setOption( this );
+    // give a warning if there is no terrain info or space
+    ChunkSpacePtr pSpace = ChunkManager::instance().cameraSpace();
+    if (!pSpace || (pSpace && !pSpace->terrainSettings().exists())) {
+        ERROR_MSG("Could not open the default space. Terrain and Game Lighting "
+                  "preview will be disabled.\n");
+    }
 
-	DataSectionPtr section = BWResource::openSection( "resources/data/gui.xml" );
-	for( int i = 0; i < section->countChildren(); ++i )
-		GUI::Manager::instance().add( new GUI::Item( section->openChild( i ) ) );
+    ASSERT(!meApp_);
+    meApp_ = new MeApp(mainFrame, this);
+    meApp_->mutant()->setAssetClient(meShell_->assetClient());
 
-	menuHelper_.reset( new GUI::MenuHelper( mainFrame->GetSafeHwnd() ) );
+    // need to load the adapter before the load thread begins, but after the
+    // modules
+    pPythonAdapter_ = new MEPythonAdapter();
 
-	//Setup the main menu
-	GUI::Manager::instance().add(
-		new GUI::Menu( "MainMenu", menuHelper_.get() ));
+    // Prepare the GUI
+    GUI::Manager::instance().optionFunctor().setOption(this);
 
-	updateLanguageList();
+    DataSectionPtr section = BWResource::openSection("resources/data/gui.xml");
+    for (int i = 0; i < section->countChildren(); ++i)
+        GUI::Manager::instance().add(new GUI::Item(section->openChild(i)));
 
-	mainFrame->DrawMenuBar();
+    menuHelper_.reset(new GUI::MenuHelper(mainFrame->GetSafeHwnd()));
 
-	// Add the toolbar(s) through the BaseMainFrame base class
-	mainFrame->createToolbars( "AppToolbars" );
+    // Setup the main menu
+    GUI::Manager::instance().add(new GUI::Menu("MainMenu", menuHelper_.get()));
 
-	// GUITABS Tearoff tabs system and AssetBrowser init and setup
-	PanelManager::init( mainFrame, mainView, this, mainFrame );
+    updateLanguageList();
 
-	//Add some drop acceptance functors to the Asset Browser
-	UalManager::instance().dropManager().add(
-		new UalDropFunctor< CModelEditorApp >( mainView, "model", this, &CModelEditorApp::loadFile, true ),
-		false /*can't highlight the DX view*/ );
+    mainFrame->DrawMenuBar();
 
-	UalManager::instance().dropManager().add(
-		new UalDropFunctor< CModelEditorApp >( mainView, "mvl", this, &CModelEditorApp::loadFile ),
-		false /*can't highlight the DX view*/  );
+    // Add the toolbar(s) through the BaseMainFrame base class
+    mainFrame->createToolbars("AppToolbars");
 
-	UalManager::instance().dropManager().add(
-		new UalDropFunctor< CModelEditorApp >( mainView, "", this, &CModelEditorApp::loadFile ),
-		false /*can't highlight the DX view*/  );
+    // GUITABS Tearoff tabs system and AssetBrowser init and setup
+    PanelManager::init(mainFrame, mainView, this, mainFrame);
 
-	BgTaskManager::instance().initWatchers( "ModelEditor" );
-	FileIOTaskManager::instance().initWatchers( "FileIO" );
+    // Add some drop acceptance functors to the Asset Browser
+    UalManager::instance().dropManager().add(
+      new UalDropFunctor<CModelEditorApp>(
+        mainView, "model", this, &CModelEditorApp::loadFile, true),
+      false /*can't highlight the DX view*/);
 
-	BgTaskManager::instance().startThreads( 1 );
-	FileIOTaskManager::instance().startThreads( 1 );
-	
-	if (modelToLoad_ != "")
-	{
-		modelToLoad_ = BWResource::dissolveFilename( modelToLoad_ );
-	}
-	else if (Options::getOptionInt( "startup/loadLastModel", 1 ))
-	{
-		modelToLoad_ = Options::getOptionString( "models/file0", "" );
-		
-		if (!Options::getOptionBool( "startup/lastLoadOK", true ))
-		{
-			static char modelName[256];
-			strcpy( modelName, modelToLoad_.c_str() );
-			AfxBeginThread( &CModelEditorApp::loadErrorMsg, modelName );
+    UalManager::instance().dropManager().add(
+      new UalDropFunctor<CModelEditorApp>(
+        mainView, "mvl", this, &CModelEditorApp::loadFile),
+      false /*can't highlight the DX view*/);
 
-			//Remove this model from the MRU models list
-			MRU::instance().update( "models", modelToLoad_, false );
+    UalManager::instance().dropManager().add(
+      new UalDropFunctor<CModelEditorApp>(
+        mainView, "", this, &CModelEditorApp::loadFile),
+      false /*can't highlight the DX view*/);
 
-			Options::setOptionBool( "startup/lastLoadOK", true );
-			Options::save();
+    BgTaskManager::instance().initWatchers("ModelEditor");
+    FileIOTaskManager::instance().initWatchers("FileIO");
 
-			modelToLoad_ = "";
-		}
-	}
+    BgTaskManager::instance().startThreads(1);
+    FileIOTaskManager::instance().startThreads(1);
 
-	//If there is no model to load, restore the cursor
-	if (modelToLoad_ == "")
-	{
-		updateRecentList("models");
-		SetCursor( ::LoadCursor( NULL, IDC_ARROW ));
-	}
+    if (modelToLoad_ != "") {
+        modelToLoad_ = BWResource::dissolveFilename(modelToLoad_);
+    } else if (Options::getOptionInt("startup/loadLastModel", 1)) {
+        modelToLoad_ = Options::getOptionString("models/file0", "");
 
-	updateRecentList("lights");
+        if (!Options::getOptionBool("startup/lastLoadOK", true)) {
+            static char modelName[256];
+            strcpy(modelName, modelToLoad_.c_str());
+            AfxBeginThread(&CModelEditorApp::loadErrorMsg, modelName);
 
-	initDone_ = true;
+            // Remove this model from the MRU models list
+            MRU::instance().update("models", modelToLoad_, false);
 
-	if (!Options::optionsFileExisted())
-	{
-		Options::setOptionInt("messages/errorMsgs", 1); // turn on showing of error messages
-		ERROR_MSG("options.xml is missing\n");
-	}
-	//oldView->SetFocus();
+            Options::setOptionBool("startup/lastLoadOK", true);
+            Options::save();
 
-	//mainFrame->SetForegroundWindow();
+            modelToLoad_ = "";
+        }
+    }
 
-	// call DragAcceptFiles only if there's a suffix
-	//  In an SDI app, this should occur after ProcessShellCommand
+    // If there is no model to load, restore the cursor
+    if (modelToLoad_ == "") {
+        updateRecentList("models");
+        SetCursor(::LoadCursor(NULL, IDC_ARROW));
+    }
 
-	/* Disable Umbra if it is enabled
-	 * This fixes mouse lag issues caused by the present thread allowing the cpu to 
-	 * get a few frames ahead of the GPU and then stalling for it to catch up
-	 * Note identical code is set in the particle editor InitInstance code, please
-	 * update it if you update the code below.
-	 */
-	#if UMBRA_ENABLE
-	if (Options::getOptionInt( "render/useUmbra", 1) == 1 )
-	{
-		WARNING_MSG( "Umbra is enabled in ModelEditor, It will now be disabled\n" );
-	}
-	Options::setOptionInt( "render/useUmbra", 0 );
-	ChunkManager::instance().umbra()->umbraEnabled( false );
-	#endif
+    updateRecentList("lights");
 
-	Automation::parseCommandLine( m_lpCmdLine );
+    initDone_ = true;
 
-	return TRUE;
+    if (!Options::optionsFileExisted()) {
+        Options::setOptionInt("messages/errorMsgs",
+                              1); // turn on showing of error messages
+        ERROR_MSG("options.xml is missing\n");
+    }
+// oldView->SetFocus();
+
+// mainFrame->SetForegroundWindow();
+
+// call DragAcceptFiles only if there's a suffix
+//  In an SDI app, this should occur after ProcessShellCommand
+
+/* Disable Umbra if it is enabled
+ * This fixes mouse lag issues caused by the present thread allowing the cpu to
+ * get a few frames ahead of the GPU and then stalling for it to catch up
+ * Note identical code is set in the particle editor InitInstance code, please
+ * update it if you update the code below.
+ */
+#if UMBRA_ENABLE
+    if (Options::getOptionInt("render/useUmbra", 1) == 1) {
+        WARNING_MSG(
+          "Umbra is enabled in ModelEditor, It will now be disabled\n");
+    }
+    Options::setOptionInt("render/useUmbra", 0);
+    ChunkManager::instance().umbra()->umbraEnabled(false);
+#endif
+
+    Automation::parseCommandLine(m_lpCmdLine);
+
+    return TRUE;
 }
 
 BOOL CModelEditorApp::parseCommandLineMF()
 {
-	BW_GUARD;
-	
-	// parse command line
-	const int MAX_ARGS = 20;
-	char * argv[ MAX_ARGS ];
-	int argc = 0;
+    BW_GUARD;
 
-	char cmdline [32768];
-	bw_wtoutf8( s_pCmdLine, wcslen( s_pCmdLine ), cmdline, ARRAY_SIZE( cmdline ) );
-	char * str = cmdline;
-	while (char * token = StringUtils::retrieveCmdTokenT( str ))
-	{
-		if (argc >= MAX_ARGS)
-		{
-			ERROR_MSG( "ModelEditor::parseCommandLineMF: Too many arguments!!\n" );
-			return FALSE;
-		}
-		if (argc && (!strcmp( argv[ argc-1 ], "-o" ) || !strcmp( argv[ argc-1 ], "-O" )))
-		{
-			modelToLoad_ = token;
-		}
-		argv[argc++] = token;
-	}
-	
-	return BWResource::init( argc, (const char **)argv ) &&
-		Options::init( argc, argv, L"modeleditor.options" );
+    // parse command line
+    const int MAX_ARGS = 20;
+    char*     argv[MAX_ARGS];
+    int       argc = 0;
+
+    char cmdline[32768];
+    bw_wtoutf8(s_pCmdLine, wcslen(s_pCmdLine), cmdline, ARRAY_SIZE(cmdline));
+    char* str = cmdline;
+    while (char* token = StringUtils::retrieveCmdTokenT(str)) {
+        if (argc >= MAX_ARGS) {
+            ERROR_MSG(
+              "ModelEditor::parseCommandLineMF: Too many arguments!!\n");
+            return FALSE;
+        }
+        if (argc &&
+            (!strcmp(argv[argc - 1], "-o") || !strcmp(argv[argc - 1], "-O"))) {
+            modelToLoad_ = token;
+        }
+        argv[argc++] = token;
+    }
+
+    return BWResource::init(argc, (const char**)argv) &&
+           Options::init(argc, argv, L"modeleditor.options");
 }
 
-void CModelEditorApp::updateRecentList( const BW::string& kind )
+void CModelEditorApp::updateRecentList(const BW::string& kind)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	GUI::ItemPtr recentFiles = GUI::Manager::instance()( "/MainMenu/File/Recent_" + kind );
-	if( recentFiles )
-	{
-		while( recentFiles->num() )
-			recentFiles->remove( 0 );
+    GUI::ItemPtr recentFiles =
+      GUI::Manager::instance()("/MainMenu/File/Recent_" + kind);
+    if (recentFiles) {
+        while (recentFiles->num())
+            recentFiles->remove(0);
 
-		BW::vector<BW::string> files;
-		MRU::instance().read(kind, files);
+        BW::vector<BW::string> files;
+        MRU::instance().read(kind, files);
 
-		for( unsigned i=0; i < files.size(); i++ )
-		{
-			BW::stringstream name, displayName;
-			name << kind << i;
-			if (i <= 9)
-				displayName << '&' << i << "  " << files[i];
-			else
-				displayName << "    " << files[i];
-			GUI::ItemPtr item = new GUI::Item( "ACTION", name.str(), displayName.str(),
-				"",	"", "", "recent_"+kind, "", "" );
-			item->set( "fileName", files[i] );
-			recentFiles->add( item );
-		}
-	}
+        for (unsigned i = 0; i < files.size(); i++) {
+            BW::stringstream name, displayName;
+            name << kind << i;
+            if (i <= 9)
+                displayName << '&' << i << "  " << files[i];
+            else
+                displayName << "    " << files[i];
+            GUI::ItemPtr item = new GUI::Item("ACTION",
+                                              name.str(),
+                                              displayName.str(),
+                                              "",
+                                              "",
+                                              "",
+                                              "recent_" + kind,
+                                              "",
+                                              "");
+            item->set("fileName", files[i]);
+            recentFiles->add(item);
+        }
+    }
 }
 
 void CModelEditorApp::updateLanguageList()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	GUI::ItemPtr languageList = GUI::Manager::instance()( "/MainMenu/Languages/LanguageList" );
-	if( languageList )
-	{
-		while( languageList->num() )
-			languageList->remove( 0 );
-		for( unsigned int i = 0; i < StringProvider::instance().languageNum(); ++i )
-		{
-			LanguagePtr l = StringProvider::instance().getLanguage( i );
-			BW::wstringstream wname, wdisplayName;
-			wname << L"language" << i;
-			wdisplayName << L'&' << l->getLanguageName();
-			BW::string name, displayName;
-			bw_wtoutf8( wname.str(), name );
-			bw_wtoutf8( wdisplayName.str(), displayName );
-			GUI::ItemPtr item = new GUI::Item( "CHILD", name, displayName,
-				"",	"", "", "setLanguage", "updateLanguage", "" );
-			item->set( "LanguageName", l->getIsoLangNameUTF8() );
-			item->set( "CountryName", l->getIsoCountryNameUTF8() );
-			languageList->add( item );
-		}
-	}
+    GUI::ItemPtr languageList =
+      GUI::Manager::instance()("/MainMenu/Languages/LanguageList");
+    if (languageList) {
+        while (languageList->num())
+            languageList->remove(0);
+        for (unsigned int i = 0; i < StringProvider::instance().languageNum();
+             ++i) {
+            LanguagePtr       l = StringProvider::instance().getLanguage(i);
+            BW::wstringstream wname, wdisplayName;
+            wname << L"language" << i;
+            wdisplayName << L'&' << l->getLanguageName();
+            BW::string name, displayName;
+            bw_wtoutf8(wname.str(), name);
+            bw_wtoutf8(wdisplayName.str(), displayName);
+            GUI::ItemPtr item = new GUI::Item("CHILD",
+                                              name,
+                                              displayName,
+                                              "",
+                                              "",
+                                              "",
+                                              "setLanguage",
+                                              "updateLanguage",
+                                              "");
+            item->set("LanguageName", l->getIsoLangNameUTF8());
+            item->set("CountryName", l->getIsoCountryNameUTF8());
+            languageList->add(item);
+        }
+    }
 }
 
-MEPythonAdapter * CModelEditorApp::pythonAdapter() const
+MEPythonAdapter* CModelEditorApp::pythonAdapter() const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (!pPythonAdapter_->hasScriptObject())
-	{
-		return NULL;
-	}
-	return pPythonAdapter_;
+    if (!pPythonAdapter_->hasScriptObject()) {
+        return NULL;
+    }
+    return pPythonAdapter_;
 }
 
 BOOL CModelEditorApp::OnIdle(LONG lCount)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	static bool s_justLoaded = false;
-	
-	// The following two lines need to be uncommented for toolbar docking to
-	// work properly, and the application's toolbars have to inherit from
-	// GUI::CGUIToolBar
-	if ( CWinApp::OnIdle( lCount ) )
-		return TRUE; // give priority to windows GUI as MS says it should be.
+    static bool s_justLoaded = false;
 
-	if (getMainFrame()->cursorOverGraphicsWnd())
-	{
-		::SetFocus( MeShell::instance().hWndGraphics() );
-	}
+    // The following two lines need to be uncommented for toolbar docking to
+    // work properly, and the application's toolbars have to inherit from
+    // GUI::CGUIToolBar
+    if (CWinApp::OnIdle(lCount))
+        return TRUE; // give priority to windows GUI as MS says it should be.
 
-	if (s_justLoaded)
-	{
-		Options::setOptionBool( "startup/lastLoadOK", true );
-		Options::save();
-		s_justLoaded = false;
-	}
+    if (getMainFrame()->cursorOverGraphicsWnd()) {
+        ::SetFocus(MeShell::instance().hWndGraphics());
+    }
 
-	if (modelToLoad_ != "")
-	{
-		SetCursor( ::LoadCursor( NULL, IDC_WAIT ));
+    if (s_justLoaded) {
+        Options::setOptionBool("startup/lastLoadOK", true);
+        Options::save();
+        s_justLoaded = false;
+    }
 
-		BW::string::size_type first = modelToLoad_.rfind("/") + 1;
-		BW::string::size_type last = modelToLoad_.rfind(".");
-		BW::string modelName = modelToLoad_.substr( first, last-first );
+    if (modelToLoad_ != "") {
+        SetCursor(::LoadCursor(NULL, IDC_WAIT));
 
-		int numAnim = MeApp::instance().mutant()->animCount( modelToLoad_ );
-		bool needsBBCalc = Options::getOptionInt( "settings/regenBBOnLoad", 1 ) &&
-			(!MeApp::instance().mutant()->hasVisibilityBox( modelToLoad_ ));
-		
-		CLoadingDialog* load = NULL;
-		if (numAnim > 4)
-		{
-			load = new CLoadingDialog( Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/LOADING", modelName ) );
-			load->setRange( needsBBCalc ? 2*numAnim + 1 : numAnim + 1 );
-			Model::setAnimLoadCallback(
-				new AnimLoadFunctor< CLoadingDialog >(load, &CLoadingDialog::step) );
-		}
-			
-		ME_INFO_MSGW( Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/LOADING_MODEL", modelToLoad_ ) );
+        BW::string::size_type first = modelToLoad_.rfind("/") + 1;
+        BW::string::size_type last  = modelToLoad_.rfind(".");
+        BW::string modelName        = modelToLoad_.substr(first, last - first);
 
-		Options::setOptionBool( "startup/lastLoadOK", false );
-		Options::save();
+        int  numAnim = MeApp::instance().mutant()->animCount(modelToLoad_);
+        bool needsBBCalc =
+          Options::getOptionInt("settings/regenBBOnLoad", 1) &&
+          (!MeApp::instance().mutant()->hasVisibilityBox(modelToLoad_));
 
-		if (MeApp::instance().mutant()->loadModel( modelToLoad_ ))
-		{
-			s_justLoaded = true;
+        CLoadingDialog* load = NULL;
+        if (numAnim > 4) {
+            load = new CLoadingDialog(
+              Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/LOADING", modelName));
+            load->setRange(needsBBCalc ? 2 * numAnim + 1 : numAnim + 1);
+            Model::setAnimLoadCallback(
+              new AnimLoadFunctor<CLoadingDialog>(load, &CLoadingDialog::step));
+        }
 
-			if (needsBBCalc)
-			{
-				MeApp::instance().mutant()->updateModelAnimations( -1.f );
+        ME_INFO_MSGW(Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/LOADING_MODEL",
+                              modelToLoad_));
 
-				MeApp::instance().mutant()->recreateModelVisibilityBox(
-					new AnimLoadFunctor< CLoadingDialog >
-					(load, &CLoadingDialog::step),
-					false );
+        Options::setOptionBool("startup/lastLoadOK", false);
+        Options::save();
 
-				//Let the user know
-				ME_WARNING_MSGW( Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/VIS_BOX_AUTO_CALC") );
+        if (MeApp::instance().mutant()->loadModel(modelToLoad_)) {
+            s_justLoaded = true;
 
-				UndoRedo::instance().forceSave();
-			}
-			
-			MRU::instance().update( "models", modelToLoad_, true );
-			updateRecentList( "models" );
+            if (needsBBCalc) {
+                MeApp::instance().mutant()->updateModelAnimations(-1.f);
 
-			MeModule::instance().materialPreviewMode( false );
-			
-			MeApp::instance().camera()->boundingBox(
-				MeApp::instance().mutant()->zoomBoundingBox() );
+                MeApp::instance().mutant()->recreateModelVisibilityBox(
+                  new AnimLoadFunctor<CLoadingDialog>(load,
+                                                      &CLoadingDialog::step),
+                  false);
 
-			if (!!Options::getOptionInt( "settings/zoomOnLoad", 1 ))
-			{
-				MeApp::instance().camera()->zoomToExtents( false );
-			}
+                // Let the user know
+                ME_WARNING_MSGW(
+                  Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/VIS_BOX_AUTO_CALC"));
 
-			MeApp::instance().camera()->render( 0.f );
+                UndoRedo::instance().forceSave();
+            }
 
-			PanelManager::instance().ualAddItemToHistory( modelToLoad_ );
+            MRU::instance().update("models", modelToLoad_, true);
+            updateRecentList("models");
 
-			// Forcefully update any gui stuff
-			getMainFrame()->updateGUI( true );
-		}
-		else
-		{
-			ERROR_MSG( "Unable to load \"%s\" since an error occured.\n", modelToLoad_.c_str() );
-			
-			//Remove this model from the MRU models list
-			MRU::instance().update( "models", modelToLoad_, false );
-			updateRecentList( "models" );
-		}
-		SetCursor( ::LoadCursor( NULL, IDC_ARROW ));
-		modelToLoad_ = "";
-		if (load)
-		{
-			Model::setAnimLoadCallback( NULL );
-			bw_safe_delete( load );
-		}
-	}
-	else if (modelToAdd_ != "")
-	{
-		if (MeApp::instance().mutant()->addModel( modelToAdd_ ))
-		{
-			MRU::instance().update( "models", modelToAdd_, true );
-			updateRecentList( "models" );
-				
-			MeApp::instance().camera()->boundingBox(
-					MeApp::instance().mutant()->zoomBoundingBox() );
+            MeModule::instance().materialPreviewMode(false);
 
-			if (!!Options::getOptionInt( "settings/zoomOnLoad", 1 ))
-			{
-				MeApp::instance().camera()->zoomToExtents( false );
-			}
+            MeApp::instance().camera()->boundingBox(
+              MeApp::instance().mutant()->zoomBoundingBox());
 
-			MeApp::instance().camera()->render( 0.f );
+            if (!!Options::getOptionInt("settings/zoomOnLoad", 1)) {
+                MeApp::instance().camera()->zoomToExtents(false);
+            }
 
-			ME_INFO_MSGW( Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/ADDED_MODEL", modelToAdd_ ) );
+            MeApp::instance().camera()->render(0.f);
 
-			PanelManager::instance().ualAddItemToHistory( modelToAdd_ );
-		}
-		else
-		{
-			ME_WARNING_MSGW( Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/UNABLE_ADD_MODEL", modelToAdd_ ) );
-		}
-		modelToAdd_ = "";
-	}
+            PanelManager::instance().ualAddItemToHistory(modelToLoad_);
 
-	CMainFrame * mainFrame = (CMainFrame *)(m_pMainWnd);
-	HWND fgWin = GetForegroundWindow();
+            // Forcefully update any gui stuff
+            getMainFrame()->updateGUI(true);
+        } else {
+            ERROR_MSG("Unable to load \"%s\" since an error occured.\n",
+                      modelToLoad_.c_str());
 
-	bool isWindowActive =
-		fgWin == mainFrame->GetSafeHwnd() || GetParent( fgWin ) == mainFrame->GetSafeHwnd();
+            // Remove this model from the MRU models list
+            MRU::instance().update("models", modelToLoad_, false);
+            updateRecentList("models");
+        }
+        SetCursor(::LoadCursor(NULL, IDC_ARROW));
+        modelToLoad_ = "";
+        if (load) {
+            Model::setAnimLoadCallback(NULL);
+            bw_safe_delete(load);
+        }
+    } else if (modelToAdd_ != "") {
+        if (MeApp::instance().mutant()->addModel(modelToAdd_)) {
+            MRU::instance().update("models", modelToAdd_, true);
+            updateRecentList("models");
 
-	if (!CooperativeMoo::canUseMoo( this, isWindowActive ))
-	{
-		// If activate failed, because the app is minimised, there's not enough
-		// videomem to restore, or the app is in the background and other apps
-		// we need to cooperate with are running, we just try again later.
-		mfApp_->calculateFrameTime();
-	} 
-	else
-	{
-		/*
-		// measure the update time
-		uint64 beforeTime = timestamp();
-		//*/
+            MeApp::instance().camera()->boundingBox(
+              MeApp::instance().mutant()->zoomBoundingBox());
 
-		if ( MeApp::instance().mutant()->texMemUpdate() )
-		{
-			mainFrame->setStatusText( ID_INDICATOR_TETXURE_MEM, 
-				Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/TEXTURE_MEM", Utilities::memorySizeToStr( MeApp::instance().mutant()->texMem() )) );
-		}
-	
-		mfApp_->updateFrame();
+            if (!!Options::getOptionInt("settings/zoomOnLoad", 1)) {
+                MeApp::instance().camera()->zoomToExtents(false);
+            }
 
-		// update any gui stuff
-		CModelEditorApp::s_updateWatch.start();
-		mainFrame->updateGUI();
-		CModelEditorApp::s_updateWatch.stop();
-	
-		/*
-		uint64 afterTime = timestamp();
-		float lastUpdateMilliseconds = (float) (((int64)(afterTime - beforeTime)) / stampsPerSecondD()) * 1000.f;
+            MeApp::instance().camera()->render(0.f);
 
-		float desiredFrameRate_ = 60.f;
-		const float desiredFrameTime = 1000.f / desiredFrameRate_;	// milliseconds
+            ME_INFO_MSGW(Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/ADDED_MODEL",
+                                  modelToAdd_));
 
-		if (desiredFrameTime > lastUpdateMilliseconds)
-		{
-			float compensation = desiredFrameTime - lastUpdateMilliseconds;
-			Sleep((int)compensation);
-		}
-		//*/
-	}
+            PanelManager::instance().ualAddItemToHistory(modelToAdd_);
+        } else {
+            ME_WARNING_MSGW(Localise(
+              L"MODELEDITOR/GUI/MODEL_EDITOR/UNABLE_ADD_MODEL", modelToAdd_));
+        }
+        modelToAdd_ = "";
+    }
 
-	return TRUE;
+    CMainFrame* mainFrame = (CMainFrame*)(m_pMainWnd);
+    HWND        fgWin     = GetForegroundWindow();
+
+    bool isWindowActive = fgWin == mainFrame->GetSafeHwnd() ||
+                          GetParent(fgWin) == mainFrame->GetSafeHwnd();
+
+    if (!CooperativeMoo::canUseMoo(this, isWindowActive)) {
+        // If activate failed, because the app is minimised, there's not enough
+        // videomem to restore, or the app is in the background and other apps
+        // we need to cooperate with are running, we just try again later.
+        mfApp_->calculateFrameTime();
+    } else {
+        /*
+        // measure the update time
+        uint64 beforeTime = timestamp();
+        //*/
+
+        if (MeApp::instance().mutant()->texMemUpdate()) {
+            mainFrame->setStatusText(
+              ID_INDICATOR_TETXURE_MEM,
+              Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/TEXTURE_MEM",
+                       Utilities::memorySizeToStr(
+                         MeApp::instance().mutant()->texMem())));
+        }
+
+        mfApp_->updateFrame();
+
+        // update any gui stuff
+        CModelEditorApp::s_updateWatch.start();
+        mainFrame->updateGUI();
+        CModelEditorApp::s_updateWatch.stop();
+
+        /*
+        uint64 afterTime = timestamp();
+        float lastUpdateMilliseconds = (float) (((int64)(afterTime -
+        beforeTime)) / stampsPerSecondD()) * 1000.f;
+
+        float desiredFrameRate_ = 60.f;
+        const float desiredFrameTime = 1000.f / desiredFrameRate_;	//
+        milliseconds
+
+        if (desiredFrameTime > lastUpdateMilliseconds)
+        {
+            float compensation = desiredFrameTime - lastUpdateMilliseconds;
+            Sleep((int)compensation);
+        }
+        //*/
+    }
+
+    return TRUE;
 }
 
 int CModelEditorApp::InternalExitInstance()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if ( mfApp_ )
-	{
-		BgTaskManager::instance().stopAll();
+    if (mfApp_) {
+        BgTaskManager::instance().stopAll();
 
-		GizmoManager::instance().removeAllGizmo();
-		while ( ToolManager::instance().tool() )
-		{
-			ToolManager::instance().popTool();
-		}
+        GizmoManager::instance().removeAllGizmo();
+        while (ToolManager::instance().tool()) {
+            ToolManager::instance().popTool();
+        }
 
-		delete pPythonAdapter_;
-		pPythonAdapter_ = NULL;
+        delete pPythonAdapter_;
+        pPythonAdapter_ = NULL;
 
-		mfApp_->fini();
-		delete mfApp_;
-		mfApp_ = NULL;
+        mfApp_->fini();
+        delete mfApp_;
+        mfApp_ = NULL;
 
-		meShell_->fini();
-		delete meShell_;
-		meShell_ = NULL;
+        meShell_->fini();
+        delete meShell_;
+        meShell_ = NULL;
 
-		MsgHandler::fini();
-		
-		PanelManager::fini();
+        MsgHandler::fini();
 
-		GUI::Manager::fini();
+        PanelManager::fini();
 
-		DogWatchManager::fini();
+        GUI::Manager::fini();
 
-		WindowTextNotifier::fini();
-		Options::fini();
+        DogWatchManager::fini();
 
-		Name::fini();
-	}
+        WindowTextNotifier::fini();
+        Options::fini();
 
-	BWResource::fini();
-	DataSectionCensus::fini();
+        Name::fini();
+    }
 
-	initDone_ = false;
-	
-	delete [] s_pCmdLine;
+    BWResource::fini();
+    DataSectionCensus::fini();
 
-	return CWinApp::ExitInstance();
+    initDone_ = false;
+
+    delete[] s_pCmdLine;
+
+    return CWinApp::ExitInstance();
 }
 
 int CModelEditorApp::InternalRun()
 {
-	return CWinApp::Run();
+    return CWinApp::Run();
 }
 
-BW::string CModelEditorApp::get( const BW::string& key ) const
+BW::string CModelEditorApp::get(const BW::string& key) const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return Options::getOptionString( key );
+    return Options::getOptionString(key);
 }
 
-bool CModelEditorApp::exist( const BW::string& key ) const
+bool CModelEditorApp::exist(const BW::string& key) const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return Options::optionExists( key );
+    return Options::optionExists(key);
 }
 
-void CModelEditorApp::set( const BW::string& key, const BW::string& value )
+void CModelEditorApp::set(const BW::string& key, const BW::string& value)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	Options::setOptionString( key, value );
+    Options::setOptionString(key, value);
 }
 
-bool CModelEditorApp::loadFile( UalItemInfo* ii )
+bool CModelEditorApp::loadFile(UalItemInfo* ii)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return pPythonAdapter_->callString( "openFile", 
-		BWResource::dissolveFilename( bw_wtoutf8( ii->longText() ) ) );
+    return pPythonAdapter_->callString(
+      "openFile", BWResource::dissolveFilename(bw_wtoutf8(ii->longText())));
 }
 
 //==============================================================================
-void CModelEditorApp::loadLights( const char* lightsName )
+void CModelEditorApp::loadLights(const char* lightsName)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	PageLights* lightPage
-		= (PageLights*) PanelManager::instance().panels().getContent( PageLights::contentID );
-	lightPage->openLightFile( bw_utf8tow( lightsName ) );
-	updateRecentList( "lights" );
+    PageLights* lightPage =
+      (PageLights*)PanelManager::instance().panels().getContent(
+        PageLights::contentID);
+    lightPage->openLightFile(bw_utf8tow(lightsName));
+    updateRecentList("lights");
 }
-
 
 // File Menu Add
 void CModelEditorApp::OnFileAdd()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	static wchar_t szFilter[] = L"Model (*.model)|*.model||";
-	BWFileDialog fileDlg (true, L"", L"", BWFileDialog::FD_WRITABLE_AND_EXISTS, szFilter);
+    static wchar_t szFilter[] = L"Model (*.model)|*.model||";
+    BWFileDialog   fileDlg(
+      true, L"", L"", BWFileDialog::FD_WRITABLE_AND_EXISTS, szFilter);
 
-	BW::string modelsDir;
-	MRU::instance().getDir( "models" ,modelsDir );
-	BW::wstring wmodelsDir = bw_utf8tow( modelsDir );
-	fileDlg.initialDir( wmodelsDir.c_str() );
+    BW::string modelsDir;
+    MRU::instance().getDir("models", modelsDir);
+    BW::wstring wmodelsDir = bw_utf8tow(modelsDir);
+    fileDlg.initialDir(wmodelsDir.c_str());
 
-	if (fileDlg.showDialog())
-	{
-		BW::string modelPath = BWResource::dissolveFilename( bw_wtoutf8( fileDlg.getFileName() ));
+    if (fileDlg.showDialog()) {
+        BW::string modelPath =
+          BWResource::dissolveFilename(bw_wtoutf8(fileDlg.getFileName()));
 
-		if (BWResource::validPath( modelPath ))
-		{
-			addModel( modelPath.c_str() );
-		}
-		else
-		{
-			::MessageBox( AfxGetApp()->m_pMainWnd->GetSafeHwnd(),
-				Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/BAD_DIR_MODEL_ADD"),
-				Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/UNABLE_RESOLVE_MODEL"),
-				MB_OK | MB_ICONWARNING );
-		}
-		
-	}
+        if (BWResource::validPath(modelPath)) {
+            addModel(modelPath.c_str());
+        } else {
+            ::MessageBox(
+              AfxGetApp()->m_pMainWnd->GetSafeHwnd(),
+              Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/BAD_DIR_MODEL_ADD"),
+              Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/UNABLE_RESOLVE_MODEL"),
+              MB_OK | MB_ICONWARNING);
+        }
+    }
 }
 
 void CModelEditorApp::OnFileRegenBoundingBox()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	CWaitCursor wait;
+    CWaitCursor wait;
 
-	int animCount = MeApp::instance().mutant()->animCount();
-	CLoadingDialog* load = NULL;
-	if (animCount > 4)
-	{
-		load = new CLoadingDialog( Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/REGENERATING_VIS_BOX") );
-		load->setRange( animCount );
-	}
-		
-	MeApp::instance().mutant()->recreateModelVisibilityBox(
-		new AnimLoadFunctor< CLoadingDialog >(load, &CLoadingDialog::step),
-		true );
+    int             animCount = MeApp::instance().mutant()->animCount();
+    CLoadingDialog* load      = NULL;
+    if (animCount > 4) {
+        load = new CLoadingDialog(
+          Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/REGENERATING_VIS_BOX"));
+        load->setRange(animCount);
+    }
 
-	ME_INFO_MSGW( Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/REGENERATED_VIS_BOX") );
+    MeApp::instance().mutant()->recreateModelVisibilityBox(
+      new AnimLoadFunctor<CLoadingDialog>(load, &CLoadingDialog::step), true);
 
-	MeApp::instance().camera()->boundingBox(
-		MeApp::instance().mutant()->zoomBoundingBox() );
+    ME_INFO_MSGW(Localise(L"MODELEDITOR/GUI/MODEL_EDITOR/REGENERATED_VIS_BOX"));
 
-	if (load) delete load;
+    MeApp::instance().camera()->boundingBox(
+      MeApp::instance().mutant()->zoomBoundingBox());
+
+    if (load)
+        delete load;
 }
 
-
-IMainFrame * CModelEditorApp::getMainFrame()
+IMainFrame* CModelEditorApp::getMainFrame()
 {
-	return dynamic_cast< IMainFrame * >( m_pMainWnd );
+    return dynamic_cast<IMainFrame*>(m_pMainWnd);
 }
 
-//The preferences dialog
+// The preferences dialog
 void CModelEditorApp::OnAppPrefs()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	CPrefsDlg prefsDlg( getMainFrame() );
-	prefsDlg.DoModal();
+    CPrefsDlg prefsDlg(getMainFrame());
+    prefsDlg.DoModal();
 }
 
-void CModelEditorApp::exit( bool ignoreChanges /*= false*/)
+void CModelEditorApp::exit(bool ignoreChanges /*= false*/)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (ignoreChanges)
-	{
-		MeApp::instance().forceClean();
-	}
-	
-	AfxGetApp()->GetMainWnd()->PostMessage( WM_COMMAND, ID_APP_EXIT );
+    if (ignoreChanges) {
+        MeApp::instance().forceClean();
+    }
+
+    AfxGetApp()->GetMainWnd()->PostMessage(WM_COMMAND, ID_APP_EXIT);
 }
-
 
 BW_END_NAMESPACE
-

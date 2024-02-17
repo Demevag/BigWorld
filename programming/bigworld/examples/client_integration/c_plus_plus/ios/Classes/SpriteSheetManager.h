@@ -11,16 +11,18 @@
 #import <Foundation/Foundation.h>
 #import "cocos2d.h"
 
-@interface SpriteSheetManager : NSObject 
+@interface SpriteSheetManager : NSObject
 
-+(SpriteSheetManager*) sharedManager;
++ (SpriteSheetManager*)sharedManager;
 
--(void) addSpriteSheet:(NSString*)plist;
--(BOOL) loadAnimation:(NSString*)animName;
+- (void)addSpriteSheet:(NSString*)plist;
+- (BOOL)loadAnimation:(NSString*)animName;
 
--(NSString*) loadAnimationForEntity:(NSString*)entityName withAnimationName:(NSString*)aniName inDirection:(float)rotation;
+- (NSString*)loadAnimationForEntity:(NSString*)entityName
+                  withAnimationName:(NSString*)aniName
+                        inDirection:(float)rotation;
 
--(CCAnimation*) makeAnimation:(NSString*)animName fps:(float)fps;
+- (CCAnimation*)makeAnimation:(NSString*)animName fps:(float)fps;
 
--(void) purgeUnused;
+- (void)purgeUnused;
 @end

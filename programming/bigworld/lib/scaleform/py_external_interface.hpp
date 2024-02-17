@@ -10,43 +10,47 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace ScaleformBW
-{
-	/**
-	 * This class stores a callback pointer, and implements the ExternalInterface
-	 * interface.
-	 */
-	class PyExternalInterface : public GFx::ExternalInterface
-	{
-	public:
-		PyExternalInterface( PyObject * pCallback );
-		~PyExternalInterface();
-		void Callback(GFx::Movie* pmovie, const char* pcommand, const GFx::Value* args, UInt argCount);
-	private:
-		PyObjectPtr pCallback_;
-	};
+namespace ScaleformBW {
+    /**
+     * This class stores a callback pointer, and implements the
+     * ExternalInterface interface.
+     */
+    class PyExternalInterface : public GFx::ExternalInterface
+    {
+      public:
+        PyExternalInterface(PyObject* pCallback);
+        ~PyExternalInterface();
+        void Callback(GFx::Movie*       pmovie,
+                      const char*       pcommand,
+                      const GFx::Value* args,
+                      UInt              argCount);
 
-	/**
-	 * This class stores a python callback pointer, and implements the 
-	 *  FxDelegateHandler interface.
-	 */
-	class PyExternalInterfaceHandler : public FxDelegateHandler {
-		public:
-			PyExternalInterfaceHandler( PyObject * pCallback );
-			~PyExternalInterfaceHandler();
+      private:
+        PyObjectPtr pCallback_;
+    };
 
-			void Accept(CallbackProcessor* cbreg);
-		
-		static void handleCallback(const FxDelegateArgs& pparams, const char* methodName);
+    /**
+     * This class stores a python callback pointer, and implements the
+     *  FxDelegateHandler interface.
+     */
+    class PyExternalInterfaceHandler : public FxDelegateHandler
+    {
+      public:
+        PyExternalInterfaceHandler(PyObject* pCallback);
+        ~PyExternalInterfaceHandler();
 
-		private:
-			PyObjectPtr pCallback_;
-	};
+        void Accept(CallbackProcessor* cbreg);
 
+        static void handleCallback(const FxDelegateArgs& pparams,
+                                   const char*           methodName);
 
-}	// namespace ScaleformBW
+      private:
+        PyObjectPtr pCallback_;
+    };
+
+} // namespace ScaleformBW
 
 BW_END_NAMESPACE
 
-#endif //#if SCALEFORM_SUPPORT
-#endif //PY_EXTERNAL_INTERFACE_HPP
+#endif // #if SCALEFORM_SUPPORT
+#endif // PY_EXTERNAL_INTERFACE_HPP

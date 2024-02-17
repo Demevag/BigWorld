@@ -2,8 +2,7 @@
 
 #include "meta_data_type.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "DataDescription", 0 )
-
+DECLARE_DEBUG_COMPONENT2("DataDescription", 0)
 
 BW_BEGIN_NAMESPACE
 
@@ -11,11 +10,11 @@ BW_BEGIN_NAMESPACE
 // Section: MetaDataType
 // -----------------------------------------------------------------------------
 
-MetaDataType::MetaDataTypes * MetaDataType::s_metaDataTypes_ = NULL;
+MetaDataType::MetaDataTypes* MetaDataType::s_metaDataTypes_ = NULL;
 
 /*static*/ void MetaDataType::fini()
 {
-	bw_safe_delete(s_metaDataTypes_);
+    bw_safe_delete(s_metaDataTypes_);
 }
 
 /**
@@ -24,60 +23,58 @@ MetaDataType::MetaDataTypes * MetaDataType::s_metaDataTypes_ = NULL;
  * 	data type definition e.g. Gun to FIXED_DICT of 3 properties: STRING name,
  * 	UINT32 ammo, FLOAT accuracy.
  */
-void MetaDataType::addAlias( const BW::string& orig, const BW::string& alias )
+void MetaDataType::addAlias(const BW::string& orig, const BW::string& alias)
 {
-	MetaDataType * pMetaDataType = MetaDataType::find( orig );
-	IF_NOT_MF_ASSERT_DEV( pMetaDataType )
-	{
-		return;
-	}
-	(*s_metaDataTypes_)[ alias ] = pMetaDataType;
+    MetaDataType* pMetaDataType = MetaDataType::find(orig);
+    IF_NOT_MF_ASSERT_DEV(pMetaDataType)
+    {
+        return;
+    }
+    (*s_metaDataTypes_)[alias] = pMetaDataType;
 }
 
 /**
  *	This static method registers a meta data type.
  */
-void MetaDataType::addMetaType( MetaDataType * pMetaType )
+void MetaDataType::addMetaType(MetaDataType* pMetaType)
 {
-	if (s_metaDataTypes_ == NULL)
-	{
-		s_metaDataTypes_ = new MetaDataTypes();
+    if (s_metaDataTypes_ == NULL) {
+        s_metaDataTypes_ = new MetaDataTypes();
 
-		atexit( &MetaDataType::fini );
-	}
+        atexit(&MetaDataType::fini);
+    }
 
-	const char * name = pMetaType->name();
+    const char* name = pMetaType->name();
 
-	// Some error checking
-	if (s_metaDataTypes_->find( name ) != s_metaDataTypes_->end())
-	{
-		CRITICAL_MSG( "MetaDataType::addType: "
-			"%s has already been registered.\n", name );
-		return;
-	}
+    // Some error checking
+    if (s_metaDataTypes_->find(name) != s_metaDataTypes_->end()) {
+        CRITICAL_MSG("MetaDataType::addType: "
+                     "%s has already been registered.\n",
+                     name);
+        return;
+    }
 
-	(*s_metaDataTypes_)[ name ] = pMetaType;
+    (*s_metaDataTypes_)[name] = pMetaType;
 }
-
 
 /**
  *	This static method deregisters a meta data type.
  */
-void MetaDataType::delMetaType( MetaDataType * pMetaType )
+void MetaDataType::delMetaType(MetaDataType* pMetaType)
 {
-	//s_metaDataTypes_->erase( pMetaType->name() );
-	// too tricky to do this on shutdown...
+    // s_metaDataTypes_->erase( pMetaType->name() );
+    //  too tricky to do this on shutdown...
 }
-
 
 /**
  *	This static method finds the given meta data type by name.
  */
-MetaDataType * MetaDataType::find( const BW::string & name )
+MetaDataType* MetaDataType::find(const BW::string& name)
 {
-	MetaDataTypes::iterator found = s_metaDataTypes_->find( name );
-	if (found != s_metaDataTypes_->end()) return found->second;
-	return NULL;
+    MetaDataTypes::iterator found = s_metaDataTypes_->find(name);
+    if (found != s_metaDataTypes_->end())
+        return found->second;
+    return NULL;
 }
 
 BW_END_NAMESPACE

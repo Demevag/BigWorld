@@ -8,16 +8,15 @@ BW_BEGIN_NAMESPACE
  */
 NodeCatalogueHolder::NodeCatalogueHolder()
 {
-	new Moo::NodeCatalogue();
+    new Moo::NodeCatalogue();
 }
-
 
 /**
  *	Destructor
  */
 NodeCatalogueHolder::~NodeCatalogueHolder()
 {
-	delete Moo::NodeCatalogue::pInstance();
+    delete Moo::NodeCatalogue::pInstance();
 }
 
 BW_END_NAMESPACE

@@ -4,8 +4,7 @@
 #include "resource_ref.hpp"
 #include "cstdmf/bgtask_manager.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Script", 0 )
-
+DECLARE_DEBUG_COMPONENT2("Script", 0)
 
 BW_BEGIN_NAMESPACE
 
@@ -19,40 +18,37 @@ BW_BEGIN_NAMESPACE
  */
 class BGResourceRefsLoader : public BackgroundTask
 {
-public:
-	BGResourceRefsLoader(
-		const BW::vector< BW::string > & resourceIDs,
-		PyObject * pCallback,
-		int priority,
-		PyResourceRefs* pResourceRefs  );
+  public:
+    BGResourceRefsLoader(const BW::vector<BW::string>& resourceIDs,
+                         PyObject*                     pCallback,
+                         int                           priority,
+                         PyResourceRefs*               pResourceRefs);
 
-	virtual void doBackgroundTask( TaskManager & mgr );
-	virtual void doMainThreadTask( TaskManager & mgr );
+    virtual void doBackgroundTask(TaskManager& mgr);
+    virtual void doMainThreadTask(TaskManager& mgr);
 
-private:
-	PyObjectPtr pCallback_;	
-	BW::vector< BW::string >	resourceIDs_;
-	PyObjectPtr pResourceRefs_;
+  private:
+    PyObjectPtr            pCallback_;
+    BW::vector<BW::string> resourceIDs_;
+    PyObjectPtr            pResourceRefs_;
 };
-
 
 /**
  *	Constructor.
  */
-BGResourceRefsLoader::BGResourceRefsLoader(		
-		const BW::vector< BW::string > & resourceIDs,
-		PyObject * pCallback,
-		int priority,
-		PyResourceRefs* pResourceRefs ):
-	BackgroundTask( "BGResourceRefsLoader" ),
-	resourceIDs_( resourceIDs ),
-	pCallback_( pCallback ),
-	pResourceRefs_( pResourceRefs  )
-{	
-	BW_GUARD;
-	FileIOTaskManager::instance().addBackgroundTask( this, priority );
+BGResourceRefsLoader::BGResourceRefsLoader(
+  const BW::vector<BW::string>& resourceIDs,
+  PyObject*                     pCallback,
+  int                           priority,
+  PyResourceRefs*               pResourceRefs)
+  : BackgroundTask("BGResourceRefsLoader")
+  , resourceIDs_(resourceIDs)
+  , pCallback_(pCallback)
+  , pResourceRefs_(pResourceRefs)
+{
+    BW_GUARD;
+    FileIOTaskManager::instance().addBackgroundTask(this, priority);
 }
-
 
 /**
  *	This method is called by the Background Task Manager from the background
@@ -61,24 +57,22 @@ BGResourceRefsLoader::BGResourceRefsLoader(
  *
  *	@param	mgr	The background task manager.
  */
-void BGResourceRefsLoader::doBackgroundTask( TaskManager & mgr )
-{	
-	BW_GUARD;
-	PyResourceRefs* pRr = static_cast<PyResourceRefs*>(
-		pResourceRefs_.getObject() );
+void BGResourceRefsLoader::doBackgroundTask(TaskManager& mgr)
+{
+    BW_GUARD;
+    PyResourceRefs* pRr =
+      static_cast<PyResourceRefs*>(pResourceRefs_.getObject());
 
-	for (uint i = 0; i < resourceIDs_.size(); i++)
-	{
-		ResourceRef rr = ResourceRef::getOrLoad( resourceIDs_[i] );
-		if (rr)
-			pRr->addLoadedResourceRef(rr);
-		else
-			pRr->addFailedResourceID( resourceIDs_[i] );
-	}
+    for (uint i = 0; i < resourceIDs_.size(); i++) {
+        ResourceRef rr = ResourceRef::getOrLoad(resourceIDs_[i]);
+        if (rr)
+            pRr->addLoadedResourceRef(rr);
+        else
+            pRr->addFailedResourceID(resourceIDs_[i]);
+    }
 
-	FileIOTaskManager::instance().addMainThreadTask( this );	
+    FileIOTaskManager::instance().addMainThreadTask(this);
 }
-
 
 /**
  *	This method is called by the Background Task Manager from the main
@@ -88,17 +82,15 @@ void BGResourceRefsLoader::doBackgroundTask( TaskManager & mgr )
  *
  *	@param	mgr	The background task manager.
  */
-void BGResourceRefsLoader::doMainThreadTask( TaskManager & mgr )
+void BGResourceRefsLoader::doMainThreadTask(TaskManager& mgr)
 {
-	BW_GUARD;
-	Py_INCREF( pCallback_.getObject() );
-	Script::call( &*(pCallback_),
-		Py_BuildValue("(O)", (PyObject*)pResourceRefs_.getObject()),
-		"BGResourceRefsLoader callback: " );
-	Py_DECREF( pResourceRefs_.getObject() );
+    BW_GUARD;
+    Py_INCREF(pCallback_.getObject());
+    Script::call(&*(pCallback_),
+                 Py_BuildValue("(O)", (PyObject*)pResourceRefs_.getObject()),
+                 "BGResourceRefsLoader callback: ");
+    Py_DECREF(pResourceRefs_.getObject());
 }
-
-
 
 // ----------------------------------------------------------------------------
 // Section: PyResourceRefs
@@ -107,115 +99,110 @@ void BGResourceRefsLoader::doMainThreadTask( TaskManager & mgr )
  *	This structure contains the function pointers necessary to provide a Python
  *	Mapping interface.
  */
-static PyMappingMethods s_pyResourceRefMapping =
-{
-	PyResourceRefs::s_length,		// mp_length
-	PyResourceRefs::s_subscript,	// mp_subscript
-	NULL							// mp_ass_subscript
+static PyMappingMethods s_pyResourceRefMapping = {
+    PyResourceRefs::s_length,    // mp_length
+    PyResourceRefs::s_subscript, // mp_subscript
+    NULL                         // mp_ass_subscript
 };
 
-PY_TYPEOBJECT_WITH_MAPPING( PyResourceRefs, &s_pyResourceRefMapping )
+PY_TYPEOBJECT_WITH_MAPPING(PyResourceRefs, &s_pyResourceRefMapping)
 
-PY_BEGIN_METHODS( PyResourceRefs )
-	/*~ function PyResourceRefs.pop
-	 *	@components{ client, tools }
-	 *
-	 *	This function returns the resource associated with a particular resource
-	 *	reference and erases it from PyResourceRefs ownership.  If there is no
-	 *	python representation, or if the resource failed to load, None will
-	 *	be returned.  In either case the PyResourceRefs object will no longer
-	 *	keep a reference to the resource and this is now up to the caller to
-	 *	manage.
-	 *
-	 *	@param	resourceID		the name of the required resource.	 
-	 *
-	 *	@return					python resource, or None.
-	 */
-	PY_METHOD( pop )
-	/*~ function PyResourceRefs.has_key
-	 *	@components{ client, tools }
-	 *
-	 *	This function returns whether the PyResourceRefs has a reference
-	 *	to the resource given by the key.	 	 
-	 *
-	 *	@param	resourceID		the name of the resource to check.
-	 *
-	 *	@return					True or False.
-	 */
-	PY_METHOD( has_key )
-	/*~ function PyResourceRefs.keys
-	 *	@components{ client, tools }
-	 *
-	 *	This function returns the list of resourceIDs.	 
-	 *
-	 *	@return					list of strings.
-	 */
-	PY_METHOD( keys )
-	/*~ function PyResourceRefs.items
-	 *	@components{ client, tools }
-	 *
-	 *	This function returns a list of tuples of (resourceID, object)
-	 *	representing this objects resources by name and their python equivalent
-	 *
-	 *	@return					list of tuples of (resourceID, object).
-	 */
-	PY_METHOD( items )
-	/*~ function PyResourceRefs.values
-	 *	@components{ client, tools }
-	 *
-	 *	This function returns a list of the python equivalents for the
-	 *	resources held onto by this object.
-	 *
-	 *	@return					list of resource objects.
-	 */
-	PY_METHOD( values )
+PY_BEGIN_METHODS(PyResourceRefs)
+/*~ function PyResourceRefs.pop
+ *	@components{ client, tools }
+ *
+ *	This function returns the resource associated with a particular resource
+ *	reference and erases it from PyResourceRefs ownership.  If there is no
+ *	python representation, or if the resource failed to load, None will
+ *	be returned.  In either case the PyResourceRefs object will no longer
+ *	keep a reference to the resource and this is now up to the caller to
+ *	manage.
+ *
+ *	@param	resourceID		the name of the required resource.
+ *
+ *	@return					python resource, or None.
+ */
+PY_METHOD(pop)
+/*~ function PyResourceRefs.has_key
+ *	@components{ client, tools }
+ *
+ *	This function returns whether the PyResourceRefs has a reference
+ *	to the resource given by the key.
+ *
+ *	@param	resourceID		the name of the resource to check.
+ *
+ *	@return					True or False.
+ */
+PY_METHOD(has_key)
+/*~ function PyResourceRefs.keys
+ *	@components{ client, tools }
+ *
+ *	This function returns the list of resourceIDs.
+ *
+ *	@return					list of strings.
+ */
+PY_METHOD(keys)
+/*~ function PyResourceRefs.items
+ *	@components{ client, tools }
+ *
+ *	This function returns a list of tuples of (resourceID, object)
+ *	representing this objects resources by name and their python equivalent
+ *
+ *	@return					list of tuples of (resourceID, object).
+ */
+PY_METHOD(items)
+/*~ function PyResourceRefs.values
+ *	@components{ client, tools }
+ *
+ *	This function returns a list of the python equivalents for the
+ *	resources held onto by this object.
+ *
+ *	@return					list of resource objects.
+ */
+PY_METHOD(values)
 PY_END_METHODS()
-PY_BEGIN_ATTRIBUTES( PyResourceRefs )	
-	/*~ attribute PyResourceRefs.failedIDs
-	 *	@components{ client, tools }
-	 *
-	 *	This attribute contains a list of resources that failed to load.  It
-	 *	is a subset of the resourceIDs list.	 
-	 *
-	 *	@type	Read-Only Object
-	 */
-	 PY_ATTRIBUTE( failedIDs )
+PY_BEGIN_ATTRIBUTES(PyResourceRefs)
+/*~ attribute PyResourceRefs.failedIDs
+ *	@components{ client, tools }
+ *
+ *	This attribute contains a list of resources that failed to load.  It
+ *	is a subset of the resourceIDs list.
+ *
+ *	@type	Read-Only Object
+ */
+PY_ATTRIBUTE(failedIDs)
 PY_END_ATTRIBUTES()
 
-PY_SCRIPT_CONVERTERS( PyResourceRefs )
+PY_SCRIPT_CONVERTERS(PyResourceRefs)
 
-PY_FACTORY_NAMED( PyResourceRefs, "ResourceRefs", BigWorld )
-
+PY_FACTORY_NAMED(PyResourceRefs, "ResourceRefs", BigWorld)
 
 /**
  *	Constructor.
  */
-PyResourceRefs::PyResourceRefs(
-	PyObject * pResourceIDs,
-	PyObject * pCallbackFn,
-	int priority,
-	PyTypeObject * pType ) : 
-PyObjectPlus( pType )
-{	
-	BW_GUARD;
-	BW::vector< BW::string > resourceIDs;
-	size_t sz = PySequence_Size( pResourceIDs );
-	for (size_t i = 0; i < sz; i++)
-	{
-		PyObject * pItem = PySequence_GetItem( pResourceIDs, i );
-		if (!PyString_Check( pItem )) continue;
-		const char * resourceID = PyString_AsString( pItem );
-		if (strlen( resourceID ) != 0)
-		{
-			resourceIDs.push_back( resourceID );
-		}
-	}
+PyResourceRefs::PyResourceRefs(PyObject*     pResourceIDs,
+                               PyObject*     pCallbackFn,
+                               int           priority,
+                               PyTypeObject* pType)
+  : PyObjectPlus(pType)
+{
+    BW_GUARD;
+    BW::vector<BW::string> resourceIDs;
+    size_t                 sz = PySequence_Size(pResourceIDs);
+    for (size_t i = 0; i < sz; i++) {
+        PyObject* pItem = PySequence_GetItem(pResourceIDs, i);
+        if (!PyString_Check(pItem))
+            continue;
+        const char* resourceID = PyString_AsString(pItem);
+        if (strlen(resourceID) != 0) {
+            resourceIDs.push_back(resourceID);
+        }
+    }
 
-	//Schedule resources for loading.  This object adds itself to the
-	//Background task list and deletes itself when finished.
-	new BGResourceRefsLoader( resourceIDs, pCallbackFn, priority, this );
+    // Schedule resources for loading.  This object adds itself to the
+    // Background task list and deletes itself when finished.
+    new BGResourceRefsLoader(resourceIDs, pCallbackFn, priority, this);
 }
-
 
 /**
  *	Constructor.  This constructor wraps already loaded resource
@@ -224,84 +211,76 @@ PyObjectPlus( pType )
  *	@param	rr		ResourceRefs to wrap in a python object.
  *	@param	pType	Python type to initialse the PyResourceRefs as.
  */
-PyResourceRefs::PyResourceRefs( const ResourceRefs& rr, PyTypeObject * pType ):
-	PyObjectPlus( pType ),
-	resourceRefs_( rr )
+PyResourceRefs::PyResourceRefs(const ResourceRefs& rr, PyTypeObject* pType)
+  : PyObjectPlus(pType)
+  , resourceRefs_(rr)
 {
-	BW_GUARD;
-	for (size_t i=0; i<rr.size(); i++)
-	{
-		if (!rr[i])
-		{
-			pFailedIDs_.push_back(rr[i].id());
-		}
-	}
+    BW_GUARD;
+    for (size_t i = 0; i < rr.size(); i++) {
+        if (!rr[i]) {
+            pFailedIDs_.push_back(rr[i].id());
+        }
+    }
 }
-
 
 ScriptList PyResourceRefs::failedIDs()
 {
-	ScriptList pList = ScriptList::create( pFailedIDs_.size() );
+    ScriptList pList = ScriptList::create(pFailedIDs_.size());
 
-	for (size_t i = 0; i < pFailedIDs_.size(); i++)
-	{
-		pList.setItem( i, ScriptString::create( pFailedIDs_[i] ) );
-	}
+    for (size_t i = 0; i < pFailedIDs_.size(); i++) {
+        pList.setItem(i, ScriptString::create(pFailedIDs_[i]));
+    }
 
-	return pList;
+    return pList;
 }
-
 
 /**
  *	This method gets the python wrapper for a particular instance,
  *	and removes the resource from our lists.  It is then up to the
  *	caller of PyResourceRefs.pop to manage the lifetime of the resource.
  *
- *	@param	args			Python string object containing the name of the resource.
+ *	@param	args			Python string object containing the name of the
+ *resource.
  *
  *	@return	Python representation of the resource.
  */
-PyObject * PyResourceRefs::py_pop( PyObject * args )
+PyObject* PyResourceRefs::py_pop(PyObject* args)
 {
-	BW_GUARD;
-	char* resourceID;
+    BW_GUARD;
+    char* resourceID;
 
-	if (!PyArg_ParseTuple( args, "s", &resourceID ))
-	{
-		PyErr_SetString( PyExc_TypeError, "py_resource: Argument parsing error. "
-			"Expected a string" );
-		return NULL;
-	}
+    if (!PyArg_ParseTuple(args, "s", &resourceID)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "py_resource: Argument parsing error. "
+                        "Expected a string");
+        return NULL;
+    }
 
-	PyObject * ret = this->pyResource(resourceID);
-	this->erase(resourceID);
-	return ret;
+    PyObject* ret = this->pyResource(resourceID);
+    this->erase(resourceID);
+    return ret;
 }
-
 
 /**
  *	This private method erases the resource and means we no longer
  *	manage it.
  *
- *	@param	resourceID		Name of the resource to erase. 
+ *	@param	resourceID		Name of the resource to erase.
  */
-void PyResourceRefs::erase( const BW::string& name )
+void PyResourceRefs::erase(const BW::string& name)
 {
-	BW_GUARD;
-	ResourceRefs::iterator it = resourceRefs_.begin();
-	ResourceRefs::iterator end = resourceRefs_.end();
-	while (it != end)
-	{
-		ResourceRef& rr = *it;
-		if (rr.id() == name)
-		{
-			resourceRefs_.erase(it);
-			return;
-		}
-		++it;
-	}
+    BW_GUARD;
+    ResourceRefs::iterator it  = resourceRefs_.begin();
+    ResourceRefs::iterator end = resourceRefs_.end();
+    while (it != end) {
+        ResourceRef& rr = *it;
+        if (rr.id() == name) {
+            resourceRefs_.erase(it);
+            return;
+        }
+        ++it;
+    }
 }
-
 
 /**
  *	This private method gets the python wrapper for a particular instance,
@@ -310,84 +289,77 @@ void PyResourceRefs::erase( const BW::string& name )
  *	@param	resourceID		Name of the resource
  *	@return	PyObject		Python representation of the resource.
  */
-PyObject * PyResourceRefs::pyResource( const BW::string& resourceID )
+PyObject* PyResourceRefs::pyResource(const BW::string& resourceID)
 {
-	BW_GUARD;
-	BW::vector<BW::string>::iterator it =
-		std::find( pFailedIDs_.begin(), pFailedIDs_.end(), resourceID );
+    BW_GUARD;
+    BW::vector<BW::string>::iterator it =
+      std::find(pFailedIDs_.begin(), pFailedIDs_.end(), resourceID);
 
-	if (it != pFailedIDs_.end())
-	{
-		PyErr_SetString( PyExc_ValueError, "py_resource: Requested resource "
-			"had previously failed to load." );
-		return NULL;
-	}
+    if (it != pFailedIDs_.end()) {
+        PyErr_SetString(PyExc_ValueError,
+                        "py_resource: Requested resource "
+                        "had previously failed to load.");
+        return NULL;
+    }
 
-	ResourceRef * rr = this->refByName( resourceID );
-	if (rr)
-	{
-		return rr->pyInstance();
-	}
-	else
-	{
-		PyErr_SetString( PyExc_KeyError, "py_resource: Requested resource "
-			"not found in resources list." );
-		return NULL;
-	}
+    ResourceRef* rr = this->refByName(resourceID);
+    if (rr) {
+        return rr->pyInstance();
+    } else {
+        PyErr_SetString(PyExc_KeyError,
+                        "py_resource: Requested resource "
+                        "not found in resources list.");
+        return NULL;
+    }
 }
-
 
 /**
  *	Find loaded resource ref by name.
  */
-ResourceRef* PyResourceRefs::refByName( const BW::string& name )
+ResourceRef* PyResourceRefs::refByName(const BW::string& name)
 {
-	BW_GUARD;
-	for (size_t i=0; i<resourceRefs_.size(); i++)
-	{
-		if (resourceRefs_[i].id() == name)
-			return &resourceRefs_[i];
-	}
+    BW_GUARD;
+    for (size_t i = 0; i < resourceRefs_.size(); i++) {
+        if (resourceRefs_[i].id() == name)
+            return &resourceRefs_[i];
+    }
 
-	return NULL;
+    return NULL;
 }
-
 
 /**
  *	This method is called by the loading thread, and adds a loaded
  *	resource reference for us to keep a hold of.
  */
-void PyResourceRefs::addLoadedResourceRef( ResourceRef& r )
+void PyResourceRefs::addLoadedResourceRef(ResourceRef& r)
 {
-	BW_GUARD;
-	resourceRefs_.push_back(r);
+    BW_GUARD;
+    resourceRefs_.push_back(r);
 }
-
 
 /**
  *	This method is called by the loading thread, and indicates that a
  *	resource that was requested failed to load.
  */
-void PyResourceRefs::addFailedResourceID( const BW::string& resourceID )
+void PyResourceRefs::addFailedResourceID(const BW::string& resourceID)
 {
-	BW_GUARD;
-	pFailedIDs_.push_back(resourceID);
+    BW_GUARD;
+    pFailedIDs_.push_back(resourceID);
 }
-
 
 /**
  *	Factory method
  */
-PyObject * PyResourceRefs::pyNew( PyObject * args )
+PyObject* PyResourceRefs::pyNew(PyObject* args)
 {
-	BW_GUARD;
-	PyErr_SetString( PyExc_SyntaxError,
-		"BigWorld.ResourceRefs() cannot be constructed explicitly, it is "
-		"an asynchronous operation.  Please use BigWorld.loadResourceListBG"
-		" instead.");
-	return NULL;
+    BW_GUARD;
+    PyErr_SetString(
+      PyExc_SyntaxError,
+      "BigWorld.ResourceRefs() cannot be constructed explicitly, it is "
+      "an asynchronous operation.  Please use BigWorld.loadResourceListBG"
+      " instead.");
+    return NULL;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Mapping methods
@@ -401,19 +373,17 @@ PyObject * PyResourceRefs::pyNew( PyObject * args )
  *
  *	@return	The python object associated with input resourceID.
  */
-PyObject * PyResourceRefs::subscript( PyObject* resourceID )
+PyObject* PyResourceRefs::subscript(PyObject* resourceID)
 {
-	BW_GUARD;
-	char * res = PyString_AsString( resourceID );
+    BW_GUARD;
+    char* res = PyString_AsString(resourceID);
 
-	if(PyErr_Occurred())
-	{
-		return NULL;
-	}
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
 
-	return this->pyResource( res );
+    return this->pyResource(res);
 }
-
 
 /**
  *	This method implements the python [] operator, and finds the resource by
@@ -424,13 +394,12 @@ PyObject * PyResourceRefs::subscript( PyObject* resourceID )
  *
  *	@return PyObject	The python object at specified resourceID subscript.
  */
-/*static*/ PyObject* PyResourceRefs::s_subscript(
-	PyObject* self, PyObject* resourceID )
+/*static*/ PyObject* PyResourceRefs::s_subscript(PyObject* self,
+                                                 PyObject* resourceID)
 {
-	BW_GUARD;
-	return ((PyResourceRefs*)(self))->subscript( resourceID );
+    BW_GUARD;
+    return ((PyResourceRefs*)(self))->subscript(resourceID);
 }
-
 
 /**
  *	This method returns the number of resourceIDs.
@@ -439,9 +408,8 @@ PyObject * PyResourceRefs::subscript( PyObject* resourceID )
  */
 int PyResourceRefs::length()
 {
-	return static_cast<int>( resourceRefs_.size() );
+    return static_cast<int>(resourceRefs_.size());
 }
-
 
 /**
  *	This method returns the number of resourceIDs, and
@@ -450,97 +418,84 @@ int PyResourceRefs::length()
  *	@param	self	The PyResourceRefs object.
  *	@return	int			The number of resourceIDs originally asked for.
  */
-/*static*/ Py_ssize_t PyResourceRefs::s_length( PyObject * self )
+/*static*/ Py_ssize_t PyResourceRefs::s_length(PyObject* self)
 {
-	return ((PyResourceRefs*)(self))->length();
+    return ((PyResourceRefs*)(self))->length();
 }
-
 
 /*	This method checks if we have a resource by the given resourceID.
  */
-PyObject* PyResourceRefs::py_has_key( PyObject* args )
+PyObject* PyResourceRefs::py_has_key(PyObject* args)
 {
-	BW_GUARD;
-	char * resourceID;
+    BW_GUARD;
+    char* resourceID;
 
-	if (!PyArg_ParseTuple( args, "s", &resourceID ))
-	{
-		PyErr_SetString( PyExc_TypeError, "Expected a string argument." );
-		return NULL;
-	}
+    if (!PyArg_ParseTuple(args, "s", &resourceID)) {
+        PyErr_SetString(PyExc_TypeError, "Expected a string argument.");
+        return NULL;
+    }
 
-	if (this->refByName(resourceID))
-	{
-		Py_RETURN_TRUE;
-	}
-	else
-	{
-		Py_RETURN_FALSE;
-	}
+    if (this->refByName(resourceID)) {
+        Py_RETURN_TRUE;
+    } else {
+        Py_RETURN_FALSE;
+    }
 }
-
 
 /*  This method returns a list of all the resourceIDs, in the order in
  *  which they appear.
  */
-PyObject* PyResourceRefs::py_keys( PyObject* /*args*/ )
+PyObject* PyResourceRefs::py_keys(PyObject* /*args*/)
 {
-	BW_GUARD;
-	size_t size = resourceRefs_.size();
+    BW_GUARD;
+    size_t size = resourceRefs_.size();
 
-	PyObject * pList = PyList_New( size );
+    PyObject* pList = PyList_New(size);
 
-	for (size_t i = 0; i < size; i++)
-	{
-		PyList_SetItem( pList, i,
-			PyString_FromString( resourceRefs_[i].id().c_str() ) );
-	}
+    for (size_t i = 0; i < size; i++) {
+        PyList_SetItem(
+          pList, i, PyString_FromString(resourceRefs_[i].id().c_str()));
+    }
 
-	return pList;
+    return pList;
 }
-
 
 /*	This method returns a list of all resources, in the order in which
  *  they appear in the XML.
  */
 PyObject* PyResourceRefs::py_values(PyObject* /*args*/)
 {
-	BW_GUARD;
-	size_t size = resourceRefs_.size();
-	PyObject* pList = PyList_New( size );
+    BW_GUARD;
+    size_t    size  = resourceRefs_.size();
+    PyObject* pList = PyList_New(size);
 
-	for (size_t i = 0; i < size; i++)
-	{
-		PyList_SetItem(pList, i,
-			this->pyResource(resourceRefs_[i].id()));
-	}
+    for (size_t i = 0; i < size; i++) {
+        PyList_SetItem(pList, i, this->pyResource(resourceRefs_[i].id()));
+    }
 
-	return pList;
+    return pList;
 }
-
 
 /*	This method returns a list of name and resource object tuples.
  */
-PyObject* PyResourceRefs::py_items( PyObject* /*args*/ )
+PyObject* PyResourceRefs::py_items(PyObject* /*args*/)
 {
-	BW_GUARD;
-	size_t size = resourceRefs_.size();
-	PyObject* pList = PyList_New( size );
+    BW_GUARD;
+    size_t    size  = resourceRefs_.size();
+    PyObject* pList = PyList_New(size);
 
-	for (size_t i = 0; i < size; i++)
-	{
-		PyObject * pTuple = PyTuple_New( 2 );
+    for (size_t i = 0; i < size; i++) {
+        PyObject* pTuple = PyTuple_New(2);
 
-		PyTuple_SetItem( pTuple, 0,
-			PyString_FromString( resourceRefs_[i].id().c_str() ) );
-		PyTuple_SetItem( pTuple, 1, this->pyResource(resourceRefs_[i].id()) );
+        PyTuple_SetItem(
+          pTuple, 0, PyString_FromString(resourceRefs_[i].id().c_str()));
+        PyTuple_SetItem(pTuple, 1, this->pyResource(resourceRefs_[i].id()));
 
-		PyList_SetItem( pList, i, pTuple );
-	}
+        PyList_SetItem(pList, i, pTuple);
+    }
 
-	return pList;
+    return pList;
 }
-
 
 /*~ function BigWorld.loadResourceListBG
  *	@components{ client, tools }
@@ -551,14 +506,14 @@ PyObject* PyResourceRefs::py_items( PyObject* /*args*/ )
  *	an entity requires, or if the entity changes in such a way that requires
  *	new resources to load.
  *
- *	The function takes a tuple of resource IDs, a callback function and an optional
- *	priority number as arguments.  The resource list is loaded in the background thread
- *	and then the callback function is called with a new ResourceRefs instance
- *	as the argument.  You can use the resources immediately, or you can hold
- *	onto the ResourceRefs object; the loaded objects are tied to its lifetime. 
- *	Nothing is returned from this function call immediately. The priority number defines 
- *  which resources are need to be loaded before others where a higher number indicates a
- *  higher priority.
+ *	The function takes a tuple of resource IDs, a callback function and an
+ *optional priority number as arguments.  The resource list is loaded in the
+ *background thread and then the callback function is called with a new
+ *ResourceRefs instance as the argument.  You can use the resources immediately,
+ *or you can hold onto the ResourceRefs object; the loaded objects are tied to
+ *its lifetime. Nothing is returned from this function call immediately. The
+ *priority number defines which resources are need to be loaded before others
+ *where a higher number indicates a higher priority.
  *
  *
  *	For example:
@@ -594,7 +549,7 @@ PyObject* PyResourceRefs::py_items( PyObject* /*args*/ )
  *			modelName = resourceRefs[ resName[1] ]
  *
  *			#now you can construct models or set gui textures or whatever
- *			#without causing resource loads in the main thread.			 
+ *			#without causing resource loads in the main thread.
  *
  *			if guiName not in failed:
  *				self.itemGUI.textureName = guiName
@@ -610,7 +565,7 @@ PyObject* PyResourceRefs::py_items( PyObject* /*args*/ )
  *	# we keep a hold of the resource refs until we need them.
  *	def onLoad2( self, resourceRefs ):
  *		if not self.inWorld:
- *			self.resourcesHolder = resourceRefs			
+ *			self.resourcesHolder = resourceRefs
  *
  *	def discardItem( self ):
  *		#release the ResourceRefs object, freeing the references
@@ -625,53 +580,53 @@ PyObject* PyResourceRefs::py_items( PyObject* /*args*/ )
  *	@param	callbackFn		a function to be called back when the load of all
  *	resources is complete.  The callback function takes no arguments.
  *
- *  @param	priority		[optional] integer to indicate the priority number (defaults to 64).
+ *  @param	priority		[optional] integer to indicate the priority number
+ *(defaults to 64).
  *
  *	@return					None
  */
-PyObject * py_loadResourceListBG( PyObject * args )
+PyObject* py_loadResourceListBG(PyObject* args)
 {
-	BW_GUARD;
-	PyObject* resourceList;
-	PyObject* callbackFn;
-	int priority = BgTaskManager::DEFAULT;
+    BW_GUARD;
+    PyObject* resourceList;
+    PyObject* callbackFn;
+    int       priority = BgTaskManager::DEFAULT;
 
-	if (!PyArg_ParseTuple( args, "OO|i", &resourceList, &callbackFn, &priority ))
-	{
-		PyErr_SetString( PyExc_TypeError,
-			"BigWorld.PyResourceRefs() expects "
-			"a list of resource references, callback function and optional priority number." );
-		return NULL;
-	}
+    if (!PyArg_ParseTuple(
+          args, "OO|i", &resourceList, &callbackFn, &priority)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "BigWorld.PyResourceRefs() expects "
+                        "a list of resource references, callback function and "
+                        "optional priority number.");
+        return NULL;
+    }
 
-	if (!PySequence_Check(resourceList))
-	{
-		PyErr_SetString( PyExc_TypeError,
-			"BigWorld.PyResourceRefs() expects "
-			"a sequence of resource IDs passed in as the first argument." );
-		return NULL;
-	}		
+    if (!PySequence_Check(resourceList)) {
+        PyErr_SetString(
+          PyExc_TypeError,
+          "BigWorld.PyResourceRefs() expects "
+          "a sequence of resource IDs passed in as the first argument.");
+        return NULL;
+    }
 
-	if (!PyCallable_Check(callbackFn))
-	{
-		PyErr_SetString( PyExc_TypeError,
-			"BigWorld.PyResourceRefs() expects "
-			"a callback function passed in as the second argument." );
-		return NULL;
-	}
+    if (!PyCallable_Check(callbackFn)) {
+        PyErr_SetString(
+          PyExc_TypeError,
+          "BigWorld.PyResourceRefs() expects "
+          "a callback function passed in as the second argument.");
+        return NULL;
+    }
 
-	//The new PyResourceRefs object is held by the background loader and
-	//passed into the callback function.  The receiver can then either
-	//store the PyResourceRefs object or use it immediately and let it
-	//automatically delete itself when it goes out of scope.
-	new PyResourceRefs( resourceList, callbackFn, priority );
+    // The new PyResourceRefs object is held by the background loader and
+    // passed into the callback function.  The receiver can then either
+    // store the PyResourceRefs object or use it immediately and let it
+    // automatically delete itself when it goes out of scope.
+    new PyResourceRefs(resourceList, callbackFn, priority);
 
-	Py_RETURN_NONE;
+    Py_RETURN_NONE;
 }
 
-
-
-PY_MODULE_FUNCTION( loadResourceListBG, BigWorld )
+PY_MODULE_FUNCTION(loadResourceListBG, BigWorld)
 
 BW_END_NAMESPACE
 

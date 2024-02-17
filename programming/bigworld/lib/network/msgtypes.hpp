@@ -70,7 +70,6 @@ BW_BEGIN_NAMESPACE
 // Controls whether pitch should be [-pi,pi) or [-pi/2,pi/2)
 #define YAWPITCHROLL_HALFPITCH true
 
-
 // -----------------------------------------------------------------------------
 // Section: Configuration checking
 // -----------------------------------------------------------------------------
@@ -102,7 +101,10 @@ BW_BEGIN_NAMESPACE
 #error Invalid bit count for Y Mantissa in offGround (XYZ) position update
 #endif
 
-#if (EXPONENTBITS_XZ * 2 + XYZ_MANTISSABITS_XZ * 2 + 2 + XYZ_EXPONENTBITS_Y + XYZ_MANTISSABITS_Y + 1) % 8 != 0
+#if (EXPONENTBITS_XZ * 2 + XYZ_MANTISSABITS_XZ * 2 + 2 + XYZ_EXPONENTBITS_Y +  \
+     XYZ_MANTISSABITS_Y + 1) %                                                 \
+    8 !=                                                                       \
+  0
 #error Unused bits in offGround (XYZ) position update
 #endif
 
@@ -138,10 +140,11 @@ BW_BEGIN_NAMESPACE
 #error Unused bits in Yaw+Pitch direction update
 #endif
 
-#if (YAWPITCHROLL_YAWBITS + YAWPITCHROLL_PITCHBITS+ YAWPITCHROLL_ROLLBITS) % 8 != 0
+#if (YAWPITCHROLL_YAWBITS + YAWPITCHROLL_PITCHBITS + YAWPITCHROLL_ROLLBITS) %  \
+    8 !=                                                                       \
+  0
 #error Unused bits in Yaw+Pitch+Roll direction update
 #endif
-
 
 // -----------------------------------------------------------------------------
 // Section: class PackedYaw
@@ -151,40 +154,35 @@ BW_BEGIN_NAMESPACE
  *
  *	@ingroup network
  */
-template< int YAWBITS = YAW_YAWBITS >
+template <int YAWBITS = YAW_YAWBITS>
 class PackedYaw
 {
-	static const int BYTES = ((YAWBITS - 1) / 8) + 1;
-public:
-	PackedYaw( float yaw )
-	{
-		this->set( yaw );
-	}
+    static const int BYTES = ((YAWBITS - 1) / 8) + 1;
 
-	PackedYaw() {};
+  public:
+    PackedYaw(float yaw) { this->set(yaw); }
 
-	void set( float yaw );
-	void get( float & yaw ) const;
+    PackedYaw(){};
 
-	friend BinaryIStream& operator>>( BinaryIStream& is,
-		PackedYaw< YAWBITS > &y )
-	{
-		memcpy( y.buff_, is.retrieve( BYTES ), BYTES );
-		return is;
-	}
+    void set(float yaw);
+    void get(float& yaw) const;
 
-	friend BinaryOStream& operator<<( BinaryOStream& os,
-		const PackedYaw< YAWBITS > &y )
-	{
-		memcpy( os.reserve( BYTES ), y.buff_, BYTES );
-		return os;
-	}
+    friend BinaryIStream& operator>>(BinaryIStream& is, PackedYaw<YAWBITS>& y)
+    {
+        memcpy(y.buff_, is.retrieve(BYTES), BYTES);
+        return is;
+    }
 
-private:
-	char buff_[ BYTES ];
+    friend BinaryOStream& operator<<(BinaryOStream&            os,
+                                     const PackedYaw<YAWBITS>& y)
+    {
+        memcpy(os.reserve(BYTES), y.buff_, BYTES);
+        return os;
+    }
+
+  private:
+    char buff_[BYTES];
 };
-
-
 
 // -----------------------------------------------------------------------------
 // Section: class PackedYawPitch
@@ -194,41 +192,40 @@ private:
  *
  *	@ingroup network
  */
-template< bool HALFPITCH = YAWPITCH_HALFPITCH, int YAWBITS = YAWPITCH_YAWBITS,
-	int PITCHBITS = YAWPITCH_PITCHBITS >
+template <bool HALFPITCH = YAWPITCH_HALFPITCH,
+          int  YAWBITS   = YAWPITCH_YAWBITS,
+          int  PITCHBITS = YAWPITCH_PITCHBITS>
 class PackedYawPitch
 {
-	static const int BYTES = ((YAWBITS + PITCHBITS - 1) / 8) + 1;
-public:
-	PackedYawPitch( float yaw, float pitch )
-	{
-		this->set( yaw, pitch );
-	}
+    static const int BYTES = ((YAWBITS + PITCHBITS - 1) / 8) + 1;
 
-	PackedYawPitch() {};
+  public:
+    PackedYawPitch(float yaw, float pitch) { this->set(yaw, pitch); }
 
-	void set( float yaw, float pitch );
-	void get( float & yaw, float & pitch ) const;
+    PackedYawPitch(){};
 
-	friend BinaryIStream& operator>>( BinaryIStream& is,
-		PackedYawPitch< HALFPITCH, YAWBITS, PITCHBITS > &yp )
-	{
-		memcpy( yp.buff_, is.retrieve( BYTES ), BYTES );
-		return is;
-	}
+    void set(float yaw, float pitch);
+    void get(float& yaw, float& pitch) const;
 
-	friend BinaryOStream& operator<<( BinaryOStream& os,
-		const PackedYawPitch< HALFPITCH, YAWBITS, PITCHBITS > &yp )
-	{
-		memcpy( os.reserve( BYTES ), yp.buff_, BYTES );
-		return os;
-	}
+    friend BinaryIStream& operator>>(
+      BinaryIStream&                                 is,
+      PackedYawPitch<HALFPITCH, YAWBITS, PITCHBITS>& yp)
+    {
+        memcpy(yp.buff_, is.retrieve(BYTES), BYTES);
+        return is;
+    }
 
-private:
-	char buff_[ BYTES ];
+    friend BinaryOStream& operator<<(
+      BinaryOStream&                                       os,
+      const PackedYawPitch<HALFPITCH, YAWBITS, PITCHBITS>& yp)
+    {
+        memcpy(os.reserve(BYTES), yp.buff_, BYTES);
+        return os;
+    }
+
+  private:
+    char buff_[BYTES];
 };
-
-
 
 // -----------------------------------------------------------------------------
 // Section: class PackedYawPitchRoll
@@ -239,157 +236,172 @@ private:
  *
  *	@ingroup network
  */
-template< bool HALFPITCH = YAWPITCHROLL_HALFPITCH,
-	int YAWBITS = YAWPITCHROLL_YAWBITS, int PITCHBITS = YAWPITCHROLL_PITCHBITS,
-	int ROLLBITS = YAWPITCHROLL_ROLLBITS >
+template <bool HALFPITCH = YAWPITCHROLL_HALFPITCH,
+          int  YAWBITS   = YAWPITCHROLL_YAWBITS,
+          int  PITCHBITS = YAWPITCHROLL_PITCHBITS,
+          int  ROLLBITS  = YAWPITCHROLL_ROLLBITS>
 class PackedYawPitchRoll
 {
-	static const int BYTES = ((YAWBITS + PITCHBITS + ROLLBITS - 1) / 8) + 1;
-public:
-	PackedYawPitchRoll( float yaw, float pitch, float roll )
-	{
-		this->set( yaw, pitch, roll );
-	}
+    static const int BYTES = ((YAWBITS + PITCHBITS + ROLLBITS - 1) / 8) + 1;
 
-	PackedYawPitchRoll() {};
+  public:
+    PackedYawPitchRoll(float yaw, float pitch, float roll)
+    {
+        this->set(yaw, pitch, roll);
+    }
 
-	void set( float yaw, float pitch, float roll );
-	void get( float & yaw, float & pitch, float & roll ) const;
+    PackedYawPitchRoll(){};
 
-	friend BinaryIStream& operator>>( BinaryIStream& is,
-		PackedYawPitchRoll< HALFPITCH, YAWBITS, PITCHBITS, ROLLBITS > &ypr )
-	{
-		memcpy( ypr.buff_, is.retrieve( BYTES ), BYTES );
-		return is;
-	}
+    void set(float yaw, float pitch, float roll);
+    void get(float& yaw, float& pitch, float& roll) const;
 
-	friend BinaryOStream& operator<<( BinaryOStream& os,
-		const PackedYawPitchRoll< HALFPITCH, YAWBITS, PITCHBITS, ROLLBITS >
-			&ypr )
-	{
-		memcpy( os.reserve( BYTES ), ypr.buff_, BYTES );
-		return os;
-	}
+    friend BinaryIStream& operator>>(
+      BinaryIStream&                                               is,
+      PackedYawPitchRoll<HALFPITCH, YAWBITS, PITCHBITS, ROLLBITS>& ypr)
+    {
+        memcpy(ypr.buff_, is.retrieve(BYTES), BYTES);
+        return is;
+    }
 
-private:
-	char buff_[ BYTES ];
+    friend BinaryOStream& operator<<(
+      BinaryOStream&                                                     os,
+      const PackedYawPitchRoll<HALFPITCH, YAWBITS, PITCHBITS, ROLLBITS>& ypr)
+    {
+        memcpy(os.reserve(BYTES), ypr.buff_, BYTES);
+        return os;
+    }
+
+  private:
+    char buff_[BYTES];
 };
-
-
 
 // -----------------------------------------------------------------------------
 // Section: class PackedGroundPos
 // -----------------------------------------------------------------------------
 // Predeclaration so the compiler knows the friend function is a template
-template< int EXPONENT_BITS, int MANTISSA_BITS >
+template <int EXPONENT_BITS, int MANTISSA_BITS>
 class PackedGroundPos;
 
-template< int EXPONENT_BITS, int MANTISSA_BITS >
-BinaryIStream& operator>>( BinaryIStream& is,
-	PackedGroundPos< EXPONENT_BITS, MANTISSA_BITS > &xz );
+template <int EXPONENT_BITS, int MANTISSA_BITS>
+BinaryIStream& operator>>(BinaryIStream&                                 is,
+                          PackedGroundPos<EXPONENT_BITS, MANTISSA_BITS>& xz);
 
-template< int EXPONENT_BITS, int MANTISSA_BITS >
-BinaryOStream& operator<<( BinaryOStream& os,
-	const PackedGroundPos< EXPONENT_BITS, MANTISSA_BITS > & xz );
+template <int EXPONENT_BITS, int MANTISSA_BITS>
+BinaryOStream& operator<<(
+  BinaryOStream&                                       os,
+  const PackedGroundPos<EXPONENT_BITS, MANTISSA_BITS>& xz);
 
 /**
  *	This class is used to store a packed x and z coordinate.
  */
-template< int EXPONENT_BITS = EXPONENTBITS_XZ,
-	int MANTISSA_BITS = XZ_MANTISSABITS_XZ >
+template <int EXPONENT_BITS = EXPONENTBITS_XZ,
+          int MANTISSA_BITS = XZ_MANTISSABITS_XZ>
 class PackedGroundPos
 {
-	// X and Z are each EXPONENT + MANTISSA + 1 (for the sign)
-	static const int BITS = (EXPONENT_BITS + MANTISSA_BITS + 1) * 2;
-	static const int BYTES = ((BITS - 1) / 8) + 1;
-public:
-	static float maxLimit( float scale );
-	static float minLimit( float scale );
+    // X and Z are each EXPONENT + MANTISSA + 1 (for the sign)
+    static const int BITS  = (EXPONENT_BITS + MANTISSA_BITS + 1) * 2;
+    static const int BYTES = ((BITS - 1) / 8) + 1;
 
-	PackedGroundPos(){}
-	PackedGroundPos( float x, float z, float scale );
+  public:
+    static float maxLimit(float scale);
+    static float minLimit(float scale);
 
-	inline void packXZ( float x, float z, float scale );
-	inline void unpackXZ( float & x, float & z, float scale ) const;
+    PackedGroundPos() {}
+    PackedGroundPos(float x, float z, float scale);
 
-	inline void getXZError( float & xError, float & zError,
-			float scale ) const;
+    inline void packXZ(float x, float z, float scale);
+    inline void unpackXZ(float& x, float& z, float scale) const;
 
-	friend BinaryIStream& operator>> <>( BinaryIStream& is,
-		PackedGroundPos< EXPONENT_BITS, MANTISSA_BITS > &xz );
+    inline void getXZError(float& xError, float& zError, float scale) const;
 
-	friend BinaryOStream& operator<< <>( BinaryOStream& os,
-		const PackedGroundPos< EXPONENT_BITS, MANTISSA_BITS > & xz );
+    friend BinaryIStream& operator>>
+      <>(BinaryIStream& is, PackedGroundPos<EXPONENT_BITS, MANTISSA_BITS>& xz);
 
-private:
-	unsigned char buff_[ BYTES ];
+    friend BinaryOStream& operator<< <>(
+      BinaryOStream&                                       os,
+      const PackedGroundPos<EXPONENT_BITS, MANTISSA_BITS>& xz);
+
+  private:
+    unsigned char buff_[BYTES];
 };
-
-
 
 // -----------------------------------------------------------------------------
 // Section: class PackedFullPos
 // -----------------------------------------------------------------------------
 // Predeclaration so the compiler knows the friend function is a template
-template< int EXPONENT_BITS, int MANTISSA_BITS, int EXPONENT_BITS_Y,
-	int MANTISSA_BITS_Y >
+template <int EXPONENT_BITS,
+          int MANTISSA_BITS,
+          int EXPONENT_BITS_Y,
+          int MANTISSA_BITS_Y>
 class PackedFullPos;
 
-template< int EXPONENT_BITS, int MANTISSA_BITS, int EXPONENT_BITS_Y,
-	int MANTISSA_BITS_Y >
-BinaryIStream& operator>>( BinaryIStream& is,
-	PackedFullPos< EXPONENT_BITS, MANTISSA_BITS, EXPONENT_BITS_Y,
-	MANTISSA_BITS_Y > &xyz );
+template <int EXPONENT_BITS,
+          int MANTISSA_BITS,
+          int EXPONENT_BITS_Y,
+          int MANTISSA_BITS_Y>
+BinaryIStream& operator>>(
+  BinaryIStream& is,
+  PackedFullPos<EXPONENT_BITS, MANTISSA_BITS, EXPONENT_BITS_Y, MANTISSA_BITS_Y>&
+    xyz);
 
-template< int EXPONENT_BITS, int MANTISSA_BITS, int EXPONENT_BITS_Y,
-	int MANTISSA_BITS_Y >
-BinaryOStream& operator<<( BinaryOStream& os,
-	const PackedFullPos< EXPONENT_BITS, MANTISSA_BITS, EXPONENT_BITS_Y,
-	MANTISSA_BITS_Y > & xyz );
+template <int EXPONENT_BITS,
+          int MANTISSA_BITS,
+          int EXPONENT_BITS_Y,
+          int MANTISSA_BITS_Y>
+BinaryOStream& operator<<(BinaryOStream&                        os,
+                          const PackedFullPos<EXPONENT_BITS,
+                                              MANTISSA_BITS,
+                                              EXPONENT_BITS_Y,
+                                              MANTISSA_BITS_Y>& xyz);
 
 /**
  *	This class is used to store a packed x, y and z coordinate
  */
-template< int EXPONENT_BITS = EXPONENTBITS_XZ,
-	int MANTISSA_BITS = XYZ_MANTISSABITS_XZ,
-	int EXPONENT_BITS_Y = XYZ_EXPONENTBITS_Y,
-	int MANTISSA_BITS_Y = XYZ_MANTISSABITS_Y >
+template <int EXPONENT_BITS   = EXPONENTBITS_XZ,
+          int MANTISSA_BITS   = XYZ_MANTISSABITS_XZ,
+          int EXPONENT_BITS_Y = XYZ_EXPONENTBITS_Y,
+          int MANTISSA_BITS_Y = XYZ_MANTISSABITS_Y>
 class PackedFullPos
 {
-	// X, Y and Z are each EXPONENT + MANTISSA + 1 (for the sign)
-	static const int BITS = ((EXPONENT_BITS + MANTISSA_BITS + 1) * 2) +
-		(EXPONENT_BITS_Y + MANTISSA_BITS_Y + 1);
-	static const int BYTES = ((BITS - 1) / 8) + 1;
+    // X, Y and Z are each EXPONENT + MANTISSA + 1 (for the sign)
+    static const int BITS = ((EXPONENT_BITS + MANTISSA_BITS + 1) * 2) +
+                            (EXPONENT_BITS_Y + MANTISSA_BITS_Y + 1);
+    static const int BYTES = ((BITS - 1) / 8) + 1;
 
-public:
-	static float maxLimit( float xzscale );
-	static float minLimit( float xzscale );
+  public:
+    static float maxLimit(float xzscale);
+    static float minLimit(float xzscale);
 
-	static float maxYLimit();
-	static float minYLimit();
+    static float maxYLimit();
+    static float minYLimit();
 
-	PackedFullPos(){}
-	PackedFullPos( float x, float y, float z, float xzscale );
+    PackedFullPos() {}
+    PackedFullPos(float x, float y, float z, float xzscale);
 
-	inline void packXYZ( float x, float y, float z, float xzscale );
-	inline void unpackXYZ( float & x, float & y, float & z,
-		float xzscale ) const;
+    inline void packXYZ(float x, float y, float z, float xzscale);
+    inline void unpackXYZ(float& x, float& y, float& z, float xzscale) const;
 
-	inline void getXYZError( float & xError, float & yError, float & zError,
-			float xzscale ) const;
+    inline void getXYZError(float& xError,
+                            float& yError,
+                            float& zError,
+                            float  xzscale) const;
 
-	friend BinaryIStream& operator>> <>( BinaryIStream& is,
-		PackedFullPos< EXPONENT_BITS, MANTISSA_BITS, EXPONENT_BITS_Y,
-			MANTISSA_BITS_Y > &xyz );
+    friend BinaryIStream& operator>> <>(BinaryIStream&                  is,
+                                        PackedFullPos<EXPONENT_BITS,
+                                                      MANTISSA_BITS,
+                                                      EXPONENT_BITS_Y,
+                                                      MANTISSA_BITS_Y>& xyz);
 
-	friend BinaryOStream& operator<< <>( BinaryOStream& os,
-		const PackedFullPos< EXPONENT_BITS, MANTISSA_BITS, EXPONENT_BITS_Y,
-		MANTISSA_BITS_Y > & xyz );
+    friend BinaryOStream& operator<< <>(
+      BinaryOStream&                        os,
+      const PackedFullPos<EXPONENT_BITS,
+                          MANTISSA_BITS,
+                          EXPONENT_BITS_Y,
+                          MANTISSA_BITS_Y>& xyz);
 
-private:
-	unsigned char buff_[ BYTES ];
+  private:
+    unsigned char buff_[BYTES];
 };
-
 
 // -----------------------------------------------------------------------------
 // Section: Typedefs
@@ -397,19 +409,17 @@ private:
 typedef uint8 IDAlias;
 
 // We will almost always want the default template parameter versions.
-typedef PackedYaw<> Yaw;
-typedef PackedYawPitch<> YawPitch;
+typedef PackedYaw<>          Yaw;
+typedef PackedYawPitch<>     YawPitch;
 typedef PackedYawPitchRoll<> YawPitchRoll;
 
 typedef PackedGroundPos<> PackedXZ;
-typedef PackedFullPos<> PackedXYZ;
-
+typedef PackedFullPos<>   PackedXYZ;
 
 #if !VOLATILE_POSITIONS_ARE_ABSOLUTE
 // -----------------------------------------------------------------------------
 // Section: ReferencePosition
 // -----------------------------------------------------------------------------
-
 
 /**
  *	This method returns the reference position associated with the input
@@ -420,10 +430,9 @@ typedef PackedFullPos<> PackedXYZ;
  *	this position, entities that are meant to be stationary will move as the
  *	reference position moves.
  */
-inline Vector3 calculateReferencePosition( const Vector3 & pos )
+inline Vector3 calculateReferencePosition(const Vector3& pos)
 {
-	return Vector3( BW_ROUNDF( pos.x ), BW_ROUNDF( pos.y ),
-		BW_ROUNDF( pos.z ) );
+    return Vector3(BW_ROUNDF(pos.x), BW_ROUNDF(pos.y), BW_ROUNDF(pos.z));
 }
 
 #endif /* !VOLATILE_POSITIONS_ARE_ABSOLUTE */

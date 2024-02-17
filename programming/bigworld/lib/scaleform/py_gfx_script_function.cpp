@@ -6,48 +6,51 @@ BW_BEGIN_NAMESPACE
 
 namespace ScaleformBW {
 
-PyGFxScriptFunction::PyGFxScriptFunction(PyObject *pyScript, PyMovieView *pyMovieView, const BW::string &funcName)
-{
-	BW_GUARD;
+    PyGFxScriptFunction::PyGFxScriptFunction(PyObject*         pyScript,
+                                             PyMovieView*      pyMovieView,
+                                             const BW::string& funcName)
+    {
+        BW_GUARD;
 
-	MF_ASSERT(pyMovieView != NULL);
+        MF_ASSERT(pyMovieView != NULL);
 
-	funcName_ = funcName;
-	pyMovieView_ = pyMovieView;
-	
-	pyFunction_ = PyObject_GetAttrString(pyScript, funcName.c_str());
-	Py_XDECREF(pyFunction_.get());
-}
+        funcName_    = funcName;
+        pyMovieView_ = pyMovieView;
 
-void PyGFxScriptFunction::releasePointers()
-{
-	BW_GUARD;
+        pyFunction_ = PyObject_GetAttrString(pyScript, funcName.c_str());
+        Py_XDECREF(pyFunction_.get());
+    }
 
-	pyMovieView_ = NULL;
-	pyFunction_ = NULL;
-}
+    void PyGFxScriptFunction::releasePointers()
+    {
+        BW_GUARD;
 
-void PyGFxScriptFunction::Call(const GFx::FunctionHandler::Params &params)
-{
-	BW_GUARD;
+        pyMovieView_ = NULL;
+        pyFunction_  = NULL;
+    }
 
-	if (pyMovieView_ == NULL || pyFunction_ == NULL)
-		return;
+    void PyGFxScriptFunction::Call(const GFx::FunctionHandler::Params& params)
+    {
+        BW_GUARD;
 
-	PyObject *pyArgs = PyTuple_New(params.ArgCount);
-	for (uint i = 0; i < params.ArgCount; i++)
-	{
-		PyObject *pyArg = PyGFxValue::convertValueToPython(params.pArgs[i], pyMovieView_);
-		PyTuple_SetItem(pyArgs, i, pyArg);
-	}
+        if (pyMovieView_ == NULL || pyFunction_ == NULL)
+            return;
 
-	PyObject *pyFn = pyFunction_.get();
-	Py_XINCREF(pyFn);
-	PyObject *pyRet = Script::ask(pyFn, pyArgs);
+        PyObject* pyArgs = PyTuple_New(params.ArgCount);
+        for (uint i = 0; i < params.ArgCount; i++) {
+            PyObject* pyArg =
+              PyGFxValue::convertValueToPython(params.pArgs[i], pyMovieView_);
+            PyTuple_SetItem(pyArgs, i, pyArg);
+        }
 
-	if (pyRet != NULL && pyRet != Py_None && params.pRetVal != NULL)
-		*params.pRetVal = PyGFxValue::convertValueToGFx(pyRet, pyMovieView_);
-}
+        PyObject* pyFn = pyFunction_.get();
+        Py_XINCREF(pyFn);
+        PyObject* pyRet = Script::ask(pyFn, pyArgs);
+
+        if (pyRet != NULL && pyRet != Py_None && params.pRetVal != NULL)
+            *params.pRetVal =
+              PyGFxValue::convertValueToGFx(pyRet, pyMovieView_);
+    }
 
 }
 

@@ -4,312 +4,259 @@
 
 #include "cstdmf/memory_stream.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Util
-{
+namespace Util {
 
+    template <typename T>
+    unsigned char* setInStream(void* vdata, size_t offset, const T& value)
+    {
+        unsigned char* data   = reinterpret_cast<unsigned char*>(vdata);
+        T*             pValue = reinterpret_cast<T*>(data + offset);
+        *pValue               = value;
+        return data + offset + sizeof(T);
+    }
 
-template< typename T >
-unsigned char * setInStream( void * vdata, size_t offset, 
-		const T & value )
-{
-	unsigned char * data = reinterpret_cast< unsigned char * >( vdata );
-	T * pValue = reinterpret_cast< T * >( data + offset );
-	*pValue = value;
-	return data + offset + sizeof( T );
-}
+    void insertInStream(unsigned char* dest,
+                        size_t         destLen,
+                        const void*    src,
+                        size_t         srcLen)
+    {
+        char buf[destLen];
+        if (destLen > 0) {
+            memcpy(buf, dest, destLen);
+        }
 
+        memcpy(dest, src, srcLen);
 
-void insertInStream( unsigned char * dest, size_t destLen, 
-		const void * src, size_t srcLen )
-{
-	char buf[destLen];
-	if (destLen > 0)
-	{
-		memcpy( buf, dest, destLen );
-	}
+        if (destLen > 0) {
+            memcpy(dest + srcLen, buf, destLen);
+        }
+    } // namespace Util
 
-	memcpy( dest, src, srcLen );
-
-	if (destLen > 0)
-	{
-		memcpy( dest + srcLen, buf, destLen );
-	}
-} // namespace Util
-
-
-template< typename T >
-void insertInStream( unsigned char * data, size_t & tailLen, 
-		const T & value )
-{
-	Util::insertInStream( data, tailLen, &value, sizeof( value ) );
-	tailLen += sizeof( value );
-}
-
+    template <typename T>
+    void insertInStream(unsigned char* data, size_t& tailLen, const T& value)
+    {
+        Util::insertInStream(data, tailLen, &value, sizeof(value));
+        tailLen += sizeof(value);
+    }
 
 } // end namespace (anonymous)
 
-
-PacketGenerator::PacketGenerator():
-		flags_( 0 ),
-		seq_( Mercury::SEQ_NULL ),
-		fragBegin_( Mercury::SEQ_NULL ),
-		fragEnd_( Mercury::SEQ_NULL ),
-		channelID_( Mercury::CHANNEL_ID_NULL ),
-		channelVersion_( 0 ),
-		messages_()
+PacketGenerator::PacketGenerator()
+  : flags_(0)
+  , seq_(Mercury::SEQ_NULL)
+  , fragBegin_(Mercury::SEQ_NULL)
+  , fragEnd_(Mercury::SEQ_NULL)
+  , channelID_(Mercury::CHANNEL_ID_NULL)
+  , channelVersion_(0)
+  , messages_()
 {
-
 }
 
+PacketGenerator::~PacketGenerator() {}
 
-PacketGenerator::~PacketGenerator()
+void PacketGenerator::setIndexedChannel(Mercury::ChannelID      channelID,
+                                        Mercury::ChannelVersion version)
 {
+    channelID_ = channelID;
 
+    if (channelID != Mercury::CHANNEL_ID_NULL) {
+        flags_ |= Mercury::Packet::FLAG_INDEXED_CHANNEL;
+        channelVersion_ = version;
+    } else {
+        flags_ &= ~Mercury::Packet::FLAG_INDEXED_CHANNEL;
+        channelVersion_ = 0;
+    }
 }
 
-
-void PacketGenerator::setIndexedChannel( Mercury::ChannelID channelID,
-		Mercury::ChannelVersion version )
+void PacketGenerator::setReliable(Mercury::SeqNum seq, bool isReliable)
 {
-	channelID_ = channelID;
+    seq_ = seq;
+    if (seq_ != Mercury::SEQ_NULL) {
+        flags_ |= Mercury::Packet::FLAG_HAS_SEQUENCE_NUMBER;
+    } else {
+        flags_ &= ~Mercury::Packet::FLAG_HAS_SEQUENCE_NUMBER;
+    }
 
-	if (channelID != Mercury::CHANNEL_ID_NULL)
-	{
-		flags_ |= Mercury::Packet::FLAG_INDEXED_CHANNEL;
-		channelVersion_ = version;
-	}
-	else
-	{
-		flags_ &= ~Mercury::Packet::FLAG_INDEXED_CHANNEL;
-		channelVersion_ = 0;
-	}
+    if (isReliable) {
+        flags_ |= Mercury::Packet::FLAG_IS_RELIABLE;
+    } else {
+        flags_ &= ~Mercury::Packet::FLAG_IS_RELIABLE;
+    }
 }
 
-
-void PacketGenerator::setReliable( Mercury::SeqNum seq, bool isReliable )
+void PacketGenerator::setFragment(Mercury::SeqNum fragBegin,
+                                  Mercury::SeqNum fragEnd)
 {
-	seq_ = seq;
-	if (seq_ != Mercury::SEQ_NULL)
-	{
-		flags_ |= Mercury::Packet::FLAG_HAS_SEQUENCE_NUMBER;
-	}
-	else
-	{
-		flags_ &= ~Mercury::Packet::FLAG_HAS_SEQUENCE_NUMBER;
-	}
+    if (fragBegin != Mercury::SEQ_NULL || fragEnd != Mercury::SEQ_NULL) {
+        flags_ |= Mercury::Packet::FLAG_IS_FRAGMENT;
+    } else {
+        flags_ &= ~Mercury::Packet::FLAG_IS_FRAGMENT;
+    }
 
-	if (isReliable)
-	{
-		flags_ |= Mercury::Packet::FLAG_IS_RELIABLE;
-	}
-	else
-	{
-		flags_ &= ~Mercury::Packet::FLAG_IS_RELIABLE;
-	}
+    fragBegin_ = fragBegin;
+    fragEnd_   = fragEnd;
 }
 
-
-void PacketGenerator::setFragment( Mercury::SeqNum fragBegin, 
-		Mercury::SeqNum fragEnd )
+void PacketGenerator::setOnChannel(bool isCreate)
 {
-	if (fragBegin != Mercury::SEQ_NULL || fragEnd != Mercury::SEQ_NULL)
-	{
-		flags_ |= Mercury::Packet::FLAG_IS_FRAGMENT;
-	}
-	else
-	{
-		flags_ &= ~Mercury::Packet::FLAG_IS_FRAGMENT;
-	}
+    flags_ |= Mercury::Packet::FLAG_ON_CHANNEL;
 
-	fragBegin_ = fragBegin;
-	fragEnd_ = fragEnd;
+    if (isCreate) {
+        flags_ |= Mercury::Packet::FLAG_CREATE_CHANNEL;
+    } else {
+        flags_ &= ~Mercury::Packet::FLAG_CREATE_CHANNEL;
+    }
 }
 
-
-void PacketGenerator::setOnChannel( bool isCreate )
+void PacketGenerator::addFixedLengthMessage(Mercury::MessageID messageID,
+                                            const void*        data,
+                                            uint               len)
 {
-	flags_ |= Mercury::Packet::FLAG_ON_CHANNEL;
-
-	if (isCreate)
-	{
-		flags_ |= Mercury::Packet::FLAG_CREATE_CHANNEL;
-	}
-	else
-	{
-		flags_ &= ~Mercury::Packet::FLAG_CREATE_CHANNEL;
-	}
+    this->addMessageData(messageID);
+    this->addMessageBlob(data, len);
 }
 
-
-void PacketGenerator::addFixedLengthMessage( Mercury::MessageID messageID,
-		const void * data, uint len )
+void PacketGenerator::addVariableLengthMessage(Mercury::MessageID messageID,
+                                               uint8              varLengthLen,
+                                               const void*        data,
+                                               uint               len)
 {
-	this->addMessageData( messageID );
-	this->addMessageBlob( data, len );
+    shared_ptr<MemoryOStream> pStream(new MemoryOStream());
+
+    *pStream << messageID;
+    switch (varLengthLen) {
+        case 1: {
+            uint8 len8 = uint8(len);
+            *pStream << len8;
+            break;
+        }
+        case 2: {
+            uint16 len16 = uint16(len);
+            *pStream << len16;
+            break;
+        }
+        case 4: {
+            uint32 len32 = uint32(len);
+            *pStream << len32;
+            break;
+        }
+        default:
+            CRITICAL_MSG("Invalid variable length length\n");
+            break;
+    }
+
+    pStream->addBlob(data, len);
+
+    messages_.push_back(pStream);
 }
 
-
-void PacketGenerator::addVariableLengthMessage( Mercury::MessageID messageID, 
-		uint8 varLengthLen, const void * data, uint len )
+void PacketGenerator::addMessageBlob(const void* data, uint len)
 {
-	shared_ptr< MemoryOStream > pStream( new MemoryOStream() );
+    shared_ptr<MemoryOStream> pStream(new MemoryOStream());
 
-	*pStream << messageID;
-	switch (varLengthLen)
-	{
-		case 1:
-		{
-			uint8 len8 = uint8( len );
-			*pStream << len8;
-			break;
-		}
-		case 2:
-		{
-			uint16 len16 = uint16( len );
-			*pStream << len16;
-			break;
-		}
-		case 4:
-		{
-			uint32 len32 = uint32( len );
-			*pStream << len32;
-			break;
-		}
-		default:
-			CRITICAL_MSG( "Invalid variable length length\n" );
-			break;
-	}
+    pStream->addBlob(data, len);
 
-	pStream->addBlob( data, len );
-
-	messages_.push_back( pStream );
+    messages_.push_back(pStream);
 }
 
-
-void PacketGenerator::addMessageBlob( const void * data, uint len )
+Mercury::Packet* PacketGenerator::createPacket() const
 {
-	shared_ptr< MemoryOStream > pStream( new MemoryOStream() );
+    static Endpoint s_source;
+    static Endpoint s_destination;
+    static bool     inited = false;
 
-	pStream->addBlob( data, len );
+    if (!inited) {
+        s_source.socket(SOCK_DGRAM);
+        s_source.bind();
 
-	messages_.push_back( pStream );
+        s_destination.socket(SOCK_DGRAM);
+        s_destination.bind();
+
+        inited = true;
+    }
+
+    Mercury::Packet* pPacket = new Mercury::Packet();
+
+    char packetBuffer[PACKET_MAX_SIZE];
+
+    size_t len = PACKET_MAX_SIZE;
+
+    if (!this->addToStream(packetBuffer, len)) {
+        return NULL;
+    }
+
+    Mercury::Address destAddr   = s_destination.getLocalAddress();
+    Mercury::Address sourceAddr = s_source.getLocalAddress();
+
+    s_source.sendto(packetBuffer, len, destAddr.port, destAddr.ip);
+
+    pPacket->recvFromEndpoint(s_destination, sourceAddr);
+
+    return pPacket;
 }
 
-
-Mercury::Packet * PacketGenerator::createPacket() const
+bool PacketGenerator::addToStream(void* vdata, size_t& maxLen) const
 {
-	static Endpoint s_source;
-	static Endpoint s_destination;
-	static bool inited = false;
+    uint8* data     = reinterpret_cast<uint8*>(vdata);
+    uint8* origData = data;
 
-	if (!inited)
-	{
-		s_source.socket( SOCK_DGRAM );
-		s_source.bind();
+    if (maxLen < sizeof(flags_)) {
+        return false;
+    }
 
-		s_destination.socket( SOCK_DGRAM );
-		s_destination.bind();
+    data = Util::setInStream(data, 0, flags_);
 
-		inited = true;
-	}
+    for (Messages::const_iterator iMessage = messages_.begin();
+         iMessage != messages_.end();
+         ++iMessage) {
+        size_t len = (*iMessage)->remainingLength();
+        if (maxLen - (data - origData) < len) {
+            return false;
+        }
 
-	Mercury::Packet * pPacket = new Mercury::Packet();
+        // Need to const_cast because data() is non-const.
+        MemoryOStream& messageStream = const_cast<MemoryOStream&>(**iMessage);
 
-	char packetBuffer[PACKET_MAX_SIZE];
+        memcpy(data, messageStream.data(), len);
+        data += len;
+    }
 
-	size_t len = PACKET_MAX_SIZE;
+    size_t footerLen = 0;
 
-	if (!this->addToStream( packetBuffer, len ))
-	{
-		return NULL;
-	}
+    if (flags_ & Mercury::Packet::FLAG_INDEXED_CHANNEL) {
+        if (maxLen - (data - origData + footerLen) <
+            sizeof(channelID_) + sizeof(channelVersion_)) {
+            return false;
+        }
 
-	Mercury::Address destAddr = s_destination.getLocalAddress();
-	Mercury::Address sourceAddr = s_source.getLocalAddress();
+        Util::insertInStream(data, footerLen, channelID_);
+        Util::insertInStream(data, footerLen, channelVersion_);
+    }
 
-	s_source.sendto( packetBuffer, len, destAddr.port, destAddr.ip );
+    if (flags_ & Mercury::Packet::FLAG_HAS_SEQUENCE_NUMBER) {
+        if (maxLen - (data - origData + footerLen) < sizeof(seq_)) {
+            return false;
+        }
 
-	pPacket->recvFromEndpoint( s_destination, sourceAddr );
+        Util::insertInStream(data, footerLen, seq_);
+    }
 
-	return pPacket;
-}
+    if (flags_ & Mercury::Packet::FLAG_IS_FRAGMENT) {
+        if (maxLen - (data - origData + footerLen) <
+            sizeof(fragBegin_) + sizeof(fragEnd_)) {
+            return false;
+        }
+        Util::insertInStream(data, footerLen, fragEnd_);
+        Util::insertInStream(data, footerLen, fragBegin_);
+    }
 
+    maxLen = data - origData + footerLen;
 
-bool PacketGenerator::addToStream( void * vdata, size_t & maxLen ) const
-{
-	uint8 * data = reinterpret_cast< uint8 *>( vdata );
-	uint8 * origData = data;
-
-	if (maxLen < sizeof( flags_ ))
-	{
-		return false;
-	}
-
-	data = Util::setInStream( data, 0, flags_ );
-
-
-	for (Messages::const_iterator iMessage = messages_.begin();
-			iMessage != messages_.end();
-			++iMessage)
-	{
-		size_t len = (*iMessage)->remainingLength();
-		if (maxLen - (data - origData) < len)
-		{
-			return false;
-		}
-
-		// Need to const_cast because data() is non-const.
-		MemoryOStream & messageStream = 
-			const_cast< MemoryOStream & >( **iMessage );
-
-		memcpy( data, messageStream.data(), len );
-		data += len;
-	}
-
-	size_t footerLen = 0;
-
-	if (flags_ & Mercury::Packet::FLAG_INDEXED_CHANNEL)
-	{
-		if (maxLen - (data - origData + footerLen) < 
-				sizeof( channelID_ ) + sizeof( channelVersion_ ))
-		{
-			return false;
-		}
-
-		Util::insertInStream( data, footerLen, channelID_ );
-		Util::insertInStream( data, footerLen, channelVersion_ );
-	}
-
-	if (flags_ & Mercury::Packet::FLAG_HAS_SEQUENCE_NUMBER)
-	{
-		if (maxLen - (data - origData + footerLen) < sizeof( seq_ ))
-		{
-			return false;
-		}
-
-		Util::insertInStream( data, footerLen, seq_ );
-	}
-
-	if (flags_ & Mercury::Packet::FLAG_IS_FRAGMENT)
-	{
-		if (maxLen - (data - origData + footerLen) < 
-				sizeof( fragBegin_ ) + sizeof( fragEnd_ ))
-		{
-			return false;
-		}
-		Util::insertInStream( data, footerLen, fragEnd_ );
-		Util::insertInStream( data, footerLen, fragBegin_ );
-	}
-
-	maxLen = data - origData + footerLen;
-
-	return true;
+    return true;
 }
 
 BW_END_NAMESPACE
 
 // packet_generator.cpp
-

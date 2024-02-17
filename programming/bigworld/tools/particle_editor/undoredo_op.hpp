@@ -3,12 +3,12 @@
 
 #include "fwd.hpp"
 #include "gizmo/undoredo.hpp"
- 
+
 BW_BEGIN_NAMESPACE
 
 class UndoRedoOp : public UndoRedo::Operation
 {
-public:
+  public:
     enum ActionKind
     {
         AK_PARAMETER,
@@ -21,21 +21,17 @@ public:
     // @param actionKind    The kind of undo/redo action.
     // @param data          The saved state.
     //
-	UndoRedoOp
-    ( 
-        ActionKind          actionKind, 
-        DataSectionPtr      data
-    );
+    UndoRedoOp(ActionKind actionKind, DataSectionPtr data);
 
     //
     // Destructor.
     //
-	~UndoRedoOp();
+    ~UndoRedoOp();
 
     //
     // Undo operation.
     //
-	/*virtual*/ void undo();
+    /*virtual*/ void undo();
 
     //
     // Are two undo operations the same?
@@ -43,16 +39,16 @@ public:
     // @param other         The other undo operation.
     // @returns             True if the undo operations are the same.
     //
-	/*virtual*/ bool iseq(Operation const &other) const;
+    /*virtual*/ bool iseq(Operation const& other) const;
 
     //
     // Get the saved state.
     //
     // @returns             The saved state.
     //
-	DataSectionPtr data() const;
+    DataSectionPtr data() const;
 
-protected:
+  protected:
     //
     // Are the data sections equal?
     //
@@ -61,14 +57,11 @@ protected:
     // @returns             True if data section as binary data are bit for bit
     //                      the same.
     //
-	bool XmlSectionsAreEq
-    (
-        DataSectionPtr      const &one, 
-        DataSectionPtr      const &two 
-    ) const;
+    bool XmlSectionsAreEq(DataSectionPtr const& one,
+                          DataSectionPtr const& two) const;
 
-private:
-	DataSectionPtr	        data_;
+  private:
+    DataSectionPtr data_;
 };
 
 BW_END_NAMESPACE

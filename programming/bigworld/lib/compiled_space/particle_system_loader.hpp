@@ -13,79 +13,74 @@
 #include "space/dynamic_scene_provider_types.hpp"
 
 namespace BW {
-	
-class MetaParticleSystem;
-typedef SmartPointer<MetaParticleSystem> MetaParticleSystemPtr;
 
-namespace CompiledSpace {
+    class MetaParticleSystem;
+    typedef SmartPointer<MetaParticleSystem> MetaParticleSystemPtr;
 
-class COMPILED_SPACE_API ParticleSystemLoader : 
-	public ILoader
-{
-public:
-	static void registerHandlers( Scene & scene );
+    namespace CompiledSpace {
 
-public:
-	ParticleSystemLoader( DynamicSceneProvider& dynamicScene );
-	virtual ~ParticleSystemLoader();
+        class COMPILED_SPACE_API ParticleSystemLoader : public ILoader
+        {
+          public:
+            static void registerHandlers(Scene& scene);
 
-	void addToScene();
-	void removeFromScene();
+          public:
+            ParticleSystemLoader(DynamicSceneProvider& dynamicScene);
+            virtual ~ParticleSystemLoader();
 
-private:
+            void addToScene();
+            void removeFromScene();
 
-	virtual bool doLoadFromSpace( ClientSpace * pSpace,
-		BinaryFormat& reader,
-		const DataSectionPtr& pSpaceSettings,
-		const Matrix& mappingTransform,
-		const StringTable& stringTable );
+          private:
+            virtual bool doLoadFromSpace(ClientSpace*          pSpace,
+                                         BinaryFormat&         reader,
+                                         const DataSectionPtr& pSpaceSettings,
+                                         const Matrix&         mappingTransform,
+                                         const StringTable&    stringTable);
 
-	virtual bool doBind();
-	virtual void doUnload();
-	virtual float percentLoaded() const;
+            virtual bool  doBind();
+            virtual void  doUnload();
+            virtual float percentLoaded() const;
 
-private:
-	void loadParticleSystems( const StringTable& strings );
-	void freeParticleSystems();
+          private:
+            void loadParticleSystems(const StringTable& strings);
+            void freeParticleSystems();
 
-	struct Instance;
+            struct Instance;
 
-	bool loadParticleSystem(
-		ParticleSystemTypes::ParticleSystem& def,
-		const StringTable& strings,
-		Instance& instance );
+            bool loadParticleSystem(ParticleSystemTypes::ParticleSystem& def,
+                                    const StringTable& strings,
+                                    Instance&          instance);
 
-private:
-	BinaryFormat* pReader_;
-	BinaryFormat::Stream* pStream_;
+          private:
+            BinaryFormat*         pReader_;
+            BinaryFormat::Stream* pStream_;
 
-	ExternalArray<ParticleSystemTypes::ParticleSystem> systemData_;
-	DynamicSceneProvider& dynamicScene_;
+            ExternalArray<ParticleSystemTypes::ParticleSystem> systemData_;
+            DynamicSceneProvider&                              dynamicScene_;
 
-private:
-	class DrawHandler;
-	class TickHandler;
+          private:
+            class DrawHandler;
+            class TickHandler;
 
-	struct Instance : 
-		public MatrixLiaison
-	{
-		ParticleSystemLoader* pLoader_;
-		ParticleSystemTypes::ParticleSystem* pDef_;
-		MetaParticleSystemPtr system_;
-		float seedTime_;
-		uint32 index_;
-		DynamicObjectHandle dynamicObjectHandle_;
+            struct Instance : public MatrixLiaison
+            {
+                ParticleSystemLoader*                pLoader_;
+                ParticleSystemTypes::ParticleSystem* pDef_;
+                MetaParticleSystemPtr                system_;
+                float                                seedTime_;
+                uint32                               index_;
+                DynamicObjectHandle                  dynamicObjectHandle_;
 
-		// MatrixLiasion
-		virtual const Matrix & getMatrix() const;
-		virtual bool setMatrix( const Matrix & m );
-	};
+                // MatrixLiasion
+                virtual const Matrix& getMatrix() const;
+                virtual bool          setMatrix(const Matrix& m);
+            };
 
-	BW::vector<Instance> instances_;
-};
+            BW::vector<Instance> instances_;
+        };
 
-} // namespace CompiledSpace
+    } // namespace CompiledSpace
 } // namespace BW
-
 
 #endif // PARTICLE_SYSTEM_LOADER_HPP

@@ -2,37 +2,39 @@
 // that describes all of the entity types. A Python module is then load and a
 // function is called with the description object.
 
-const char * USAGE =
-"usage: %s [OPTION] scriptArgs\n"
-"\n"
-"This program parses the BigWorld entity definition files. A Python object is\n"
-"then created representing the entity descriptions. This is passed to a Python\n"
-"callback moduleName.functionName. By default, this is ProcessDefs.process.\n"
-"\n"
-"Options:\n"
-"  -r             directory     Specifies a resource path. Can be used\n"
-"                               multiple times, in order of decreasing\n"
-#if defined( __APPLE__ )
-"                               priority.\n"
+const char* USAGE =
+  "usage: %s [OPTION] scriptArgs\n"
+  "\n"
+  "This program parses the BigWorld entity definition files. A Python object "
+  "is\n"
+  "then created representing the entity descriptions. This is passed to a "
+  "Python\n"
+  "callback moduleName.functionName. By default, this is ProcessDefs.process.\n"
+  "\n"
+  "Options:\n"
+  "  -r             directory     Specifies a resource path. Can be used\n"
+  "                               multiple times, in order of decreasing\n"
+#if defined(__APPLE__)
+  "                               priority.\n"
 #else
-"                               priority, replacing the paths provided in\n"
-#if defined( WIN32 )
-"                               paths.xml\n"
-#else // defined( WIN32 )
-"                               ~/.bwmachined.conf\n"
+  "                               priority, replacing the paths provided in\n"
+#if defined(WIN32)
+  "                               paths.xml\n"
+#else  // defined( WIN32 )
+  "                               ~/.bwmachined.conf\n"
 #endif // defined( WIN32 )
 #endif // defined( __APPLE__ )
-"  -f, --function funcName      The Python function to call. \"process\" by\n"
-"                               default.\n"
-"  -m, --module   moduleName    The Python module to load. \"ProcessDefs\"\n"
-"                               by default.\n"
-"  -p, --path     directory     The directory to find the module.\n"
-"                               \"tools/process_defs/resources/scripts\" in \n"
-"                               the resource tree is the default.\n"
-"  --use-stdout                 Send messages to stdout rather then stderr\n"
-"  -v, --verbose                Displays more verbose output.\n"
-"  -h, --help                   Displays this message.\n"
-;
+  "  -f, --function funcName      The Python function to call. \"process\" by\n"
+  "                               default.\n"
+  "  -m, --module   moduleName    The Python module to load. \"ProcessDefs\"\n"
+  "                               by default.\n"
+  "  -p, --path     directory     The directory to find the module.\n"
+  "                               \"tools/process_defs/resources/scripts\" in "
+  "\n"
+  "                               the resource tree is the default.\n"
+  "  --use-stdout                 Send messages to stdout rather then stderr\n"
+  "  -v, --verbose                Displays more verbose output.\n"
+  "  -h, --help                   Displays this message.\n";
 
 #include "script/first_include.hpp"
 
@@ -56,29 +58,27 @@ const char * USAGE =
 
 #include "help_msg_handler.hpp"
 
-DECLARE_DEBUG_COMPONENT( 0 )
-
+DECLARE_DEBUG_COMPONENT(0)
 
 BW_BEGIN_NAMESPACE
 
 const char PROCESS_NAME[] = "process_defs";
 
-const char * FLAGS_HELP[] = {"-h", "--help", NULL};
-const char * FLAGS_VERBOSE[] = {"-v", "--verbose", NULL};
+const char* FLAGS_HELP[]    = { "-h", "--help", NULL };
+const char* FLAGS_VERBOSE[] = { "-v", "--verbose", NULL };
 
-const char * FLAGS_PATH[] = {"-p", "--path", NULL};
-const char * FLAGS_MODULE[] = {"-m", "--module", NULL};
-const char * FLAGS_FUNCTION[] = {"-f", "--function", NULL};
+const char* FLAGS_PATH[]     = { "-p", "--path", NULL };
+const char* FLAGS_MODULE[]   = { "-m", "--module", NULL };
+const char* FLAGS_FUNCTION[] = { "-f", "--function", NULL };
 
-const char * FLAGS_USE_STDOUT[] = {"--use-stdout", NULL};
+const char* FLAGS_USE_STDOUT[] = { "--use-stdout", NULL };
 
 extern int force_link_UDO_REF;
 extern int ResMgr_token;
 extern int PyScript_token;
 
-namespace
-{
-int s_moduleTokens = ResMgr_token | PyScript_token | force_link_UDO_REF;
+namespace {
+    int s_moduleTokens = ResMgr_token | PyScript_token | force_link_UDO_REF;
 }
 
 /**
@@ -86,270 +86,267 @@ int s_moduleTokens = ResMgr_token | PyScript_token | force_link_UDO_REF;
  */
 void printUsage()
 {
-	fprintf( stderr, USAGE, PROCESS_NAME );
+    fprintf(stderr, USAGE, PROCESS_NAME);
 }
-
 
 /**
  *	This function creates a dictionary that describes the given method.
  */
 ScriptObject createMethodDescriptions(
-		const EntityMethodDescriptions & methodDescriptions )
+  const EntityMethodDescriptions& methodDescriptions)
 {
-	ScriptTuple scriptMethodDescriptions =
-		ScriptTuple::create( methodDescriptions.size() );
+    ScriptTuple scriptMethodDescriptions =
+      ScriptTuple::create(methodDescriptions.size());
 
-	for (unsigned int i = 0; i < methodDescriptions.size(); ++i)
-	{
-		const MethodDescription * pMethodDescription =
-			methodDescriptions.internalMethod( i );
+    for (unsigned int i = 0; i < methodDescriptions.size(); ++i) {
+        const MethodDescription* pMethodDescription =
+          methodDescriptions.internalMethod(i);
 
-		ScriptDict methodDescription = ScriptDict::create();
+        ScriptDict methodDescription = ScriptDict::create();
 
-#define ADD_PROPERTY( PROP_NAME ) 											\
-	methodDescription.setItem( #PROP_NAME,							\
-			ScriptObject::createFrom( pMethodDescription->PROP_NAME() ),	\
-			ScriptErrorPrint( "createMethodDescriptions("#PROP_NAME"):") );
+#define ADD_PROPERTY(PROP_NAME)                                                \
+    methodDescription.setItem(                                                 \
+      #PROP_NAME,                                                              \
+      ScriptObject::createFrom(pMethodDescription->PROP_NAME()),               \
+      ScriptErrorPrint("createMethodDescriptions(" #PROP_NAME "):"));
 
-		ADD_PROPERTY( name )
-		ADD_PROPERTY( isExposed )
-		ADD_PROPERTY( internalIndex )
-		ADD_PROPERTY( exposedIndex )
+        ADD_PROPERTY(name)
+        ADD_PROPERTY(isExposed)
+        ADD_PROPERTY(internalIndex)
+        ADD_PROPERTY(exposedIndex)
 
 #undef ADD_PROPERTY
 
-		methodDescription.setItem( "args",
-			pMethodDescription->argumentTypesAsScript(),
-			ScriptErrorPrint( "createMethodDescriptions(args):" ) );
+        methodDescription.setItem(
+          "args",
+          pMethodDescription->argumentTypesAsScript(),
+          ScriptErrorPrint("createMethodDescriptions(args):"));
 
-		if (pMethodDescription->hasReturnValues())
-		{
-			methodDescription.setItem( "returnValues",
-				pMethodDescription->returnValueTypesAsScript(),
-				ScriptErrorPrint( "createMethodDescriptions(returnValues):" ) );
+        if (pMethodDescription->hasReturnValues()) {
+            methodDescription.setItem(
+              "returnValues",
+              pMethodDescription->returnValueTypesAsScript(),
+              ScriptErrorPrint("createMethodDescriptions(returnValues):"));
+        }
 
-		}
+        methodDescription.setItem(
+          "streamSize",
+          ScriptObject::createFrom(pMethodDescription->streamSize(true)),
+          ScriptErrorPrint("createMethodDescriptions(streamSize):"));
 
-		methodDescription.setItem( "streamSize",
-			ScriptObject::createFrom(
-				pMethodDescription->streamSize( true ) ),
-			ScriptErrorPrint( "createMethodDescriptions(streamSize):" ) );
+        scriptMethodDescriptions.setItem(i, methodDescription);
+    }
 
-		scriptMethodDescriptions.setItem( i, methodDescription );
-	}
-
-	return scriptMethodDescriptions;
+    return scriptMethodDescriptions;
 }
-
 
 /**
  *	This function creates a dictionary that describes the given property.
  */
-ScriptObject createPropertyDescription( const DataDescription & desc )
+ScriptObject createPropertyDescription(const DataDescription& desc)
 {
-	ScriptDict scriptDesc = ScriptDict::create();
+    ScriptDict scriptDesc = ScriptDict::create();
 
-	scriptDesc.setItem( "type",
-			ScriptObject::createFrom( desc.dataType()->typeName() ),
-			ScriptErrorPrint( "createPropertyDescription" ) );
+    scriptDesc.setItem("type",
+                       ScriptObject::createFrom(desc.dataType()->typeName()),
+                       ScriptErrorPrint("createPropertyDescription"));
 
-#define ADD_PROPERTY( PROP_NAME ) 											\
-	scriptDesc.setItem( #PROP_NAME,									\
-		ScriptObject::createFrom( desc.PROP_NAME() ),						\
-		ScriptErrorPrint( "createPropertyDescription("#PROP_NAME"):" ) ); 	\
+#define ADD_PROPERTY(PROP_NAME)                                                \
+    scriptDesc.setItem(                                                        \
+      #PROP_NAME,                                                              \
+      ScriptObject::createFrom(desc.PROP_NAME()),                              \
+      ScriptErrorPrint("createPropertyDescription(" #PROP_NAME "):"));
 
-	ADD_PROPERTY( name )
-	ADD_PROPERTY( index )
-	ADD_PROPERTY( clientServerFullIndex )
+    ADD_PROPERTY(name)
+    ADD_PROPERTY(index)
+    ADD_PROPERTY(clientServerFullIndex)
 
-	ADD_PROPERTY( isGhostedData )
-	ADD_PROPERTY( isOtherClientData )
-	ADD_PROPERTY( isOwnClientData )
-	ADD_PROPERTY( isCellData )
-	ADD_PROPERTY( isBaseData )
-	ADD_PROPERTY( isClientServerData )
-	ADD_PROPERTY( isPersistent )
-	ADD_PROPERTY( isIdentifier )
-	ADD_PROPERTY( isIndexed )
-	ADD_PROPERTY( isUnique )
-	ADD_PROPERTY( streamSize )
+    ADD_PROPERTY(isGhostedData)
+    ADD_PROPERTY(isOtherClientData)
+    ADD_PROPERTY(isOwnClientData)
+    ADD_PROPERTY(isCellData)
+    ADD_PROPERTY(isBaseData)
+    ADD_PROPERTY(isClientServerData)
+    ADD_PROPERTY(isPersistent)
+    ADD_PROPERTY(isIdentifier)
+    ADD_PROPERTY(isIndexed)
+    ADD_PROPERTY(isUnique)
+    ADD_PROPERTY(streamSize)
 
-	scriptDesc.setItem( "isConst",
-			ScriptObject::createFrom( desc.dataType()->isConst() ),
-			ScriptErrorPrint( "createPropertyDescription(isConst):" ) );
+    scriptDesc.setItem("isConst",
+                       ScriptObject::createFrom(desc.dataType()->isConst()),
+                       ScriptErrorPrint("createPropertyDescription(isConst):"));
 
 #undef ADD_PROPERTY
 
-	return scriptDesc;
+    return scriptDesc;
 }
-
 
 /**
  *	This function creates a tuple of all property descriptions.
  */
 ScriptObject createAllPropertyDescriptions(
-		const EntityDescription & entityDescription )
+  const EntityDescription& entityDescription)
 {
-	ScriptTuple propertyDescriptions =
-		ScriptTuple::create( entityDescription.propertyCount() );
+    ScriptTuple propertyDescriptions =
+      ScriptTuple::create(entityDescription.propertyCount());
 
-	for (unsigned int i = 0; i < entityDescription.propertyCount(); ++i)
-	{
-		DataDescription * pDesc = entityDescription.property( i );
+    for (unsigned int i = 0; i < entityDescription.propertyCount(); ++i) {
+        DataDescription* pDesc = entityDescription.property(i);
 
-		propertyDescriptions.setItem( i, createPropertyDescription( *pDesc ) );
-	}
+        propertyDescriptions.setItem(i, createPropertyDescription(*pDesc));
+    }
 
-	return propertyDescriptions;
+    return propertyDescriptions;
 }
-
 
 /**
  *	This function creates a tuple of ordered property descriptions for the given
  *	data domain.
  */
-ScriptList createOrderedProperties( int dataDomains,
-		const EntityDescription & entityDescription )
+ScriptList createOrderedProperties(int                      dataDomains,
+                                   const EntityDescription& entityDescription)
 {
-	class Visitor : public IDataDescriptionVisitor
-	{
-	public:
-		Visitor() : descriptions_( ScriptList::create() ) {}
+    class Visitor : public IDataDescriptionVisitor
+    {
+      public:
+        Visitor()
+          : descriptions_(ScriptList::create())
+        {
+        }
 
-		bool visit( const DataDescription & dataDesc )
-		{
-			descriptions_.append( createPropertyDescription( dataDesc ) );
+        bool visit(const DataDescription& dataDesc)
+        {
+            descriptions_.append(createPropertyDescription(dataDesc));
 
-			return true;
-		}
+            return true;
+        }
 
-		const ScriptList & descriptions() const	{ return descriptions_; }
+        const ScriptList& descriptions() const { return descriptions_; }
 
-	private:
-		ScriptList descriptions_;
-	};
+      private:
+        ScriptList descriptions_;
+    };
 
-	Visitor visitor;
+    Visitor visitor;
 
-	entityDescription.visit( dataDomains, visitor );
+    entityDescription.visit(dataDomains, visitor);
 
-	return visitor.descriptions();
+    return visitor.descriptions();
 }
-
 
 /**
  *	This function creates a script dictionary containing a description of an
  *	entity type.
  */
-ScriptObject createEntityDescription(
-		const EntityDescription & entityDescription )
+ScriptObject createEntityDescription(const EntityDescription& entityDescription)
 {
-	ScriptDict scriptDescription = ScriptDict::create();
+    ScriptDict scriptDescription = ScriptDict::create();
 
-#define ADD_PROPERTY_NAMED( PROP_NAME, C_GETTER_NAME ) 						\
-	scriptDescription.setItem( #PROP_NAME,									\
-	ScriptObject::createFrom( entityDescription.C_GETTER_NAME() ),			\
-	ScriptErrorPrint( "createEntityDescription("#PROP_NAME"):" ) );
+#define ADD_PROPERTY_NAMED(PROP_NAME, C_GETTER_NAME)                           \
+    scriptDescription.setItem(                                                 \
+      #PROP_NAME,                                                              \
+      ScriptObject::createFrom(entityDescription.C_GETTER_NAME()),             \
+      ScriptErrorPrint("createEntityDescription(" #PROP_NAME "):"));
 
-#define ADD_PROPERTY( PROP_NAME ) 											\
-	ADD_PROPERTY_NAMED( PROP_NAME, PROP_NAME )
+#define ADD_PROPERTY(PROP_NAME) ADD_PROPERTY_NAMED(PROP_NAME, PROP_NAME)
 
-	ADD_PROPERTY( name )
-	ADD_PROPERTY( index )
-	ADD_PROPERTY( clientIndex )
-	ADD_PROPERTY_NAMED( hasClientScript, canBeOnClient )
-	ADD_PROPERTY_NAMED( hasBaseScript, canBeOnBase )
-	ADD_PROPERTY_NAMED( hasCellScript, canBeOnCell )
-	ADD_PROPERTY( canBeOnClient )
-	ADD_PROPERTY( canBeOnBase )
-	ADD_PROPERTY( canBeOnCell )
+    ADD_PROPERTY(name)
+    ADD_PROPERTY(index)
+    ADD_PROPERTY(clientIndex)
+    ADD_PROPERTY_NAMED(hasClientScript, canBeOnClient)
+    ADD_PROPERTY_NAMED(hasBaseScript, canBeOnBase)
+    ADD_PROPERTY_NAMED(hasCellScript, canBeOnCell)
+    ADD_PROPERTY(canBeOnClient)
+    ADD_PROPERTY(canBeOnBase)
+    ADD_PROPERTY(canBeOnCell)
 
-	ADD_PROPERTY( isService )
-	ADD_PROPERTY( isPersistent )
+    ADD_PROPERTY(isService)
+    ADD_PROPERTY(isPersistent)
 
 #undef ADD_PROPERTY_NAMED
 #undef ADD_PROPERTY
 
-	scriptDescription.setItem( "clientMethods",
-			createMethodDescriptions( entityDescription.client() ),
-			ScriptErrorPrint( "createEntityDescription(clientMethods)" ) );
-	scriptDescription.setItem( "baseMethods",
-			createMethodDescriptions( entityDescription.base() ),
-			ScriptErrorPrint( "createEntityDescription(baseMethods)" ) );
-	scriptDescription.setItem( "cellMethods",
-			createMethodDescriptions( entityDescription.cell() ),
-			ScriptErrorPrint( "createEntityDescription(cellMethods)" ) );
+    scriptDescription.setItem(
+      "clientMethods",
+      createMethodDescriptions(entityDescription.client()),
+      ScriptErrorPrint("createEntityDescription(clientMethods)"));
+    scriptDescription.setItem(
+      "baseMethods",
+      createMethodDescriptions(entityDescription.base()),
+      ScriptErrorPrint("createEntityDescription(baseMethods)"));
+    scriptDescription.setItem(
+      "cellMethods",
+      createMethodDescriptions(entityDescription.cell()),
+      ScriptErrorPrint("createEntityDescription(cellMethods)"));
 
-	scriptDescription.setItem( "allProperties",
-			createAllPropertyDescriptions( entityDescription ),
-			ScriptErrorPrint( "createEntityDescription(allProperties)" ) );
+    scriptDescription.setItem(
+      "allProperties",
+      createAllPropertyDescriptions(entityDescription),
+      ScriptErrorPrint("createEntityDescription(allProperties)"));
 
-	scriptDescription.setItem( "clientProperties",
-			createOrderedProperties(
-				EntityDescription::CLIENT_DATA,
-				entityDescription ),
-			ScriptErrorPrint( "createEntityDescription(clientProperties)" ) );
+    scriptDescription.setItem(
+      "clientProperties",
+      createOrderedProperties(EntityDescription::CLIENT_DATA,
+                              entityDescription),
+      ScriptErrorPrint("createEntityDescription(clientProperties)"));
 
-	scriptDescription.setItem( "baseToClientProperties",
-			createOrderedProperties(
-				EntityDescription::FROM_BASE_TO_CLIENT_DATA,
-				entityDescription ),
-			ScriptErrorPrint( "createEntityDescription(baseToClientProps)" ) );
+    scriptDescription.setItem(
+      "baseToClientProperties",
+      createOrderedProperties(EntityDescription::FROM_BASE_TO_CLIENT_DATA,
+                              entityDescription),
+      ScriptErrorPrint("createEntityDescription(baseToClientProps)"));
 
-	scriptDescription.setItem( "cellToClientProperties",
-			createOrderedProperties(
-				EntityDescription::FROM_CELL_TO_CLIENT_DATA,
-				entityDescription ),
-			ScriptErrorPrint( "createEntityDescription(cellToClientProps)" ) );
+    scriptDescription.setItem(
+      "cellToClientProperties",
+      createOrderedProperties(EntityDescription::FROM_CELL_TO_CLIENT_DATA,
+                              entityDescription),
+      ScriptErrorPrint("createEntityDescription(cellToClientProps)"));
 
-	return scriptDescription;
+    return scriptDescription;
 }
-
 
 /**
  *	This function creates a Script tuple contain a description of each entity
  *	type.
  */
 ScriptObject createEntityDescriptions(
-		const EntityDescriptionMap & entityDescriptionMap )
+  const EntityDescriptionMap& entityDescriptionMap)
 {
-	ScriptTuple entityDescriptions =
-		ScriptTuple::create( entityDescriptionMap.size() );
+    ScriptTuple entityDescriptions =
+      ScriptTuple::create(entityDescriptionMap.size());
 
-	EntityDescriptionMap::DescriptionMap::const_iterator iter =
-		entityDescriptionMap.begin();
+    EntityDescriptionMap::DescriptionMap::const_iterator iter =
+      entityDescriptionMap.begin();
 
-	int i = 0;
+    int i = 0;
 
-	while (iter != entityDescriptionMap.end())
-	{
-		const EntityDescription & entityDescription =
-			entityDescriptionMap.entityDescription( iter->second );
+    while (iter != entityDescriptionMap.end()) {
+        const EntityDescription& entityDescription =
+          entityDescriptionMap.entityDescription(iter->second);
 
-		entityDescriptions.setItem( i,
-				createEntityDescription( entityDescription ) );
+        entityDescriptions.setItem(i,
+                                   createEntityDescription(entityDescription));
 
-		++i;
-		++iter;
-	}
+        ++i;
+        ++iter;
+    }
 
-	return entityDescriptions;
+    return entityDescriptions;
 }
-
 
 /**
  *	This function creates a string object from the digest string.
  */
-ScriptObject createDigest( const EntityDescriptionMap & entityDescriptionMap )
+ScriptObject createDigest(const EntityDescriptionMap& entityDescriptionMap)
 {
-	MD5 md5;
-	entityDescriptionMap.addToMD5( md5 );
-	MD5::Digest digest;
-	md5.getDigest( digest );
+    MD5 md5;
+    entityDescriptionMap.addToMD5(md5);
+    MD5::Digest digest;
+    md5.getDigest(digest);
 
-	return ScriptObject::createFrom( digest.quote() );
+    return ScriptObject::createFrom(digest.quote());
 }
-
 
 /**
  *	This function parses the command line arguments and attempts to return the
@@ -363,103 +360,95 @@ ScriptObject createDigest( const EntityDescriptionMap & entityDescriptionMap )
  *	@param flags	A NULL terminated array of flags to attempt to match.
  *	@param defaultValue	The value to return if no matches are found.
  */
-const char * getOption( int & argc, const char * argv[],
-		const char * flags[], const char * defaultValue )
+const char* getOption(int&        argc,
+                      const char* argv[],
+                      const char* flags[],
+                      const char* defaultValue)
 {
-	// NOTE: Deliberately stop one short
-	for (int i = 0; i < argc - 1; ++i)
-	{
-		bool isMatch = false;
+    // NOTE: Deliberately stop one short
+    for (int i = 0; i < argc - 1; ++i) {
+        bool isMatch = false;
 
-		const char ** ppFlag = flags;
+        const char** ppFlag = flags;
 
-		while (*ppFlag != NULL)
-		{
-			isMatch |= (strcmp( argv[i], *ppFlag ) == 0);
-			++ppFlag;
-		}
+        while (*ppFlag != NULL) {
+            isMatch |= (strcmp(argv[i], *ppFlag) == 0);
+            ++ppFlag;
+        }
 
-		if (isMatch)
-		{
-			const char * pMatch = argv[i+1];
-			argv[i] = NULL;
-			argv[i+1] = NULL;
-			BWUtil::compressArgs( argc, argv );
+        if (isMatch) {
+            const char* pMatch = argv[i + 1];
+            argv[i]            = NULL;
+            argv[i + 1]        = NULL;
+            BWUtil::compressArgs(argc, argv);
 
-			return pMatch;
-		}
-	}
+            return pMatch;
+        }
+    }
 
-	return defaultValue;
+    return defaultValue;
 }
-
 
 /**
  *	This method returns whether the command line has one of the desired flags.
  */
-bool hasFlag( int & argc, const char * argv[], const char * flags[] )
+bool hasFlag(int& argc, const char* argv[], const char* flags[])
 {
-	for (int i = 0; i < argc; ++i)
-	{
-		bool isMatch = false;
+    for (int i = 0; i < argc; ++i) {
+        bool isMatch = false;
 
-		const char ** ppFlag = flags;
+        const char** ppFlag = flags;
 
-		while (*ppFlag != NULL)
-		{
-			isMatch |= (strcmp( argv[i], *ppFlag ) == 0);
-			++ppFlag;
-		}
+        while (*ppFlag != NULL) {
+            isMatch |= (strcmp(argv[i], *ppFlag) == 0);
+            ++ppFlag;
+        }
 
-		if (isMatch)
-		{
-			argv[i] = NULL;
-			BWUtil::compressArgs( argc, argv );
+        if (isMatch) {
+            argv[i] = NULL;
+            BWUtil::compressArgs(argc, argv);
 
-			return true;
-		}
-	}
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
-
 
 /**
  *	This function calls a script function in a module with arguments.
  */
-bool callFunction( const char * moduleName, const char * functionName,
-		ScriptObject argument, bool shouldPrintError = true )
+bool callFunction(const char*  moduleName,
+                  const char*  functionName,
+                  ScriptObject argument,
+                  bool         shouldPrintError = true)
 {
-	ScriptModule module;
+    ScriptModule module;
 
-	module = Personality::import( moduleName );
+    module = Personality::import(moduleName);
 
-	if (!module)
-	{
-		return false;
-	}
+    if (!module) {
+        return false;
+    }
 
-	ScriptObject ret;
+    ScriptObject ret;
 
-	if (shouldPrintError)
-	{
-		BW::string errorStr = "Failed to call method ";
-		errorStr += functionName;
+    if (shouldPrintError) {
+        BW::string errorStr = "Failed to call method ";
+        errorStr += functionName;
 
-		ret = module.callMethod( functionName,
-			ScriptArgs::create( argument ),
-			ScriptErrorPrint( errorStr.c_str() ),
-			/*allowNullMethod*/ true );
-	}
-	else
-	{
-		ret = module.callMethod( functionName,
-			ScriptArgs::create( argument ),
-			ScriptErrorClear(),
-			/*allowNullMethod*/ true );
-	}
+        ret = module.callMethod(functionName,
+                                ScriptArgs::create(argument),
+                                ScriptErrorPrint(errorStr.c_str()),
+                                /*allowNullMethod*/ true);
+    } else {
+        ret = module.callMethod(functionName,
+                                ScriptArgs::create(argument),
+                                ScriptErrorClear(),
+                                /*allowNullMethod*/ true);
+    }
 
-	return ret && ret.isTrue( ScriptErrorClear() );
+    return ret && ret.isTrue(ScriptErrorClear());
 }
 
 BW_END_NAMESPACE
@@ -478,142 +467,136 @@ BW_END_NAMESPACE
 #define DEFINE_INTERFACE_HERE
 #include "connection/client_interface.hpp"
 
-
 BW_USE_NAMESPACE
 
-bool process( const char * moduleName, 
-		const char * functionName,
-		EntityDescriptionMap& entityDescriptionMap )
+bool process(const char*           moduleName,
+             const char*           functionName,
+             EntityDescriptionMap& entityDescriptionMap)
 {
-	ScriptDict description = ScriptDict::create();
+    ScriptDict description = ScriptDict::create();
 
-	description.setItem( "entityTypes",
-		createEntityDescriptions( entityDescriptionMap ),
-		ScriptErrorPrint( "main: description.entityTypes" ) );
+    description.setItem("entityTypes",
+                        createEntityDescriptions(entityDescriptionMap),
+                        ScriptErrorPrint("main: description.entityTypes"));
 
-	ScriptDict constants = ScriptDict::create();
+    ScriptDict constants = ScriptDict::create();
 
-	constants.setItem( "digest", createDigest( entityDescriptionMap ),
-		ScriptErrorPrint( "main: constants.digest" ) );
+    constants.setItem("digest",
+                      createDigest(entityDescriptionMap),
+                      ScriptErrorPrint("main: constants.digest"));
 
-	constants.setItem( "maxExposedClientMethodCount",
-		ScriptObject::createFrom(
-			entityDescriptionMap.maxExposedClientMethodCount() ),
-		ScriptErrorPrint( "main: constants.maxExposedClientMethodCount" ) );
+    constants.setItem(
+      "maxExposedClientMethodCount",
+      ScriptObject::createFrom(
+        entityDescriptionMap.maxExposedClientMethodCount()),
+      ScriptErrorPrint("main: constants.maxExposedClientMethodCount"));
 
+    constants.setItem(
+      "maxExposedBaseMethodCount",
+      ScriptObject::createFrom(
+        entityDescriptionMap.maxExposedBaseMethodCount()),
+      ScriptErrorPrint("main: constants.maxExposedBaseMethodCount"));
 
-	constants.setItem( "maxExposedBaseMethodCount",
-		ScriptObject::createFrom(
-			entityDescriptionMap.maxExposedBaseMethodCount() ),
-		ScriptErrorPrint( "main: constants.maxExposedBaseMethodCount" ) );
+    constants.setItem(
+      "maxExposedCellMethodCount",
+      ScriptObject::createFrom(
+        entityDescriptionMap.maxExposedCellMethodCount()),
+      ScriptErrorPrint("main: constants.maxExposedCellMethodCount"));
 
-	constants.setItem( "maxExposedCellMethodCount",
-		ScriptObject::createFrom(
-			entityDescriptionMap.maxExposedCellMethodCount() ),
-		ScriptErrorPrint( "main: constants.maxExposedCellMethodCount" ) );
+    constants.setItem(
+      "maxClientServerPropertyCount",
+      ScriptObject::createFrom(
+        entityDescriptionMap.maxClientServerPropertyCount()),
+      ScriptErrorPrint("main: constants.maxClientServerPropertyCount"));
 
-	constants.setItem( "maxClientServerPropertyCount",
-		ScriptObject::createFrom(
-			entityDescriptionMap.maxClientServerPropertyCount() ),
-		ScriptErrorPrint( "main: constants.maxClientServerPropertyCount" ) );
+    description.setItem(
+      "constants", constants, ScriptErrorPrint("main: constants"));
 
-	description.setItem( "constants", constants,
-		ScriptErrorPrint( "main: constants" ) );
- 
-	return callFunction( moduleName, functionName, description );
+    return callFunction(moduleName, functionName, description);
 }
-
 
 /**
  *	The main function.
  */
-int main( int argc, const char *argv[] )
+int main(int argc, const char* argv[])
 {
-	BW_SYSTEMSTAGE_MAIN();
+    BW_SYSTEMSTAGE_MAIN();
 
-	DebugFilter::shouldWriteToConsole( true );
+    DebugFilter::shouldWriteToConsole(true);
 
-	const char * moduleName =
-		getOption( argc, argv, FLAGS_MODULE, "ProcessDefs" );
-	const char * functionName =
-		getOption( argc, argv, FLAGS_FUNCTION, "process" );
+    const char* moduleName = getOption(argc, argv, FLAGS_MODULE, "ProcessDefs");
+    const char* functionName = getOption(argc, argv, FLAGS_FUNCTION, "process");
 
-	bool shouldPrintHelp = hasFlag( argc, argv, FLAGS_HELP );
+    bool shouldPrintHelp = hasFlag(argc, argv, FLAGS_HELP);
 
-	bool isVerbose = hasFlag( argc, argv, FLAGS_VERBOSE );
+    bool isVerbose = hasFlag(argc, argv, FLAGS_VERBOSE);
 
-	BWUtil::compressArgs( argc, argv );
+    BWUtil::compressArgs(argc, argv);
 
-	if (hasFlag( argc, argv, FLAGS_USE_STDOUT ))
-	{
-		DebugFilter::consoleOutputFile( stdout );
-	}
+    if (hasFlag(argc, argv, FLAGS_USE_STDOUT)) {
+        DebugFilter::consoleOutputFile(stdout);
+    }
 
-	if (!isVerbose)
-	{
-		DebugFilter::instance().filterThreshold( MESSAGE_PRIORITY_NOTICE );
-	}
+    if (!isVerbose) {
+        DebugFilter::instance().filterThreshold(MESSAGE_PRIORITY_NOTICE);
+    }
 
-	BWResource bwResource;
-	BWResource::init( argc, argv, true );
+    BWResource bwResource;
+    BWResource::init(argc, argv, true);
 
-	BWResource::addSubPaths( "tools/process_defs" );
-	
-	PyImportPaths importPaths;
-	importPaths.addNonResPath( getOption( argc, argv, FLAGS_PATH, "." ) );
+    BWResource::addSubPaths("tools/process_defs");
 
-	// This should probably always be done in Script::init.
-	importPaths.addResPath( "resources/scripts" );
-	importPaths.addResPath( EntityDef::Constants::serverCommonPath() );
+    PyImportPaths importPaths;
+    importPaths.addNonResPath(getOption(argc, argv, FLAGS_PATH, "."));
 
-	if (!Script::init( importPaths, PROCESS_NAME ))
-	{
-		ERROR_MSG( "Failed to initialise Python\n" );
-		return EXIT_FAILURE;
-	}
+    // This should probably always be done in Script::init.
+    importPaths.addResPath("resources/scripts");
+    importPaths.addResPath(EntityDef::Constants::serverCommonPath());
 
-	if (shouldPrintHelp)
-	{
-		printUsage();
+    if (!Script::init(importPaths, PROCESS_NAME)) {
+        ERROR_MSG("Failed to initialise Python\n");
+        return EXIT_FAILURE;
+    }
 
-		// Increase the filter threshold to INFO so that the output from the 
-		// script is not filtered out by the DebugFilter. 
-		DebugFilter::instance().filterThreshold( MESSAGE_PRIORITY_INFO );
+    if (shouldPrintHelp) {
+        printUsage();
 
-		// Instantiate the message handler below to redirect the
-		// script output to stderr
-		ProcessDefsHelpMsgHandler msgHandler;
+        // Increase the filter threshold to INFO so that the output from the
+        // script is not filtered out by the DebugFilter.
+        DebugFilter::instance().filterThreshold(MESSAGE_PRIORITY_INFO);
 
-		callFunction( moduleName, "help", ScriptObject(), isVerbose );
-		return EXIT_SUCCESS;
-	}
+        // Instantiate the message handler below to redirect the
+        // script output to stderr
+        ProcessDefsHelpMsgHandler msgHandler;
 
-	PySys_SetArgv( argc, const_cast< char ** >( argv ) );
+        callFunction(moduleName, "help", ScriptObject(), isVerbose);
+        return EXIT_SUCCESS;
+    }
 
-	EntityDescriptionMap entityDescriptionMap;
+    PySys_SetArgv(argc, const_cast<char**>(argv));
 
-	if (!entityDescriptionMap.parse(
-			BWResource::openSection( EntityDef::Constants::entitiesFile() ),
-			&ClientInterface::Range::entityPropertyRange,
-			&ClientInterface::Range::entityMethodRange,
-			&BaseAppExtInterface::Range::baseEntityMethodRange,
-			&BaseAppExtInterface::Range::cellEntityMethodRange ))
-	{
-		ERROR_MSG( "Failed to parse .def files\n" );
-		return EXIT_FAILURE;
-	}
+    EntityDescriptionMap entityDescriptionMap;
 
-	//fprintf( stderr, "Running method %s.%s\n", moduleName, functionName );
+    if (!entityDescriptionMap.parse(
+          BWResource::openSection(EntityDef::Constants::entitiesFile()),
+          &ClientInterface::Range::entityPropertyRange,
+          &ClientInterface::Range::entityMethodRange,
+          &BaseAppExtInterface::Range::baseEntityMethodRange,
+          &BaseAppExtInterface::Range::cellEntityMethodRange)) {
+        ERROR_MSG("Failed to parse .def files\n");
+        return EXIT_FAILURE;
+    }
 
-	bool isOkay = process( moduleName, functionName, entityDescriptionMap );
+    // fprintf( stderr, "Running method %s.%s\n", moduleName, functionName );
 
-	Script::fini();
+    bool isOkay = process(moduleName, functionName, entityDescriptionMap);
 
-	// Clean up MetaDataType static registrations
-	MetaDataType::fini();
+    Script::fini();
 
-	return isOkay ? EXIT_SUCCESS : EXIT_FAILURE;
+    // Clean up MetaDataType static registrations
+    MetaDataType::fini();
+
+    return isOkay ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
 
 // main.cpp

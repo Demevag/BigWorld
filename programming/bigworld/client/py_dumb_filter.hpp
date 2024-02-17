@@ -4,7 +4,6 @@
 #include "dumb_filter.hpp"
 #include "py_filter.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /*~ class BigWorld.DumbFilter
@@ -22,25 +21,24 @@ BW_BEGIN_NAMESPACE
  */
 class PyDumbFilter : public PyFilter
 {
-	Py_Header( PyDumbFilter, PyFilter )
+    Py_Header(PyDumbFilter, PyFilter)
 
-public:
-	PyDumbFilter( PyTypeObject * pType = &s_type_ );
-	virtual ~PyDumbFilter() {}
+      public : PyDumbFilter(PyTypeObject* pType = &s_type_);
+    virtual ~PyDumbFilter() {}
 
-	// Python Interface
-	PY_AUTO_CONSTRUCTOR_FACTORY_DECLARE( PyDumbFilter, END )
+    // Python Interface
+    PY_AUTO_CONSTRUCTOR_FACTORY_DECLARE(PyDumbFilter, END)
 
-	// Implementation of PyFilter
-	virtual DumbFilter * pAttachedFilter();
-	virtual const DumbFilter * pAttachedFilter() const;
+    // Implementation of PyFilter
+    virtual DumbFilter*       pAttachedFilter();
+    virtual const DumbFilter* pAttachedFilter() const;
 
-protected:
-	// Implementation of PyFilter
-	virtual DumbFilter * getNewFilter();
+  protected:
+    // Implementation of PyFilter
+    virtual DumbFilter* getNewFilter();
 };
 
-PY_SCRIPT_CONVERTERS_DECLARE( PyDumbFilter );
+PY_SCRIPT_CONVERTERS_DECLARE(PyDumbFilter);
 
 BW_END_NAMESPACE
 

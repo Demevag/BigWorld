@@ -3,39 +3,38 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace controls
-{
+namespace controls {
 
-class WaitAnim : public CAnimateCtrl
-{
-public:
-	static const int USE_DEFAULT_MILLIS = -1;
+    class WaitAnim : public CAnimateCtrl
+    {
+      public:
+        static const int USE_DEFAULT_MILLIS = -1;
 
-	WaitAnim();
+        WaitAnim();
 
-	bool init( int resID, int width, int height, int maxFPS, int numFrames );
+        bool init(int resID, int width, int height, int maxFPS, int numFrames);
 
-	void update();
+        void update();
 
-	void show();
-	void hide( int waitMillis = USE_DEFAULT_MILLIS );
+        void show();
+        void hide(int waitMillis = USE_DEFAULT_MILLIS);
 
-	int width() const { return width_; }
-	int height() const { return height_; }
+        int width() const { return width_; }
+        int height() const { return height_; }
 
-private:
-	bool inited_;
-	int width_;
-	int height_;
-	int maxFPS_;
-	int numFrames_;
-	bool working_;
-	bool workingStopped_;
-	uint64 workingStoppedTimer_;
-	int hideWaitMillis_;
-	int frame_;
-	uint64 frameTimestamp_;
-};
+      private:
+        bool   inited_;
+        int    width_;
+        int    height_;
+        int    maxFPS_;
+        int    numFrames_;
+        bool   working_;
+        bool   workingStopped_;
+        uint64 workingStoppedTimer_;
+        int    hideWaitMillis_;
+        int    frame_;
+        uint64 frameTimestamp_;
+    };
 
 } // namespace controls
 

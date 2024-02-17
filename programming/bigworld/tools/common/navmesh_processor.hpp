@@ -1,7 +1,6 @@
 #ifndef NAVMESH_PROCESSOR_HPP
 #define NAVMESH_PROCESSOR_HPP
 
-
 #include "cstdmf/debug.hpp"
 #include "cstdmf/watcher.hpp"
 
@@ -25,38 +24,36 @@ class EditorChunkNavmeshCacheBase;
  */
 class NavmeshProcessor : public ChunkProcessor
 {
-public:
-	NavmeshProcessor(
-		EditorChunkNavmeshCacheBase* navmeshCache,
-		Chunk& chunk,
-		UnsavedList& unsavedList,
-		Girths girths,
-		ChunkProcessorManager* manager );
-	virtual ~NavmeshProcessor();
+  public:
+    NavmeshProcessor(EditorChunkNavmeshCacheBase* navmeshCache,
+                     Chunk&                       chunk,
+                     UnsavedList&                 unsavedList,
+                     Girths                       girths,
+                     ChunkProcessorManager*       manager);
+    virtual ~NavmeshProcessor();
 
-protected:
-	Girths girths_;
-	EditorChunkNavmeshCacheBase* navmeshCache_;
-	BW::vector<unsigned char> navmesh_;
-	Chunk& chunk_;
-	UnsavedList& unsavedList_;
-	ScopedLockedChunkHolder lockedChunks_;
+  protected:
+    Girths                       girths_;
+    EditorChunkNavmeshCacheBase* navmeshCache_;
+    BW::vector<unsigned char>    navmesh_;
+    Chunk&                       chunk_;
+    UnsavedList&                 unsavedList_;
+    ScopedLockedChunkHolder      lockedChunks_;
 
-	ChunkFlooder flooder_;
-	WaypointGenerator gener_;
+    ChunkFlooder      flooder_;
+    WaypointGenerator gener_;
 
-	SimpleMutex mutex_;
-	bool bgtaskFinished_;
+    SimpleMutex mutex_;
+    bool        bgtaskFinished_;
 
-	virtual bool processInBackground( ChunkProcessorManager& manager );
-	virtual bool processInMainThread( ChunkProcessorManager& manager,
-		bool backgroundTaskResult );
-	virtual void cleanup( ChunkProcessorManager& manager );
+    virtual bool processInBackground(ChunkProcessorManager& manager);
+    virtual bool processInMainThread(ChunkProcessorManager& manager,
+                                     bool backgroundTaskResult);
+    virtual void cleanup(ChunkProcessorManager& manager);
 };
-
 
 typedef SmartPointer<NavmeshProcessor> NavmeshProcessorPtr;
 
 BW_END_NAMESPACE
 
-#endif //NAVMESH_PROCESSOR_HPP
+#endif // NAVMESH_PROCESSOR_HPP

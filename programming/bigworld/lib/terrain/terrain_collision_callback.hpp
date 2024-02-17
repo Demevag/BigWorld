@@ -4,23 +4,22 @@
 #include "cstdmf/bw_namespace.hpp"
 #include "chunk/chunk_obstacle.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class WorldTriangle;
 
-namespace Terrain
-{
+namespace Terrain {
     /**
      *  This interface provides a callback for collisions with terrain.
      */
     class TerrainCollisionCallback
     {
-    public:
-		CollisionCallback &ccb_;
-		TerrainCollisionCallback(CollisionCallback &ccb)
-			: ccb_(ccb)
-		{ }
+      public:
+        CollisionCallback& ccb_;
+        TerrainCollisionCallback(CollisionCallback& ccb)
+          : ccb_(ccb)
+        {
+        }
 
         /**
          *  This is the TerrainCollisionCallback destructor.
@@ -36,12 +35,7 @@ namespace Terrain
          *  @returns            True if the collision was accepted, false if
          *                      more collisions are required.
          */
-        virtual bool 
-        collide
-        (
-            WorldTriangle       const &triangle,
-            float               tValue
-        ) = 0;
+        virtual bool collide(WorldTriangle const& triangle, float tValue) = 0;
     };
 }
 

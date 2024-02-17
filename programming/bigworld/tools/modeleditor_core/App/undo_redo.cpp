@@ -13,45 +13,44 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor
  */
-UndoRedoOp::UndoRedoOp( int kind, DataSectionPtr data, DataSectionPtr parent /*= NULL*/, bool materialFlagChange /*= false*/, StringPair item /*= StringPair()*/ ):
-	UndoRedo::Operation(kind),
-	kind_(kind),
-	data_(data),
-	parent_(parent),
-	state_(NULL),
-	materialFlagChange_(materialFlagChange),
-	item_(item)
+UndoRedoOp::UndoRedoOp(int            kind,
+                       DataSectionPtr data,
+                       DataSectionPtr parent /*= NULL*/,
+                       bool           materialFlagChange /*= false*/,
+                       StringPair     item /*= StringPair()*/)
+  : UndoRedo::Operation(kind)
+  , kind_(kind)
+  , data_(data)
+  , parent_(parent)
+  , state_(NULL)
+  , materialFlagChange_(materialFlagChange)
+  , item_(item)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	if (!UndoRedo::instance().isUndoing())
-	{
-		MeApp::instance().mutant()->updateModificationInfo();
-	}
+    if (!UndoRedo::instance().isUndoing()) {
+        MeApp::instance().mutant()->updateModificationInfo();
+    }
 
-	if (parent_)
-	{
-		MeApp::instance().mutant()->dirty( parent_ );
-	}
-	
-	if (data_)
-	{
-		state_ = new XMLSection("undo_state");
-		state_->copy( data_ );
-	}
+    if (parent_) {
+        MeApp::instance().mutant()->dirty(parent_);
+    }
+
+    if (data_) {
+        state_ = new XMLSection("undo_state");
+        state_->copy(data_);
+    }
 }
-
 
 /**
  *	Destructor
  */
 UndoRedoOp::~UndoRedoOp()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	data_ = NULL;
+    data_ = NULL;
 }
-
 
 /**
  *	This method is called by the underlying undo system.
@@ -59,39 +58,36 @@ UndoRedoOp::~UndoRedoOp()
  */
 void UndoRedoOp::undo()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// first add the current state of this block to the undo/redo list
-	UndoRedo::instance().add( new UndoRedoOp( kind_, data_, parent_, materialFlagChange_, item_));
+    // first add the current state of this block to the undo/redo list
+    UndoRedo::instance().add(
+      new UndoRedoOp(kind_, data_, parent_, materialFlagChange_, item_));
 
-	if (data_ != NULL)
-	{
-		//Make sure we have marked the parent as dirty since it will have changed
-		if (parent_)
-		{
-			MeApp::instance().mutant()->dirty( parent_ );
-		}
+    if (data_ != NULL) {
+        // Make sure we have marked the parent as dirty since it will have
+        // changed
+        if (parent_) {
+            MeApp::instance().mutant()->dirty(parent_);
+        }
 
-		//Remove the current data
-		data_->delChildren();
-				
-		//Copy the old state back
-		data_->copy( state_ );
+        // Remove the current data
+        data_->delChildren();
 
-		if ( item_ != StringPair() )
-		{
-			MeApp::instance().mutant()->cleanAnim( item_ );
-		}
+        // Copy the old state back
+        data_->copy(state_);
 
-		MeApp::instance().mutant()->reloadAllLists();
-		
-		if (materialFlagChange_)
-		{
-			MeApp::instance().mutant()->reloadBSP();
-		}
-	}
+        if (item_ != StringPair()) {
+            MeApp::instance().mutant()->cleanAnim(item_);
+        }
+
+        MeApp::instance().mutant()->reloadAllLists();
+
+        if (materialFlagChange_) {
+            MeApp::instance().mutant()->reloadBSP();
+        }
+    }
 }
-
 
 /**
  *	This method checks whether two UndoRedo operations are the same,
@@ -100,65 +96,64 @@ void UndoRedoOp::undo()
  *	the gui, since that is for user convenience, but not so the user
  *	can undo/redo changes in list boxes etc.
  */
-bool UndoRedoOp::iseq( const UndoRedo::Operation & oth ) const
+bool UndoRedoOp::iseq(const UndoRedo::Operation& oth) const
 {
-	return false;
+    return false;
 }
 
 /***
  * class UndoRedoMatterName
  */
-UndoRedoMatterName::UndoRedoMatterName( const BW::string & oldName, const BW::string & newName ):
-	UndoRedo::Operation(1),
-	oldName_( oldName ),
-	newName_( newName )
+UndoRedoMatterName::UndoRedoMatterName(const BW::string& oldName,
+                                       const BW::string& newName)
+  : UndoRedo::Operation(1)
+  , oldName_(oldName)
+  , newName_(newName)
 {
 }
 
-UndoRedoMatterName::~UndoRedoMatterName()
-{
-}
+UndoRedoMatterName::~UndoRedoMatterName() {}
 
 void UndoRedoMatterName::undo()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	UndoRedo::instance().add( new UndoRedoMatterName( newName_, oldName_ ) );
-	MeApp::instance().mutant()->matterName( oldName_, newName_, false );
+    UndoRedo::instance().add(new UndoRedoMatterName(newName_, oldName_));
+    MeApp::instance().mutant()->matterName(oldName_, newName_, false);
 }
 
-bool UndoRedoMatterName::iseq( const UndoRedo::Operation & oth ) const
+bool UndoRedoMatterName::iseq(const UndoRedo::Operation& oth) const
 {
-	return false;
+    return false;
 }
-
 
 /***
  * class UndoRedoTintName
  */
-UndoRedoTintName::UndoRedoTintName( const BW::string & matterName, const BW::string & oldName, const BW::string & newName ):
-	UndoRedo::Operation(2),
-	matterName_( matterName ),
-	oldName_( oldName ),
-	newName_( newName )
+UndoRedoTintName::UndoRedoTintName(const BW::string& matterName,
+                                   const BW::string& oldName,
+                                   const BW::string& newName)
+  : UndoRedo::Operation(2)
+  , matterName_(matterName)
+  , oldName_(oldName)
+  , newName_(newName)
 {
 }
 
-UndoRedoTintName::~UndoRedoTintName()
-{
-}
+UndoRedoTintName::~UndoRedoTintName() {}
 
 void UndoRedoTintName::undo()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	UndoRedo::instance().add( new UndoRedoTintName( matterName_, newName_, oldName_ ) );
-	MeApp::instance().mutant()->tintName( matterName_, oldName_, newName_, false );
+    UndoRedo::instance().add(
+      new UndoRedoTintName(matterName_, newName_, oldName_));
+    MeApp::instance().mutant()->tintName(
+      matterName_, oldName_, newName_, false);
 }
 
-bool UndoRedoTintName::iseq( const UndoRedo::Operation & oth ) const
+bool UndoRedoTintName::iseq(const UndoRedo::Operation& oth) const
 {
-	return false;
+    return false;
 }
 BW_END_NAMESPACE
-

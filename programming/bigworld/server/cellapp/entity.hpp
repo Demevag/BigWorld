@@ -32,7 +32,6 @@
 #include "cstdmf/bw_vector.hpp"
 #include "cstdmf/bw_map.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // Forward declarations
@@ -57,22 +56,21 @@ class PropertyChange;
 class Space;
 class Watcher;
 
-typedef SmartPointer< Watcher > WatcherPtr;
+typedef SmartPointer<Watcher> WatcherPtr;
 
 typedef uint8 AoIUpdateSchemeID;
 
-typedef SmartPointer< Entity >                  EntityPtr;
-typedef Entity						            BaseOrEntity;
-typedef BW::set< EntityPtr >                    EntitySet;
-typedef BW::map< EntityID, EntityPtr >          EntityMap;
+typedef SmartPointer<Entity>         EntityPtr;
+typedef Entity                       BaseOrEntity;
+typedef BW::set<EntityPtr>           EntitySet;
+typedef BW::map<EntityID, EntityPtr> EntityMap;
 class EntityPopulation;
 
 // From "space.hpp"
-typedef BW::vector< EntityPtr >				SpaceEntities;
-typedef SpaceEntities::size_type				SpaceRemovalHandle;
-const SpaceRemovalHandle NO_SPACE_REMOVAL_HANDLE = SpaceRemovalHandle( -1 );
-typedef BW::list< RangeTrigger * > RangeTriggerList;
-
+typedef BW::vector<EntityPtr>    SpaceEntities;
+typedef SpaceEntities::size_type SpaceRemovalHandle;
+const SpaceRemovalHandle NO_SPACE_REMOVAL_HANDLE = SpaceRemovalHandle(-1);
+typedef BW::list<RangeTrigger*> RangeTriggerList;
 
 /**
  *	This interface is used to implement an object that wants to visit a set of
@@ -80,11 +78,10 @@ typedef BW::list< RangeTrigger * > RangeTriggerList;
  */
 class EntityVisitor
 {
-public:
-	virtual ~EntityVisitor() {};
-	virtual void visit( Entity * pEntity ) = 0;
+  public:
+    virtual ~EntityVisitor(){};
+    virtual void visit(Entity* pEntity) = 0;
 };
-
 
 /*~ class BigWorld.Entity
  *  @components{ cell }
@@ -100,8 +97,8 @@ public:
  *  authoritative client, by controller objects, and by the teleport member
  *  function. Controllers are non-python objects that can be applied to
  *  cell entities to change their positional data over time. They are added
- *  to an Entity via member functions like "trackEntity" and "turnToYaw", and can
- *  be removed via "cancel".
+ *  to an Entity via member functions like "trackEntity" and "turnToYaw", and
+ *can be removed via "cancel".
  *
  *  Area of Interest, or "AoI" is an important concept for all BigWorld
  *  entities which belong to clients. The AoI of an entity is the area around
@@ -137,732 +134,778 @@ public:
  */
 class Entity : public PyObjectPlus
 {
-	friend class BuildEntityTypeDict;
+    friend class BuildEntityTypeDict;
 
-	Py_Header( Entity, PyObjectPlus )
+    Py_Header(Entity, PyObjectPlus)
 
-public:
-	static const EntityPopulation & population()	{ return population_; }
-	static void addWatchers();
+      public : static const EntityPopulation& population()
+    {
+        return population_;
+    }
+    static void addWatchers();
 
-	// Preventing NaN's getting through, hopefully
-	static bool isValidPosition( const Position3D &c )
-	{
-		const float MAX_ENTITY_POS = 1000000000.f;
-		return (-MAX_ENTITY_POS < c.x && c.x < MAX_ENTITY_POS &&
-			-MAX_ENTITY_POS < c.y && c.y < MAX_ENTITY_POS &&
-			-MAX_ENTITY_POS < c.z && c.z < MAX_ENTITY_POS);
-	}
+    // Preventing NaN's getting through, hopefully
+    static bool isValidPosition(const Position3D& c)
+    {
+        const float MAX_ENTITY_POS = 1000000000.f;
+        return (-MAX_ENTITY_POS < c.x && c.x < MAX_ENTITY_POS &&
+                -MAX_ENTITY_POS < c.y && c.y < MAX_ENTITY_POS &&
+                -MAX_ENTITY_POS < c.z && c.z < MAX_ENTITY_POS);
+    }
 
-	/// @name Construction and Destruction
-	//@{
-	Entity( EntityTypePtr pEntityType );
-	void setToInitialState( EntityID id, Space * pSpace );
-	~Entity();
+    /// @name Construction and Destruction
+    //@{
+    Entity(EntityTypePtr pEntityType);
+    void setToInitialState(EntityID id, Space* pSpace);
+    ~Entity();
 
-	bool initReal( BinaryIStream & data, const ScriptDict & properties,
-		bool isRestore,
-		Mercury::ChannelVersion channelVersion,
-	   	EntityPtr pNearbyEntity );
+    bool initReal(BinaryIStream&          data,
+                  const ScriptDict&       properties,
+                  bool                    isRestore,
+                  Mercury::ChannelVersion channelVersion,
+                  EntityPtr               pNearbyEntity);
 
-	void initGhost( BinaryIStream & data );
+    void initGhost(BinaryIStream& data);
 
-	bool isOffloadingTo( const Mercury::Address & addr ) const;
+    bool isOffloadingTo(const Mercury::Address& addr) const;
 
-	void offload( CellAppChannel * pChannel, bool isTeleport );
+    void offload(CellAppChannel* pChannel, bool isTeleport);
 
-	void onload( const Mercury::Address & srcAddr,
-		const Mercury::UnpackedMessageHeader & header,
-		BinaryIStream & data );
+    void onload(const Mercury::Address&               srcAddr,
+                const Mercury::UnpackedMessageHeader& header,
+                BinaryIStream&                        data);
 
-	void createGhost( Mercury::Bundle & bundle );
-	//@}
+    void createGhost(Mercury::Bundle& bundle);
+    //@}
 
-	void callback( const char * methodName );
+    void callback(const char* methodName);
 
-	/// @name Accessors
-	//@{
-	EntityID id() const;
-	void setShouldReturnID( bool shouldReturnID );
-	const Position3D & position() const;
-	const Direction3D & direction() const;
+    /// @name Accessors
+    //@{
+    EntityID           id() const;
+    void               setShouldReturnID(bool shouldReturnID);
+    const Position3D&  position() const;
+    const Direction3D& direction() const;
 
-	const VolatileInfo & volatileInfo() const;
+    const VolatileInfo& volatileInfo() const;
 
-	bool isReal() const;
-	bool isRealToScript() const;
-	RealEntity * pReal() const;
+    bool        isReal() const;
+    bool        isRealToScript() const;
+    RealEntity* pReal() const;
 
-	const Mercury::Address & realAddr() const;
-	const Mercury::Address & nextRealAddr() const { return nextRealAddr_; }
+    const Mercury::Address& realAddr() const;
+    const Mercury::Address& nextRealAddr() const { return nextRealAddr_; }
 
-	CellAppChannel * pRealChannel() { return pRealChannel_; }
-	void pRealChannel( CellAppChannel * channel );
+    CellAppChannel* pRealChannel() { return pRealChannel_; }
+    void            pRealChannel(CellAppChannel* channel);
 
-	bool checkIfZombied( const Mercury::Address & dyingAddr );
+    bool checkIfZombied(const Mercury::Address& dyingAddr);
 
-	Space & space();
-	const Space & space() const;
+    Space&       space();
+    const Space& space() const;
 
-	Cell & cell();
-	const Cell & cell() const;
+    Cell&       cell();
+    const Cell& cell() const;
 
-	EventHistory & eventHistory();
-	const EventHistory & eventHistory() const;
+    EventHistory&       eventHistory();
+    const EventHistory& eventHistory() const;
 
-	bool isDestroyed() const;
-	bool inDestroy() const		{ return inDestroy_; }
-	void destroy();
+    bool isDestroyed() const;
+    bool inDestroy() const { return inDestroy_; }
+    void destroy();
 
-	EntityTypeID entityTypeID() const;
-	EntityTypeID clientTypeID() const;
+    EntityTypeID entityTypeID() const;
+    EntityTypeID clientTypeID() const;
 
-	VolatileNumber volatileUpdateNumber() const
-											{ return volatileUpdateNumber_; }
+    VolatileNumber volatileUpdateNumber() const
+    {
+        return volatileUpdateNumber_;
+    }
 
-	float topSpeed() const				{ return topSpeed_; }
-	float topSpeedY() const				{ return topSpeedY_; }
+    float topSpeed() const { return topSpeed_; }
+    float topSpeedY() const { return topSpeedY_; }
 
-	EntityRangeListNode * pRangeListNode() const;
+    EntityRangeListNode* pRangeListNode() const;
 
-	ChunkSpace * pChunkSpace() const;
+    ChunkSpace* pChunkSpace() const;
 
-	AoIUpdateSchemeID aoiUpdateSchemeID() const	{ return aoiUpdateSchemeID_; }
+    AoIUpdateSchemeID aoiUpdateSchemeID() const { return aoiUpdateSchemeID_; }
 
-	//@}
+    //@}
 
-	void incRef() const;
-	void decRef() const;
+    void incRef() const;
+    void decRef() const;
 
-	void addToRangeList( RangeList & rangeList,
-		RangeTriggerList & appealRadiusList );
-	void removeFromRangeList( RangeList & rangeList,
-		RangeTriggerList & appealRadiusList );
+    void addToRangeList(RangeList&        rangeList,
+                        RangeTriggerList& appealRadiusList);
+    void removeFromRangeList(RangeList&        rangeList,
+                             RangeTriggerList& appealRadiusList);
 
-	HistoryEvent * addHistoryEventLocally( uint8 type,
-		MemoryOStream & stream,
-		const MemberDescription & description,
-		int16 msgStreamSize,
-		HistoryEvent::Level level = FLT_MAX );
+    HistoryEvent* addHistoryEventLocally(uint8                    type,
+                                         MemoryOStream&           stream,
+                                         const MemberDescription& description,
+                                         int16                    msgStreamSize,
+                                         HistoryEvent::Level level = FLT_MAX);
 
-	bool writeClientUpdateDataToBundle( Mercury::Bundle & bundle,
-		const Vector3 & basePos,
-		EntityCache & cache,
-		float lodPriority ) const;
+    bool writeClientUpdateDataToBundle(Mercury::Bundle& bundle,
+                                       const Vector3&   basePos,
+                                       EntityCache&     cache,
+                                       float            lodPriority) const;
 
-	void writeVehicleChangeToBundle( Mercury::Bundle & bundle,
-		EntityCache & cache ) const;
+    void writeVehicleChangeToBundle(Mercury::Bundle& bundle,
+                                    EntityCache&     cache) const;
 
-	void writeVolatileDetailedDataToBundle( Mercury::Bundle & bundle,
-			IDAlias idAlias, bool isReliable ) const;
+    void writeVolatileDetailedDataToBundle(Mercury::Bundle& bundle,
+                                           IDAlias          idAlias,
+                                           bool             isReliable) const;
 
-	static void forwardMessageToReal( CellAppChannel & realChannel,
-		EntityID entityID,
-		uint8 messageID,
-		BinaryIStream & data,
-		const Mercury::Address & srcAddr, Mercury::ReplyID replyID );
+    static void forwardMessageToReal(CellAppChannel&         realChannel,
+                                     EntityID                entityID,
+                                     uint8                   messageID,
+                                     BinaryIStream&          data,
+                                     const Mercury::Address& srcAddr,
+                                     Mercury::ReplyID        replyID);
 
-	bool sendMessageToReal( const MethodDescription * pDescription,
-		ScriptTuple args );
+    bool sendMessageToReal(const MethodDescription* pDescription,
+                           ScriptTuple              args);
 
-	bool shouldBufferMessagesFrom( const Mercury::Address & addr ) const;
+    bool shouldBufferMessagesFrom(const Mercury::Address& addr) const;
 
-	void trimEventHistory( GameTime cleanUpTime );
+    void trimEventHistory(GameTime cleanUpTime);
 
-	void setPositionAndDirection( const Position3D & position,
-		const Direction3D & direction );
-	void setAndDropGlobalPositionAndDirection( const Position3D & position,
-		const Direction3D & direction );
+    void setPositionAndDirection(const Position3D&  position,
+                                 const Direction3D& direction);
+    void setAndDropGlobalPositionAndDirection(const Position3D&  position,
+                                              const Direction3D& direction);
 
-	// DEBUG
-	int numHaunts() const;
+    // DEBUG
+    int numHaunts() const;
 
-	INLINE EntityTypePtr pType() const;
+    INLINE EntityTypePtr pType() const;
 
-	void reloadScript();	///< deprecated
-	bool migrate();
-	void migratedAll();
+    void reloadScript(); ///< deprecated
+    bool migrate();
+    void migratedAll();
 
-	/// @name Message handlers
-	//@{
-	void avatarUpdateImplicit(
-		const CellAppInterface::avatarUpdateImplicitArgs & args );
-	void avatarUpdateExplicit(
-		const CellAppInterface::avatarUpdateExplicitArgs & args );
-	void ackPhysicsCorrection();
+    /// @name Message handlers
+    //@{
+    void avatarUpdateImplicit(
+      const CellAppInterface::avatarUpdateImplicitArgs& args);
+    void avatarUpdateExplicit(
+      const CellAppInterface::avatarUpdateExplicitArgs& args);
+    void ackPhysicsCorrection();
 
-	void ghostPositionUpdate(
-		const CellAppInterface::ghostPositionUpdateArgs & args );
-	void ghostHistoryEvent( BinaryIStream & data );
-	void ghostedDataUpdate( BinaryIStream & data );
-	void ghostSetReal( const CellAppInterface::ghostSetRealArgs & args );
-	void ghostSetNextReal(
-		const CellAppInterface::ghostSetNextRealArgs & args );
-	void delGhost();
+    void ghostPositionUpdate(
+      const CellAppInterface::ghostPositionUpdateArgs& args);
+    void ghostHistoryEvent(BinaryIStream& data);
+    void ghostedDataUpdate(BinaryIStream& data);
+    void ghostSetReal(const CellAppInterface::ghostSetRealArgs& args);
+    void ghostSetNextReal(const CellAppInterface::ghostSetNextRealArgs& args);
+    void delGhost();
 
-	void ghostVolatileInfo(
-		const CellAppInterface::ghostVolatileInfoArgs & args );
-	void ghostControllerCreate( BinaryIStream & data );
-	void ghostControllerDelete( BinaryIStream & data );
-	void ghostControllerUpdate( BinaryIStream & data );
+    void ghostVolatileInfo(const CellAppInterface::ghostVolatileInfoArgs& args);
+    void ghostControllerCreate(BinaryIStream& data);
+    void ghostControllerDelete(BinaryIStream& data);
+    void ghostControllerUpdate(BinaryIStream& data);
 
-	void witnessed();
-	void checkGhostWitnessed();
+    void witnessed();
+    void checkGhostWitnessed();
 
+    void aoiUpdateSchemeChange(
+      const CellAppInterface::aoiUpdateSchemeChangeArgs& args);
 
-	void aoiUpdateSchemeChange(
-			const CellAppInterface::aoiUpdateSchemeChangeArgs & args );
+    void delControlledBy(const CellAppInterface::delControlledByArgs& args);
 
-	void delControlledBy( const CellAppInterface::delControlledByArgs & args );
+    void forwardedBaseEntityPacket(BinaryIStream& data);
 
-	void forwardedBaseEntityPacket( BinaryIStream & data );
+    void onBaseOffloaded(const CellAppInterface::onBaseOffloadedArgs& args);
 
-	void onBaseOffloaded( const CellAppInterface::onBaseOffloadedArgs & args );
+    void onBaseOffloadedForGhost(
+      const CellAppInterface::onBaseOffloadedForGhostArgs& args);
 
-	void onBaseOffloadedForGhost(
-		const CellAppInterface::onBaseOffloadedForGhostArgs & args );
+    void teleport(const CellAppInterface::teleportArgs& args);
 
-	void teleport( const CellAppInterface::teleportArgs & args );
+    void onTeleportSuccess(Entity* pNearbyEntity);
 
-	void onTeleportSuccess( Entity * pNearbyEntity );
+    void addDetailedPositionToHistory(bool isLocalOnly);
 
-	void addDetailedPositionToHistory( bool isLocalOnly );
+    void enableWitness(const Mercury::Address&         srcAddr,
+                       Mercury::UnpackedMessageHeader& header,
+                       BinaryIStream&                  data);
 
-	void enableWitness( const Mercury::Address & srcAddr,
-		Mercury::UnpackedMessageHeader & header, BinaryIStream & data );
+    void witnessCapacity(const CellAppInterface::witnessCapacityArgs& args);
 
-	void witnessCapacity( const CellAppInterface::witnessCapacityArgs & args );
+    void requestEntityUpdate(BinaryIStream& data);
 
-	void requestEntityUpdate( BinaryIStream & data );
+    void writeToDBRequest(const Mercury::Address&         srcAddr,
+                          Mercury::UnpackedMessageHeader& header,
+                          BinaryIStream&                  stream);
 
-	void writeToDBRequest( const Mercury::Address & srcAddr,
-			Mercury::UnpackedMessageHeader & header, BinaryIStream & stream );
+    void destroyEntity(const CellAppInterface::destroyEntityArgs& args);
 
-	void destroyEntity( const CellAppInterface::destroyEntityArgs & args );
+    void runScriptMethod(const Mercury::Address&               srcAddr,
+                         const Mercury::UnpackedMessageHeader& header,
+                         BinaryIStream&                        data);
 
-	void runScriptMethod( const Mercury::Address & srcAddr,
-			const Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data );
+    void              callBaseMethod(BinaryIStream& data);
+    void              callClientMethod(BinaryIStream& data);
+    void              recordClientMethod(BinaryIStream& data);
+    void              recordClientProperties(BinaryIStream& data);
+    const ScriptDict& exposedForReplayClientProperties() const
+    {
+        return exposedForReplayClientProperties_;
+    }
 
-	void callBaseMethod( BinaryIStream & data );
-	void callClientMethod( BinaryIStream & data );
-	void recordClientMethod( BinaryIStream & data );
-	void recordClientProperties( BinaryIStream & data );
-	const ScriptDict & exposedForReplayClientProperties() const
-	{
-		return exposedForReplayClientProperties_;
-	}
+    // General (script) message handler
+    void runExposedMethod(BinaryIStream& data);
+    //@}
 
-	// General (script) message handler
-	void runExposedMethod( BinaryIStream & data );
-	//@}
+    /// @name Script related methods
+    //@{
+    PY_METHOD_DECLARE(py_destroy)
 
-	/// @name Script related methods
-	//@{
-	PY_METHOD_DECLARE( py_destroy )
+    PY_METHOD_DECLARE(py_cancel)
+    PY_METHOD_DECLARE(py_isReal)
+    PY_METHOD_DECLARE(py_isRealToScript)
+    PY_METHOD_DECLARE(py_clientEntity)
+    PY_METHOD_DECLARE(py_debug)
 
-	PY_METHOD_DECLARE( py_cancel )
-	PY_METHOD_DECLARE( py_isReal )
-	PY_METHOD_DECLARE( py_isRealToScript )
-	PY_METHOD_DECLARE( py_clientEntity )
-	PY_METHOD_DECLARE( py_debug )
+    PY_PICKLING_METHOD_DECLARE(MailBox)
 
-	PY_PICKLING_METHOD_DECLARE( MailBox )
+    PY_AUTO_METHOD_DECLARE(RETOWN, getComponent, ARG(BW::string, END));
+    PyObject* getComponent(const BW::string& name);
 
-	PY_AUTO_METHOD_DECLARE( RETOWN, getComponent, ARG( BW::string, END ) );
-	PyObject * getComponent( const BW::string & name );
-	
-	PY_AUTO_METHOD_DECLARE( RETOK, destroySpace, END );
-	bool destroySpace();
+    PY_AUTO_METHOD_DECLARE(RETOK, destroySpace, END);
+    bool destroySpace();
 
-	PY_AUTO_METHOD_DECLARE( RETOK, writeToDB, END );
-	bool writeToDB();
+    PY_AUTO_METHOD_DECLARE(RETOK, writeToDB, END);
+    bool writeToDB();
 
-	PY_AUTO_METHOD_DECLARE( RETOWN, entitiesInRange, ARG( float,
-								OPTARG( ScriptObject, ScriptObject(),
-								OPTARG( ScriptObject, ScriptObject(), END ) ) ) )
+    PY_AUTO_METHOD_DECLARE(
+      RETOWN,
+      entitiesInRange,
+      ARG(float,
+          OPTARG(ScriptObject,
+                 ScriptObject(),
+                 OPTARG(ScriptObject, ScriptObject(), END))))
 
-	PyObject * entitiesInRange( float range,
-			ScriptObject pClass = ScriptObject(),
-			ScriptObject pActualPos = ScriptObject() );
+    PyObject* entitiesInRange(float        range,
+                              ScriptObject pClass     = ScriptObject(),
+                              ScriptObject pActualPos = ScriptObject());
 
+    bool outdoorPropagateNoise(float range, int event, int info);
 
-	bool outdoorPropagateNoise( float range,
-								int event,
-							   	int info);
+    PY_AUTO_METHOD_DECLARE(RETOK,
+                           makeNoise,
+                           ARG(float, ARG(int, OPTARG(int, 0, END))))
+    bool makeNoise(float noiseLevel, int event, int info = 0);
 
-	PY_AUTO_METHOD_DECLARE( RETOK,
-			makeNoise, ARG( float, ARG( int, OPTARG( int, 0, END ) ) ) )
-	bool makeNoise( float noiseLevel, int event, int info=0);
+    PY_AUTO_METHOD_DECLARE(RETDATA, getGroundPosition, END)
+    const Position3D getGroundPosition() const;
 
-	PY_AUTO_METHOD_DECLARE( RETDATA, getGroundPosition, END )
-	const Position3D getGroundPosition( ) const;
+    PY_RO_ATTRIBUTE_DECLARE(periodsWithoutWitness_, periodsWithoutWitness)
+    PY_RO_ATTRIBUTE_DECLARE(pType()->name(), className);
+    PY_RO_ATTRIBUTE_DECLARE(id_, id)
 
-	PY_RO_ATTRIBUTE_DECLARE( periodsWithoutWitness_, periodsWithoutWitness )
-	PY_RO_ATTRIBUTE_DECLARE( pType()->name(), className );
-	PY_RO_ATTRIBUTE_DECLARE( id_, id )
+    PY_RO_ATTRIBUTE_DECLARE(isDestroyed_, isDestroyed)
 
-	PY_RO_ATTRIBUTE_DECLARE( isDestroyed_, isDestroyed )
+    PY_RO_ATTRIBUTE_DECLARE(numTimesRealOffloaded_, debug_numTimesRealOffloaded)
 
-	PY_RO_ATTRIBUTE_DECLARE( numTimesRealOffloaded_,
-			debug_numTimesRealOffloaded )
+    PyObject* pyGet_spaceID();
+    PY_RO_ATTRIBUTE_SET(spaceID)
 
-	PyObject * pyGet_spaceID();
-	PY_RO_ATTRIBUTE_SET( spaceID )
+    SpaceID spaceID() const;
+
+    // PY_READABLE_ATTRIBUTE_GET( globalPosition_, position )
+    PyObject* pyGet_position();
 
-	SpaceID spaceID() const;
+    int pySet_position(PyObject* value);
+
+    PyObject* pyGet_direction();
+    int       pySet_direction(PyObject* value);
+
+    PY_RO_ATTRIBUTE_DECLARE(globalDirection_.yaw, yaw)
+    PY_RO_ATTRIBUTE_DECLARE(globalDirection_.pitch, pitch)
+    PY_RO_ATTRIBUTE_DECLARE(globalDirection_.roll, roll)
+
+    PY_RO_ATTRIBUTE_DECLARE((Vector3&)localPosition_, localPosition);
+    PY_RO_ATTRIBUTE_DECLARE(localDirection_.yaw, localYaw);
+    PY_RO_ATTRIBUTE_DECLARE(localDirection_.pitch, localPitch);
+    PY_RO_ATTRIBUTE_DECLARE(localDirection_.roll, localRoll);
 
-	// PY_READABLE_ATTRIBUTE_GET( globalPosition_, position )
-	PyObject * pyGet_position();
+    PY_RO_ATTRIBUTE_DECLARE(pVehicle_, vehicle);
 
-	int pySet_position( PyObject * value );
+    bool isOutdoors() const;
+    bool isIndoors() const;
 
-	PyObject * pyGet_direction();
-	int pySet_direction( PyObject * value );
+    PY_RO_ATTRIBUTE_DECLARE(isOutdoors(), isOutdoors)
+    PY_RO_ATTRIBUTE_DECLARE(isIndoors(), isIndoors)
 
-	PY_RO_ATTRIBUTE_DECLARE( globalDirection_.yaw, yaw )
-	PY_RO_ATTRIBUTE_DECLARE( globalDirection_.pitch, pitch )
-	PY_RO_ATTRIBUTE_DECLARE( globalDirection_.roll, roll )
+    PY_READABLE_ATTRIBUTE_GET(volatileInfo_, volatileInfo)
+    int pySet_volatileInfo(PyObject* value);
 
-	PY_RO_ATTRIBUTE_DECLARE( (Vector3 &)localPosition_, localPosition );
-	PY_RO_ATTRIBUTE_DECLARE( localDirection_.yaw, localYaw );
-	PY_RO_ATTRIBUTE_DECLARE( localDirection_.pitch, localPitch );
-	PY_RO_ATTRIBUTE_DECLARE( localDirection_.roll, localRoll );
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(bool, isOnGround, isOnGround)
 
-	PY_RO_ATTRIBUTE_DECLARE( pVehicle_, vehicle );
+    PyObject* pyGet_velocity();
+    PY_RO_ATTRIBUTE_SET(velocity)
 
-	bool isOutdoors() const;
-	bool isIndoors() const;
+    PY_RW_ATTRIBUTE_DECLARE(topSpeed_, topSpeed)
+    PY_RW_ATTRIBUTE_DECLARE(topSpeedY_, topSpeedY)
 
-	PY_RO_ATTRIBUTE_DECLARE( isOutdoors(), isOutdoors )
-	PY_RO_ATTRIBUTE_DECLARE( isIndoors(), isIndoors )
+    PyObject* pyGet_aoiUpdateScheme();
+    int       pySet_aoiUpdateScheme(PyObject* value);
 
-	PY_READABLE_ATTRIBUTE_GET( volatileInfo_, volatileInfo )
-	int pySet_volatileInfo( PyObject * value );
+    PyObject* trackEntity(int   entityId,
+                          float velocity = 2 * MATH_PI,
+                          int   period   = 10,
+                          int   userArg  = 0);
+    PY_AUTO_METHOD_DECLARE(
+      RETOWN,
+      trackEntity,
+      ARG(int, OPTARG(float, 2 * MATH_PI, OPTARG(int, 5, OPTARG(int, 0, END)))))
 
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( bool, isOnGround, isOnGround )
+    bool setPortalState(bool isOpen, WorldTriangle::Flags collisionFlags);
+    PY_AUTO_METHOD_DECLARE(RETOK,
+                           setPortalState,
+                           ARG(bool, OPTARG(WorldTriangle::Flags, 0, END)))
 
-	PyObject * pyGet_velocity();
-	PY_RO_ATTRIBUTE_SET( velocity )
+    PyObject* getDict();
+    PY_AUTO_METHOD_DECLARE(RETOWN, getDict, END)
 
-	PY_RW_ATTRIBUTE_DECLARE( topSpeed_, topSpeed )
-	PY_RW_ATTRIBUTE_DECLARE( topSpeedY_, topSpeedY )
+    //@}
 
-	PyObject * pyGet_aoiUpdateScheme();
-	int pySet_aoiUpdateScheme( PyObject * value );
+    bool sendToClient(EntityID                 entityID,
+                      const MethodDescription& description,
+                      MemoryOStream&           argStream,
+                      bool                     isForOwn    = true,
+                      bool                     isForOthers = false)
+    {
+        return this->sendToClient(entityID,
+                                  description,
+                                  argStream,
+                                  isForOwn,
+                                  isForOthers,
+                                  /* isExposedForReplay */ isForOthers);
+    }
 
-	PyObject * trackEntity( int entityId, float velocity = 2*MATH_PI,
-			   int period = 10, int userArg = 0 );
-	PY_AUTO_METHOD_DECLARE( RETOWN, trackEntity,
-		ARG( int, OPTARG( float, 2*MATH_PI,
-				OPTARG( int, 5, OPTARG( int, 0,  END ) ) ) ) )
+    bool sendToClient(EntityID                 entityID,
+                      const MethodDescription& description,
+                      MemoryOStream&           argStream,
+                      bool                     isForOwn,
+                      bool                     isForOthers,
+                      bool                     isExposedForReplay);
 
-	bool setPortalState( bool isOpen, WorldTriangle::Flags collisionFlags );
-	PY_AUTO_METHOD_DECLARE( RETOK, setPortalState,
-			ARG( bool, OPTARG( WorldTriangle::Flags, 0, END ) ) )
+    bool sendToClientViaReal(EntityID                 entityID,
+                             const MethodDescription& description,
+                             MemoryOStream&           argStream,
+                             bool                     isForOwn    = true,
+                             bool                     isForOthers = false)
+    {
+        return this->sendToClientViaReal(entityID,
+                                         description,
+                                         argStream,
+                                         isForOwn,
+                                         isForOthers,
+                                         /* isExposedForReplay */ isForOthers);
+    }
 
-	PyObject * getDict();
-	PY_AUTO_METHOD_DECLARE( RETOWN, getDict, END )
+    bool sendToClientViaReal(EntityID                 entityID,
+                             const MethodDescription& description,
+                             MemoryOStream&           argStream,
+                             bool                     isForOwn,
+                             bool                     isForOthers,
+                             bool                     isExposedForReplay);
 
-	//@}
+    // The following is used by:
+    //	void Space::addEntity( Entity * );
+    //	void Space::removeEntity( Entity * );
+    // It makes removing entities efficient.
+    SpaceRemovalHandle removalHandle() const { return removalHandle_; }
+    void removalHandle(SpaceRemovalHandle handle) { removalHandle_ = handle; }
 
-	bool sendToClient( EntityID entityID, const MethodDescription & description,
-			MemoryOStream & argStream, 
-			bool isForOwn = true, bool isForOthers = false )
-	{
-		return this->sendToClient( entityID, description, argStream, isForOwn, 
-			isForOthers,
-			/* isExposedForReplay */ isForOthers );
-	}
+    // This is just used in the Witness constructor.
+    bool isInAoIOffload() const;
+    void isInAoIOffload(bool isInAoIOffload);
 
-	bool sendToClient( EntityID entityID, const MethodDescription & description,
-			MemoryOStream & argStream, 
-			bool isForOwn, bool isForOthers,
-			bool isExposedForReplay );
+    INLINE bool isOnGround() const;
+    void        isOnGround(bool isOnGround);
 
-	bool sendToClientViaReal( EntityID entityID, 
-			const MethodDescription & description,
-			MemoryOStream & argStream, 
-			bool isForOwn = true, bool isForOthers = false )
-	{
-		return this->sendToClientViaReal( entityID, description, argStream, 
-			isForOwn, isForOthers,
-			/* isExposedForReplay */ isForOthers );
-	}
+    static WatcherPtr pWatcher();
 
-	bool sendToClientViaReal( EntityID entityID,
-			const MethodDescription & description, MemoryOStream & argStream,
-			bool isForOwn, bool isForOthers,
-			bool isExposedForReplay );
+    static const Vector3 INVALID_POSITION;
 
+    const Position3D&  localPosition() const { return localPosition_; }
+    const Direction3D& localDirection() const { return localDirection_; }
 
-	// The following is used by:
-	//	void Space::addEntity( Entity * );
-	//	void Space::removeEntity( Entity * );
-	// It makes removing entities efficient.
-	SpaceRemovalHandle removalHandle() const		{ return removalHandle_; }
-	void removalHandle( SpaceRemovalHandle handle )	{ removalHandle_ = handle; }
+    void setLocalPositionAndDirection(const Position3D&  localPosition,
+                                      const Direction3D& localDirection);
 
-	// This is just used in the Witness constructor.
-	bool isInAoIOffload() const;
-	void isInAoIOffload( bool isInAoIOffload );
+    void setGlobalPositionAndDirection(const Position3D&  globalPosition,
+                                       const Direction3D& globalDirection);
 
-	INLINE bool isOnGround() const;
-	void isOnGround( bool isOnGround );
+    Entity*  pVehicle() const;
+    uint8    vehicleChangeNum() const;
+    EntityID vehicleID() const { return pVehicle_ ? pVehicle_->id() : 0; }
 
-	static WatcherPtr pWatcher();
+    typedef uintptr SetVehicleParam;
+    enum SetVehicleParamEnum
+    {
+        KEEP_LOCAL_POSITION,
+        KEEP_GLOBAL_POSITION,
+        IN_LIMBO
+    };
 
-	static const Vector3 INVALID_POSITION;
+    void setVehicle(Entity* pVehicle, SetVehicleParam keepWho);
+    void onVehicleMove();
 
-	const Position3D & localPosition() const		{ return localPosition_; }
-	const Direction3D & localDirection() const		{ return localDirection_; }
+    NumTimesRealOffloadedType numTimesRealOffloaded() const
+    {
+        return numTimesRealOffloaded_;
+    }
 
-	void setLocalPositionAndDirection( const Position3D & localPosition,
-			const Direction3D & localDirection );
+    // void setClass( PyObject * pClass );
 
-	void setGlobalPositionAndDirection( const Position3D & globalPosition,
-			const Direction3D & globalDirection );
+    EventNumber lastEventNumber() const;
+    EventNumber getNextEventNumber();
 
-	Entity * pVehicle() const;
-	uint8 vehicleChangeNum() const;
-	EntityID vehicleID() const	{ return pVehicle_ ? pVehicle_->id() : 0; }
+    const PropertyEventStamps& propertyEventStamps() const;
 
-	typedef uintptr SetVehicleParam;
-	enum SetVehicleParamEnum
-	{
-		KEEP_LOCAL_POSITION,
-		KEEP_GLOBAL_POSITION,
-		IN_LIMBO
-	};
+    void debugDump();
 
-	void setVehicle( Entity * pVehicle, SetVehicleParam keepWho );
-	void onVehicleMove();
+    void fakeID(EntityID id);
 
-	NumTimesRealOffloadedType numTimesRealOffloaded() const
-									{ return numTimesRealOffloaded_; }
+    void addTrigger(RangeTrigger* pTrigger);
+    void modTrigger(RangeTrigger* pTrigger);
+    void delTrigger(RangeTrigger* pTrigger);
 
-	// void setClass( PyObject * pClass );
+    bool                    hasBase() const { return baseAddr_.ip != 0; }
+    const Mercury::Address& baseAddr() const { return baseAddr_; }
 
-	EventNumber lastEventNumber() const;
-	EventNumber getNextEventNumber();
+    void adjustForDeadBaseApp(const BackupHash& backupHash);
 
-	const PropertyEventStamps & propertyEventStamps() const;
+    void informBaseOfAddress(const Mercury::Address& addr,
+                             SpaceID                 spaceID,
+                             bool                    shouldSendNow);
 
-	void debugDump();
+    /// @name PropertyOwnerLink method implementations
+    //@{
+    bool onOwnedPropertyChanged(PropertyChange& change);
 
-	void fakeID( EntityID id );
+    bool getTopLevelOwner(PropertyChange&     change,
+                          PropertyOwnerBase*& rpTopLevelOwner);
 
-	void addTrigger( RangeTrigger * pTrigger );
-	void modTrigger( RangeTrigger * pTrigger );
-	void delTrigger( RangeTrigger * pTrigger );
+    int                getNumOwnedProperties() const;
+    PropertyOwnerBase* getChildPropertyOwner(int ref) const;
+    ScriptObject       setOwnedProperty(int ref, BinaryIStream& data);
+    //@}
 
-	bool hasBase() const { return baseAddr_.ip != 0; }
-	const Mercury::Address & baseAddr() const { return baseAddr_; }
+    bool onOwnedPropertyChanged(const DataDescription* pDescription,
+                                PropertyChange&        change);
 
-	void adjustForDeadBaseApp( const BackupHash & backupHash );
+    ScriptObject propertyByDataDescription(
+      const DataDescription* pDataDescr) const;
 
-	void informBaseOfAddress( const Mercury::Address & addr, SpaceID spaceID,
-		   bool shouldSendNow );
+    Chunk*  pChunk() const { return pChunk_; };
+    Entity* prevInChunk() const { return pPrevInChunk_; }
+    Entity* nextInChunk() const { return pNextInChunk_; }
+    void    prevInChunk(Entity* pEntity) { pPrevInChunk_ = pEntity; }
+    void    nextInChunk(Entity* pEntity) { pNextInChunk_ = pEntity; }
+    void    removedFromChunk();
 
-	/// @name PropertyOwnerLink method implementations
-	//@{
-	bool onOwnedPropertyChanged( PropertyChange & change );
+    void heardNoise(const Entity* who,
+                    float         propRange,
+                    float         distance,
+                    int           event,
+                    int           info);
 
-	bool getTopLevelOwner( PropertyChange & change,
-			PropertyOwnerBase *& rpTopLevelOwner );
+    ControllerID addController(ControllerPtr pController, int userArg);
+    void         modController(ControllerPtr pController);
+    bool delController(ControllerID controllerID, bool warnOnFailure = true);
 
-	int getNumOwnedProperties() const;
-	PropertyOwnerBase * getChildPropertyOwner( int ref ) const;
-	ScriptObject setOwnedProperty( int ref, BinaryIStream & data );
-	//@}
-	
-	bool onOwnedPropertyChanged( const DataDescription * pDescription,
-		PropertyChange & change );
+    bool visitControllers(ControllersVisitor& visitor);
 
-	ScriptObject propertyByDataDescription( 
-			const DataDescription * pDataDescr ) const;
+    static int    registerEntityExtra(PyMethodDef* pMethods    = NULL,
+                                      PyGetSetDef* pAttributes = NULL);
+    EntityExtra*& entityExtra(int eeid) { return extras_[eeid]; }
+    EntityExtra*  entityExtra(int eeid) const { return extras_[eeid]; }
 
-	Chunk * pChunk() const { return pChunk_; };
-	Entity * prevInChunk() const { return pPrevInChunk_;}
-	Entity * nextInChunk() const { return pNextInChunk_;}
-	void prevInChunk( Entity* pEntity ) { pPrevInChunk_ = pEntity; }
-	void nextInChunk( Entity* pEntity ) { pNextInChunk_ = pEntity; }
-	void removedFromChunk();
+    void checkChunkCrossing();
 
-	void heardNoise( const Entity * who, float propRange, float distance,
-						int event, int info );
+    void relocated();
 
-	ControllerID 	addController( ControllerPtr pController, int userArg );
-	void			modController( ControllerPtr pController );
-	bool			delController( ControllerID controllerID,
-						bool warnOnFailure = true );
+    void destroyZombie();
 
-	bool			visitControllers( ControllersVisitor & visitor );
+    bool callback(const char* funcName,
+                  PyObject*   args,
+                  const char* errorPrefix,
+                  bool        okIfFunctionNull);
 
-	static int registerEntityExtra(
-		PyMethodDef * pMethods = NULL, PyGetSetDef * pAttributes = NULL );
-	EntityExtra * & entityExtra( int eeid )		{ return extras_[eeid]; }
-	EntityExtra * entityExtra( int eeid ) const	{ return extras_[eeid]; }
+    // Create a dictionary
+    ScriptDict createDictWithProperties(int dataDomains) const;
+    ScriptDict createDictWithComponentProperties(int dataDomains) const;
+    ScriptDict createDictWithLocalProperties(int dataDomains) const;
 
-	void checkChunkCrossing();
+    // profiling
+    const EntityProfiler& profiler() const { return profiler_; }
+    EntityProfiler&       profiler() { return profiler_; }
 
-	void relocated();
+    static void callbacksPermitted(bool permitted);
+    static bool callbacksPermitted() { return s_callbackBuffer_.isBuffering(); }
 
-	void destroyZombie();
+    static void nominateRealEntity(Entity& e);
+    static void nominateRealEntityPop();
 
-	bool callback( const char * funcName, PyObject * args,
-		const char * errorPrefix, bool okIfFunctionNull );
-	
-	// Create a dictionary 
-	ScriptDict createDictWithProperties( int dataDomains ) const;
-	ScriptDict createDictWithComponentProperties( int dataDomains ) const;
-	ScriptDict createDictWithLocalProperties( int dataDomains ) const;
+    static void s_init();
 
-	// profiling
-	const EntityProfiler & profiler() const { return profiler_; }
-	EntityProfiler & profiler() { return profiler_; }
+    const IEntityDelegatePtr& pEntityDelegate() const
+    {
+        return pEntityDelegate_;
+    }
 
-	static void callbacksPermitted( bool permitted );
-	static bool callbacksPermitted() { return s_callbackBuffer_.isBuffering(); }
+  private:
+    // Private methods
+    Entity(const Entity&);
 
-	static void nominateRealEntity( Entity & e );
-	static void nominateRealEntityPop();
+    void updateLocalPosition();
+    bool updateGlobalPosition(bool shouldUpdateGhosts = true,
+                              bool isVehicleMovement  = false);
 
-	static void s_init();
+    void updateInternalsForNewPositionOfReal(const Vector3& oldPos,
+                                             bool isVehicleMovement = false);
+    void updateInternalsForNewPosition(const Vector3& oldPosition,
+                                       bool isVehicleMovement = false);
 
-	const IEntityDelegatePtr & pEntityDelegate() const 
-	{ 
-		return pEntityDelegate_; 
-	}
+    bool getEntitiesInRange(EntityVisitor& visitor,
+                            float          range,
+                            ScriptObject   pClass     = ScriptObject(),
+                            ScriptObject   pActualPos = ScriptObject());
 
-private:
-	// Private methods
-	Entity( const Entity & );
+    void callScriptInit(bool isRestore, EntityPtr pNearbyEntity);
 
-	void updateLocalPosition();
-	bool updateGlobalPosition( bool shouldUpdateGhosts = true,
-		bool isVehicleMovement = false );
+    void clearPythonProperties();
 
-	void updateInternalsForNewPositionOfReal( const Vector3 & oldPos, 
-		bool isVehicleMovement = false );
-	void updateInternalsForNewPosition( const Vector3 & oldPosition,
-		bool isVehicleMovement = false );
+    bool readRealDataInEntityFromStreamForInitOrRestore(
+      BinaryIStream&    data,
+      const ScriptDict& properties);
 
-	bool getEntitiesInRange( EntityVisitor & visitor, float range,
-			ScriptObject pClass = ScriptObject(),
-			ScriptObject pActualPos = ScriptObject() );
+    void readGhostDataFromStream(BinaryIStream& data);
+    void writeGhostDataToStream(BinaryOStream& stream) const;
 
-	void callScriptInit( bool isRestore, EntityPtr pNearbyEntity );
+    void readGhostDataFromStreamInternal(BinaryIStream& data);
+    void writeGhostDataToStreamInternal(BinaryOStream& stream) const;
 
-	void clearPythonProperties();
+    void convertRealToGhost(BinaryOStream*  pStream    = NULL,
+                            CellAppChannel* pChannel   = NULL,
+                            bool            isTeleport = false);
 
-	bool readRealDataInEntityFromStreamForInitOrRestore( BinaryIStream & data,
-		const ScriptDict & properties );
+    // Used by egextra/debug_extension.cpp
+    friend PyObject* calcOffloadData(ScriptObject pEnt);
+    void writeRealDataToStream(BinaryOStream& data, bool isTeleport) const;
 
-	void readGhostDataFromStream( BinaryIStream & data );
-	void writeGhostDataToStream( BinaryOStream & stream ) const;
+    void convertGhostToReal(BinaryIStream&          data,
+                            const Mercury::Address* pBadHauntAddr = NULL);
 
-	void readGhostDataFromStreamInternal( BinaryIStream & data );
-	void writeGhostDataToStreamInternal( BinaryOStream & stream ) const;
+    void readRealDataFromStreamForOnload(
+      BinaryIStream&          data,
+      const Mercury::Address* pBadHauntAddr = NULL);
 
-	void convertRealToGhost( BinaryOStream * pStream = NULL,
-			CellAppChannel * pChannel = NULL,
-			bool isTeleport = false );
+    void readRealDataFromStreamForOnloadInternal(
+      BinaryIStream&          data,
+      const Mercury::Address* pBadHauntAddr);
+    void writeRealDataToStreamInternal(BinaryOStream& data,
+                                       bool           isTeleport) const;
 
-	// Used by egextra/debug_extension.cpp
-	friend PyObject * calcOffloadData( ScriptObject pEnt );
-	void writeRealDataToStream( BinaryOStream & data,
-			bool isTeleport ) const;
+    void setGlobalPosition(const Vector3& v);
+    void setGlobalDirection(const Vector3& v);
 
-	void convertGhostToReal( BinaryIStream & data,
-		const Mercury::Address * pBadHauntAddr = NULL );
+    void avatarUpdateCommon(const Position3D&   pos,
+                            const YawPitchRoll& dir,
+                            bool                onGround,
+                            uint8               refNum);
 
-	void readRealDataFromStreamForOnload( BinaryIStream & data,
-		const Mercury::Address * pBadHauntAddr = NULL );
+    void setVolatileInfo(const VolatileInfo& newInfo);
 
-	void readRealDataFromStreamForOnloadInternal( BinaryIStream & data,
-			const Mercury::Address * pBadHauntAddr );
-	void writeRealDataToStreamInternal( BinaryOStream & data,
-					bool isTeleport ) const;
+    bool writeVolatileDataToBundle(Mercury::Bundle& bundle,
+                                   const Vector3&   basePos,
+                                   IDAlias          idAlias,
+                                   float            priorityThreshold,
+                                   bool             isReliable) const;
 
-	void setGlobalPosition( const Vector3 & v );
-	void setGlobalDirection( const Vector3 & v );
+    ScriptObject pyGetAttribute(const ScriptString& attrObj);
+    bool pySetAttribute(const ScriptString& attrObj, const ScriptObject& value);
 
-	void avatarUpdateCommon( const Position3D & pos, const YawPitchRoll & dir,
-		bool onGround, uint8 refNum );
+    void pyAdditionalMembers(const ScriptList& pList) const;
+    void pyAdditionalMethods(const ScriptList& pList) const;
 
-	void setVolatileInfo( const VolatileInfo & newInfo );
+    bool writeCellMessageToBundle(Mercury::Bundle&         bundle,
+                                  const MethodDescription* pDescription,
+                                  ScriptTuple              args) const;
 
-	bool writeVolatileDataToBundle( Mercury::Bundle & bundle,
-			const Vector3 & basePos, IDAlias idAlias,
-			float priorityThreshold, bool isReliable ) const;
+    bool writeClientMessageToBundle(Mercury::Bundle&         bundle,
+                                    EntityID                 entityID,
+                                    const MethodDescription& description,
+                                    MemoryOStream&           argstream,
+                                    int                      callingMode) const;
 
-	ScriptObject pyGetAttribute( const ScriptString & attrObj );
-	bool pySetAttribute( const ScriptString & attrObj,
-		const ScriptObject & value );
+    bool physicallyPossible(const Position3D& newPosition,
+                            Entity*           pVehicle,
+                            float             propMove = 1.f);
 
-	void pyAdditionalMembers( const ScriptList & pList ) const;
-	void pyAdditionalMethods( const ScriptList & pList ) const;
+    bool traverseChunks(Chunk*              pCurChunk,
+                        const Chunk*        pDstChunk,
+                        Vector3             cSrcPos,
+                        Vector3             cDstPos,
+                        BW::vector<Chunk*>& visitedChunks);
 
-	bool writeCellMessageToBundle( Mercury::Bundle & bundle,
-		const MethodDescription * pDescription,
-		ScriptTuple args ) const;
+    bool validateAvatarVehicleUpdate(Entity* pNewVehicle);
 
-	bool writeClientMessageToBundle( Mercury::Bundle & bundle,
-		EntityID entityID, const MethodDescription & description,
-		MemoryOStream & argstream, int callingMode ) const;
+    void readGhostControllersFromStream(BinaryIStream& data);
+    void writeGhostControllersToStream(BinaryOStream& stream) const;
 
-	bool physicallyPossible( const Position3D & newPosition, Entity * pVehicle,
-		float propMove = 1.f );
+    void readRealControllersFromStream(BinaryIStream& data);
+    void writeRealControllersToStream(BinaryOStream& stream) const;
 
-	bool traverseChunks( Chunk * pCurChunk,
-		const Chunk * pDstChunk,
-		Vector3 cSrcPos, Vector3 cDstPos,
-		BW::vector< Chunk * > & visitedChunks );
+    bool readBasePropertiesExposedForReplayFromStream(BinaryIStream& data);
+    void writeBasePropertiesExposedForReplayToStream(BinaryOStream& data) const;
 
-	bool validateAvatarVehicleUpdate( Entity * pNewVehicle );
+    void startRealControllers();
+    void stopRealControllers();
 
-	void readGhostControllersFromStream( BinaryIStream & data );
-	void writeGhostControllersToStream( BinaryOStream & stream ) const;
+    void runMethodHelper(BinaryIStream&          data,
+                         int                     methodID,
+                         bool                    isExposed,
+                         int                     replyID    = -1,
+                         const Mercury::Address* pReplyAddr = NULL);
 
-	void readRealControllersFromStream( BinaryIStream & data );
-	void writeRealControllersToStream( BinaryOStream & stream ) const;
+    bool sendDBDataToBase(const Mercury::Address* pReplyAddr = NULL,
+                          Mercury::ReplyID        replyID    = 0);
 
-	bool readBasePropertiesExposedForReplayFromStream( BinaryIStream & data );
-	void writeBasePropertiesExposedForReplayToStream(
-		BinaryOStream & data ) const;
+    bool sendCellEntityLostToBase();
 
-	void startRealControllers();
-	void stopRealControllers();
+    Mercury::MessageID addChangeToExternalStream(
+      const PropertyChange&  change,
+      BinaryOStream&         stream,
+      const DataDescription& dataDesciption,
+      int*                   pStreamSize) const;
 
-	void runMethodHelper( BinaryIStream & data, int methodID, bool isExposed,
-		   int replyID = -1, const Mercury::Address * pReplyAddr = NULL );
+    bool hasVolatilePosition() const;
 
-	bool sendDBDataToBase( const Mercury::Address * pReplyAddr = NULL,
-		Mercury::ReplyID replyID = 0 );
+    void setDestroyed();
 
-	bool sendCellEntityLostToBase();
+    void createReal();
+    void destroyReal();
+    void offloadReal();
 
-	Mercury::MessageID addChangeToExternalStream(
-		const PropertyChange & change, BinaryOStream & stream,
-		const DataDescription & dataDesciption, int * pStreamSize ) const;
+    void createEntityDelegate();
+    void createEntityDelegateWithTemplate(const BW::string& templateID);
+    void onPositionChanged();
 
-	bool hasVolatilePosition() const;
+    static const Mercury::InterfaceElement* getAvatarUpdateMessage(int index);
 
-	void setDestroyed();
+    IEntityDelegatePtr pEntityDelegate_;
 
-	void createReal();
-	void destroyReal();
-	void offloadReal();
+    // Private data
+    Space* pSpace_;
 
-	void createEntityDelegate();
-	void createEntityDelegateWithTemplate( const BW::string & templateID );
-	void onPositionChanged();
+    // This handle is used to help the speed of Space::removeEntity.
+    SpaceRemovalHandle removalHandle_;
 
-	static const Mercury::InterfaceElement * getAvatarUpdateMessage(
-			int index );
+    EntityID      id_;
+    EntityTypePtr pEntityType_;
+    Position3D    globalPosition_;
+    Direction3D   globalDirection_;
 
-	IEntityDelegatePtr pEntityDelegate_;
+    Position3D  localPosition_;
+    Direction3D localDirection_;
 
-	// Private data
-	Space *				pSpace_;
+    Mercury::Address baseAddr_;
 
-	// This handle is used to help the speed of Space::removeEntity.
-	SpaceRemovalHandle	removalHandle_;
+    Entity* pVehicle_;
+    uint8   vehicleChangeNum_;
 
-	EntityID		id_;
-	EntityTypePtr	pEntityType_;
-	Position3D		globalPosition_;
-	Direction3D		globalDirection_;
+    // Default scheme to use
+    AoIUpdateSchemeID aoiUpdateSchemeID_; // uint8
 
-	Position3D		localPosition_;
-	Direction3D		localDirection_;
+    NumTimesRealOffloadedType numTimesRealOffloaded_; // uint16
 
-	Mercury::Address baseAddr_;
+    CellAppChannel*  pRealChannel_;
+    Mercury::Address nextRealAddr_;
 
-	Entity *		pVehicle_;
-	uint8			vehicleChangeNum_;
+    RealEntity* pReal_;
 
-	// Default scheme to use
-	AoIUpdateSchemeID aoiUpdateSchemeID_; // uint8
+    typedef BW::vector<ScriptObject> Properties;
+    Properties                       properties_;
 
-	NumTimesRealOffloadedType numTimesRealOffloaded_; // uint16
+    PropertyOwnerLink<Entity> propertyOwner_;
 
-	CellAppChannel * pRealChannel_;
-	Mercury::Address nextRealAddr_;
+    EventHistory eventHistory_;
 
-	RealEntity * pReal_;
+    bool isDestroyed_;
+    bool inDestroy_;
+    bool isInAoIOffload_;
+    bool isOnGround_;
 
-	typedef BW::vector<ScriptObject>	Properties;
-	Properties	properties_;
+    VolatileInfo   volatileInfo_;
+    VolatileNumber volatileUpdateNumber_;
 
-	PropertyOwnerLink<Entity>	propertyOwner_;
+    float  topSpeed_;
+    float  topSpeedY_;
+    uint16 physicsCorrections_;
+    uint64 physicsLastValidated_;
+    float  physicsNetworkJitterDebt_;
 
-	EventHistory eventHistory_;
+    static uint16 s_physicsCorrectionsOutstandingWarningLevel;
 
-	bool		isDestroyed_;
-	bool		inDestroy_;
-	bool		isInAoIOffload_;
-	bool		isOnGround_;
+    PropertyEventStamps propertyEventStamps_;
 
-	VolatileInfo	volatileInfo_;
-	VolatileNumber	volatileUpdateNumber_;
+    EventNumber lastEventNumber_;
 
-	float		topSpeed_;
-	float		topSpeedY_;
-	uint16		physicsCorrections_;
-	uint64		physicsLastValidated_;
-	float		physicsNetworkJitterDebt_;
+    EntityRangeListNode* pRangeListNode_;
+    RangeTrigger*        pRangeListAppealTrigger_;
 
-	static		uint16 s_physicsCorrectionsOutstandingWarningLevel;
+    Controllers* pControllers_;
 
-	PropertyEventStamps	propertyEventStamps_;
+    bool shouldReturnID_;
 
-	EventNumber lastEventNumber_;
+    EntityExtra**                        extras_;
+    static BW::vector<EntityExtraInfo*>& s_entityExtraInfo();
 
-	EntityRangeListNode *	pRangeListNode_;
-	RangeTrigger *			pRangeListAppealTrigger_;
+    typedef BW::vector<RangeTrigger*> Triggers;
+    Triggers                          triggers_;
 
-	Controllers *			pControllers_;
+    ScriptDict exposedForReplayClientProperties_;
 
-	bool shouldReturnID_;
+    // Used when deciding to call onWitnessed.
+    // If periodsWithoutWitness_ is this value, the entity is considered not to
+    // be witnessed. If periodsWithoutWitness_ gets to 2, the real entity is not
+    // witnessed. If it gets to 3, neither the real or its ghosts are being
+    // witnessed.
+    enum
+    {
+        NOT_WITNESSED_THRESHOLD = 3
+    };
+    mutable int periodsWithoutWitness_;
 
-	EntityExtra ** extras_;
-	static BW::vector< EntityExtraInfo * > & s_entityExtraInfo();
+    Chunk*  pChunk_;
+    Entity* pPrevInChunk_;
+    Entity* pNextInChunk_;
 
-	typedef BW::vector< RangeTrigger * > Triggers;
-	Triggers triggers_;
+    // profiling
+    EntityProfiler profiler_;
 
-	ScriptDict exposedForReplayClientProperties_;
+    static EntityPopulation population_;
 
-	// Used when deciding to call onWitnessed.
-	// If periodsWithoutWitness_ is this value, the entity is considered not to
-	// be witnessed. If periodsWithoutWitness_ gets to 2, the real entity is not
-	// witnessed. If it gets to 3, neither the real or its ghosts are being
-	// witnessed.
-	enum { NOT_WITNESSED_THRESHOLD = 3 };
-	mutable int		periodsWithoutWitness_;
+    friend class RealEntity;
+    // friend void EntityRangeListNode::remove();
+    friend class EntityRangeListNode;
 
-	Chunk* pChunk_;
-	Entity* pPrevInChunk_;
-	Entity* pNextInChunk_;
-
-	// profiling
-	EntityProfiler profiler_;
-
-	static EntityPopulation population_;
-
-	friend class RealEntity;
-	// friend void EntityRangeListNode::remove();
-	friend class EntityRangeListNode;
-
-	static EntityCallbackBuffer s_callbackBuffer_;
+    static EntityCallbackBuffer s_callbackBuffer_;
 };
 
-
-typedef bool (*CustomPhysicsValidator)( Entity * pEntity,
-	const Vector3 & newLocalPos, Entity * pNewVehicle,
-	double physValidateTimeDelta );
+typedef bool (*CustomPhysicsValidator)(Entity*        pEntity,
+                                       const Vector3& newLocalPos,
+                                       Entity*        pNewVehicle,
+                                       double         physValidateTimeDelta);
 /**
  *	This function pointer can be set to a function to do further validation
  *	of physical movement than that provided by the BigWorld core code.
@@ -875,9 +918,8 @@ typedef bool (*CustomPhysicsValidator)( Entity * pEntity,
  */
 extern CustomPhysicsValidator g_customPhysicsValidator;
 
-
-typedef void (*EntityMovementCallback)( const Vector3 & oldPosition,
-		Entity * pEntity );
+typedef void (*EntityMovementCallback)(const Vector3& oldPosition,
+                                       Entity*        pEntity);
 /**
  *	This function pointer can be set to a function that is called whenever an
  *	entity moves. This can be useful when implementing things like custom range

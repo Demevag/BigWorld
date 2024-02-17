@@ -5,12 +5,10 @@
 #include "moo/render_target.hpp"
 #include "romp/texture_feeds.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Moo
-{	
-	class EffectMaterial;
+namespace Moo {
+    class EffectMaterial;
 }
 
 /**
@@ -19,61 +17,62 @@ namespace Moo
  */
 class LightMap : public Moo::DeviceCallback
 {
-public:
-	LightMap( const BW::string& className );
-	virtual ~LightMap();
-	//last update time
-	float lastTime()	{ return lastTime_; }	
-	void orthogonalProjection(float xExtent, float zExtent, Matrix& ret);
+  public:
+    LightMap(const BW::string& className);
+    virtual ~LightMap();
+    // last update time
+    float lastTime() { return lastTime_; }
+    void  orthogonalProjection(float xExtent, float zExtent, Matrix& ret);
 
-	void createUnmanagedObjects();
-	void deleteUnmanagedObjects();
+    void createUnmanagedObjects();
+    void deleteUnmanagedObjects();
 
-	virtual void activate();
-	virtual void deactivate();
-protected:
-	virtual bool init(const DataSectionPtr pSection);	
-	bool needsUpdate(float gameTime);
+    virtual void activate();
+    virtual void deactivate();
 
-	virtual void createLightMapSetter( const BW::string& textureFeedName );
-	virtual void createTransformSetter() = 0;
+  protected:
+    virtual bool init(const DataSectionPtr pSection);
+    bool         needsUpdate(float gameTime);
 
-	void linkTextures();
-	void deLinkTextures();
+    virtual void createLightMapSetter(const BW::string& textureFeedName);
+    virtual void createTransformSetter() = 0;
 
-	//update due to time tolerance
-	float lastTime_;
-	float timeTolerance_;
+    void linkTextures();
+    void deLinkTextures();
 
-	//render target variables
-	int	width_;
-	int	height_;	
-	Moo::RenderTargetPtr pRT_;
-	bool active_;
+    // update due to time tolerance
+    float lastTime_;
+    float timeTolerance_;
 
-	//identifiers
-	BW::string renderTargetName_;
-	BW::string effectTextureName_;
-	BW::string effectTransformName_;
+    // render target variables
+    int                  width_;
+    int                  height_;
+    Moo::RenderTargetPtr pRT_;
+    bool                 active_;
 
-	Moo::EffectConstantValuePtr transformSetter_;
-	Moo::EffectConstantValuePtr lightMapSetter_;
-	PyTextureProviderPtr textureProvider_;
+    // identifiers
+    BW::string renderTargetName_;
+    BW::string effectTextureName_;
+    BW::string effectTransformName_;
+
+    Moo::EffectConstantValuePtr transformSetter_;
+    Moo::EffectConstantValuePtr lightMapSetter_;
+    PyTextureProviderPtr        textureProvider_;
 };
-
 
 /**
  *	This class implements an effect-based light map.
  */
 class EffectLightMap : public LightMap
 {
-public:
-	void setLightMapProjection(const Matrix& m);
-protected:
-	EffectLightMap( const BW::string& className );
-	bool init(const DataSectionPtr pSection);	
+  public:
+    void setLightMapProjection(const Matrix& m);
 
-	Moo::EffectMaterialPtr		material_;
+  protected:
+    EffectLightMap(const BW::string& className);
+    bool init(const DataSectionPtr pSection);
+
+    Moo::EffectMaterialPtr material_;
 };
 
 BW_END_NAMESPACE

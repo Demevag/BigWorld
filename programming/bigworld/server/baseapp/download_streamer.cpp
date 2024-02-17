@@ -4,17 +4,15 @@
 
 #include <limits.h>
 
-
 BW_BEGIN_NAMESPACE
 
 /**
  *	Constructor.
  */
-DownloadStreamer::DownloadStreamer() :
-	curDownloadRate_( 0 )
+DownloadStreamer::DownloadStreamer()
+  : curDownloadRate_(0)
 {
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Accessors
@@ -25,57 +23,51 @@ DownloadStreamer::DownloadStreamer() :
  */
 int DownloadStreamer::maxDownloadRate() const
 {
-	int rate = DownloadStreamerConfig::bytesPerTickTotal();
-	return rate ? rate : INT_MAX;
+    int rate = DownloadStreamerConfig::bytesPerTickTotal();
+    return rate ? rate : INT_MAX;
 }
-
 
 /**
  *	Actual downstream bandwidth in use by all proxies, in bytes/tick.
  */
 int DownloadStreamer::curDownloadRate() const
 {
-	return curDownloadRate_;
+    return curDownloadRate_;
 }
-
 
 /**
  *	Maximum downstream bitrate per client, in bytes/tick.
  */
 int DownloadStreamer::maxClientDownloadRate() const
 {
-	int rate = DownloadStreamerConfig::bytesPerTickPerClient();
-	return rate ? rate : INT_MAX;
+    int rate = DownloadStreamerConfig::bytesPerTickPerClient();
+    return rate ? rate : INT_MAX;
 }
-
 
 /**
  *	Maximum increase in download rate to a single client per tick, in bytes.
  */
 int DownloadStreamer::downloadRampUpRate() const
 {
-	return DownloadStreamerConfig::rampUpRateBytesPerTick();
+    return DownloadStreamerConfig::rampUpRateBytesPerTick();
 }
-
 
 /**
  *	Unacked packet age at which we throttle downloads.
  */
 int DownloadStreamer::downloadBacklogLimit() const
 {
-	return DownloadStreamerConfig::backlogLimit();
+    return DownloadStreamerConfig::backlogLimit();
 }
-
 
 float DownloadStreamer::downloadScaleBack() const
 {
-	return std::min( 1.f, float( this->maxDownloadRate() ) / curDownloadRate_ );
+    return std::min(1.f, float(this->maxDownloadRate()) / curDownloadRate_);
 }
 
-
-void DownloadStreamer::modifyDownloadRate( int delta )
+void DownloadStreamer::modifyDownloadRate(int delta)
 {
-	curDownloadRate_ += delta;
+    curDownloadRate_ += delta;
 }
 
 BW_END_NAMESPACE

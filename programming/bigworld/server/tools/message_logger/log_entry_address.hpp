@@ -5,13 +5,12 @@
 
 #include "cstdmf/bw_string.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BinaryIStream;
 class BinaryOStream;
 
-#pragma pack( push, 1 )
+#pragma pack(push, 1)
 
 /**
  * This class represents the on disk address of a log entry. Notice that we
@@ -20,24 +19,24 @@ class BinaryOStream;
  */
 class LogEntryAddress
 {
-public:
-	LogEntryAddress();
-	LogEntryAddress( const char *suffix, int index );
-	LogEntryAddress( const BW::string &suffix, int index );
+  public:
+    LogEntryAddress();
+    LogEntryAddress(const char* suffix, int index);
+    LogEntryAddress(const BW::string& suffix, int index);
 
-	void write( BinaryOStream &os ) const;
-	void read( BinaryIStream &is );
+    void write(BinaryOStream& os) const;
+    void read(BinaryIStream& is);
 
-	bool operator<( const LogEntryAddress &other ) const;
+    bool operator<(const LogEntryAddress& other) const;
 
-	const char *getSuffix() const;
-	int getIndex() const;
+    const char* getSuffix() const;
+    int         getIndex() const;
 
-protected:
-	BW::string suffix_;
-	int32 index_;
+  protected:
+    BW::string suffix_;
+    int32      index_;
 };
-#pragma pack( pop )
+#pragma pack(pop)
 
 BW_END_NAMESPACE
 

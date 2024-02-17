@@ -7,35 +7,33 @@
 #include "../asset_list_types.hpp"
 #include "../string_table_types.hpp"
 
-namespace BW {
-namespace CompiledSpace {
+namespace BW { namespace CompiledSpace {
 
-class BinaryFormatWriter;
-class StringTableWriter;
+    class BinaryFormatWriter;
+    class StringTableWriter;
 
-class AssetListWriter
-{
-public:
-	AssetListWriter();
-	~AssetListWriter();
-	
-	bool write( BinaryFormatWriter& writer );
+    class AssetListWriter
+    {
+      public:
+        AssetListWriter();
+        ~AssetListWriter();
 
-	StringTableTypes::Index addAsset( AssetListTypes::AssetType type,
-		const BW::string& resourceID,
-		StringTableWriter& stringTable );
+        bool write(BinaryFormatWriter& writer);
 
-	size_t size() const;
+        StringTableTypes::Index addAsset(AssetListTypes::AssetType type,
+                                         const BW::string&         resourceID,
+                                         StringTableWriter&        stringTable);
 
-	size_t assetNameIndex( size_t idx ) const;
-	AssetListTypes::AssetType assetType( size_t idx ) const;
+        size_t size() const;
 
-private:
-	BW::vector< AssetListTypes::Entry > assets_;
-};
+        size_t                    assetNameIndex(size_t idx) const;
+        AssetListTypes::AssetType assetType(size_t idx) const;
+
+      private:
+        BW::vector<AssetListTypes::Entry> assets_;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW
-
 
 #endif // SRTING_TABLE_WRITER_HPP

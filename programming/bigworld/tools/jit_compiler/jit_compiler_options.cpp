@@ -3,25 +3,25 @@
 BW_BEGIN_NAMESPACE
 
 JitCompilerOptions::JitCompilerOptions()
-	: AssetCompilerOptions()
-	, enableBalloonNotifications_( true )
+  : AssetCompilerOptions()
+  , enableBalloonNotifications_(true)
 {
 }
 
-JitCompilerOptions::JitCompilerOptions( const AssetCompiler & compiler )
-	: AssetCompilerOptions( compiler )
-	, enableBalloonNotifications_( true )
+JitCompilerOptions::JitCompilerOptions(const AssetCompiler& compiler)
+  : AssetCompilerOptions(compiler)
+  , enableBalloonNotifications_(true)
 {
 }
 
 bool JitCompilerOptions::enableBalloonNotifications() const
 {
-	return enableBalloonNotifications_;
+    return enableBalloonNotifications_;
 }
 
-void JitCompilerOptions::enableBalloonNotifications( bool enable )
+void JitCompilerOptions::enableBalloonNotifications(bool enable)
 {
-	enableBalloonNotifications_ = enable;
+    enableBalloonNotifications_ = enable;
 }
 
 BW_END_NAMESPACE

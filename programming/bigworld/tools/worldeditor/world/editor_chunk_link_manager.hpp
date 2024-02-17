@@ -1,7 +1,6 @@
 #ifndef EDITOR_CHUNK_LINK_MANAGER
 #define EDITOR_CHUNK_LINK_MANAGER
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "cstdmf/concurrency.hpp"
@@ -19,48 +18,48 @@ BW_BEGIN_NAMESPACE
  */
 class EditorChunkLinkManager
 {
-public:
-	typedef BW::set<EditorChunkLink*>::iterator	RegLinksIt;
+  public:
+    typedef BW::set<EditorChunkLink*>::iterator RegLinksIt;
 
-private:
-	bool											valid_;
+  private:
+    bool valid_;
 
-	BW::set<EditorChunkLink*>						registeredLinks_;
-	SimpleMutex										regLinksMutex_;
+    BW::set<EditorChunkLink*> registeredLinks_;
+    SimpleMutex               regLinksMutex_;
 
-	bool											recalcComplete_;
-	bool											recalcTimerStarted_;
-	int												recalcsRemaining_;
-    double											totalRecalcWaitTime_;
-    double											recalcWaitTime_;
+    bool   recalcComplete_;
+    bool   recalcTimerStarted_;
+    int    recalcsRemaining_;
+    double totalRecalcWaitTime_;
+    double recalcWaitTime_;
 
-public:
-	~EditorChunkLinkManager();
+  public:
+    ~EditorChunkLinkManager();
 
-	// Accessors to singleton instance
-	static EditorChunkLinkManager* instancePtr();
-	static EditorChunkLinkManager& instance();
+    // Accessors to singleton instance
+    static EditorChunkLinkManager* instancePtr();
+    static EditorChunkLinkManager& instance();
 
-	bool isValid();
-	void setValid(bool valid);
+    bool isValid();
+    void setValid(bool valid);
 
-	void registerLink(EditorChunkLink* pEcl);
-	void unregisterLink(EditorChunkLink* pEcl);
+    void registerLink(EditorChunkLink* pEcl);
+    void unregisterLink(EditorChunkLink* pEcl);
 
-	void chunkLoaded(Chunk* pChunk);
-	void chunkTossed(Chunk* pChunk);
+    void chunkLoaded(Chunk* pChunk);
+    void chunkTossed(Chunk* pChunk);
 
-	void coveringLoadedChunk();
-	void update( float dTime );
-	bool canRecalc();
+    void coveringLoadedChunk();
+    void update(float dTime);
+    bool canRecalc();
 
-private:
-	// Private constructor
-	EditorChunkLinkManager();
+  private:
+    // Private constructor
+    EditorChunkLinkManager();
 
-	// Private copy constructor and assignment operator
-	EditorChunkLinkManager(const EditorChunkLinkManager& eclm);
-	EditorChunkLinkManager& operator=(const EditorChunkLinkManager& eclm);
+    // Private copy constructor and assignment operator
+    EditorChunkLinkManager(const EditorChunkLinkManager& eclm);
+    EditorChunkLinkManager& operator=(const EditorChunkLinkManager& eclm);
 };
 
 BW_END_NAMESPACE

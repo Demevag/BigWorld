@@ -9,7 +9,6 @@
 
 BW_BEGIN_NAMESPACE
 
-
 /**
  *	This method constructs a new instance of the replay checksum scheme.
  *
@@ -23,15 +22,14 @@ BW_BEGIN_NAMESPACE
  *						constructed checksum scheme object's isGood() /
  *						errorString() accessors.
  */
-ChecksumSchemePtr ReplayChecksumScheme::create(
-		const BW::string & key, bool isPrivate )
+ChecksumSchemePtr ReplayChecksumScheme::create(const BW::string& key,
+                                               bool              isPrivate)
 {
-	return ChainedChecksumScheme::create(
-		SHAChecksumScheme::create(),
-		EllipticCurveChecksumScheme::create( key, isPrivate ) );
+    return ChainedChecksumScheme::create(
+      SHAChecksumScheme::create(),
+      EllipticCurveChecksumScheme::create(key, isPrivate));
 }
 
 BW_END_NAMESPACE
-
 
 // replay_checksum_scheme.cpp

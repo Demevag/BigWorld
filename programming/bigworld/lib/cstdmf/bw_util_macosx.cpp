@@ -16,94 +16,83 @@
 
 BW_BEGIN_NAMESPACE
 
+namespace BWUtil {
 
-namespace BWUtil
-{
+    void sanitisePath(BW::string& path)
+    {
+        // This method is a NOP for Mac OS X as BigWorld uses the same format.
+    }
 
+    BW::string getFilePath(const BW::StringRef& pathToFile)
+    {
+        // dirname() can modify the input string so we need to make a copy
+        size_t length =
+          std::min(static_cast<size_t>(PATH_MAX), pathToFile.length());
+        char pathCpy[PATH_MAX + 1];
+        memcpy(pathCpy, pathToFile.data(), length);
+        pathCpy[length] = '\0';
 
-void sanitisePath( BW::string & path )
-{
-	// This method is a NOP for Mac OS X as BigWorld uses the same format.
-}
+        return dirname(pathCpy);
+    }
 
+    bool getExecutablePath(char* pathBuffer, size_t pathBufferSize)
+    {
+        uint32_t size = pathBufferSize;
+        memset(pathBuffer, '\0', pathBufferSize);
 
-BW::string getFilePath( const BW::StringRef & pathToFile )
-{
-	// dirname() can modify the input string so we need to make a copy
-	size_t length = std::min( static_cast< size_t >( PATH_MAX ),
-						pathToFile.length() );
-	char pathCpy[PATH_MAX + 1];
-	memcpy( pathCpy, pathToFile.data(), length );
-	pathCpy[length] = '\0';
+        int retval = _NSGetExecutablePath(pathBuffer, &size);
 
-	return dirname( pathCpy );
-}
+        if (retval < 0) {
+            ERROR_MSG("BWUtil::getExecutablePath: Buffer overflow "
+                      "(require %zu bytes, got %zu)\n",
+                      static_cast<size_t>(size),
+                      pathBufferSize);
+            return false;
+        }
 
+        char realPath[PATH_MAX];
+        if (!realpath(pathBuffer, realPath)) {
+            ERROR_MSG("BWUtil::getExecutablePath: "
+                      "Failed to get the real path: %s\n",
+                      strerror(errno));
+            return false;
+        }
 
-bool getExecutablePath( char * pathBuffer, size_t pathBufferSize )
-{
-	uint32_t size = pathBufferSize;
-	memset( pathBuffer, '\0', pathBufferSize );
+        size_t realPathSize = strlen(realPath);
+        if ((realPathSize + 1) > pathBufferSize) {
+            ERROR_MSG("BWUtil::getExecutablePath: Buffer overflow "
+                      "(require %zu bytes, got %zu)\n",
+                      realPathSize,
+                      pathBufferSize);
+            return false;
+        }
 
-	int retval = _NSGetExecutablePath( pathBuffer, &size );
-
-	if (retval < 0)
-	{
-		ERROR_MSG( "BWUtil::getExecutablePath: Buffer overflow "
-				"(require %zu bytes, got %zu)\n",
-			static_cast<size_t>( size ), pathBufferSize );
-		return false;
-	}
-
-	char realPath[PATH_MAX];
-	if (!realpath( pathBuffer, realPath ))
-	{
-		ERROR_MSG( "BWUtil::getExecutablePath: "
-				"Failed to get the real path: %s\n",
-			strerror( errno ) );
-		return false;
-	}
-
-	size_t realPathSize = strlen( realPath );
-	if ((realPathSize + 1) > pathBufferSize)
-	{
-		ERROR_MSG( "BWUtil::getExecutablePath: Buffer overflow "
-				"(require %zu bytes, got %zu)\n",
-			realPathSize, pathBufferSize );
-		return false;
-
-	}
-
-	memcpy( pathBuffer, realPath, realPathSize + 1 );
-	return true;
-}
-
+        memcpy(pathBuffer, realPath, realPathSize + 1);
+        return true;
+    }
 
 } // namespace BWUtil
-
 
 /**
  *	This function returns a temp file name.
  */
 BW::string getTempFilePathName()
 {
-	BW_GUARD;
-	char fileName[] = P_tmpdir "/BWTXXXXXX";
+    BW_GUARD;
+    char fileName[] = P_tmpdir "/BWTXXXXXX";
 
-	int fd = mkstemp( fileName );
-	if (fd < 0) 
-	{
-		ERROR_MSG( "BWUtil::getTempFilePathName: Unable create temporary file "
-			"in %s\n", P_tmpdir );
-		return BW::string();
-	}
+    int fd = mkstemp(fileName);
+    if (fd < 0) {
+        ERROR_MSG("BWUtil::getTempFilePathName: Unable create temporary file "
+                  "in %s\n",
+                  P_tmpdir);
+        return BW::string();
+    }
 
-	close( fd );
-	return BW::string( fileName );
+    close(fd);
+    return BW::string(fileName);
 }
 
-
 BW_END_NAMESPACE
-
 
 // bw_util_macosx.cpp

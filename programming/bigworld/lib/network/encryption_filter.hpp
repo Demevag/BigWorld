@@ -9,73 +9,70 @@
 #include "cstdmf/smartpointer.hpp"
 #include "cstdmf/memory_stream.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
+namespace Mercury {
 
-namespace Mercury
-{
+    class ProcessSocketStatsHelper;
 
-class ProcessSocketStatsHelper;
+    class EncryptionFilter;
+    typedef SmartPointer<EncryptionFilter> EncryptionFilterPtr;
 
-class EncryptionFilter;
-typedef SmartPointer< EncryptionFilter > EncryptionFilterPtr;
+    /**
+     *  A PacketFilter that uses a non-modal block cipher
+     */
+    class EncryptionFilter : public PacketFilter
+    {
+      public:
+        // Factory method
+        static EncryptionFilterPtr create(BlockCipherPtr pCipher);
 
+        // Overrides from PacketFilter
+        virtual Reason send(PacketSender&  packetSender,
+                            const Address& addr,
+                            Packet*        pPacket);
+        virtual Reason recv(PacketReceiver&           receiver,
+                            const Address&            addr,
+                            Packet*                   pPacket,
+                            ProcessSocketStatsHelper* pStatsHelper);
 
-/**
- *  A PacketFilter that uses a non-modal block cipher
- */
-class EncryptionFilter : public PacketFilter
-{
-public:
-	// Factory method
-	static EncryptionFilterPtr create( BlockCipherPtr pCipher );
+        virtual int maxSpareSize();
 
-	// Overrides from PacketFilter 
-	virtual Reason send( PacketSender & packetSender,
-						const Address & addr, Packet * pPacket );
-	virtual Reason recv( PacketReceiver & receiver,
-						const Address & addr, Packet * pPacket,
-						ProcessSocketStatsHelper * pStatsHelper );
+        const BlockCipher::Key& key() const { return pBlockCipher_->key(); }
 
-	virtual int maxSpareSize();
+        void encryptStream(MemoryOStream& clearStream,
+                           BinaryOStream& cipherStream);
 
-	const BlockCipher::Key & key() const { return pBlockCipher_->key(); }
+        bool decryptStream(BinaryIStream& cipherStream,
+                           BinaryOStream& clearStream);
 
-	void encryptStream( MemoryOStream & clearStream,
-		BinaryOStream & cipherStream );
+      protected:
+        // These two are protected to ensure that only the factory methods are
+        // used.
+        EncryptionFilter(BlockCipherPtr pCipher);
 
-	bool decryptStream( BinaryIStream & cipherStream,
-		BinaryOStream & clearStream );
+        // Only deletable via SmartPointer
+        virtual ~EncryptionFilter();
 
-protected:
-	// These two are protected to ensure that only the factory methods are
-	// used.
-	EncryptionFilter( BlockCipherPtr pCipher );
+      private:
+        // Internal methods
+        int encrypt(const unsigned char* src, unsigned char* dest, int length);
+        int encrypt(const unsigned char* src, BinaryOStream& dest, int length);
 
-	// Only deletable via SmartPointer
-	virtual ~EncryptionFilter();
+        int decrypt(const unsigned char* src,
+                    unsigned char*       dest,
+                    int                  length,
+                    bool                 isVerbose = true);
 
-private:
-	// Internal methods
-	int encrypt( const unsigned char * src, unsigned char * dest, int length );
-	int encrypt( const unsigned char * src, BinaryOStream & dest, int length );
+        // Prevent copy-construct or copy-assignment
+        EncryptionFilter(const EncryptionFilter& other);
+        EncryptionFilter& operator=(const EncryptionFilter& other);
 
-	int decrypt( const unsigned char * src, unsigned char * dest, int length,
-		bool isVerbose = true );
-
-
-	// Prevent copy-construct or copy-assignment
-	EncryptionFilter( const EncryptionFilter & other );
-	EncryptionFilter & operator=( const EncryptionFilter & other );
-
-	BlockCipherPtr pBlockCipher_;
-};
+        BlockCipherPtr pBlockCipher_;
+    };
 
 } // namespace Mercury
 
-
 BW_END_NAMESPACE
-
 
 #endif // ENCRYPTION_FILTER_HPP

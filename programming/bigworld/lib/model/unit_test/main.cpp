@@ -15,65 +15,60 @@
 #include "moo/texture_manager.hpp"
 #include <memory>
 
-
 BW_USE_NAMESPACE
 
 const char BIGWORLD_RES_RESOURCE_PATH[] = "../../../res/bigworld/";
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
     BW_SYSTEMSTAGE_MAIN();
 
-    BW::Allocator::setCrashOnLeak( true );
-    
-    const std::auto_ptr<CStdMf> cstdmfSingleton( new CStdMf );
+    BW::Allocator::setCrashOnLeak(true);
 
-    //For the unit tests, we force a particular resource path.
-    const char * myargv[] =
-        {
-            argv[0],
-            //Test-specific resources.
-            "--res", UNIT_TEST_RESOURCE_PATH,
-            //Also need the general resource path, so default materials
-            //and shaders can be used. Useful when loading test models.
-            "--res", BIGWORLD_RES_RESOURCE_PATH
-        };
-    int myargc = ARRAY_SIZE( myargv );
+    const std::auto_ptr<CStdMf> cstdmfSingleton(new CStdMf);
 
-    if ( !BWResource::init( myargc, myargv ) )
-    {
-        ERROR_MSG( "Unable to initialise BWResource.\n" );
+    // For the unit tests, we force a particular resource path.
+    const char* myargv[] = {
+        argv[0],
+        // Test-specific resources.
+        "--res",
+        UNIT_TEST_RESOURCE_PATH,
+        // Also need the general resource path, so default materials
+        // and shaders can be used. Useful when loading test models.
+        "--res",
+        BIGWORLD_RES_RESOURCE_PATH
+    };
+    int myargc = ARRAY_SIZE(myargv);
+
+    if (!BWResource::init(myargc, myargv)) {
+        ERROR_MSG("Unable to initialise BWResource.\n");
         return 1;
     }
 
     DataSectionCache::instance();
 
-    if (!AutoConfig::configureAllFrom( AutoConfig::s_resourcesXML ))
-    {
-        ERROR_MSG( "Could not find resources.xml, which should "
-            "contain the location of system resources!" );
+    if (!AutoConfig::configureAllFrom(AutoConfig::s_resourcesXML)) {
+        ERROR_MSG("Could not find resources.xml, which should "
+                  "contain the location of system resources!");
         return 1;
     }
 
-    if (!BgTaskManager::init())
-    {
-        ERROR_MSG( "Unable to initialise BgTaskManager.\n" );
+    if (!BgTaskManager::init()) {
+        ERROR_MSG("Unable to initialise BgTaskManager.\n");
         BWResource::fini();
         return 1;
     }
-    if (!FileIOTaskManager::init())
-    {
-        ERROR_MSG( "Unable to initialise FileIOTaskManager.\n" );
+    if (!FileIOTaskManager::init()) {
+        ERROR_MSG("Unable to initialise FileIOTaskManager.\n");
         BgTaskManager::fini();
         BWResource::fini();
         return 1;
     }
 
-    std::auto_ptr<Renderer> pRenderer( new Renderer );
+    std::auto_ptr<Renderer> pRenderer(new Renderer);
 
-    if (!Moo::init( true, true ))
-    {
-        ERROR_MSG( "Unable to initialise Moo.\n" );
+    if (!Moo::init(true, true)) {
+        ERROR_MSG("Unable to initialise Moo.\n");
         FileIOTaskManager::fini();
         BgTaskManager::fini();
         BWResource::fini();
@@ -86,20 +81,17 @@ int main( int argc, char* argv[] )
     int result = 0;
     {
         Moo::TestWindow testWindow;
-        if (testWindow.init())
-        {
-            result = BWUnitTest::runTest( "model", argc, argv );
+        if (testWindow.init()) {
+            result = BWUnitTest::runTest("model", argc, argv);
 
             FileIOTaskManager::fini();
             BgTaskManager::fini();
 
-        }
-        else
-        {
+        } else {
             FileIOTaskManager::fini();
             BgTaskManager::fini();
             result = 1;
-            ERROR_MSG( "Unable to create the Moo test window.\n" );
+            ERROR_MSG("Unable to create the Moo test window.\n");
         }
     }
 

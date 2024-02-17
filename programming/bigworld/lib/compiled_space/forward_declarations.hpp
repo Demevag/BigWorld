@@ -22,7 +22,7 @@ BW_END_NAMESPACE
 
 namespace BW {
 
-typedef IndexSpan<uint16>  DataSpan;
+    typedef IndexSpan<uint16> DataSpan;
 
 } // namespace BW
 

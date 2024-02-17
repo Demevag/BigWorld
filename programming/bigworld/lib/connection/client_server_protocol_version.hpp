@@ -1,10 +1,8 @@
 #ifndef CLIENT_SERVER_PROTOCOL_VERSION_HPP
 #define CLIENT_SERVER_PROTOCOL_VERSION_HPP
 
-
 #include "cstdmf/binary_stream.hpp"
 #include "cstdmf/stdmf.hpp"
-
 
 // Version 2.0.6 (0):	Converted from old-style protocol 59
 // Version 2.0.8 (0):	Network optimisations
@@ -44,180 +42,167 @@
 // These should correspond to the version number of the BigWorld release when
 // the protocol was changed.
 
-
 BW_BEGIN_NAMESPACE
 
-
-const uint8 CLIENT_SERVER_PROTOCOL_VERSION_MAJOR = 2;
-const uint8 CLIENT_SERVER_PROTOCOL_VERSION_MINOR = 9;
-const uint8 CLIENT_SERVER_PROTOCOL_VERSION_PATCH = 0;
+const uint8 CLIENT_SERVER_PROTOCOL_VERSION_MAJOR    = 2;
+const uint8 CLIENT_SERVER_PROTOCOL_VERSION_MINOR    = 9;
+const uint8 CLIENT_SERVER_PROTOCOL_VERSION_PATCH    = 0;
 const uint8 CLIENT_SERVER_PROTOCOL_VERSION_SUBPATCH = 0;
-
 
 /**
  *	This class represents values for the client-server protocol version.
  */
 class ClientServerProtocolVersion
 {
-public:
-	/**
-	 *	Constructor.
-	 *
-	 *	@param major 	The major version.
-	 *	@param minor 	The minor version.
-	 *	@param patch 	The patch version.
-	 *	@param subpatch The subpatch version.
-	 */
-	ClientServerProtocolVersion( uint8 major, uint8 minor, uint8 patch, 
-				uint8 subpatch ) :
-			major_( major ),
-			minor_( minor ),
-			patch_( patch ),
-			subpatch_( subpatch )
-	{
-		buf_[0] = 0;
-	}
+  public:
+    /**
+     *	Constructor.
+     *
+     *	@param major 	The major version.
+     *	@param minor 	The minor version.
+     *	@param patch 	The patch version.
+     *	@param subpatch The subpatch version.
+     */
+    ClientServerProtocolVersion(uint8 major,
+                                uint8 minor,
+                                uint8 patch,
+                                uint8 subpatch)
+      : major_(major)
+      , minor_(minor)
+      , patch_(patch)
+      , subpatch_(subpatch)
+    {
+        buf_[0] = 0;
+    }
 
+    /**
+     *	Empty constructor.
+     */
+    ClientServerProtocolVersion()
+      : major_(0)
+      , minor_(0)
+      , patch_(0)
+      , subpatch_(0)
+    {
+        buf_[0] = 0;
+    }
 
-	/**
-	 *	Empty constructor.
-	 */
-	ClientServerProtocolVersion() :
-		major_( 0 ),
-		minor_( 0 ),
-		patch_( 0 ),
-		subpatch_( 0 )
-	{
-		buf_[0] = 0;
-	}
+    /**
+     *	This method converts this object into a string representation.
+     */
+    const char* c_str() const
+    {
+        if (buf_[0] == '\0') {
+            if (subpatch_ == 0) {
+                bw_snprintf(const_cast<char*>(buf_),
+                            sizeof(buf_),
+                            "%d.%d.%d",
+                            major_,
+                            minor_,
+                            patch_);
+            } else {
+                bw_snprintf(const_cast<char*>(buf_),
+                            sizeof(buf_),
+                            "%d.%d.%d (%d)",
+                            major_,
+                            minor_,
+                            patch_,
+                            subpatch_);
+            }
+        }
 
+        return buf_;
+    }
 
-	/**
-	 *	This method converts this object into a string representation.
-	 */
-	const char * c_str() const
-	{
-		if (buf_[0] == '\0')
-		{
-			if (subpatch_ == 0)
-			{
-				bw_snprintf( const_cast< char * >( buf_ ), sizeof( buf_ ),
-						"%d.%d.%d",
-						major_, minor_, patch_ );
-			}
-			else
-			{
-				bw_snprintf( const_cast< char * >( buf_ ), sizeof( buf_ ),
-						"%d.%d.%d (%d)",
-						major_, minor_, patch_, subpatch_ );	
-			}
-		}
+    /**
+     *	This method reads a version from the given stream.
+     *
+     *	@param stream 	The input stream.
+     */
+    void readFromStream(BinaryIStream& stream)
+    {
+        stream >> subpatch_ >> patch_ >> minor_ >> major_;
+    }
 
-		return buf_;
-	}
+    /**
+     *	This method writes this version to the given stream.
+     *
+     *	@param stream 	The output stream.
+     */
+    void writeToStream(BinaryOStream& stream) const
+    {
+        stream << subpatch_ << patch_ << minor_ << major_;
+    }
 
+    /**
+     *	This method returns queries the support for the given version relative
+     *	to this version.
+     *
+     *	@param other 	The version to compare.
+     *
+     *	@return 		true if the given version is supported, false
+     *					otherwise.
+     */
+    bool supports(const ClientServerProtocolVersion& other) const
+    {
+        return (major_ == other.major_) && (minor_ == other.minor_) &&
+               (patch_ == other.patch_) && (subpatch_ == other.subpatch_);
+    }
 
-	/**
-	 *	This method reads a version from the given stream.
-	 *
-	 *	@param stream 	The input stream.
-	 */
-	void readFromStream( BinaryIStream & stream )
-	{
-		stream >> subpatch_ >> patch_ >> minor_ >> major_;
-	}
+    /**
+     *	This static method returns the current client-server protocol version.
+     */
+    static ClientServerProtocolVersion currentVersion()
+    {
+        ClientServerProtocolVersion version(
+          CLIENT_SERVER_PROTOCOL_VERSION_MAJOR,
+          CLIENT_SERVER_PROTOCOL_VERSION_MINOR,
+          CLIENT_SERVER_PROTOCOL_VERSION_PATCH,
+          CLIENT_SERVER_PROTOCOL_VERSION_SUBPATCH);
 
+        return version;
+    }
 
-	/**
-	 *	This method writes this version to the given stream.
-	 *
-	 *	@param stream 	The output stream.
-	 */
-	void writeToStream( BinaryOStream & stream ) const
-	{
-		stream << subpatch_ << patch_ << minor_ << major_;
-	}
+    /**
+     *	This static method returns the stream size of this object.
+     */
+    static int streamSize()
+    {
+        // Major, minor, patch, subpatch are all encoded as uint8.
+        return 4 * sizeof(uint8);
+    }
 
+  private:
+    uint8 major_;
+    uint8 minor_;
+    uint8 patch_;
+    uint8 subpatch_;
 
-	/** 
-	 *	This method returns queries the support for the given version relative
-	 *	to this version.
-	 *
-	 *	@param other 	The version to compare.
-	 *
-	 *	@return 		true if the given version is supported, false
-	 *					otherwise.
-	 */
-	bool supports( const ClientServerProtocolVersion & other ) const
-	{
-		return
-			(major_ == other.major_) &&
-			(minor_ == other.minor_) &&
-			(patch_ == other.patch_) &&
-			(subpatch_ == other.subpatch_);
-	}
-
-
-	/**
-	 *	This static method returns the current client-server protocol version.
-	 */
-	static ClientServerProtocolVersion currentVersion()
-	{
-		ClientServerProtocolVersion version(
-				CLIENT_SERVER_PROTOCOL_VERSION_MAJOR,
-				CLIENT_SERVER_PROTOCOL_VERSION_MINOR,
-				CLIENT_SERVER_PROTOCOL_VERSION_PATCH,
-				CLIENT_SERVER_PROTOCOL_VERSION_SUBPATCH );
-
-		return version;
-	}
-
-
-	/**
-	 *	This static method returns the stream size of this object.
-	 */
-	static int streamSize()
-	{
-		// Major, minor, patch, subpatch are all encoded as uint8.
-		return 4 * sizeof( uint8 );
-	}
-
-
-private:
-	uint8 major_;
-	uint8 minor_;
-	uint8 patch_;
-	uint8 subpatch_;
-
-	char buf_[ 20 ];
+    char buf_[20];
 };
 
-
-/** 
+/**
  *	Out-streaming operator.
  */
-inline BinaryOStream &
-operator<<( BinaryOStream & b, const ClientServerProtocolVersion & v )
+inline BinaryOStream& operator<<(BinaryOStream&                     b,
+                                 const ClientServerProtocolVersion& v)
 {
-	v.writeToStream( b );
+    v.writeToStream(b);
 
-	return b;
+    return b;
 }
-
 
 /**
  *	In-streaming operator.
  */
-inline BinaryIStream &
-operator>>( BinaryIStream & stream, ClientServerProtocolVersion & v )
+inline BinaryIStream& operator>>(BinaryIStream&               stream,
+                                 ClientServerProtocolVersion& v)
 {
-	v.readFromStream( stream );
+    v.readFromStream(stream);
 
-	return stream;
+    return stream;
 }
 
-
 BW_END_NAMESPACE
-
 
 #endif // CLIENT_SERVER_PROTOCOL_VERSION_HPP

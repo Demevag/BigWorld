@@ -33,16 +33,13 @@
 #include "space/client_space.hpp"
 #include "space/deprecated_space_helpers.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-static DogWatch g_sortedWatch( "DrawSorted" );
-
+static DogWatch g_sortedWatch("DrawSorted");
 
 FacadeApp FacadeApp::instance;
 
 int FacadeApp_token = 1;
-
 
 /**
  *  This class notifies the game script to set the time of day on the server
@@ -50,29 +47,29 @@ int FacadeApp_token = 1;
  */
 class ServerTODUpdater : public TimeOfDay::UpdateNotifier
 {
-public:
+  public:
     ServerTODUpdater() {}
 
-    virtual void updated( const TimeOfDay & tod )
+    virtual void updated(const TimeOfDay& tod)
     {
         ScriptObject personality = Personality::instance();
-        if (!personality) return;
+        if (!personality)
+            return;
 
-        personality.callMethod( "onTimeOfDayLocalChange",
-            ScriptArgs::create( tod.gameTime(), tod.secondsPerGameHour() ),
-            ScriptErrorPrint( "ServerTODUpdater notification: " ),
-            /* allowNullMethod */ true );
+        personality.callMethod(
+          "onTimeOfDayLocalChange",
+          ScriptArgs::create(tod.gameTime(), tod.secondsPerGameHour()),
+          ScriptErrorPrint("ServerTODUpdater notification: "),
+          /* allowNullMethod */ true);
     }
 };
 
-
-
-FacadeApp::FacadeApp() : dGameTime_( 0.f )
+FacadeApp::FacadeApp()
+  : dGameTime_(0.f)
 {
     BW_GUARD;
-    MainLoopTasks::root().add( this, "Facade/App", NULL );
+    MainLoopTasks::root().add(this, "Facade/App", NULL);
 }
-
 
 FacadeApp::~FacadeApp()
 {
@@ -80,27 +77,24 @@ FacadeApp::~FacadeApp()
     /*MainLoopTasks::root().del( this, "Facade/App" );*/
 }
 
-
 bool FacadeApp::init()
 {
     BW_GUARD;
-    CameraApp::instance().entityPicker().selectionFoV( DEG_TO_RAD( 10.f ) );
-    CameraApp::instance().entityPicker().selectionDistance( 80.f );
-    CameraApp::instance().entityPicker().deselectionFoV( DEG_TO_RAD( 80.f ) );
+    CameraApp::instance().entityPicker().selectionFoV(DEG_TO_RAD(10.f));
+    CameraApp::instance().entityPicker().selectionDistance(80.f);
+    CameraApp::instance().entityPicker().deselectionFoV(DEG_TO_RAD(80.f));
 
     todUpdateNotifier_ = new ServerTODUpdater();
 
     Waters::instance().init();
     FootPrintRenderer::init();
 
-    if (App::instance().isQuiting())
-    {
+    if (App::instance().isQuiting()) {
         return false;
     }
 
     return DeviceApp::s_pStartupProgTask_->step(APP_PROGRESS_STEP);
 }
-
 
 void FacadeApp::fini()
 {
@@ -108,16 +102,14 @@ void FacadeApp::fini()
     Waters::instance().fini();
     FootPrintRenderer::fini();
 
-    if ( lastCameraSpace_.exists() )
-    {
-        EnviroMinder & enviro = lastCameraSpace_->enviro();
+    if (lastCameraSpace_.exists()) {
+        EnviroMinder& enviro = lastCameraSpace_->enviro();
         enviro.deactivate();
     }
 
     // throw away this reference
     lastCameraSpace_ = NULL;
 }
-
 
 /*~ function BWPersonality.onCameraSpaceChange
  *  @components{ client }
@@ -126,156 +118,173 @@ void FacadeApp::fini()
  *  has been set up.  The space ID and the space.settings file is
  *  passed in as arguments.
  */
-void FacadeApp::tick( float dGameTime, float /* dRenderTime */ )
+void FacadeApp::tick(float dGameTime, float /* dRenderTime */)
 {
-    BW_GUARD_PROFILER( AppTick_Facade );
+    BW_GUARD_PROFILER(AppTick_Facade);
     dGameTime_ = dGameTime;
 
     // update the weather
     ClientSpacePtr pSpace = DeprecatedSpaceHelpers::cameraSpace();
-    if (!pSpace) return;
+    if (!pSpace)
+        return;
 
     // update the entity picker
     //  (must be here, after the camera position has been set)
-    CameraApp::instance().entityPicker().update( dGameTime );
+    CameraApp::instance().entityPicker().update(dGameTime);
 
-    EnviroMinder & enviro = pSpace->enviro();
+    EnviroMinder& enviro = pSpace->enviro();
 
     // if this space is new to us than transfer our Facade apparatus to it
-    if (lastCameraSpace_ != pSpace)
-    {
+    if (lastCameraSpace_ != pSpace) {
         // removing it from the old one first if necessary
-        if (lastCameraSpace_)
-        {
-            EnviroMinder & oldEnviro = lastCameraSpace_->enviro();
+        if (lastCameraSpace_) {
+            EnviroMinder& oldEnviro = lastCameraSpace_->enviro();
             oldEnviro.deactivate();
-            oldEnviro.timeOfDay()->delUpdateNotifier( todUpdateNotifier_ );
+            oldEnviro.timeOfDay()->delUpdateNotifier(todUpdateNotifier_);
         }
 
         lastCameraSpace_ = pSpace;
         enviro.activate();
-        enviro.timeOfDay()->addUpdateNotifier( todUpdateNotifier_ );
+        enviro.timeOfDay()->addUpdateNotifier(todUpdateNotifier_);
 
         // Probably not the ideal spot for this now.
         TimeGlobals::instance().setupWatchersFirstTimeOnly();
 
         // Inform the personality script that the space has changed.
         ScriptObject personality = Personality::instance();
-        if (personality)
-        {
+        if (personality) {
             ScriptObject enviroData;
-            if (enviro.pData())
-            {
-                enviroData = ScriptObject( new PyDataSection( enviro.pData() ),
-                    ScriptObject::FROM_NEW_REFERENCE );
-            }
-            else
-            {
+            if (enviro.pData()) {
+                enviroData = ScriptObject(new PyDataSection(enviro.pData()),
+                                          ScriptObject::FROM_NEW_REFERENCE);
+            } else {
                 enviroData = ScriptObject::none();
             }
 
-            personality.callMethod( "onCameraSpaceChange",
-                ScriptArgs::create( pSpace->id(), enviroData ),
-                ScriptErrorPrint( "Personality Camera Space Change notification: " ),
-                /* allowNullMethod */ true );
+            personality.callMethod(
+              "onCameraSpaceChange",
+              ScriptArgs::create(pSpace->id(), enviroData),
+              ScriptErrorPrint(
+                "Personality Camera Space Change notification: "),
+              /* allowNullMethod */ true);
         }
     }
 
-    enviro.tick( dGameTime, isCameraOutside() );
+    enviro.tick(dGameTime, isCameraOutside());
 }
-
 
 void FacadeApp::draw()
 {
-    BW_GUARD_PROFILER( AppDraw_Facade );
-    GPU_PROFILER_SCOPE( AppDraw_Facade );
+    BW_GUARD_PROFILER(AppDraw_Facade);
+    GPU_PROFILER_SCOPE(AppDraw_Facade);
 
     IRendererPipeline* rp = Renderer::instance().pipeline();
 
     rp->beginSemitransparentDraw();
 
     // Draw the main batch of sorted triangles
-    Moo::rc().setRenderState( D3DRS_FILLMODE,
-        (WorldApp::instance.wireFrameStatus_ & 2) ? D3DFILL_WIREFRAME : D3DFILL_SOLID );
+    Moo::rc().setRenderState(D3DRS_FILLMODE,
+                             (WorldApp::instance.wireFrameStatus_ & 2)
+                               ? D3DFILL_WIREFRAME
+                               : D3DFILL_SOLID);
 
-    if (WorldApp::instance.debugSortedTriangles_ % 4)
-    {
-        switch ( WorldApp::instance.debugSortedTriangles_ % 4 )
-        {
-        case 1:
-            Moo::rc().device()->Clear( 0, NULL, D3DCLEAR_ZBUFFER, 0x00, 1, 0 );
+    if (WorldApp::instance.debugSortedTriangles_ % 4) {
+        switch (WorldApp::instance.debugSortedTriangles_ % 4) {
+            case 1:
+                Moo::rc().device()->Clear(
+                  0, NULL, D3DCLEAR_ZBUFFER, 0x00, 1, 0);
 
-            Moo::Material::setVertexColour();
-            Moo::rc().setRenderState( D3DRS_ZENABLE, FALSE );
-            Moo::rc().setRenderState( D3DRS_ZFUNC, D3DCMP_ALWAYS );
-            Moo::rc().setTexture(0, Moo::TextureManager::instance()->get(s_blackTexture)->pTexture());
-            Geometrics::texturedRect( Vector2(0.f,0.f),
-                    Vector2(Moo::rc().screenWidth(),Moo::rc().screenHeight()),
-                    Moo::Colour( 1.f,1.f,1.f, 0.75f ), true );
-            break;
-        case 2:
-            Moo::rc().device()->Clear( 0, NULL, D3DCLEAR_ZBUFFER, 0x00, 1, 0 );
+                Moo::Material::setVertexColour();
+                Moo::rc().setRenderState(D3DRS_ZENABLE, FALSE);
+                Moo::rc().setRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
+                Moo::rc().setTexture(0,
+                                     Moo::TextureManager::instance()
+                                       ->get(s_blackTexture)
+                                       ->pTexture());
+                Geometrics::texturedRect(
+                  Vector2(0.f, 0.f),
+                  Vector2(Moo::rc().screenWidth(), Moo::rc().screenHeight()),
+                  Moo::Colour(1.f, 1.f, 1.f, 0.75f),
+                  true);
+                break;
+            case 2:
+                Moo::rc().device()->Clear(
+                  0, NULL, D3DCLEAR_ZBUFFER, 0x00, 1, 0);
 
-            Moo::Material::setVertexColour();
-            Moo::rc().setRenderState( D3DRS_BLENDOP, D3DBLENDOP_SUBTRACT );
-            Moo::rc().setRenderState( D3DRS_SRCBLEND, D3DBLEND_ONE );
-            Moo::rc().setRenderState( D3DRS_DESTBLEND, D3DBLEND_ONE );
-            Moo::rc().setRenderState( D3DRS_ZENABLE, FALSE );
-            Moo::rc().setRenderState( D3DRS_ZFUNC, D3DCMP_ALWAYS );
-            Moo::rc().setTexture(0, Moo::TextureManager::instance()->get(s_blackTexture)->pTexture());
-            Geometrics::texturedRect( Vector2(0,0),
-                    Vector2(Moo::rc().screenWidth(),Moo::rc().screenHeight()),
-                    Moo::Colour( 0.f, 1.f, 1.f, 1.f ), true );
-            Moo::rc().setRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
-            break;
-        case 3:
-            Moo::rc().device()->Clear( 0, NULL, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0x00000000, 1, 0 );
+                Moo::Material::setVertexColour();
+                Moo::rc().setRenderState(D3DRS_BLENDOP, D3DBLENDOP_SUBTRACT);
+                Moo::rc().setRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+                Moo::rc().setRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+                Moo::rc().setRenderState(D3DRS_ZENABLE, FALSE);
+                Moo::rc().setRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
+                Moo::rc().setTexture(0,
+                                     Moo::TextureManager::instance()
+                                       ->get(s_blackTexture)
+                                       ->pTexture());
+                Geometrics::texturedRect(
+                  Vector2(0, 0),
+                  Vector2(Moo::rc().screenWidth(), Moo::rc().screenHeight()),
+                  Moo::Colour(0.f, 1.f, 1.f, 1.f),
+                  true);
+                Moo::rc().setRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+                break;
+            case 3:
+                Moo::rc().device()->Clear(0,
+                                          NULL,
+                                          D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET,
+                                          0x00000000,
+                                          1,
+                                          0);
 
-            Moo::Material::setVertexColour();
-            Moo::rc().setRenderState( D3DRS_ZENABLE, FALSE );
-            Moo::rc().setRenderState( D3DRS_ZFUNC, D3DCMP_ALWAYS );
-            Moo::rc().setTexture(0, Moo::TextureManager::instance()->get(s_blackTexture)->pTexture());
-            Geometrics::texturedRect( Vector2(0.f,0.f),
-                    Vector2(Moo::rc().screenWidth(),Moo::rc().screenHeight()),
-                    Moo::Colour( 1.f,1.f,1.f, 1.f ), true );
-            break;
+                Moo::Material::setVertexColour();
+                Moo::rc().setRenderState(D3DRS_ZENABLE, FALSE);
+                Moo::rc().setRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
+                Moo::rc().setTexture(0,
+                                     Moo::TextureManager::instance()
+                                       ->get(s_blackTexture)
+                                       ->pTexture());
+                Geometrics::texturedRect(
+                  Vector2(0.f, 0.f),
+                  Vector2(Moo::rc().screenWidth(), Moo::rc().screenHeight()),
+                  Moo::Colour(1.f, 1.f, 1.f, 1.f),
+                  true);
+                break;
         }
     }
-    Moo::rc().setRenderState( D3DRS_FILLMODE, D3DFILL_SOLID );
+    Moo::rc().setRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 
     ClientSpacePtr pSpace = DeprecatedSpaceHelpers::cameraSpace();
-    if (pSpace)
-    {
+    if (pSpace) {
         // Draw waters
-        Waters& phloem = Waters::instance();
-        Entity * pPlayer = ScriptPlayer::entity();
-         
-        if (pPlayer != NULL)
-        {
-            phloem.playerPos( pPlayer->position() );
-            WaterSceneRenderer::setPlayerModel( pPlayer->pPrimaryModel() );
+        Waters& phloem  = Waters::instance();
+        Entity* pPlayer = ScriptPlayer::entity();
+
+        if (pPlayer != NULL) {
+            phloem.playerPos(pPlayer->position());
+            WaterSceneRenderer::setPlayerModel(pPlayer->pPrimaryModel());
         }
 
         // Update the water simulations
-        phloem.updateSimulations( dGameTime_ );
+        phloem.updateSimulations(dGameTime_);
 
         // Draw the distortion buffer (including water)
         CanvasApp::instance.updateDistortionBuffer();
 
         //-- draw overlays.
-        pSpace->enviro().drawFore( dGameTime_, true, false, false, true, false );
+        pSpace->enviro().drawFore(dGameTime_, true, false, false, true, false);
     }
 
     // Draw the sorted triangles
     g_sortedWatch.start();
     {
-        GPU_PROFILER_SCOPE( ColourDrawContext_sortedFlush );
-        App::instance().drawContext( App::COLOUR_DRAW_CONTEXT ).flush( Moo::DrawContext::TRANSPARENT_CHANNEL_MASK );
+        GPU_PROFILER_SCOPE(ColourDrawContext_sortedFlush);
+        App::instance()
+          .drawContext(App::COLOUR_DRAW_CONTEXT)
+          .flush(Moo::DrawContext::TRANSPARENT_CHANNEL_MASK);
     }
     g_sortedWatch.stop();
 }
 
 BW_END_NAMESPACE
-
 
 // facade_app.cpp

@@ -15,42 +15,45 @@ BW_BEGIN_NAMESPACE
  */
 class ListXmlProvider : public ListProvider
 {
-public:
-	ListXmlProvider();
-	virtual ~ListXmlProvider();
+  public:
+    ListXmlProvider();
+    virtual ~ListXmlProvider();
 
-	virtual void init( const BW::wstring& fname );
+    virtual void init(const BW::wstring& fname);
 
-	virtual void refresh();
+    virtual void refresh();
 
-	virtual bool finished();
+    virtual bool finished();
 
-	virtual int getNumItems();
+    virtual int getNumItems();
 
-	virtual	const AssetInfo getAssetInfo( int index );
-	virtual void getThumbnail( ThumbnailManager& manager,
-								int index, CImage& img, int w, int h,
-								ThumbnailUpdater* updater );
+    virtual const AssetInfo getAssetInfo(int index);
+    virtual void            getThumbnail(ThumbnailManager& manager,
+                                         int               index,
+                                         CImage&           img,
+                                         int               w,
+                                         int               h,
+                                         ThumbnailUpdater* updater);
 
-	virtual void filterItems();
+    virtual void filterItems();
 
-	// additional interface
-	bool errorLoading() { return errorLoading_; };
+    // additional interface
+    bool errorLoading() { return errorLoading_; };
 
-protected:
-	static const int VECTOR_BLOCK_SIZE = 1000;
-	typedef SmartPointer<AssetInfo> ListItemPtr;
-	BW::vector<ListItemPtr> items_;
-	BW::vector<ListItemPtr> searchResults_;
-	typedef BW::vector<ListItemPtr>::iterator ItemsItr;
-	BW::wstring path_;
-	bool errorLoading_;
+  protected:
+    static const int                          VECTOR_BLOCK_SIZE = 1000;
+    typedef SmartPointer<AssetInfo>           ListItemPtr;
+    BW::vector<ListItemPtr>                   items_;
+    BW::vector<ListItemPtr>                   searchResults_;
+    typedef BW::vector<ListItemPtr>::iterator ItemsItr;
+    BW::wstring                               path_;
+    bool                                      errorLoading_;
 
-	static bool s_comparator( const ListItemPtr& a, const ListItemPtr& b );
+    static bool s_comparator(const ListItemPtr& a, const ListItemPtr& b);
 
-	void clearItems();
+    void clearItems();
 
-	void refreshPurge( bool purge );
+    void refreshPurge(bool purge);
 };
 
 typedef SmartPointer<ListXmlProvider> ListXmlProviderPtr;
@@ -60,10 +63,10 @@ typedef SmartPointer<ListXmlProvider> ListXmlProviderPtr;
  *	doesn't have to be a file name, can be a section under an xml file
  *	ie.: "a.xml/section_b"
  */
-class ListXmlSectionProvider: public ListXmlProvider
+class ListXmlSectionProvider : public ListXmlProvider
 {
-public:
-	void init( const BW::wstring& path );
+  public:
+    void init(const BW::wstring& path);
 };
 typedef SmartPointer<ListXmlSectionProvider> ListXmlSectionProviderPtr;
 

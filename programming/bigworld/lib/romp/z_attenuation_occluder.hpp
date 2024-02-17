@@ -7,7 +7,6 @@
 #include "moo/vertex_formats.hpp"
 #include "moo/custom_mesh.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 const uint32 MAX_FLARES = 2048;
@@ -33,35 +32,36 @@ const uint32 MAX_FLARES = 2048;
  *
  *	There are 2 reasons to have a staging texture
  *	1. so lens flares can be drawn to the back buffer, if required
- *	2. so attenuation results can be accumulated over several frames, to fade in/
- *	fade out lens flares instead of just popping them in and out.
+ *	2. so attenuation results can be accumulated over several frames, to fade
+ *in/ fade out lens flares instead of just popping them in and out.
  */
 class ZAttenuationOccluder
 {
-public:
-	ZAttenuationOccluder( DataSectionPtr config = NULL );
-	~ZAttenuationOccluder();
-	void update( LensEffectsMap& );
-private:
-	void setPointSize( float size );
-	HandlePool				handlePool_;
-	Moo::RenderTargetPtr	smallDestTarget_;
-	Moo::RenderTargetPtr	pStagingTexture_;
-	Moo::RenderTargetPtr	pBBCopy_;
-	Moo::RenderTargetSetter*pRTSetter_;
+  public:
+    ZAttenuationOccluder(DataSectionPtr config = NULL);
+    ~ZAttenuationOccluder();
+    void update(LensEffectsMap&);
 
-	typedef CustomMesh<Moo::VertexTLUV2> DrawBatch;
-	typedef BW::map<BW::string, DrawBatch*> DrawBatchMap;
-	typedef BW::list<DrawBatch*> DrawBatchList;
-	CustomMesh<Moo::VertexXYZ> testBatch_;
-	CustomMesh<Moo::VertexTUV> stagingBatch_;
-	CustomMesh<Moo::VertexTLUV> stagingmesh_;
-	CustomMesh<Moo::VertexTLUV> transferMesh_;
-	void clearDrawBatches();
-	void freeDrawBatches();
-	DrawBatch* getDrawBatch(const LensEffect& le);
-	DrawBatchMap materialBatchList_;
-	DrawBatchList drawBatches_;
+  private:
+    void                     setPointSize(float size);
+    HandlePool               handlePool_;
+    Moo::RenderTargetPtr     smallDestTarget_;
+    Moo::RenderTargetPtr     pStagingTexture_;
+    Moo::RenderTargetPtr     pBBCopy_;
+    Moo::RenderTargetSetter* pRTSetter_;
+
+    typedef CustomMesh<Moo::VertexTLUV2>    DrawBatch;
+    typedef BW::map<BW::string, DrawBatch*> DrawBatchMap;
+    typedef BW::list<DrawBatch*>            DrawBatchList;
+    CustomMesh<Moo::VertexXYZ>              testBatch_;
+    CustomMesh<Moo::VertexTUV>              stagingBatch_;
+    CustomMesh<Moo::VertexTLUV>             stagingmesh_;
+    CustomMesh<Moo::VertexTLUV>             transferMesh_;
+    void                                    clearDrawBatches();
+    void                                    freeDrawBatches();
+    DrawBatch*                              getDrawBatch(const LensEffect& le);
+    DrawBatchMap                            materialBatchList_;
+    DrawBatchList                           drawBatches_;
 };
 
 BW_END_NAMESPACE

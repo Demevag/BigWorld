@@ -9,57 +9,48 @@ BW_BEGIN_NAMESPACE
 
 // Static return buffer returned from retrieve() when not enough data for
 // request.
-char BinaryIStream::errBuf[ BS_BUFF_MAX_SIZE ];
-
+char BinaryIStream::errBuf[BS_BUFF_MAX_SIZE];
 
 /**
  *	This method creates a debug string for outputing to logs. It is a hex
  *	representation of the remaining bytes in the stream.
  */
-BW::string BinaryIStream::remainingBytesAsDebugString( int maxBytes/* = 16 */,
-		bool shouldConsume /* = true */ )
+BW::string BinaryIStream::remainingBytesAsDebugString(
+  int  maxBytes /* = 16 */,
+  bool shouldConsume /* = true */)
 {
-	BW::stringstream output;
+    BW::stringstream output;
 
-	int numBytes = this->remainingLength();
-	
-	if (maxBytes > 0)
-	{
-		numBytes = std::min( this->remainingLength(), maxBytes );
+    int numBytes = this->remainingLength();
 
-		output << "Bytes (" <<
-			numBytes << " of " << this->remainingLength() << "):";
-	}
+    if (maxBytes > 0) {
+        numBytes = std::min(this->remainingLength(), maxBytes);
 
-	output << std::hex << std::setfill( '0' );
+        output << "Bytes (" << numBytes << " of " << this->remainingLength()
+               << "):";
+    }
 
-	const uint8 * data = 
-		reinterpret_cast< const uint8 * >( this->retrieve( 0 ) );
+    output << std::hex << std::setfill('0');
 
-	for (int i = 0; i < numBytes; ++i)
-	{
-		if (i % 16 == 0)
-		{
-			output << std::endl;
-		}
-		else if (i % 8 == 0)
-		{
-			output << "  ";
-		}
-		else
-		{
-			output << " ";
-		}
+    const uint8* data = reinterpret_cast<const uint8*>(this->retrieve(0));
 
-		output << std::setw( 2 ) << int(*(data++) );
-	}
+    for (int i = 0; i < numBytes; ++i) {
+        if (i % 16 == 0) {
+            output << std::endl;
+        } else if (i % 8 == 0) {
+            output << "  ";
+        } else {
+            output << " ";
+        }
 
-	if (shouldConsume)
-	{
-		this->finish();
-	}
+        output << std::setw(2) << int(*(data++));
+    }
 
-	return output.str();
+    if (shouldConsume) {
+        this->finish();
+    }
+
+    return output.str();
 }
 
 BW_END_NAMESPACE

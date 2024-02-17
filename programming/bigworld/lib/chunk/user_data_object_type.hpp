@@ -8,7 +8,6 @@
 
 #include "cstdmf/unique_id.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class UserDataObject;
@@ -30,53 +29,56 @@ typedef BW::set<BW::string> UserDataObjectTypesInDifferentDomain;
  */
 class UserDataObjectType : public SafeReferenceCount
 {
-public:
-	UserDataObjectType( const UserDataObjectDescription& description,
-			PyTypeObject * pType );
+  public:
+    UserDataObjectType(const UserDataObjectDescription& description,
+                       PyTypeObject*                    pType);
 
-	~UserDataObjectType();
+    ~UserDataObjectType();
 
-	UserDataObject * newUserDataObject( const UniqueID & guid ) const;
+    UserDataObject* newUserDataObject(const UniqueID& guid) const;
 
-	bool hasProperty( const char * attr ) const;
+    bool hasProperty(const char* attr) const;
 
-	//DataDescription * propIndex( int index ) const	{ return propDescs_[index];}
-	//int propCount( ) const	{ return propDescs_.size();}
-	PyTypeObject * pPyType() const 	{ return pPyType_; }
-	void setPyType( PyTypeObject * pPyType );
+    // DataDescription * propIndex( int index ) const	{ return
+    // propDescs_[index];} int propCount( ) const	{ return propDescs_.size();}
+    PyTypeObject* pPyType() const { return pPyType_; }
+    void          setPyType(PyTypeObject* pPyType);
 
-	const char * name() const;
+    const char* name() const;
 
-	/// @name static methods
-	//@{
-	static bool init();
-	static bool load( UserDataObjectTypes& types, 
-		UserDataObjectTypesInDifferentDomain& typesInDifferentDomain );	
-	static void migrate( UserDataObjectTypes& types, 
-		UserDataObjectTypesInDifferentDomain& typesInDifferentDomain );
+    /// @name static methods
+    //@{
+    static bool init();
+    static bool load(
+      UserDataObjectTypes&                  types,
+      UserDataObjectTypesInDifferentDomain& typesInDifferentDomain);
+    static void migrate(
+      UserDataObjectTypes&                  types,
+      UserDataObjectTypesInDifferentDomain& typesInDifferentDomain);
 
-	static void clearStatics();
+    static void clearStatics();
 
-	static UserDataObjectTypePtr getType( const char * className );
-	static bool knownTypeInDifferentDomain( const char* className );
+    static UserDataObjectTypePtr getType(const char* className);
+    static bool knownTypeInDifferentDomain(const char* className);
 
-	static UserDataObjectTypes& getTypes();
-	//@}
-	const UserDataObjectDescription& description()  const { return description_; };
+    static UserDataObjectTypes& getTypes();
+    //@}
+    const UserDataObjectDescription& description() const
+    {
+        return description_;
+    };
 
+  private:
+    UserDataObjectDescription description_;
+    PyTypeObject*             pPyType_;
 
-private:
-	UserDataObjectDescription description_;
-	PyTypeObject * pPyType_;
+    BW::vector<DataDescription*> propDescs_;
 
-	BW::vector<DataDescription*>	propDescs_;
-
-	static UserDataObjectTypes s_curTypes_;
-	static UserDataObjectTypesInDifferentDomain s_typesInDifferentDomain_;
+    static UserDataObjectTypes                  s_curTypes_;
+    static UserDataObjectTypesInDifferentDomain s_typesInDifferentDomain_;
 };
 
 typedef SmartPointer<UserDataObjectType> UserDataObjectTypePtr;
-
 
 #ifdef CODE_INLINE
 #include "user_data_object_type.ipp"
@@ -86,4 +88,4 @@ BW_END_NAMESPACE
 
 #endif // USER_DATA_OBJECT_TYPE_HPP
 
-//user_data_object_type.hpp
+// user_data_object_type.hpp

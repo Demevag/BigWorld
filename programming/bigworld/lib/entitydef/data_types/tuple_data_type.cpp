@@ -14,7 +14,6 @@ BW_BEGIN_NAMESPACE
 // Section: TupleDataType
 // -----------------------------------------------------------------------------
 
-
 /**
  *	Constructor.
  *
@@ -24,61 +23,59 @@ BW_BEGIN_NAMESPACE
  *				variable size.
  *	@param dbLen	The database length of this property type.
  */
-TupleDataType::TupleDataType( MetaDataType * pMeta, DataTypePtr elementType,
-		int size, int dbLen ) :
-	SequenceDataType( pMeta, elementType, size, dbLen,
-			/*isConst:*/true )
+TupleDataType::TupleDataType(MetaDataType* pMeta,
+                             DataTypePtr   elementType,
+                             int           size,
+                             int           dbLen)
+  : SequenceDataType(pMeta,
+                     elementType,
+                     size,
+                     dbLen,
+                     /*isConst:*/ true)
 {
 }
 
-
-DataType * TupleDataType::construct( MetaDataType * pMeta,
-	DataTypePtr elementType, int size, int dbLen )
+DataType* TupleDataType::construct(MetaDataType* pMeta,
+                                   DataTypePtr   elementType,
+                                   int           size,
+                                   int           dbLen)
 {
-	return new TupleDataType( pMeta, elementType, size, dbLen );
+    return new TupleDataType(pMeta, elementType, size, dbLen);
 }
 
-
-bool TupleDataType::startSequence( DataSink & sink, size_t count ) const
+bool TupleDataType::startSequence(DataSink& sink, size_t count) const
 {
-	return sink.beginTuple( this, count );
+    return sink.beginTuple(this, count);
 }
 
-
-int TupleDataType::compareDefaultValue( const DataType & other ) const
+int TupleDataType::compareDefaultValue(const DataType& other) const
 {
-	const TupleDataType& otherTuple =
-			static_cast< const TupleDataType& >( other );
+    const TupleDataType& otherTuple = static_cast<const TupleDataType&>(other);
 
-	if (pDefaultSection_)
-	{
-		return pDefaultSection_->compare( otherTuple.pDefaultSection_ );
-	}
+    if (pDefaultSection_) {
+        return pDefaultSection_->compare(otherTuple.pDefaultSection_);
+    }
 
-	return (otherTuple.pDefaultSection_) ? -1 : 0;
+    return (otherTuple.pDefaultSection_) ? -1 : 0;
 }
 
-
-void TupleDataType::addToMD5( MD5 & md5 ) const
+void TupleDataType::addToMD5(MD5& md5) const
 {
-	md5.append( "Tuple", sizeof( "Tuple" ) );
-	this->SequenceDataType::addToMD5( md5 );
+    md5.append("Tuple", sizeof("Tuple"));
+    this->SequenceDataType::addToMD5(md5);
 }
 
-
-void TupleDataType::setDefaultValue( DataSectionPtr pSection )
+void TupleDataType::setDefaultValue(DataSectionPtr pSection)
 {
-	pDefaultSection_ = pSection;
+    pDefaultSection_ = pSection;
 }
 
-
-bool TupleDataType::getDefaultValue( DataSink & output ) const
+bool TupleDataType::getDefaultValue(DataSink& output) const
 {
-	if (!pDefaultSection_)
-	{
-		return this->createDefaultValue( output );
-	}
-	return this->createFromSection( pDefaultSection_, output );
+    if (!pDefaultSection_) {
+        return this->createDefaultValue(output);
+    }
+    return this->createFromSection(pDefaultSection_, output);
 }
 
 BW_END_NAMESPACE

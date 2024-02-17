@@ -5,11 +5,11 @@
 //==============================================================================
 WaitCursor::WaitCursor()
 {
-	AfxGetApp()->BeginWaitCursor();
+    AfxGetApp()->BeginWaitCursor();
 }
 
 //==============================================================================
 WaitCursor::~WaitCursor()
 {
-	AfxGetApp()->EndWaitCursor();
+    AfxGetApp()->EndWaitCursor();
 }

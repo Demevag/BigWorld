@@ -10,32 +10,32 @@ BW_BEGIN_NAMESPACE
 
 class AssetServer : SimpleThread
 {
-public:
-	AssetServer();
-	virtual ~AssetServer();
+  public:
+    AssetServer();
+    virtual ~AssetServer();
 
-	void broadcastAsset( const StringRef & asset );
+    void broadcastAsset(const StringRef& asset);
 
-protected:
-	virtual void onAssetRequested( const StringRef & asset ) = 0;
-	virtual void lock() = 0;
-	virtual void unlock() = 0;
+  protected:
+    virtual void onAssetRequested(const StringRef& asset) = 0;
+    virtual void lock()                                   = 0;
+    virtual void unlock()                                 = 0;
 
-private:
-	void processCommand( HANDLE hPipe, const StringRef & command );
-	void lock( HANDLE hPipe );
-	void unlock( HANDLE hPipe );
-	BW::wstring generatePipeId();
+  private:
+    void        processCommand(HANDLE hPipe, const StringRef& command);
+    void        lock(HANDLE hPipe);
+    void        unlock(HANDLE hPipe);
+    BW::wstring generatePipeId();
 
-	static void serverThreadFunc( void * arg );
-	static void pipeThreadFunc( void * arg );
+    static void serverThreadFunc(void* arg);
+    static void pipeThreadFunc(void* arg);
 
-private:
-	SimpleMutex mutex_;
-	HANDLE hCommandMutex_;
-	BW::map<HANDLE, SimpleThread*> pipeThreads_;
-	BW::vector<HANDLE> lockedPipes_;
-	bool terminating_;
+  private:
+    SimpleMutex                    mutex_;
+    HANDLE                         hCommandMutex_;
+    BW::map<HANDLE, SimpleThread*> pipeThreads_;
+    BW::vector<HANDLE>             lockedPipes_;
+    bool                           terminating_;
 };
 
 BW_END_NAMESPACE

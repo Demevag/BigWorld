@@ -11,20 +11,21 @@
 BW_BEGIN_NAMESPACE
 
 class Watcher;
-typedef SmartPointer< Watcher > WatcherPtr;
+typedef SmartPointer<Watcher> WatcherPtr;
 
-typedef StatWithRatesOfChange< unsigned int > UintStatWithRatesOfChange;
-typedef IntrusiveStatWithRatesOfChange< unsigned int >::Container UintStatWithRatesOfChangeContainer;
+typedef StatWithRatesOfChange<unsigned int> UintStatWithRatesOfChange;
+typedef IntrusiveStatWithRatesOfChange<unsigned int>::Container
+  UintStatWithRatesOfChangeContainer;
 
-namespace StatWatcherCreator
-{
-	void initRatesOfChangeForStats(
-			const UintStatWithRatesOfChangeContainer & stats );
+namespace StatWatcherCreator {
+    void initRatesOfChangeForStats(
+      const UintStatWithRatesOfChangeContainer& stats);
 
-	void initRatesOfChangeForStat( UintStatWithRatesOfChange & stat );
+    void initRatesOfChangeForStat(UintStatWithRatesOfChange& stat);
 
-	void addWatchers( WatcherPtr pWatcher,
-			const char * name, UintStatWithRatesOfChange & stat );
+    void addWatchers(WatcherPtr                 pWatcher,
+                     const char*                name,
+                     UintStatWithRatesOfChange& stat);
 
 } // namespace StatWatcherCreator
 

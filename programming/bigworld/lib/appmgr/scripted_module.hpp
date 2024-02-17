@@ -22,33 +22,33 @@ BW_BEGIN_NAMESPACE
  */
 class ScriptedModule : public FrameworkModule
 {
-public:
-	ScriptedModule();
-	~ScriptedModule();
+  public:
+    ScriptedModule();
+    ~ScriptedModule();
 
-	bool init( DataSectionPtr pSection );
+    bool init(DataSectionPtr pSection);
 
-	virtual void onStart();
-	virtual int  onStop();
+    virtual void onStart();
+    virtual int  onStop();
 
-	virtual void onPause();
-	virtual void onResume( int exitCode );
+    virtual void onPause();
+    virtual void onResume(int exitCode);
 
-	virtual bool updateState( float dTime );
-	virtual void updateAnimations();
-	virtual void render( float dTime );
+    virtual bool updateState(float dTime);
+    virtual void updateAnimations();
+    virtual void render(float dTime);
 
-	virtual bool handleKeyEvent( const KeyEvent & /*event*/ );
-	virtual bool handleMouseEvent( const MouseEvent & /*event*/ );
+    virtual bool handleKeyEvent(const KeyEvent& /*event*/);
+    virtual bool handleMouseEvent(const MouseEvent& /*event*/);
 
-	virtual void setApp( App * app ) {};
-	virtual void setMainFrame( IMainFrame * mainFrame ) {};
+    virtual void setApp(App* app){};
+    virtual void setMainFrame(IMainFrame* mainFrame){};
 
-private:
-	ScriptedModule( const ScriptedModule& );
-	ScriptedModule& operator=( const ScriptedModule& );
+  private:
+    ScriptedModule(const ScriptedModule&);
+    ScriptedModule& operator=(const ScriptedModule&);
 
-	PyObject * pScriptObject_;
+    PyObject* pScriptObject_;
 };
 
 BW_END_NAMESPACE

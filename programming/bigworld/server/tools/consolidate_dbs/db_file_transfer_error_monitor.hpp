@@ -4,7 +4,6 @@
 #include "cstdmf/stdmf.hpp"
 #include "cstdmf/timer_handler.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class FileReceiverMgr;
@@ -15,30 +14,27 @@ class FileReceiverMgr;
  */
 class DBFileTransferErrorMonitor : public TimerHandler
 {
-	enum
-	{
-		POLL_INTERVAL_SECS = 5,
-		CONNECT_TIMEOUT_SECS = 30,
-		INACTIVITY_TIMEOUT_SECS = 20
-	};
+    enum
+    {
+        POLL_INTERVAL_SECS      = 5,
+        CONNECT_TIMEOUT_SECS    = 30,
+        INACTIVITY_TIMEOUT_SECS = 20
+    };
 
-public:
+  public:
+    DBFileTransferErrorMonitor(FileReceiverMgr& fileReceiverMgr);
 
-	DBFileTransferErrorMonitor( FileReceiverMgr & fileReceiverMgr );
+    virtual ~DBFileTransferErrorMonitor();
 
-	virtual ~DBFileTransferErrorMonitor();
+    // Mercury::TimerExpiryHandler override.
+    virtual void handleTimeout(TimerHandle handle, void* arg);
 
-	// Mercury::TimerExpiryHandler override.
-	virtual void handleTimeout( TimerHandle handle, void * arg );
-
-private:
-	FileReceiverMgr & 	fileReceiverMgr_;
-	TimerHandle			timerHandle_;
-	uint64				startTime_;
+  private:
+    FileReceiverMgr& fileReceiverMgr_;
+    TimerHandle      timerHandle_;
+    uint64           startTime_;
 };
 
 BW_END_NAMESPACE
 
-
 #endif // CONSOLIDATE_DBS_DB_FILE_TRANSFER_ERROR_MONITOR_HPP
-

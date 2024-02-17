@@ -9,170 +9,166 @@
 
 BW_BEGIN_NAMESPACE
 
+namespace Mercury {
 
-namespace Mercury
-{
+    class Channel;
+    class InterfaceElement;
+    class RequestManager;
 
-class Channel;
-class InterfaceElement;
-class RequestManager;
+    /**
+     *	@internal
+     *	This is the default request timeout in microseconds.
+     */
+    const int DEFAULT_REQUEST_TIMEOUT = 5000000;
 
+    /**
+     *	There are three types of reliability. RELIABLE_PASSENGER messages will
+     *	only be sent so long as there is at least one RELIABLE_DRIVER in the
+     *	same UDPBundle.  RELIABLE_CRITICAL means the same as RELIABLE_DRIVER,
+     *	however, starting a message of this type also marks the UDPBundle as
+     *	critical.
+     */
+    enum ReliableTypeEnum
+    {
+        RELIABLE_NO        = 0,
+        RELIABLE_DRIVER    = 1,
+        RELIABLE_PASSENGER = 2,
+        RELIABLE_CRITICAL  = 3
+    };
 
-/**
- *	@internal
- *	This is the default request timeout in microseconds.
- */
-const int DEFAULT_REQUEST_TIMEOUT = 5000000;
+    /**
+     *	This struct wraps a @see ReliableTypeEnum value.
+     */
+    class ReliableType
+    {
+      public:
+        ReliableType(ReliableTypeEnum e)
+          : e_(e)
+        {
+        }
 
-/**
- *	There are three types of reliability. RELIABLE_PASSENGER messages will
- *	only be sent so long as there is at least one RELIABLE_DRIVER in the
- *	same UDPBundle.  RELIABLE_CRITICAL means the same as RELIABLE_DRIVER,
- *	however, starting a message of this type also marks the UDPBundle as
- *	critical.
- */
-enum ReliableTypeEnum
-{
-	RELIABLE_NO = 0,
-	RELIABLE_DRIVER = 1,
-	RELIABLE_PASSENGER = 2,
-	RELIABLE_CRITICAL = 3
-};
+        bool isReliable() const { return e_ != RELIABLE_NO; }
 
+        // Leveraging the fact that only RELIABLE_DRIVER and RELIABLE_CRITICAL
+        // share the 0x1 bit.
+        bool isDriver() const { return e_ & RELIABLE_DRIVER; }
 
-/**
- *	This struct wraps a @see ReliableTypeEnum value.
- */
-class ReliableType
-{
-public:
-	ReliableType( ReliableTypeEnum e ) : e_( e ) { }
+        bool operator==(const ReliableTypeEnum e) { return e == e_; }
 
-	bool isReliable() const	{ return e_ != RELIABLE_NO; }
+      private:
+        ReliableTypeEnum e_;
+    };
 
-	// Leveraging the fact that only RELIABLE_DRIVER and RELIABLE_CRITICAL share
-	// the 0x1 bit.
-	bool isDriver() const	{ return e_ & RELIABLE_DRIVER; }
+    /**
+     *	A bundle is a sequence of messages. You stream or otherwise add your
+     *	messages onto the bundle. When you want to send a group of messages
+     *	(possibly just one), you tell a network interface to send the bundle on
+     *a channel, if there is one. Bundles can be sent multiple times to
+     *different hosts, but beware that any requests inside will also be made
+     *multiple times.
+     *
+     *	@ingroup mercury
+     */
+    class Bundle : public BinaryOStream
+    {
+      public:
+        virtual ~Bundle();
 
-	bool operator== (const ReliableTypeEnum e) { return e == e_; }
+        // Overrides for subclasses
+        virtual void startMessage(const InterfaceElement& ie,
+                                  ReliableType reliable = RELIABLE_DRIVER) = 0;
 
-private:
-	ReliableTypeEnum e_;
-};
+        virtual void startRequest(const InterfaceElement& ie,
+                                  ReplyMessageHandler*    handler,
+                                  void*                   arg = NULL,
+                                  int timeout = DEFAULT_REQUEST_TIMEOUT,
+                                  ReliableType reliable = RELIABLE_DRIVER) = 0;
 
+        virtual void startReply(ReplyID      id,
+                                ReliableType reliable = RELIABLE_DRIVER) = 0;
 
-/**
- *	A bundle is a sequence of messages. You stream or otherwise add your
- *	messages onto the bundle. When you want to send a group of messages
- *	(possibly just one), you tell a network interface to send the bundle on a
- *	channel, if there is one. Bundles can be sent multiple times to different
- *	hosts, but beware that any requests inside will also be made multiple
- *	times.
- *
- *	@ingroup mercury
- */
-class Bundle : public BinaryOStream
-{
-public:
-	virtual ~Bundle();
+        virtual void clear(bool newBundle = false);
 
-	// Overrides for subclasses
-	virtual void startMessage( const InterfaceElement & ie,
-		ReliableType reliable = RELIABLE_DRIVER ) = 0;
+        /**
+         *	This method returns the number of bytes free in the last data unit
+         *to be sent for this bundle, that is, the number of bytes that can be
+         *sent without incurring an extra segment/packet.
+         */
+        virtual int freeBytesInLastDataUnit() const = 0;
 
-	virtual void startRequest( const InterfaceElement & ie,
-		ReplyMessageHandler * handler,
-		void * arg = NULL,
-		int timeout = DEFAULT_REQUEST_TIMEOUT,
-		ReliableType reliable = RELIABLE_DRIVER ) = 0;
+        /**
+         *	This method returns the number of data units to be sent for this
+         *	bundle.
+         */
+        virtual int numDataUnits() const = 0;
 
-	virtual void startReply( ReplyID id, 
-		ReliableType reliable = RELIABLE_DRIVER ) = 0;
+        /**
+         *	This method is called to finalise this bundle for sending.
+         */
+        virtual void doFinalise() {}
 
-	virtual void clear( bool newBundle = false );
+        // General methods
+        Channel* pChannel() { return pChannel_; }
 
-	/**
-	 *	This method returns the number of bytes free in the last data unit to
-	 *	be sent for this bundle, that is, the number of bytes that can be sent
-	 *	without incurring an extra segment/packet.
-	 */
-	virtual int freeBytesInLastDataUnit() const = 0;
+        int numMessages() const { return numMessages_; }
 
-	/**
-	 *	This method returns the number of data units to be sent for this
-	 *	bundle.
-	 */
-	virtual int numDataUnits() const = 0;
+        void* startStructMessage(const InterfaceElement& ie,
+                                 ReliableType reliable = RELIABLE_DRIVER);
 
-	/**
-	 *	This method is called to finalise this bundle for sending.
-	 */
-	virtual void doFinalise() {}
+        void* startStructRequest(const InterfaceElement& ie,
+                                 ReplyMessageHandler*    handler,
+                                 void*                   arg = NULL,
+                                 int          timeout = DEFAULT_REQUEST_TIMEOUT,
+                                 ReliableType reliable = RELIABLE_DRIVER);
 
-	// General methods
-	Channel * pChannel() { return pChannel_; }
+        template <typename ArgsType>
+        void sendMessage(const ArgsType& args,
+                         ReliableType    reliable = RELIABLE_DRIVER)
+        {
+            this->startMessage(ArgsType::interfaceElement(), reliable);
+            static_cast<BinaryOStream&>(*this) << args;
+        }
 
-	int numMessages() const		{ return numMessages_; }
+        template <typename ArgsType>
+        void sendRequest(const ArgsType&      args,
+                         ReplyMessageHandler* handler,
+                         void*                arg     = NULL,
+                         int                  timeout = DEFAULT_REQUEST_TIMEOUT,
+                         ReliableType         reliable = RELIABLE_DRIVER)
+        {
+            this->startRequest(
+              ArgsType::interfaceElement(), handler, arg, timeout, reliable);
+            static_cast<BinaryOStream&>(*this) << args;
+        }
 
-	void * startStructMessage( const InterfaceElement & ie,
-		ReliableType reliable = RELIABLE_DRIVER );
+        void addReplyOrdersTo(RequestManager* pRequestManager,
+                              Channel*        pChannel) const;
 
-	void * startStructRequest( const InterfaceElement & ie,
-		ReplyMessageHandler * handler,
-		void * arg = NULL,
-		int timeout = DEFAULT_REQUEST_TIMEOUT,
-		ReliableType reliable = RELIABLE_DRIVER );
+        void cancelRequests(RequestManager* pRequestManager, Reason reason);
 
-	template<typename ArgsType>
-	void sendMessage( const ArgsType & args,
-		ReliableType reliable = RELIABLE_DRIVER )
-	{
-		this->startMessage( ArgsType::interfaceElement(), reliable );
-		static_cast<BinaryOStream&>(*this) << args;
-	}
+        /**
+         *	This method returns whether we have more than one data unit to be
+         *sent for this bundle.
+         */
+        bool hasMultipleDataUnits() const { return this->numDataUnits() > 1; }
 
-	template<typename ArgsType>
-	void sendRequest( const ArgsType & args,
-		ReplyMessageHandler * handler,
-		void * arg = NULL,
-		int timeout = DEFAULT_REQUEST_TIMEOUT,
-		ReliableType reliable = RELIABLE_DRIVER )
-	{
-		this->startRequest( ArgsType::interfaceElement(),
-			handler, arg, timeout, reliable );
-		static_cast<BinaryOStream&>(*this) << args;
-	}
+        bool isFinalised() const { return isFinalised_; }
+        void finalise();
 
-	void addReplyOrdersTo( RequestManager * pRequestManager,
-			Channel * pChannel ) const;
+      protected:
+        Bundle(Channel* pChannel = NULL);
 
-	void cancelRequests( RequestManager * pRequestManager, Reason reason );
+        // Member data
 
-	
-	/**
-	 *	This method returns whether we have more than one data unit to be sent
-	 *	for this bundle.
-	 */
-	bool hasMultipleDataUnits() const { return this->numDataUnits() > 1; }
+        Channel* pChannel_;
+        bool     isFinalised_;
 
-	bool isFinalised() const { return isFinalised_; }
-	void finalise();
+        uint numMessages_;
 
-protected:
-	Bundle( Channel * pChannel = NULL );
-
-
-	// Member data
-
-	Channel * pChannel_;
-	bool isFinalised_;
-
-	uint numMessages_;
-
-	/// This vector stores all the requests for this bundle.
-	typedef BW::vector< ReplyOrder >	ReplyOrders;
-	ReplyOrders	replyOrders_;
-};
+        /// This vector stores all the requests for this bundle.
+        typedef BW::vector<ReplyOrder> ReplyOrders;
+        ReplyOrders                    replyOrders_;
+    };
 
 } // end namespace Mercury
 

@@ -7,7 +7,7 @@
 #include "chunk/chunk.hpp"
 #include "cstdmf/debug_filter.hpp"
 
-#if !defined( MF_SERVER )
+#if !defined(MF_SERVER)
 #include "chunk/chunk_vlo.hpp"
 #include "cstdmf/main_loop_task.hpp"
 #include "moo/init.hpp"
@@ -24,53 +24,48 @@ extern int ChunkUserDataObject_token;
 extern int PyUserDataObject_token;
 extern int UserDataObjectDescriptionMap_Token;
 
-int s_tokens =
-	Math_token |
-	ResMgr_token |
-	PyScript_token |
-	ChunkUserDataObject_token |
-	PyUserDataObject_token |
-	UserDataObjectDescriptionMap_Token;
+int s_tokens = Math_token | ResMgr_token | PyScript_token |
+               ChunkUserDataObject_token | PyUserDataObject_token |
+               UserDataObjectDescriptionMap_Token;
 
 BW_END_NAMESPACE
 
-
 BW_USE_NAMESPACE
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
-	BW_SYSTEMSTAGE_MAIN();
+    BW_SYSTEMSTAGE_MAIN();
 
-#if !defined( MF_SERVER )
-	// Because chunk pulls in romp, which pulls in input
-	InputDevices inputDevices;
+#if !defined(MF_SERVER)
+    // Because chunk pulls in romp, which pulls in input
+    InputDevices inputDevices;
 #endif // !defined( MF_SERVER )
 
-	Allocator::setCrashOnLeak( true );
+    Allocator::setCrashOnLeak(true);
 
-	// saved away for the test harness
-	EntityDefUnitTestHarness::s_cmdArgC = argc;
-	EntityDefUnitTestHarness::s_cmdArgV = argv;
+    // saved away for the test harness
+    EntityDefUnitTestHarness::s_cmdArgC = argc;
+    EntityDefUnitTestHarness::s_cmdArgV = argv;
 
-	const int result = BWUnitTest::runTest( "entitydef", argc, argv );
+    const int result = BWUnitTest::runTest("entitydef", argc, argv);
 
-	// Temporarily disabled, until UserDataObject::createRefType() isn't
-	// seen as a leak anymore. (Or doesn't leak anymore...)
-	Allocator::setCrashOnLeak( false );
-	// Prevent memory leak
-#if !defined( MF_SERVER )
-	MainLoopTasks::finiAll();
-	ChunkVLO::fini();
-	Moo::AnimationChannel::fini();
-	Moo::fini();
+    // Temporarily disabled, until UserDataObject::createRefType() isn't
+    // seen as a leak anymore. (Or doesn't leak anymore...)
+    Allocator::setCrashOnLeak(false);
+    // Prevent memory leak
+#if !defined(MF_SERVER)
+    MainLoopTasks::finiAll();
+    ChunkVLO::fini();
+    Moo::AnimationChannel::fini();
+    Moo::fini();
 #endif // !defined( MF_SERVER )
-	Chunk::fini();
-	Script::fini();
-	DataType::clearStaticsForReload();
-	MetaDataType::fini();
-	DebugFilter::fini();
+    Chunk::fini();
+    Script::fini();
+    DataType::clearStaticsForReload();
+    MetaDataType::fini();
+    DebugFilter::fini();
 
-	return result;
+    return result;
 }
 
 // main.cpp

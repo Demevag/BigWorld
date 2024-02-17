@@ -5,11 +5,10 @@
 BW_BEGIN_NAMESPACE
 
 //==============================================================================
-/*static */void Cursor::setPosition( int x, int y )
+/*static */ void Cursor::setPosition(int x, int y)
 {
-	::SetCursorPos( x, y );
-	emitCursorPosChanged( x, y );
+    ::SetCursorPos(x, y);
+    emitCursorPosChanged(x, y);
 }
 
 BW_END_NAMESPACE
-

@@ -1,7 +1,6 @@
 #ifndef TEXTURE_EXPLORER_HPP
 #define TEXTURE_EXPLORER_HPP
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -12,39 +11,39 @@ BW_BEGIN_NAMESPACE
  */
 class TextureExplorer
 {
-public:
-	TextureExplorer();
-	~TextureExplorer();
-	void	tick();
-	void	draw();
-private:
+  public:
+    TextureExplorer();
+    ~TextureExplorer();
+    void tick();
+    void draw();
 
-	bool	enabled_;
-	bool	fitToScreen_;
-	bool	preserveAspect_;
-	int		index_;
-	int		currentIndex_;
+  private:
+    bool enabled_;
+    bool fitToScreen_;
+    bool preserveAspect_;
+    int  index_;
+    int  currentIndex_;
 
-	bool	doReload_;
+    bool doReload_;
 
-	BW::string textureName_;
-	BW::string texturePath_;
-	Moo::BaseTexturePtr pTexture_;
-	BW::string format_;
-	uint32	width_;
-	uint32	height_;
-	uint32	memoryUsage_;
-	uint32	maxMipLevel_;
+    BW::string          textureName_;
+    BW::string          texturePath_;
+    Moo::BaseTexturePtr pTexture_;
+    BW::string          format_;
+    uint32              width_;
+    uint32              height_;
+    uint32              memoryUsage_;
+    uint32              maxMipLevel_;
 
-	bool	alpha_;
-	Moo::Material*	pAlphaMaterial_;
-	Moo::Material*	pColourMaterial_;
+    bool           alpha_;
+    Moo::Material* pAlphaMaterial_;
+    Moo::Material* pColourMaterial_;
 
-	typedef BW::map< uint32, BW::string > Formats;
-	Formats surfaceFormats_;
+    typedef BW::map<uint32, BW::string> Formats;
+    Formats                             surfaceFormats_;
 
-	TextureExplorer( const TextureExplorer& );
-	TextureExplorer& operator=( const TextureExplorer& );
+    TextureExplorer(const TextureExplorer&);
+    TextureExplorer& operator=(const TextureExplorer&);
 };
 
 BW_END_NAMESPACE

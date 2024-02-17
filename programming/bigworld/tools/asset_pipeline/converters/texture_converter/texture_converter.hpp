@@ -8,41 +8,43 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Moo
-{
-	class ConvertTextureTool;
+namespace Moo {
+    class ConvertTextureTool;
 }
 
 class TextureConverter : public Converter
 {
-protected:
-	TextureConverter( const BW::string& params );
-	~TextureConverter();
+  protected:
+    TextureConverter(const BW::string& params);
+    ~TextureConverter();
 
-public:
-	virtual bool createDependencies( const BW::string & sourcefile,
-									 const Compiler & compiler,
-									 DependencyList & dependencies );
+  public:
+    virtual bool createDependencies(const BW::string& sourcefile,
+                                    const Compiler&   compiler,
+                                    DependencyList&   dependencies);
 
-	/* convert a source file. */
-	virtual bool convert( const BW::string & sourcefile,
-						  const Compiler & compiler,
-						  BW::vector< BW::string > & intermediateFiles,
-						  BW::vector< BW::string > & outputFiles );
+    /* convert a source file. */
+    virtual bool convert(const BW::string&       sourcefile,
+                         const Compiler&         compiler,
+                         BW::vector<BW::string>& intermediateFiles,
+                         BW::vector<BW::string>& outputFiles);
 
-public:
-	static uint64 getTypeId() { return s_TypeId; }
-	static const char * getVersion() { return s_Version; }
-	static const char * getTypeName() { return "TextureConverter"; }
-	static Converter * createConverter( const BW::string& params ) { return new TextureConverter( params ); }
+  public:
+    static uint64      getTypeId() { return s_TypeId; }
+    static const char* getVersion() { return s_Version; }
+    static const char* getTypeName() { return "TextureConverter"; }
+    static Converter*  createConverter(const BW::string& params)
+    {
+        return new TextureConverter(params);
+    }
 
-	static const uint64 s_TypeId;
-	static const char * s_Version;
+    static const uint64 s_TypeId;
+    static const char*  s_Version;
 
-	Moo::TextureDetailLevelManager textureDetailLevelManager_;
-	static Moo::ConvertTextureTool * s_pTool;
+    Moo::TextureDetailLevelManager  textureDetailLevelManager_;
+    static Moo::ConvertTextureTool* s_pTool;
 };
 
 BW_END_NAMESPACE
 
-#endif //ASSET_PIPELINE_TEXTURE_CONVERTER
+#endif // ASSET_PIPELINE_TEXTURE_CONVERTER

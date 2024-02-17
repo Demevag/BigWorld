@@ -8,24 +8,22 @@
 
 #include "script/script_object.hpp"
 
-namespace BW
-{
+namespace BW {
 
-class IScriptObjectQueryOperationTypeHandler
-{
-public:
-	virtual ~IScriptObjectQueryOperationTypeHandler(){}
+    class IScriptObjectQueryOperationTypeHandler
+    {
+      public:
+        virtual ~IScriptObjectQueryOperationTypeHandler() {}
 
-	virtual ScriptObject doGetScriptObject( const SceneObject & object ) = 0;
-};
+        virtual ScriptObject doGetScriptObject(const SceneObject& object) = 0;
+    };
 
-
-class ScriptObjectQueryOperation
-	: public SceneObjectOperation<IScriptObjectQueryOperationTypeHandler>
-{
-public:
-	ScriptObject scriptObject( const SceneObject & object );
-};
+    class ScriptObjectQueryOperation
+      : public SceneObjectOperation<IScriptObjectQueryOperationTypeHandler>
+    {
+      public:
+        ScriptObject scriptObject(const SceneObject& object);
+    };
 
 } // namespace BW
 

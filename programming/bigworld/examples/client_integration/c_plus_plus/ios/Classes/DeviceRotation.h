@@ -8,11 +8,10 @@
 
 #import "cocos2d.h"
 
-
 @interface CCLayer (RotationNotification)
 
-- (void) registerForDeviceRotation;
-- (void) deregisterForDeviceRotation;
-- (void) onDeviceRotated;
+- (void)registerForDeviceRotation;
+- (void)deregisterForDeviceRotation;
+- (void)onDeviceRotated;
 
 @end

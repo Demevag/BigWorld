@@ -8,14 +8,11 @@
 #include "../terrain_settings.hpp"
 #include "terrain_block2.hpp"
 
-
-DECLARE_DEBUG_COMPONENT2( "Moo", 0 )
-
+DECLARE_DEBUG_COMPONENT2("Moo", 0)
 
 BW_BEGIN_NAMESPACE
 
 using namespace Terrain;
-
 
 #if 0 // ununsed?
 TerrainLodController::TerrainLodController() : 
@@ -383,100 +380,97 @@ void TerrainLodController::delBlock( TerrainBlock2* pBlock )
 
 // BasicTerrainLodController
 
-BasicTerrainLodController::BasicTerrainLodController() 
-	: closestUnstreamedBlock_( FLT_MAX )
+BasicTerrainLodController::BasicTerrainLodController()
+  : closestUnstreamedBlock_(FLT_MAX)
 {
-	BW_GUARD;
-	blocks_.reserve( 1024 );
+    BW_GUARD;
+    blocks_.reserve(1024);
 
-	MF_WATCH( "Render/Terrain/Terrain2/numBlocksLoaded", *this,
-		&BasicTerrainLodController::getNumBlocks,
-		"The total number of terrain blocks loaded." );
+    MF_WATCH("Render/Terrain/Terrain2/numBlocksLoaded",
+             *this,
+             &BasicTerrainLodController::getNumBlocks,
+             "The total number of terrain blocks loaded.");
 }
 
-BasicTerrainLodController::~BasicTerrainLodController() 
+BasicTerrainLodController::~BasicTerrainLodController()
 {
 #if ENABLE_WATCHERS
-	if (Watcher::hasRootWatcher())
-	{
-		Watcher::rootWatcher().removeChild("Render/Terrain/Terrain2/numBlocksLoaded");
-	}
+    if (Watcher::hasRootWatcher()) {
+        Watcher::rootWatcher().removeChild(
+          "Render/Terrain/Terrain2/numBlocksLoaded");
+    }
 #endif
 }
 
-void BasicTerrainLodController::setCameraPosition(	const Vector3& camPosition, float zoomFactor )
+void BasicTerrainLodController::setCameraPosition(const Vector3& camPosition,
+                                                  float          zoomFactor)
 {
-	BW_GUARD_PROFILER( BasicTerrainLodController_setCameraPosition );
-	// Wait till we've added a block to our list, this can happen in the loading
-	// thread.
-	SimpleMutexHolder smh( accessMutex_ ); 
+    BW_GUARD_PROFILER(BasicTerrainLodController_setCameraPosition);
+    // Wait till we've added a block to our list, this can happen in the loading
+    // thread.
+    SimpleMutexHolder smh(accessMutex_);
 
-	//-- change zoom factor to do correct lod selection in case if we change FOV angle of the camera.
-	TerrainSettings::changeZoomFactor(zoomFactor);
-	TerrainVertexLod::changeZoomFactor(zoomFactor);
+    //-- change zoom factor to do correct lod selection in case if we change FOV
+    //angle of the camera.
+    TerrainSettings::changeZoomFactor(zoomFactor);
+    TerrainVertexLod::changeZoomFactor(zoomFactor);
 
-	Vector3 camTemp;
+    Vector3 camTemp;
 
-	closestUnstreamedBlock_ = FLT_MAX;
+    closestUnstreamedBlock_ = FLT_MAX;
 
-	const size_t numBlocks = blocks_.size();
-	for ( size_t i = 0; i < numBlocks; i++ )
-	{
-		blocks_[i].first.applyPoint( camTemp, camPosition );
-		blocks_[i].second->evaluate( camTemp );
-		blocks_[i].second->stream();
+    const size_t numBlocks = blocks_.size();
+    for (size_t i = 0; i < numBlocks; i++) {
+        blocks_[i].first.applyPoint(camTemp, camPosition);
+        blocks_[i].second->evaluate(camTemp);
+        blocks_[i].second->stream();
 
-		if (!blocks_[i].second->readyToDraw())
-		{
-			camTemp.y = 0;
+        if (!blocks_[i].second->readyToDraw()) {
+            camTemp.y = 0;
 
-			float dist = camTemp.length();
-			if (dist < closestUnstreamedBlock_)
-			{
-				closestUnstreamedBlock_ = dist;
-			}
-		}
-	}
+            float dist = camTemp.length();
+            if (dist < closestUnstreamedBlock_) {
+                closestUnstreamedBlock_ = dist;
+            }
+        }
+    }
 }
 
-void BasicTerrainLodController::addBlock(	TerrainBlock2* pBlock, 
-											const Matrix& worldTransform  )
+void BasicTerrainLodController::addBlock(TerrainBlock2* pBlock,
+                                         const Matrix&  worldTransform)
 {
-	BW_GUARD;
-	// Force an atomic add to list, in case we get halfway through and then
-	// try to update an invalid entry.
-	SimpleMutexHolder smh( accessMutex_ );
+    BW_GUARD;
+    // Force an atomic add to list, in case we get halfway through and then
+    // try to update an invalid entry.
+    SimpleMutexHolder smh(accessMutex_);
 
-	Matrix invWorld;
-	invWorld.invert(worldTransform);
+    Matrix invWorld;
+    invWorld.invert(worldTransform);
 
-	blocks_.push_back( std::make_pair( invWorld, pBlock ) );
+    blocks_.push_back(std::make_pair(invWorld, pBlock));
 }
 
-bool BasicTerrainLodController::delBlock( TerrainBlock2* pBlock )
+bool BasicTerrainLodController::delBlock(TerrainBlock2* pBlock)
 {
-	BW_GUARD;
-	// Force an atomic remove from list, in case we get halfway through and then
-	// try to update an invalid entry.
-	SimpleMutexHolder smh( accessMutex_ );
+    BW_GUARD;
+    // Force an atomic remove from list, in case we get halfway through and then
+    // try to update an invalid entry.
+    SimpleMutexHolder smh(accessMutex_);
 
-	for ( BlockContainer::iterator bit = blocks_.begin();
-			bit != blocks_.end(); bit++ )
-	{
-		if ( bit->second == pBlock )
-		{
-			blocks_.erase( bit );
-			return true;
-		}
-	}
+    for (BlockContainer::iterator bit = blocks_.begin(); bit != blocks_.end();
+         bit++) {
+        if (bit->second == pBlock) {
+            blocks_.erase(bit);
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
-
 
 BasicTerrainLodController& BasicTerrainLodController::instance()
 {
-	return Manager::instance().lodController();
+    return Manager::instance().lodController();
 }
 
 BW_END_NAMESPACE

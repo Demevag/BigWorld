@@ -15,62 +15,65 @@ class UalItemInfo;
 
 // PageObject
 
-class PageObject: public PropertyTable, public GuiTabContent
+class PageObject
+  : public PropertyTable
+  , public GuiTabContent
 {
-	DECLARE_DYNCREATE(PageObject)
+    DECLARE_DYNCREATE(PageObject)
 
-	IMPLEMENT_BASIC_CONTENT( 
-		Localise(L"MODELEDITOR/PAGES/PAGE_OBJECT/SHORT_NAME"), 
-		Localise(L"MODELEDITOR/PAGES/PAGE_OBJECT/LONG_NAME"), 
-		285, 575, NULL )
+    IMPLEMENT_BASIC_CONTENT(
+      Localise(L"MODELEDITOR/PAGES/PAGE_OBJECT/SHORT_NAME"),
+      Localise(L"MODELEDITOR/PAGES/PAGE_OBJECT/LONG_NAME"),
+      285,
+      575,
+      NULL)
 
-	DECLARE_AUTO_TOOLTIP( PageObject, PropertyTable )
+    DECLARE_AUTO_TOOLTIP(PageObject, PropertyTable)
 
-public:
-	PageObject();
-	virtual ~PageObject();
+  public:
+    PageObject();
+    virtual ~PageObject();
 
-	static PageObject* currPage();
+    static PageObject* currPage();
 
-// Dialog Data
-	enum { IDD = IDD_OBJECT };
+    // Dialog Data
+    enum
+    {
+        IDD = IDD_OBJECT
+    };
 
-protected:
-	
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 
-	DECLARE_MESSAGE_MAP()
-	
-public:
-	
-	virtual BOOL OnInitDialog();
-	
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg LRESULT OnUpdateControls(WPARAM wParam, LPARAM lParam);
-	void OnUpdateThumbnail();
-	void OnUpdateList();
+    DECLARE_MESSAGE_MAP()
 
-private:
+  public:
+    virtual BOOL OnInitDialog();
 
-	SmartPointer< struct PageObjectImpl > pImpl_;
+    afx_msg int     OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg LRESULT OnUpdateControls(WPARAM wParam, LPARAM lParam);
+    void            OnUpdateThumbnail();
+    void            OnUpdateList();
 
-	void OnGUIManagerCommand(UINT nID);
-	void OnGUIManagerCommandUpdate(CCmdUI * cmdUI);
-	afx_msg LRESULT OnShowTooltip(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnHideTooltip(WPARAM wParam, LPARAM lParam);
+  private:
+    SmartPointer<struct PageObjectImpl> pImpl_;
 
-	void OnSize( UINT nType, int cx, int cy );
+    void            OnGUIManagerCommand(UINT nID);
+    void            OnGUIManagerCommandUpdate(CCmdUI* cmdUI);
+    afx_msg LRESULT OnShowTooltip(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnHideTooltip(WPARAM wParam, LPARAM lParam);
 
-	bool changeEditorProxy( const BW::wstring& editorProxyFile );
-	bool changeEditorProxyDrop( UalItemInfo* ii ) ;
+    void OnSize(UINT nType, int cx, int cy);
 
-public:
-	afx_msg LRESULT OnChangePropertyItem(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnCbnSelchangeObjectKind();
-	afx_msg void OnBnClickedObjectProxySel();
-	afx_msg void OnBnClickedObjectProxyRemove();
+    bool changeEditorProxy(const BW::wstring& editorProxyFile);
+    bool changeEditorProxyDrop(UalItemInfo* ii);
+
+  public:
+    afx_msg LRESULT OnChangePropertyItem(WPARAM wParam, LPARAM lParam);
+    afx_msg void    OnCbnSelchangeObjectKind();
+    afx_msg void    OnBnClickedObjectProxySel();
+    afx_msg void    OnBnClickedObjectProxyRemove();
 };
 
-IMPLEMENT_BASIC_CONTENT_FACTORY( PageObject )
+IMPLEMENT_BASIC_CONTENT_FACTORY(PageObject)
 BW_END_NAMESPACE
-

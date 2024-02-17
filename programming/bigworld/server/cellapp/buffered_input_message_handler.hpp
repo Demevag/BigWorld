@@ -3,7 +3,6 @@
 
 #include "buffered_input_messages.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -20,18 +19,20 @@ BW_BEGIN_NAMESPACE
 // In the mean-time, specialise this with a new constructor if you need
 // to wrap a different type of handler. The handleMessage() method only needs
 // MESSAGE_HANDLER to have public or protected MESSAGE_HANDLER::handleMessage()
-template< class MESSAGE_HANDLER >
+template <class MESSAGE_HANDLER>
 class BufferedInputMessageHandler : public MESSAGE_HANDLER
 {
-public:
-	typedef typename MESSAGE_HANDLER::Handler Handler;
+  public:
+    typedef typename MESSAGE_HANDLER::Handler Handler;
 
-	BufferedInputMessageHandler( Handler handler ) :
-		MESSAGE_HANDLER( handler ) {}
+    BufferedInputMessageHandler(Handler handler)
+      : MESSAGE_HANDLER(handler)
+    {
+    }
 
-	virtual void handleMessage( const Mercury::Address & srcAddr,
-		Mercury::UnpackedMessageHeader & header,
-		BinaryIStream & data );
+    virtual void handleMessage(const Mercury::Address&         srcAddr,
+                               Mercury::UnpackedMessageHeader& header,
+                               BinaryIStream&                  data);
 };
 
 BW_END_NAMESPACE

@@ -5,21 +5,19 @@
 
 #include "volatile_info.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Script
-{
-	int setData( PyObject * pObject, VolatileInfo & rInfo,
-			const char * varName = "" );
-	PyObject * getData( const VolatileInfo & info );
+namespace Script {
+    int       setData(PyObject*     pObject,
+                      VolatileInfo& rInfo,
+                      const char*   varName = "");
+    PyObject* getData(const VolatileInfo& info);
 }
 
-namespace PyVolatileInfo
-{
+namespace PyVolatileInfo {
 
-	bool priorityFromPyObject( PyObject * pObject, float & priority );
-	PyObject * pyObjectFromPriority( float priority );
+    bool      priorityFromPyObject(PyObject* pObject, float& priority);
+    PyObject* pyObjectFromPriority(float priority);
 }
 
 BW_END_NAMESPACE

@@ -5,15 +5,15 @@ BW_BEGIN_NAMESPACE
 
 struct Face
 {
-	Face();
-	
-	int positionIndex[3];
-	int normalIndex[3];
-	int tangentIndex[3];
-	int uvIndex[3];
-	int uvIndex2[3];
-	int colourIndex[3];
-	int materialIndex;
+    Face();
+
+    int positionIndex[3];
+    int normalIndex[3];
+    int tangentIndex[3];
+    int uvIndex[3];
+    int uvIndex2[3];
+    int colourIndex[3];
+    int materialIndex;
 };
 
 BW_END_NAMESPACE

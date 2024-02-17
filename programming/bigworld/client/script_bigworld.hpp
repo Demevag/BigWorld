@@ -14,7 +14,6 @@
 
 #include "resmgr/datasection.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BaseCamera;
@@ -27,21 +26,20 @@ class InputEvent;
 /**
  *	This namespace contains functions exclusive to the scripting of the client.
  */
-namespace BigWorldClientScript
-{
-	bool init( DataSectionPtr engineConfig );
-	void fini();
-	void tick();
+namespace BigWorldClientScript {
+    bool init(DataSectionPtr engineConfig);
+    void fini();
+    void tick();
 
-	bool sinkKeyboardEvent( const InputEvent& event );
+    bool sinkKeyboardEvent(const InputEvent& event);
 
-	SpaceEntryID nextSpaceEntryID();
+    SpaceEntryID nextSpaceEntryID();
 
-	// TODO:PM This is probably not the best place for this.
-	bool addAlert( const char * alertType, const char * msg );
+    // TODO:PM This is probably not the best place for this.
+    bool addAlert(const char* alertType, const char* msg);
 
-	void setUsername( const BW::string & username );
-	void setPassword( const BW::string & password );
+    void setUsername(const BW::string& username);
+    void setPassword(const BW::string& password);
 }
 
 BW_END_NAMESPACE

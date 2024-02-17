@@ -6,7 +6,6 @@
 
 #include "cstdmf/bw_list.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BufferedGhostMessage;
@@ -19,35 +18,35 @@ class BufferedGhostMessage;
  *	BufferedGhostMessagesForEntity contains a collection of these mapped by
  *	source address.
  */
-class BufferedGhostMessageQueue: public ReferenceCount
+class BufferedGhostMessageQueue : public ReferenceCount
 {
-public:
-	BufferedGhostMessageQueue();
-	~BufferedGhostMessageQueue();
+  public:
+    BufferedGhostMessageQueue();
+    ~BufferedGhostMessageQueue();
 
-	void add( BufferedGhostMessage * pMessage );
+    void add(BufferedGhostMessage* pMessage);
 
-	bool isFrontCreateGhost() const;
-	bool isEmpty() const				{ return messages_.empty(); }
-	bool isDelaying() const;
+    bool isFrontCreateGhost() const;
+    bool isEmpty() const { return messages_.empty(); }
+    bool isDelaying() const;
 
-	bool playSubsequence();
+    bool playSubsequence();
 
-	void delaySubsequence( BufferedGhostMessage * pFirstMessage );
-	void promoteDelayedSubsequences();
+    void delaySubsequence(BufferedGhostMessage* pFirstMessage);
+    void promoteDelayedSubsequences();
 
-private:
-	bool playFront();
-	BufferedGhostMessage * popFront();
+  private:
+    bool                  playFront();
+    BufferedGhostMessage* popFront();
 
-	bool isFrontSubsequenceStart() const;
-	bool isFrontSubsequenceEnd() const;
+    bool isFrontSubsequenceStart() const;
+    bool isFrontSubsequenceEnd() const;
 
-	typedef BW::list< BufferedGhostMessage* > Messages;
-	typedef Messages::iterator iterator;
+    typedef BW::list<BufferedGhostMessage*> Messages;
+    typedef Messages::iterator              iterator;
 
-	Messages messages_;
-	Messages * pDelayedMessages_;
+    Messages  messages_;
+    Messages* pDelayedMessages_;
 };
 
 typedef SmartPointer<BufferedGhostMessageQueue> BufferedGhostMessageQueuePtr;

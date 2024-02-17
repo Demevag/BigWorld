@@ -12,48 +12,46 @@ BW_BEGIN_NAMESPACE
 
 class SuperModel;
 
-
 /**
  *	This stores the data required for a Node in the SuperModelNodeTree class.
  */
 class SuperModelNode
 {
-public:
-	explicit SuperModelNode( const BW::string & identifier );
+  public:
+    explicit SuperModelNode(const BW::string& identifier);
 
-	const BW::string & getIdentifier() const;
-	Moo::NodePtr & getMooNode();
-	const Moo::NodePtr & getMooNode() const;
+    const BW::string&   getIdentifier() const;
+    Moo::NodePtr&       getMooNode();
+    const Moo::NodePtr& getMooNode() const;
 
-	int getParentIndex() const;
-	void setParentIndex( int parentIndex );
+    int  getParentIndex() const;
+    void setParentIndex(int parentIndex);
 
-	int getNumChildren() const;
-	void addChild( int treeIndex );
-	int getChild( int childIndex ) const;
+    int  getNumChildren() const;
+    void addChild(int treeIndex);
+    int  getChild(int childIndex) const;
 
-	BW::string desc() const;
+    BW::string desc() const;
 
-private:
-	///The identifier for this node.
-	BW::string identifier_;
-	///Cached Moo::Node from the NodeCatalogue. This is only necessary until
-	///SuperModel can be updated to set the transform directly in the output
-	///transforms array (generated during dressing). For now it makes it so we
-	///can look up a node by index for assigning its transform.
-	Moo::NodePtr cachedMooNode_;
-	///The index of the parent for this node in the owning SuperModelTree (or
-	///negative if no parent).
-	int parentIndex_;
+  private:
+    /// The identifier for this node.
+    BW::string identifier_;
+    /// Cached Moo::Node from the NodeCatalogue. This is only necessary until
+    /// SuperModel can be updated to set the transform directly in the output
+    /// transforms array (generated during dressing). For now it makes it so we
+    /// can look up a node by index for assigning its transform.
+    Moo::NodePtr cachedMooNode_;
+    /// The index of the parent for this node in the owning SuperModelTree (or
+    /// negative if no parent).
+    int parentIndex_;
 
-	///Stores all indices of the child nodes in the owning SuperModelTree.
-	BW::vector<int> childNodes_;
+    /// Stores all indices of the child nodes in the owning SuperModelTree.
+    BW::vector<int> childNodes_;
 };
-
 
 /**
  *	This class defines the node hierarchy for a SuperModel.
- *	
+ *
  *	This is required even though we can search for a Moo::Node (in the
  *	NodeCatalogue, or using findNode on the SuperModel instance), and those
  *	nodes include parent/child relationships. This is because (due to the
@@ -65,7 +63,7 @@ private:
  *	updated during the animation processing. This situation is problematic
  *	if we need to traverse the graph (for IK, for example) because it means we
  *	need to use something other than the usual Node from NodeCatalogue.
- *	
+ *
  *	This class is used by the SuperModel (once it has loaded all its models)
  *	to create a node tree that can then be used by users of the SuperModel to
  *	traverse the hierarchy.
@@ -78,40 +76,40 @@ private:
  *	node trees, they all have the same node tree, and/or each possesses
  *	subsections of a node tree with unique identifier names. Cycles are also
  *	disallowed.
- *	
+ *
  *	To modify node transforms, see the SuperModel member functions
  *	(get/set)Node(World/Relative)Transform.
  */
 class SuperModelNodeTree
 {
-public:
-	bool addAllNodes( const Moo::Node & rootFromVisual );
-	int getNumNodes() const;
-	int getNodeIndex( const BW::string & identifier ) const;
-	const SuperModelNode & getNode( int index ) const;
+  public:
+    bool                  addAllNodes(const Moo::Node& rootFromVisual);
+    int                   getNumNodes() const;
+    int                   getNodeIndex(const BW::string& identifier) const;
+    const SuperModelNode& getNode(int index) const;
 
-	int findChild( int nodeIndex, const BW::string & identifier ) const;
-	int getNumRootNodes() const;
-	bool isDescendantOf( int parentIndex, int queryIsDescendantIndex ) const;
-	bool getPathIndices( BW::vector<int> & pathIndices,
-		int startIndex, int endIndex ) const;
+    int  findChild(int nodeIndex, const BW::string& identifier) const;
+    int  getNumRootNodes() const;
+    bool isDescendantOf(int parentIndex, int queryIsDescendantIndex) const;
+    bool getPathIndices(BW::vector<int>& pathIndices,
+                        int              startIndex,
+                        int              endIndex) const;
 
-	BW::string desc() const;
-	void draw( const SuperModel & superModel,
-		Moo::PackedColour baseColour = Moo::PackedColours::MAGENTA,
-		float drawSize = 1.0f ) const;
+    BW::string desc() const;
+    void       draw(const SuperModel& superModel,
+                    Moo::PackedColour baseColour = Moo::PackedColours::MAGENTA,
+                    float             drawSize   = 1.0f) const;
 
-private:
-	SuperModelNode & getNode( int index );
-	bool addAllNodesInternal(
-		const Moo::Node & nodeToAdd, int nodeParentIndex );
+  private:
+    SuperModelNode& getNode(int index);
+    bool addAllNodesInternal(const Moo::Node& nodeToAdd, int nodeParentIndex);
 
-	///Stores all nodes in the tree.
-	BW::vector<SuperModelNode> nodes_;
+    /// Stores all nodes in the tree.
+    BW::vector<SuperModelNode> nodes_;
 
-	typedef BW::unordered_map<BW::string, int> NodeIdToIndexMap;
-	///Stores a lookup from node identifier to its index in nodes_.
-	NodeIdToIndexMap nodeLookup_;
+    typedef BW::unordered_map<BW::string, int> NodeIdToIndexMap;
+    /// Stores a lookup from node identifier to its index in nodes_.
+    NodeIdToIndexMap nodeLookup_;
 };
 
 BW_END_NAMESPACE

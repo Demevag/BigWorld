@@ -26,61 +26,60 @@ BW_BEGIN_NAMESPACE
  */
 class FileStream : public MemoryOStream
 {
-public:
-	static const int INIT_READ_BUF_SIZE = 128;
+  public:
+    static const int INIT_READ_BUF_SIZE = 128;
 
-	FileStream( const char * pPath, const char * pMode );
-	virtual ~FileStream();
+    FileStream(const char* pPath, const char* pMode);
+    virtual ~FileStream();
 
-	bool good() const;
+    bool good() const;
 
-	/*
-	 *	Interface: MemoryOStream->BinaryIStream
-	 */
-	bool error() const;
-	virtual const void *retrieve( int nBytes );
+    /*
+     *	Interface: MemoryOStream->BinaryIStream
+     */
+    bool                error() const;
+    virtual const void* retrieve(int nBytes);
 
-	const char * strerror() const;
+    const char* strerror() const;
 
-	long tell();
-	int seek( long offset, int whence = SEEK_SET );
-	long length();
-	bool commit();
-	int stat( struct stat * pStatInfo );
+    long tell();
+    int  seek(long offset, int whence = SEEK_SET);
+    long length();
+    bool commit();
+    int  stat(struct stat* pStatInfo);
 
-protected:
-	void setMode( char mode );
-	bool open();
-	void close();
-	void remove();
+  protected:
+    void setMode(char mode);
+    bool open();
+    void close();
+    void remove();
 
-	BW::string path_;
-	BW::string mode_;
-	FILE *pFile_;
-	char *pReadBuf_;
-	int readBufSize_;
-	BW::string errorMsg_;
+    BW::string path_;
+    BW::string mode_;
+    FILE*      pFile_;
+    char*      pReadBuf_;
+    int        readBufSize_;
+    BW::string errorMsg_;
 
-	// This is either 0, 'r', or 'w'
-	char lastAction_;
+    // This is either 0, 'r', or 'w'
+    char lastAction_;
 
-	// Whether or not the underlying FILE* is actually open or not
-	bool isOpen_;
+    // Whether or not the underlying FILE* is actually open or not
+    bool isOpen_;
 
-	// The file offset as at the last time close() was called
-	long offset_;
+    // The file offset as at the last time close() was called
+    long offset_;
 
-	// Static management of maximum number of open FileStream handles
-	typedef BW::list< FileStream * > FileStreams;
-	static FileStreams s_openFiles_;
-	static const unsigned MAX_OPEN_FILES = 20;
+    // Static management of maximum number of open FileStream handles
+    typedef BW::list<FileStream*> FileStreams;
+    static FileStreams            s_openFiles_;
+    static const unsigned         MAX_OPEN_FILES = 20;
 
-	// An iterator pointing to this FileStream's position in s_openFiles_
-	FileStreams::iterator fileStreamsIter_;
+    // An iterator pointing to this FileStream's position in s_openFiles_
+    FileStreams::iterator fileStreamsIter_;
 };
 
-
-#if defined( CODE_INLINE )
+#if defined(CODE_INLINE)
 #include "file_stream.ipp"
 #endif
 

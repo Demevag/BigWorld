@@ -6,7 +6,6 @@
 
 #include "cstdmf/bw_map.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class EntityDefs;
@@ -17,50 +16,58 @@ class XMLDatabase;
  */
 class XMLBillingSystem : public BillingSystem
 {
-public:
-	XMLBillingSystem( DataSectionPtr pLogonMapSection,
-			const EntityDefs & entityDefs,
-			XMLDatabase * pDatabase );
+  public:
+    XMLBillingSystem(DataSectionPtr    pLogonMapSection,
+                     const EntityDefs& entityDefs,
+                     XMLDatabase*      pDatabase);
 
-	virtual void getEntityKeyForAccount(
-		const BW::string & logOnName, const BW::string & password,
-		const Mercury::Address & clientAddr,
-		IGetEntityKeyForAccountHandler & handler );
-	virtual void setEntityKeyForAccount( const BW::string & username,
-		const BW::string & password, const EntityKey & ekey,
-		ISetEntityKeyForAccountHandler & handler );
+    virtual void getEntityKeyForAccount(
+      const BW::string&               logOnName,
+      const BW::string&               password,
+      const Mercury::Address&         clientAddr,
+      IGetEntityKeyForAccountHandler& handler);
+    virtual void setEntityKeyForAccount(
+      const BW::string&               username,
+      const BW::string&               password,
+      const EntityKey&                ekey,
+      ISetEntityKeyForAccountHandler& handler);
 
-private:
-	void initLogOnMapping( XMLDatabase * pDatabase );
+  private:
+    void initLogOnMapping(XMLDatabase* pDatabase);
 
-	// Equivalent of bigworldLogOnMapping table in MySQL.
-	class LogOnMapping
-	{
-	public:
-		LogOnMapping( const EntityKey & key, const BW::string & password ) :
-			entityKey_( key ),
-			password_( password )
-		{}
-		LogOnMapping() : entityKey_( 0, 0 ), password_( "" ) {}
+    // Equivalent of bigworldLogOnMapping table in MySQL.
+    class LogOnMapping
+    {
+      public:
+        LogOnMapping(const EntityKey& key, const BW::string& password)
+          : entityKey_(key)
+          , password_(password)
+        {
+        }
+        LogOnMapping()
+          : entityKey_(0, 0)
+          , password_("")
+        {
+        }
 
-		bool matchesPassword( const BW::string & password ) const 
-		{
-			return password == password_;
-		}
+        bool matchesPassword(const BW::string& password) const
+        {
+            return password == password_;
+        }
 
-		const EntityKey & entityKey() const	{ return entityKey_; }
+        const EntityKey& entityKey() const { return entityKey_; }
 
-	private:
-		EntityKey		entityKey_;
-		BW::string		password_;
-	};
+      private:
+        EntityKey  entityKey_;
+        BW::string password_;
+    };
 
-	// The key is the "logOnName" column.
-	typedef BW::map< BW::string, LogOnMapping > LogonMap;
-	LogonMap		logonMap_;
-	DataSectionPtr	pLogonMapSection_;
+    // The key is the "logOnName" column.
+    typedef BW::map<BW::string, LogOnMapping> LogonMap;
+    LogonMap                                  logonMap_;
+    DataSectionPtr                            pLogonMapSection_;
 
-	const EntityDefs & entityDefs_;
+    const EntityDefs& entityDefs_;
 };
 
 BW_END_NAMESPACE

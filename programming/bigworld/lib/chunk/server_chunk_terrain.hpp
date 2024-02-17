@@ -7,7 +7,6 @@
 #include "cstdmf/smartpointer.hpp"
 #include "terrain/terrain_block_cache.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -15,32 +14,30 @@ BW_BEGIN_NAMESPACE
  */
 class ServerChunkTerrain : public ChunkItem
 {
-	DECLARE_CHUNK_ITEM( ServerChunkTerrain )
+    DECLARE_CHUNK_ITEM(ServerChunkTerrain)
 
-public:
-	ServerChunkTerrain();
-	~ServerChunkTerrain();
+  public:
+    ServerChunkTerrain();
+    ~ServerChunkTerrain();
 
-	virtual void	toss( Chunk * pChunk );
+    virtual void toss(Chunk* pChunk);
 
-	Terrain::BaseTerrainBlockPtr block()	{ return pCacheEntry_->pBlock(); }
-	const BoundingBox & bb()		{ return bb_; }
+    Terrain::BaseTerrainBlockPtr block() { return pCacheEntry_->pBlock(); }
+    const BoundingBox&           bb() { return bb_; }
 
-protected:
-	ServerChunkTerrain( const ServerChunkTerrain& );
-	ServerChunkTerrain& operator=( const ServerChunkTerrain& );
+  protected:
+    ServerChunkTerrain(const ServerChunkTerrain&);
+    ServerChunkTerrain& operator=(const ServerChunkTerrain&);
 
-	Terrain::TerrainBlockCacheEntryPtr pCacheEntry_;
-	BoundingBox					bb_;		// in local coords
+    Terrain::TerrainBlockCacheEntryPtr pCacheEntry_;
+    BoundingBox                        bb_; // in local coords
 
-	bool load( DataSectionPtr pSection, Chunk * pChunk );
+    bool load(DataSectionPtr pSection, Chunk* pChunk);
 
-	void			calculateBB();
+    void calculateBB();
 
-	friend class ServerChunkTerrainCache;
+    friend class ServerChunkTerrainCache;
 };
-
-
 
 class ChunkTerrainObstacle;
 
@@ -51,25 +48,24 @@ class ChunkTerrainObstacle;
  */
 class ServerChunkTerrainCache : public ChunkCache
 {
-public:
-	ServerChunkTerrainCache( Chunk & chunk );
-	~ServerChunkTerrainCache();
+  public:
+    ServerChunkTerrainCache(Chunk& chunk);
+    ~ServerChunkTerrainCache();
 
-	virtual int focus();
+    virtual int focus();
 
-	void pTerrain( ServerChunkTerrain * pT );
+    void pTerrain(ServerChunkTerrain* pT);
 
-	ServerChunkTerrain * pTerrain()				{ return pTerrain_; }
-	const ServerChunkTerrain * pTerrain() const	{ return pTerrain_; }
+    ServerChunkTerrain*       pTerrain() { return pTerrain_; }
+    const ServerChunkTerrain* pTerrain() const { return pTerrain_; }
 
-	static Instance<ServerChunkTerrainCache>	instance;
+    static Instance<ServerChunkTerrainCache> instance;
 
-private:
-	Chunk * pChunk_;
-	ServerChunkTerrain * pTerrain_;
-	SmartPointer<ChunkTerrainObstacle>	pObstacle_;
+  private:
+    Chunk*                             pChunk_;
+    ServerChunkTerrain*                pTerrain_;
+    SmartPointer<ChunkTerrainObstacle> pObstacle_;
 };
-
 
 #ifdef CODE_INLINE
 #include "server_chunk_terrain.ipp"

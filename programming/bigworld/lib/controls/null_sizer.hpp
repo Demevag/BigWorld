@@ -5,23 +5,22 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace controls
-{
+namespace controls {
     /**
      *  This Sizer represents a blank area.
      */
     class NullSizer : public Sizer
     {
-    public:
+      public:
         NullSizer(uint32 minWidth, uint32 minHeight);
 
-        /*virtual*/ void onSize(CRect const &extents);
+        /*virtual*/ void  onSize(CRect const& extents);
         /*virtual*/ CSize minimumSize() const;
-        /*virtual*/ void draw(CDC *dc);
+        /*virtual*/ void  draw(CDC* dc);
 
-    private:
-        uint32					minWidth_;
-        uint32		            minHeight_;
+      private:
+        uint32 minWidth_;
+        uint32 minHeight_;
     };
 }
 

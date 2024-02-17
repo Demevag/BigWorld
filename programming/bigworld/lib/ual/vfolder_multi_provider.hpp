@@ -14,29 +14,33 @@ BW_BEGIN_NAMESPACE
  */
 class VFolderMultiProvider : public VFolderProvider
 {
-public:
-	VFolderMultiProvider();
-	virtual ~VFolderMultiProvider();
+  public:
+    VFolderMultiProvider();
+    virtual ~VFolderMultiProvider();
 
-	virtual bool startEnumChildren( const VFolderItemDataPtr parent );
-	virtual VFolderItemDataPtr getNextChild( ThumbnailManager& thumbnailManager, CImage& img );
-	virtual void getThumbnail( ThumbnailManager& thumbnailManager, VFolderItemDataPtr data, CImage& img );
+    virtual bool startEnumChildren(const VFolderItemDataPtr parent);
+    virtual VFolderItemDataPtr getNextChild(ThumbnailManager& thumbnailManager,
+                                            CImage&           img);
+    virtual void               getThumbnail(ThumbnailManager&  thumbnailManager,
+                                            VFolderItemDataPtr data,
+                                            CImage&            img);
 
-	virtual const BW::wstring getDescriptiveText( VFolderItemDataPtr data, int numItems, bool finished );
-	virtual bool getListProviderInfo(
-		VFolderItemDataPtr data,
-		BW::wstring& retInitIdString,
-		ListProviderPtr& retListProvider,
-		bool& retItemClicked );
+    virtual const BW::wstring getDescriptiveText(VFolderItemDataPtr data,
+                                                 int                numItems,
+                                                 bool               finished);
+    virtual bool              getListProviderInfo(VFolderItemDataPtr data,
+                                                  BW::wstring&       retInitIdString,
+                                                  ListProviderPtr&   retListProvider,
+                                                  bool&              retItemClicked);
 
-	// additional interface
-	void addProvider( VFolderProviderPtr provider );
+    // additional interface
+    void addProvider(VFolderProviderPtr provider);
 
-private:
-	typedef BW::vector<VFolderProviderPtr> ProvVec;
-	ProvVec providers_;
-	ProvVec::iterator iter_;
-	VFolderItemData* parent_;
+  private:
+    typedef BW::vector<VFolderProviderPtr> ProvVec;
+    ProvVec                                providers_;
+    ProvVec::iterator                      iter_;
+    VFolderItemData*                       parent_;
 };
 
 BW_END_NAMESPACE

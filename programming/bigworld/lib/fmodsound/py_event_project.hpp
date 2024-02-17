@@ -11,7 +11,6 @@
 
 #include <fmod_event.hpp>
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -19,38 +18,39 @@ BW_BEGIN_NAMESPACE
  */
 class PyEventProject : public PyObjectPlus
 {
-	Py_Header( PyEventProject, PyObjectPlus )
+    Py_Header(PyEventProject, PyObjectPlus)
 
-public:
-    PyEventProject( SoundManager::EventProject * pEventProject, PyTypeObject * pType = &PyEventProject::s_type_ );   
+      public
+      : PyEventProject(SoundManager::EventProject* pEventProject,
+                       PyTypeObject* pType = &PyEventProject::s_type_);
 
-	void fini();
+    void fini();
 
     //  Methods
     void stopAllEvents(bool immediate = true);
-	PY_AUTO_METHOD_DECLARE( RETVOID, stopAllEvents, OPTARG( bool, true, END ) )
+    PY_AUTO_METHOD_DECLARE(RETVOID, stopAllEvents, OPTARG(bool, true, END))
 
     void release();
-	PY_AUTO_METHOD_DECLARE( RETVOID, release, END )
+    PY_AUTO_METHOD_DECLARE(RETVOID, release, END)
 
-	//  Attributes
+    //  Attributes
     unsigned int memoryUsed();
-	PY_RO_ATTRIBUTE_DECLARE( memoryUsed(), memoryUsed ); 
+    PY_RO_ATTRIBUTE_DECLARE(memoryUsed(), memoryUsed);
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-protected:
-    SoundManager::EventProject *eventProject_;
+  protected:
+    SoundManager::EventProject* eventProject_;
 
-private:
+  private:
     PyEventProject();
-	~PyEventProject();
+    ~PyEventProject();
 
-	PyEventProject(const PyEventProject&);
-	PyEventProject& operator=(const PyEventProject&);
+    PyEventProject(const PyEventProject&);
+    PyEventProject& operator=(const PyEventProject&);
 };
 
-typedef SmartPointer< PyEventProject > PyEventProjectPtr;
+typedef SmartPointer<PyEventProject> PyEventProjectPtr;
 
 BW_END_NAMESPACE
 

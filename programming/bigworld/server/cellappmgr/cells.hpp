@@ -6,7 +6,6 @@
 
 #include "cstdmf/bw_vector.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BinaryOStream;
@@ -17,44 +16,43 @@ class CellData;
  */
 class Cells
 {
-private:
-	typedef BW::vector< CellData * > Container;
+  private:
+    typedef BW::vector<CellData*> Container;
 
-public:
-	Cells() {}
-	~Cells();
+  public:
+    Cells() {}
+    ~Cells();
 
-	void add( CellData * pData )		{ cells_.push_back( pData ); }
-	void erase( CellData * pData );
+    void add(CellData* pData) { cells_.push_back(pData); }
+    void erase(CellData* pData);
 
-	CellData * findFromSpaceID( SpaceID spaceID ) const;
-	CellData * findFromCellAppAddr( const Mercury::Address & addr ) const;
+    CellData* findFromSpaceID(SpaceID spaceID) const;
+    CellData* findFromCellAppAddr(const Mercury::Address& addr) const;
 
-	void notifyOfCellRemoval( SpaceID spaceID, CellData & removedCell ) const;
+    void notifyOfCellRemoval(SpaceID spaceID, CellData& removedCell) const;
 
-	void deleteAll();
-	void retireAll();
-	void cancelRetiring();
+    void deleteAll();
+    void retireAll();
+    void cancelRetiring();
 
-	CellData * front() const	{ return cells_.front(); }
+    CellData* front() const { return cells_.front(); }
 
-	size_t size() const	{ return cells_.size(); }
-	bool empty() const	{ return cells_.empty(); }
+    size_t size() const { return cells_.size(); }
+    bool   empty() const { return cells_.empty(); }
 
-	// TODO: Look to remove these
-	typedef Container::iterator iterator;
-	typedef Container::const_iterator const_iterator;
+    // TODO: Look to remove these
+    typedef Container::iterator       iterator;
+    typedef Container::const_iterator const_iterator;
 
+    iterator       begin() { return cells_.begin(); }
+    const_iterator begin() const { return cells_.begin(); }
+    iterator       end() { return cells_.end(); }
+    const_iterator end() const { return cells_.end(); }
 
-	iterator begin()				{ return cells_.begin(); }
-	const_iterator begin() const	{ return cells_.begin(); }
-	iterator end()					{ return cells_.end(); }
-	const_iterator end() const		{ return cells_.end(); }
+    static WatcherPtr pWatcher();
 
-	static WatcherPtr pWatcher();
-
-private:
-	Container cells_;
+  private:
+    Container cells_;
 };
 
 BW_END_NAMESPACE

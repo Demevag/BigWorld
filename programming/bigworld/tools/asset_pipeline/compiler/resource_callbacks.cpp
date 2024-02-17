@@ -3,9 +3,9 @@
 
 BW_BEGIN_NAMESPACE
 
-void ResourceCallbacks::purgeResource( const StringRef & resourceId )
+void ResourceCallbacks::purgeResource(const StringRef& resourceId)
 {
-	BWResource::instance().purge( resourceId );
+    BWResource::instance().purge(resourceId);
 }
 
 BW_END_NAMESPACE

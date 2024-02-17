@@ -8,22 +8,19 @@
 #include <space/space_manager.hpp>
 #include <space/client_space.hpp>
 
-namespace BW
-{
+namespace BW {
 
-// WOO!
-static ClientSpacePtr s_cameraSpace( NULL );
+    // WOO!
+    static ClientSpacePtr s_cameraSpace(NULL);
 
-void DeprecatedSpaceHelpers::cameraSpace( const ClientSpacePtr& space )
-{
-	s_cameraSpace = space;
-}
+    void DeprecatedSpaceHelpers::cameraSpace(const ClientSpacePtr& space)
+    {
+        s_cameraSpace = space;
+    }
 
-
-ClientSpacePtr DeprecatedSpaceHelpers::cameraSpace()
-{
-	return s_cameraSpace;
-}
-
+    ClientSpacePtr DeprecatedSpaceHelpers::cameraSpace()
+    {
+        return s_cameraSpace;
+    }
 
 } // namespace BW

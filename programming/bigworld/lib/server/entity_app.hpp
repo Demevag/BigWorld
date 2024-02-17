@@ -6,7 +6,6 @@
 
 #include "cstdmf/bgtask_manager.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class EntityApp;
@@ -19,51 +18,49 @@ class Watcher;
  */
 class EntityAppTimeQueue : public ScriptTimeQueue
 {
-public:
-	EntityAppTimeQueue( int updateHertz, EntityApp & entityApp );
-	virtual GameTime time() const;
+  public:
+    EntityAppTimeQueue(int updateHertz, EntityApp& entityApp);
+    virtual GameTime time() const;
 
-private:
-	EntityApp & entityApp_;
+  private:
+    EntityApp& entityApp_;
 };
-
 
 /**
  *	This class is a common base class for BaseApp and CellApp.
  */
 class EntityApp : public ScriptApp
 {
-public:
-	EntityApp( Mercury::EventDispatcher & mainDispatcher,
-			Mercury::NetworkInterface & interface );
-	virtual ~EntityApp();
+  public:
+    EntityApp(Mercury::EventDispatcher&  mainDispatcher,
+              Mercury::NetworkInterface& interface);
+    virtual ~EntityApp();
 
-	virtual bool init( int argc, char * argv[] );
+    virtual bool init(int argc, char* argv[]);
 
-	ScriptTimeQueue & timeQueue()	{ return timeQueue_; }
+    ScriptTimeQueue& timeQueue() { return timeQueue_; }
 
-	virtual void onSignalled( int sigNum );
+    virtual void onSignalled(int sigNum);
 
-	BgTaskManager & bgTaskManager()		{ return bgTaskManager_; }
+    BgTaskManager& bgTaskManager() { return bgTaskManager_; }
 
-protected:
-	void addWatchers( Watcher & watcher );
-	void tickStats();
+  protected:
+    void addWatchers(Watcher& watcher);
+    void tickStats();
 
-	void callTimers();
+    void callTimers();
 
-	virtual void onSetStartTime( GameTime oldTime, GameTime newTime );
+    virtual void onSetStartTime(GameTime oldTime, GameTime newTime);
 
-	// Override from ServerApp
-	virtual void onTickProcessingComplete();
+    // Override from ServerApp
+    virtual void onTickProcessingComplete();
 
-	BgTaskManager bgTaskManager_;
+    BgTaskManager bgTaskManager_;
 
-private:
+  private:
+    EntityAppTimeQueue timeQueue_;
 
-	EntityAppTimeQueue timeQueue_;
-
-	uint32 tickStatsPeriod_;
+    uint32 tickStatsPeriod_;
 };
 
 BW_END_NAMESPACE

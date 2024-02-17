@@ -10,9 +10,9 @@
 BW_BEGIN_NAMESPACE
 
 class GroundNormalProvider;
-typedef WeakPyPtr< GroundNormalProvider > WeakGroundNormalProviderPtr;
+typedef WeakPyPtr<GroundNormalProvider> WeakGroundNormalProviderPtr;
 class Vector4Provider;
-typedef SmartPointer< Vector4Provider > Vector4ProviderPtr;
+typedef SmartPointer<Vector4Provider> Vector4ProviderPtr;
 
 /*~ class BigWorld.AvatarDropFilter
  *
@@ -29,43 +29,42 @@ typedef SmartPointer< Vector4Provider > Vector4ProviderPtr;
  */
 class PyAvatarDropFilter : public PyAvatarFilter
 {
-	Py_Header( PyAvatarDropFilter, PyAvatarFilter )
+    Py_Header(PyAvatarDropFilter, PyAvatarFilter)
 
-	PY_WEAK_REFERENCABLE( PyAvatarDropFilter )
+      PY_WEAK_REFERENCABLE(PyAvatarDropFilter)
 
-public:
-	PyAvatarDropFilter( PyTypeObject * pType = &s_type_ );
-	virtual ~PyAvatarDropFilter() {}
+        public : PyAvatarDropFilter(PyTypeObject* pType = &s_type_);
+    virtual ~PyAvatarDropFilter() {}
 
-	bool alignToGround() const;
-	void alignToGround( bool newValue );
+    bool alignToGround() const;
+    void alignToGround(bool newValue);
 
-	Vector4ProviderPtr groundNormalProvider();
+    Vector4ProviderPtr groundNormalProvider();
 
-	// Python Interface
-	PY_AUTO_CONSTRUCTOR_FACTORY_DECLARE( PyAvatarDropFilter, END );
+    // Python Interface
+    PY_AUTO_CONSTRUCTOR_FACTORY_DECLARE(PyAvatarDropFilter, END);
 
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( bool, alignToGround, alignToGround );
-	PY_RO_ATTRIBUTE_DECLARE( groundNormalProvider(), groundNormal );
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(bool, alignToGround, alignToGround);
+    PY_RO_ATTRIBUTE_DECLARE(groundNormalProvider(), groundNormal);
 
-	// Implementation of PyFilter
-	virtual AvatarDropFilter * pAttachedFilter();
-	virtual const AvatarDropFilter * pAttachedFilter() const;
+    // Implementation of PyFilter
+    virtual AvatarDropFilter*       pAttachedFilter();
+    virtual const AvatarDropFilter* pAttachedFilter() const;
 
-protected:
-	// Implementation of PyFilter
-	virtual AvatarDropFilter * getNewFilter();
-	virtual void onLosingAttachedFilter();
+  protected:
+    // Implementation of PyFilter
+    virtual AvatarDropFilter* getNewFilter();
+    virtual void              onLosingAttachedFilter();
 
-private:
-	WeakGroundNormalProviderPtr wpGroundNormalProvider_;
+  private:
+    WeakGroundNormalProviderPtr wpGroundNormalProvider_;
 
-	// This attribute is a cache of the value in AvatarDropFilter, but
-	// it is only used if this->pAttachedFilter() is NULL
-	bool alignToGround_;
+    // This attribute is a cache of the value in AvatarDropFilter, but
+    // it is only used if this->pAttachedFilter() is NULL
+    bool alignToGround_;
 };
 
-PY_SCRIPT_CONVERTERS_DECLARE( PyAvatarDropFilter );
+PY_SCRIPT_CONVERTERS_DECLARE(PyAvatarDropFilter);
 
 BW_END_NAMESPACE
 

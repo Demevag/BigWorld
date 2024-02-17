@@ -6,38 +6,34 @@
 #include "entity.hpp"
 #include "entity_population.hpp"
 
-DECLARE_DEBUG_COMPONENT( 0 )
-
+DECLARE_DEBUG_COMPONENT(0)
 
 BW_BEGIN_NAMESPACE
 
 /**
  *	This function is used to implement operator[] for the scripting object.
  */
-PyObject * PyEntities::s_subscript( PyObject * self, PyObject * index )
+PyObject* PyEntities::s_subscript(PyObject* self, PyObject* index)
 {
-	return ((PyEntities *) self)->subscript( index );
+    return ((PyEntities*)self)->subscript(index);
 }
-
 
 /**
  * 	This function returns the number of entities in the system.
  */
-Py_ssize_t PyEntities::s_length( PyObject * self )
+Py_ssize_t PyEntities::s_length(PyObject* self)
 {
-	return ((PyEntities *) self)->length();
+    return ((PyEntities*)self)->length();
 }
-
 
 /**
  *	This structure contains the function pointers necessary to provide
  * 	a Python Mapping interface.
  */
-static PyMappingMethods g_entitiesMapping =
-{
-	PyEntities::s_length,		// mp_length
-	PyEntities::s_subscript,	// mp_subscript
-	NULL						// mp_ass_subscript
+static PyMappingMethods g_entitiesMapping = {
+    PyEntities::s_length,    // mp_length
+    PyEntities::s_subscript, // mp_subscript
+    NULL                     // mp_ass_subscript
 };
 
 /*~ function PyEntities has_key
@@ -73,28 +69,26 @@ static PyMappingMethods g_entitiesMapping =
  *		entity cannot be found. This defaults to None.
  *	@return The entity with the input id or the default value if not found.
  */
-PY_TYPEOBJECT_WITH_MAPPING( PyEntities, &g_entitiesMapping )
+PY_TYPEOBJECT_WITH_MAPPING(PyEntities, &g_entitiesMapping)
 
-PY_BEGIN_METHODS( PyEntities )
-	PY_METHOD( has_key )
-	PY_METHOD( keys )
-	PY_METHOD( items )
-	PY_METHOD( values )
-	PY_METHOD( get )
+PY_BEGIN_METHODS(PyEntities)
+PY_METHOD(has_key)
+PY_METHOD(keys)
+PY_METHOD(items)
+PY_METHOD(values)
+PY_METHOD(get)
 PY_END_METHODS()
 
-PY_BEGIN_ATTRIBUTES( PyEntities )
+PY_BEGIN_ATTRIBUTES(PyEntities)
 PY_END_ATTRIBUTES()
-
 
 /**
  *	The constructor for PyEntities.
  */
-PyEntities::PyEntities( PyTypeObject * pType ) :
-	PyObjectPlus( pType )
+PyEntities::PyEntities(PyTypeObject* pType)
+  : PyObjectPlus(pType)
 {
 }
-
 
 /**
  *	This method finds the entity with the input ID.
@@ -103,151 +97,137 @@ PyEntities::PyEntities( PyTypeObject * pType ) :
  *
  *	@return	The object associated with the given entity ID.
  */
-PyObject * PyEntities::subscript( PyObject* entityID )
+PyObject* PyEntities::subscript(PyObject* entityID)
 {
-	long id = PyInt_AsLong( entityID );
+    long id = PyInt_AsLong(entityID);
 
-	if (PyErr_Occurred())
-	{
-		if (PyString_Check( entityID ))
-		{
-			PyErr_Clear();
-			return this->findInstanceWithType( PyString_AsString( entityID ) );
-		}
+    if (PyErr_Occurred()) {
+        if (PyString_Check(entityID)) {
+            PyErr_Clear();
+            return this->findInstanceWithType(PyString_AsString(entityID));
+        }
 
-		return NULL;
-	}
+        return NULL;
+    }
 
-	PyObject * pEntity = CellApp::instance().findEntity( id );
-	Py_XINCREF( pEntity );
+    PyObject* pEntity = CellApp::instance().findEntity(id);
+    Py_XINCREF(pEntity);
 
-	if (pEntity == NULL)
-	{
-		PyErr_Format( PyExc_KeyError, "%ld", id );
-		return NULL;
-	}
+    if (pEntity == NULL) {
+        PyErr_Format(PyExc_KeyError, "%ld", id);
+        return NULL;
+    }
 
-	return pEntity;
+    return pEntity;
 }
-
 
 /**
  *	This method returns a Base entity that has a type that matches the string
  *	that is passed in.
  */
-PyObject * PyEntities::findInstanceWithType( const char * typeName ) const
+PyObject* PyEntities::findInstanceWithType(const char* typeName) const
 {
-	EntityPopulation::const_iterator iter = Entity::population().begin();
+    EntityPopulation::const_iterator iter = Entity::population().begin();
 
-	while (iter != Entity::population().end())
-	{
-		Entity * pEntity = iter->second;
+    while (iter != Entity::population().end()) {
+        Entity* pEntity = iter->second;
 
-		if (strcmp( pEntity->pType()->name(), typeName ) == 0)
-		{
-			Py_INCREF( pEntity );
-			return pEntity;
-		}
+        if (strcmp(pEntity->pType()->name(), typeName) == 0) {
+            Py_INCREF(pEntity);
+            return pEntity;
+        }
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	PyErr_Format( PyExc_KeyError, "Could not find an entry with type %s",
-			typeName );
-	return NULL;
+    PyErr_Format(
+      PyExc_KeyError, "Could not find an entry with type %s", typeName);
+    return NULL;
 }
-
 
 /**
  * 	This method returns the number of entities in the system.
  */
 int PyEntities::length()
 {
-	PyObject* pList = PyList_New(0);
+    PyObject* pList = PyList_New(0);
 
-	// This could be done more much more efficiently by adding a method
-	// to CellApp to count entities.
+    // This could be done more much more efficiently by adding a method
+    // to CellApp to count entities.
 
-	CellApp::instance().entityKeys(pList);
+    CellApp::instance().entityKeys(pList);
 
-	int len = PyList_Size(pList);
-	Py_DECREF(pList);
-	return len;
+    int len = PyList_Size(pList);
+    Py_DECREF(pList);
+    return len;
 }
-
 
 /**
  *	This method returns True if the given entity exists.
  *
  * 	@param args		A Python tuple containing the arguments.
  */
-PyObject * PyEntities::py_has_key(PyObject* args)
+PyObject* PyEntities::py_has_key(PyObject* args)
 {
-	long id;
+    long id;
 
-	if (!PyArg_ParseTuple( args, "i", &id ))
-		return NULL;
+    if (!PyArg_ParseTuple(args, "i", &id))
+        return NULL;
 
-	return PyBool_FromLong( CellApp::instance().findEntity( id ) != NULL );
+    return PyBool_FromLong(CellApp::instance().findEntity(id) != NULL);
 }
-
 
 /**
  * 	This method returns a list of all the entity IDs in the system.
  */
 PyObject* PyEntities::py_keys(PyObject* /*args*/)
 {
-	PyObject* pList = PyList_New( 0 );
-	CellApp::instance().entityKeys( pList );
-	return pList;
+    PyObject* pList = PyList_New(0);
+    CellApp::instance().entityKeys(pList);
+    return pList;
 }
-
 
 /**
  *	This method returns a list of all the entity objects in the system.
  */
-PyObject* PyEntities::py_values( PyObject* /*args*/ )
+PyObject* PyEntities::py_values(PyObject* /*args*/)
 {
-	PyObject* pList = PyList_New( 0 );
-	CellApp::instance().entityValues( pList );
-	return pList;
+    PyObject* pList = PyList_New(0);
+    CellApp::instance().entityValues(pList);
+    return pList;
 }
-
 
 /**
  * 	This method returns a list of tuples of all the entity IDs
  *	and objects in the system.
  */
-PyObject* PyEntities::py_items( PyObject* /*args*/ )
+PyObject* PyEntities::py_items(PyObject* /*args*/)
 {
-	PyObject* pList = PyList_New( 0 );
-	CellApp::instance().entityItems( pList );
-	return pList;
+    PyObject* pList = PyList_New(0);
+    CellApp::instance().entityItems(pList);
+    return pList;
 }
-
 
 /**
  *	This method returns the entity with the input index. If this entity cannot
  *	be found, the default value is returned.
  */
-PyObject * PyEntities::py_get( PyObject * args )
+PyObject* PyEntities::py_get(PyObject* args)
 {
-	PyObject * pDefault = Py_None;
-	int id = 0;
-	if (!PyArg_ParseTuple( args, "i|O", &id, &pDefault ))
-	{
-		return NULL;
-	}
+    PyObject* pDefault = Py_None;
+    int       id       = 0;
+    if (!PyArg_ParseTuple(args, "i|O", &id, &pDefault)) {
+        return NULL;
+    }
 
-	PyObject * pEntity = CellApp::instance().findEntity( id );
+    PyObject* pEntity = CellApp::instance().findEntity(id);
 
-	if (!pEntity)
-	{
-		pEntity = pDefault;
-	}
+    if (!pEntity) {
+        pEntity = pDefault;
+    }
 
-	Py_INCREF( pEntity );
-	return pEntity;
+    Py_INCREF(pEntity);
+    return pEntity;
 }
 
 BW_END_NAMESPACE

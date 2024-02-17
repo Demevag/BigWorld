@@ -9,45 +9,47 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
+namespace Mercury {
 
-class UDPChannel;
+    class UDPChannel;
 
-/**
- *	This class is used handle channels that will be deleted once they have no
- *	unacked packets.
- */
-class CondemnedChannels : public TimerHandler
-{
-public:
-	CondemnedChannels() : timerHandle_() {}
-	~CondemnedChannels();
+    /**
+     *	This class is used handle channels that will be deleted once they have
+     *no unacked packets.
+     */
+    class CondemnedChannels : public TimerHandler
+    {
+      public:
+        CondemnedChannels()
+          : timerHandle_()
+        {
+        }
+        ~CondemnedChannels();
 
-	void add( UDPChannel * pChannel );
+        void add(UDPChannel* pChannel);
 
-	UDPChannel * find( ChannelID channelID ) const;
+        UDPChannel* find(ChannelID channelID) const;
 
-	bool deleteFinishedChannels();
+        bool deleteFinishedChannels();
 
-	int numCriticalChannels() const;
+        int numCriticalChannels() const;
 
-	bool hasUnackedPackets() const;
+        bool hasUnackedPackets() const;
 
-private:
-	static const int AGE_LIMIT = 60;
+      private:
+        static const int AGE_LIMIT = 60;
 
-	virtual void handleTimeout( TimerHandle, void * );
-	bool shouldDelete( UDPChannel * pChannel, uint64 now ) const;
+        virtual void handleTimeout(TimerHandle, void*);
+        bool         shouldDelete(UDPChannel* pChannel, uint64 now) const;
 
-	typedef BW::list< UDPChannel * > NonIndexedChannels;
-	typedef BW::map< ChannelID, UDPChannel * > IndexedChannels;
+        typedef BW::list<UDPChannel*>           NonIndexedChannels;
+        typedef BW::map<ChannelID, UDPChannel*> IndexedChannels;
 
-	NonIndexedChannels	nonIndexedChannels_;
-	IndexedChannels		indexedChannels_;
+        NonIndexedChannels nonIndexedChannels_;
+        IndexedChannels    indexedChannels_;
 
-	TimerHandle timerHandle_;
-};
+        TimerHandle timerHandle_;
+    };
 
 } // namespace Mercury
 

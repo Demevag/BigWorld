@@ -12,4 +12,4 @@ typedef BW::deque<ConversionTask*> ConversionTaskQueue;
 
 BW_END_NAMESPACE
 
-#endif //ASSET_PIPELINE_CONVERSION_TASK_QUEUE
+#endif // ASSET_PIPELINE_CONVERSION_TASK_QUEUE

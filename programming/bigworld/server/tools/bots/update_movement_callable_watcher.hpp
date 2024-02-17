@@ -7,14 +7,17 @@ BW_BEGIN_NAMESPACE
 
 class UpdateMovementCallableWatcher : public SimpleCallableWatcher
 {
-public:
-	UpdateMovementCallableWatcher();
+  public:
+    UpdateMovementCallableWatcher();
 
-private:
-	bool setFromStream( void * base, const char * path,
-		WatcherPathRequestV2 & pathRequest );
-	bool onCall( BW::string & output, BW::string & value,
-		int parameterCount, BinaryIStream & parameters );
+  private:
+    bool setFromStream(void*                 base,
+                       const char*           path,
+                       WatcherPathRequestV2& pathRequest);
+    bool onCall(BW::string&    output,
+                BW::string&    value,
+                int            parameterCount,
+                BinaryIStream& parameters);
 };
 
 BW_END_NAMESPACE

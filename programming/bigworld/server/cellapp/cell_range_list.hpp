@@ -3,7 +3,6 @@
 
 #include "range_list_node.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,26 +10,25 @@ BW_BEGIN_NAMESPACE
  */
 class RangeList
 {
-public:
-	RangeList();
+  public:
+    RangeList();
 
-	void add( RangeListNode * pNode );
+    void add(RangeListNode* pNode);
 
-	// For debugging
-	bool isSorted() const;
-	void debugDump();
+    // For debugging
+    bool isSorted() const;
+    void debugDump();
 
-	const RangeListNode * pFirstNode() const	{ return &first_; }
-	const RangeListNode * pLastNode() const		{ return &last_; }
+    const RangeListNode* pFirstNode() const { return &first_; }
+    const RangeListNode* pLastNode() const { return &last_; }
 
-	RangeListNode * pFirstNode() { return &first_; }
-	RangeListNode * pLastNode()	{ return &last_; }
+    RangeListNode* pFirstNode() { return &first_; }
+    RangeListNode* pLastNode() { return &last_; }
 
-private:
-	RangeListTerminator first_;
-	RangeListTerminator last_;
+  private:
+    RangeListTerminator first_;
+    RangeListTerminator last_;
 };
-
 
 #ifdef CODE_INLINE
 #include "cell_range_list.ipp"

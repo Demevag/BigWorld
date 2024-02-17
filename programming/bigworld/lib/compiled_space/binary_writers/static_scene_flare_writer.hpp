@@ -10,46 +10,42 @@
 #include "../static_scene_types.hpp"
 #include "../static_scene_flare_types.hpp"
 
-namespace BW {
+namespace BW { namespace CompiledSpace {
 
-namespace CompiledSpace {
+    class StringTableWriter;
 
-class StringTableWriter;
+    class StaticSceneFlareWriter : public IStaticSceneWriterHandler
+    {
+      public:
+        StaticSceneFlareWriter();
+        ~StaticSceneFlareWriter();
 
-class StaticSceneFlareWriter : public IStaticSceneWriterHandler
-{
-public:
-	StaticSceneFlareWriter();
-	~StaticSceneFlareWriter();
-	
-	void convertFlare( const ConversionContext& ctx, 
-		const DataSectionPtr& pItemDS, const BW::string& uid );
+        void convertFlare(const ConversionContext& ctx,
+                          const DataSectionPtr&    pItemDS,
+                          const BW::string&        uid);
 
-	bool addFromChunkFlare( const DataSectionPtr& pObjectDS,
-		const Matrix& chunkTransform,
-		StringTableWriter& stringTable,
-		AssetListWriter& assetList );
+        bool addFromChunkFlare(const DataSectionPtr& pObjectDS,
+                               const Matrix&         chunkTransform,
+                               StringTableWriter&    stringTable,
+                               AssetListWriter&      assetList);
 
-private:
+      private:
+        // IStaticSceneWriterHandler interface
+        virtual SceneTypeSystem::RuntimeTypeID typeID() const;
 
-	// IStaticSceneWriterHandler interface
-	virtual SceneTypeSystem::RuntimeTypeID typeID() const;
+        virtual size_t        numObjects() const;
+        virtual const AABB&   worldBounds(size_t idx) const;
+        virtual const Matrix& worldTransform(size_t idx) const;
 
-	virtual size_t numObjects() const;
-	virtual const AABB& worldBounds( size_t idx ) const;
-	virtual const Matrix& worldTransform( size_t idx ) const;
+        virtual bool writeData(BinaryFormatWriter& writer);
 
-	virtual bool writeData( BinaryFormatWriter& writer );
-
-
-private:
-	BW::vector<StaticSceneFlareTypes::Flare> flares_;
-	BW::vector<Matrix> worldTransforms_;
-	BW::vector<AABB> worldBounds_;
-};
+      private:
+        BW::vector<StaticSceneFlareTypes::Flare> flares_;
+        BW::vector<Matrix>                       worldTransforms_;
+        BW::vector<AABB>                         worldBounds_;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW
-
 
 #endif // STATIC_SCENE_FLARE_WRITER_HPP

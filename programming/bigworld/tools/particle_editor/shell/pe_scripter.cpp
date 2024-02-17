@@ -12,7 +12,7 @@
 #include "common/compile_time.hpp"
 #include "entitydef/constants.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Shell", 0 )
+DECLARE_DEBUG_COMPONENT2("Shell", 0)
 
 BW_BEGIN_NAMESPACE
 
@@ -36,7 +36,6 @@ BW_BEGIN_NAMESPACE
  *  @components{ particleeditor }
  */
 
-
 // -----------------------------------------------------------------------------
 // Section: pe_scripter
 // -----------------------------------------------------------------------------
@@ -46,52 +45,48 @@ BW_BEGIN_NAMESPACE
  */
 bool Scripter::init(DataSectionPtr pDataSection)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	// Particle Systems are creatable from Python code
-	MF_VERIFY( ParticleSystemManager::init() );
+    // Particle Systems are creatable from Python code
+    MF_VERIFY(ParticleSystemManager::init());
 
-	PyImportPaths importPaths;
-	importPaths.addResPath( "resources/scripts" );
-	importPaths.addResPath( EntityDef::Constants::entitiesEditorPath() );
-	importPaths.addResPath( EntityDef::Constants::entitiesClientPath() );
-	importPaths.addResPath( EntityDef::Constants::userDataObjectsEditorPath() );
+    PyImportPaths importPaths;
+    importPaths.addResPath("resources/scripts");
+    importPaths.addResPath(EntityDef::Constants::entitiesEditorPath());
+    importPaths.addResPath(EntityDef::Constants::entitiesClientPath());
+    importPaths.addResPath(EntityDef::Constants::userDataObjectsEditorPath());
 
-	// Call the general init function
-	if (!Script::init( importPaths, "editor" ))
-	{
-		return false;
-	}
+    // Call the general init function
+    if (!Script::init(importPaths, "editor")) {
+        return false;
+    }
 
-	Options::initLoggers();
+    Options::initLoggers();
 
-	if (!MaterialKinds::init())
-	{
-		return false;
-	}
+    if (!MaterialKinds::init()) {
+        return false;
+    }
 
-	PyObject *pInit =
-		PyObject_GetAttrString(PyImport_AddModule("keys"), "init");
-	if (pInit != NULL)
-	{
-		PyRun_SimpleString( PyString_AsString(pInit) );
-	}
-	PyErr_Clear();
+    PyObject* pInit =
+      PyObject_GetAttrString(PyImport_AddModule("keys"), "init");
+    if (pInit != NULL) {
+        PyRun_SimpleString(PyString_AsString(pInit));
+    }
+    PyErr_Clear();
 
-	Personality::import( Options::getOptionString( "personality", "Personality" ) );
+    Personality::import(Options::getOptionString("personality", "Personality"));
 
-	return true;
+    return true;
 }
 
 void Scripter::fini()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	MaterialKinds::fini();
+    MaterialKinds::fini();
 
-	// Fini scripts
-	Script::fini();
-	ParticleSystemManager::fini();
+    // Fini scripts
+    Script::fini();
+    ParticleSystemManager::fini();
 }
 BW_END_NAMESPACE
-

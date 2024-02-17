@@ -16,397 +16,360 @@
 
 #include <cstdio>
 
-
 BW_BEGIN_NAMESPACE
 
+namespace TestBackgroundFileWriter {
 
-namespace TestBackgroundFileWriter
-{
+    /**
+     *	This class is used as a fixture for the BackgroundFileWriter unit tests.
+     *
+     *	It starts worker threads, and provides a hook for terminating a test.
+     */
+    class Fixture
+    {
+      public:
+        /**
+         *	Constructor.
+         */
+        Fixture()
+          : isFinished_(false)
+        {
+            unlink(this->tempFilePath());
+        }
 
+        /**
+         *	Destructor.
+         */
+        ~Fixture() { unlink(this->tempFilePath()); }
 
-/**
- *	This class is used as a fixture for the BackgroundFileWriter unit tests.
- *
- *	It starts worker threads, and provides a hook for terminating a test.
- */
-class Fixture
-{
-public:
+        /**
+         *	This method stops the current test.
+         */
+        void stopRunning() { isFinished_ = true; }
 
-	/**
-	 *	Constructor.
-	 */
-	Fixture() : 
-			isFinished_( false )
-	{
-		unlink( this->tempFilePath() );
-	}
+        /**
+         *	This method starts the worker threads and starts the test.
+         */
+        void run()
+        {
+            isFinished_ = false;
 
-	/**
-	 *	Destructor.
-	 */
-	~Fixture()
-	{
-		unlink( this->tempFilePath() );
-	}
+            BgTaskManager::instance().startThreads(2);
 
-	
-	/**
-	 *	This method stops the current test.
-	 */
-	void stopRunning()
-	{
-		isFinished_ = true;
-	}
+            while (!isFinished_) {
+                BgTaskManager::instance().tick();
+            }
 
+            BgTaskManager::instance().stopAll();
+        }
 
-	/**
-	 *	This method starts the worker threads and starts the test.
-	 */
-	void run()
-	{
-		isFinished_ = false;
+        /**
+         *	This method returns a file path suitable to be used for creating a
+         *	temporary file.
+         */
+        static char* tempFilePath()
+        {
+            if (!s_tempFilePath_[0]) {
+                // This is static so we only call it once per unit test program
+                // invocation - individual tests should clean up.
 
-		BgTaskManager::instance().startThreads( 2 );
-
-		while (!isFinished_)
-		{
-			BgTaskManager::instance().tick();
-		}
-
-		BgTaskManager::instance().stopAll();
-	}
-
-	/**
-	 *	This method returns a file path suitable to be used for creating a 
-	 *	temporary file.
-	 */
-	static char * tempFilePath()
-	{
-		if (!s_tempFilePath_[0])
-		{
-			// This is static so we only call it once per unit test program
-			// invocation - individual tests should clean up.
-
-#if defined( _WIN32 )
-			BW::wstring tempFilePathWString = getTempFilePathName();
-			if (!bw_wtoutf8( tempFilePathWString, s_tempFilePath_, 
-								sizeof( s_tempFilePath_ ) ))
-			{
-				ERROR_MSG( "Could not convert temporary file path wide-string to UTF-8\n" );
-				return NULL;
-			}
-#elif defined( __unix__ )
-			BW::string tempFilePathString = getTempFilePathName();
-			strncpy( s_tempFilePath_, tempFilePathString.c_str(), 
-						sizeof( s_tempFilePath_ ) );
-			s_tempFilePath_[ sizeof( s_tempFilePath_ ) - 1 ] = 0;
-			if (!s_tempFilePath_[0])
-			{
-				ERROR_MSG( "Could not create temporary file.\n" );
-				return NULL;
-			}
+#if defined(_WIN32)
+                BW::wstring tempFilePathWString = getTempFilePathName();
+                if (!bw_wtoutf8(tempFilePathWString,
+                                s_tempFilePath_,
+                                sizeof(s_tempFilePath_))) {
+                    ERROR_MSG("Could not convert temporary file path "
+                              "wide-string to UTF-8\n");
+                    return NULL;
+                }
+#elif defined(__unix__)
+                BW::string tempFilePathString = getTempFilePathName();
+                strncpy(s_tempFilePath_,
+                        tempFilePathString.c_str(),
+                        sizeof(s_tempFilePath_));
+                s_tempFilePath_[sizeof(s_tempFilePath_) - 1] = 0;
+                if (!s_tempFilePath_[0]) {
+                    ERROR_MSG("Could not create temporary file.\n");
+                    return NULL;
+                }
 #endif // defined( _WIN32 )
+            }
 
-		}
+            return s_tempFilePath_;
+        }
 
-		return s_tempFilePath_;
-	}
+      private:
+        bool isFinished_;
 
-private:
-	bool isFinished_;
+        static char s_tempFilePath_[1024];
+    };
 
-	static char s_tempFilePath_[1024];
-};
+    char Fixture::s_tempFilePath_[1024] = "";
 
-char Fixture::s_tempFilePath_[1024] = "";
+    class TestFileWriterListener : public BackgroundFileWriterListener
+    {
+      public:
+        TestFileWriterListener(Fixture& fixture)
+          : fixture_(fixture)
+          , hasError_(false)
+        {
+        }
 
+        virtual ~TestFileWriterListener() {}
 
-class TestFileWriterListener : public BackgroundFileWriterListener
-{
-public:
-	TestFileWriterListener( Fixture & fixture ) :
-			fixture_( fixture ),
-			hasError_( false )
-	{}
+        bool hasError() const { return hasError_; }
+        void setError()
+        {
+            hasError_ = true;
+            fixture_.stopRunning();
+        }
 
+        Fixture& fixture() { return fixture_; }
 
-	virtual ~TestFileWriterListener() 
-	{
-		
-	}
+        // Overrides from BackgroundFileWriterListener
+        virtual void onBackgroundFileWritingError(IBackgroundFileWriter& writer)
+        {
+            ERROR_MSG("onBackgroundFileWritingError called: %s\n",
+                      writer.errorString().c_str());
+            this->setError();
+        }
 
-	bool hasError() const { return hasError_; }
-	void setError() 
-	{ 
-		hasError_ = true; 
-		fixture_.stopRunning(); 
-	}
+      private:
+        Fixture& fixture_;
+        bool     hasError_;
+    };
 
-	Fixture & fixture() { return fixture_; }
+    /**
+     *	This class writes out increasing unsigned 32-bit integers to a file.
+     */
+    class IncrementingFileWriter : public TestFileWriterListener
+    {
+      public:
+        /**
+         *	Constructor.
+         *
+         *	@param fixture	The test fixture.
+         *	@param pWriter	The background file writer instance.
+         *	@param max		The maximum number of integers to write.
+         */
+        IncrementingFileWriter(Fixture&                fixture,
+                               BackgroundFileWriterPtr pWriter,
+                               uint32                  max = 100)
+          : TestFileWriterListener(fixture)
+          , pWriter_(pWriter)
+          , nextExpected_(1)
+          , max_(max)
+        {
+            pWriter_->setListener(this);
+        }
 
-	// Overrides from BackgroundFileWriterListener
-	virtual void onBackgroundFileWritingError( 
-		IBackgroundFileWriter & writer )
-	{
-		ERROR_MSG( "onBackgroundFileWritingError called: %s\n", 
-			writer.errorString().c_str() );
-		this->setError();
-	}
+        /** Destructor. */
+        virtual ~IncrementingFileWriter() {}
 
-private:
-	Fixture & fixture_;
-	bool hasError_;
-};
+        /**
+         *	This method queues the writes necessary to write out the integers.
+         */
+        void queueWrites()
+        {
+            for (uint32 i = 1; i <= max_; ++i) {
+                pWriter_->queueWriteBlob((const char*)&i, sizeof(i), i);
+            }
+        }
 
+        // Overrides from BackgroundFileWriterListener
+        virtual void onBackgroundFileWritingComplete(
+          IBackgroundFileWriter& writer,
+          long                   filePosition,
+          int                    userArg)
+        {
+            if (nextExpected_ != uint32(userArg)) {
+                ERROR_MSG("onBackgroundFileWritingComplete: "
+                          "next expected = %u, got %u\n",
+                          nextExpected_,
+                          userArg);
+                this->setError();
+                return;
+            }
 
-/**
- *	This class writes out increasing unsigned 32-bit integers to a file.
- */
-class IncrementingFileWriter : public TestFileWriterListener
-{
-public:
+            ++nextExpected_;
 
-	/**
-	 *	Constructor.
-	 *
-	 *	@param fixture	The test fixture.
-	 *	@param pWriter	The background file writer instance.
-	 *	@param max		The maximum number of integers to write.
-	 */
-	IncrementingFileWriter( Fixture & fixture, 
-				BackgroundFileWriterPtr pWriter, uint32 max = 100 ) :
-			TestFileWriterListener( fixture ),
-			pWriter_( pWriter ),
-			nextExpected_( 1 ),
-			max_( max )
-	{
-		pWriter_->setListener( this );
-	}
+            if (uint32(userArg) == max_) {
+                this->fixture().stopRunning();
+            }
+        }
 
+        /**
+         *	This method verifies that the file at the given path has the
+         *expected number of integers.
+         */
+        static bool verify(const char* path, uint32 expectedTotal = 100)
+        {
+            bool  isOK = true;
+            FILE* f    = fopen(path, "rb");
 
-	/** Destructor. */
-	virtual ~IncrementingFileWriter()  {}
+            if (!f) {
+                ERROR_MSG("IncrementingFileWriter::verify: "
+                          "Couldn't open file: %s\n",
+                          strerror(errno));
+                return false;
+            }
 
-	/**
-	 *	This method queues the writes necessary to write out the integers.
-	 */
-	void queueWrites()
-	{
-		for (uint32 i = 1; i <= max_; ++i)
-		{
-			pWriter_->queueWriteBlob( (const char *)&i, sizeof( i ), i );
-		}
-	}
+            uint32 nextRead = 0;
+            uint32 expected = 1;
 
-	// Overrides from BackgroundFileWriterListener
-	virtual void onBackgroundFileWritingComplete( 
-			IBackgroundFileWriter & writer, long filePosition, int userArg )
-	{
-		if (nextExpected_ != uint32( userArg ))
-		{
-			ERROR_MSG( "onBackgroundFileWritingComplete: "
-					"next expected = %u, got %u\n",
-				nextExpected_, userArg );
-			this->setError();
-			return;
-		}
+            bool isDone = false;
 
-		++nextExpected_;
+            while (!isDone) {
+                size_t numRead = fread(&nextRead, sizeof(uint32), 1, f);
+                if (numRead == 1) {
+                    if (nextRead != expected) {
+                        ERROR_MSG("IncrementingFileWriter::verify: "
+                                  "Read %u, expecting %u\n",
+                                  nextRead,
+                                  expected);
+                        isOK   = false;
+                        isDone = true;
+                    }
+                    ++expected;
+                } else {
+                    isDone = true;
+                }
+            }
 
-		if (uint32( userArg ) == max_)
-		{
-			this->fixture().stopRunning();
-		}
-	}
+            if (isOK && (nextRead != expectedTotal)) {
+                ERROR_MSG("IncrementingFileWriter::verify: "
+                          "Expecting to end on %u, got %u\n",
+                          expectedTotal,
+                          nextRead);
+                isOK = false;
+            }
 
-	/**
-	 *	This method verifies that the file at the given path has the expected number of integers.
-	 */
-	static bool verify( const char * path, uint32 expectedTotal = 100 )
-	{
-		bool isOK = true;
-		FILE * f = fopen( path, "rb" );
+            fclose(f);
 
-		if (!f)
-		{
-			ERROR_MSG( "IncrementingFileWriter::verify: "
-					"Couldn't open file: %s\n", 
-				strerror( errno ) );
-			return false;
-		}
+            return isOK;
+        }
 
-		uint32 nextRead = 0;
-		uint32 expected = 1;
+      private:
+        BackgroundFileWriterPtr pWriter_;
+        uint32                  nextExpected_;
+        uint32                  max_;
+    };
 
-		bool isDone = false;
+    TEST_F(Fixture, TestNoPreExistingFile)
+    {
+        CHECK(this->tempFilePath() != NULL);
 
-		while (!isDone)
-		{
-			size_t numRead = fread( &nextRead, sizeof( uint32 ), 1, f );
-			if (numRead == 1)
-			{
-				if (nextRead != expected)
-				{
-					ERROR_MSG( "IncrementingFileWriter::verify: "
-							"Read %u, expecting %u\n", 
-						nextRead, expected );
-					isOK = false;
-					isDone = true;
-				}
-				++expected;
-			} 
-			else 
-			{
-				isDone = true;
-			}
-		}
+        BackgroundFileWriterPtr pWriter =
+          new BackgroundFileWriter(BgTaskManager::instance());
 
-		
-		if (isOK && (nextRead != expectedTotal))
-		{
-			ERROR_MSG( "IncrementingFileWriter::verify: "
-					"Expecting to end on %u, got %u\n", 
-				expectedTotal, nextRead );
-			isOK = false;
-		}
+        pWriter->initWithFileSystemPath(this->tempFilePath());
 
-		fclose( f );
+        IncrementingFileWriter ifWriter(*this, pWriter);
 
-		return isOK;
-	}
+        ifWriter.queueWrites();
 
+        this->run();
 
-private:
-	BackgroundFileWriterPtr pWriter_;
-	uint32 nextExpected_;
-	uint32 max_;
-};
+        CHECK(!pWriter->hasError());
+        CHECK(IncrementingFileWriter::verify(this->tempFilePath()));
+    }
 
-TEST_F( Fixture, TestNoPreExistingFile )
-{
-	CHECK( this->tempFilePath() != NULL );
+    TEST_F(Fixture, TestPreExistingFile)
+    {
+        CHECK(this->tempFilePath() != NULL);
 
-	BackgroundFileWriterPtr pWriter = new BackgroundFileWriter( 
-		BgTaskManager::instance() );
-	
-	pWriter->initWithFileSystemPath( this->tempFilePath() );
+        FILE* f = fopen(this->tempFilePath(), "wb");
 
-	IncrementingFileWriter ifWriter( *this, pWriter );
+        const char TEST_DATA[] = "Some data";
+        CHECK_EQUAL(fwrite(TEST_DATA, sizeof(TEST_DATA), 1, f), size_t(1));
+        CHECK_EQUAL(fclose(f), 0);
 
-	ifWriter.queueWrites();
+        BackgroundFileWriterPtr pWriter =
+          new BackgroundFileWriter(BgTaskManager::instance());
 
-	this->run();
+        pWriter->initWithFileSystemPath(this->tempFilePath(),
+                                        /*shouldOverwrite: */ true);
 
-	CHECK( !pWriter->hasError() );
-	CHECK( IncrementingFileWriter::verify( this->tempFilePath() ) );
-}
+        IncrementingFileWriter ifWriter(*this, pWriter);
 
+        ifWriter.queueWrites();
 
-TEST_F( Fixture, TestPreExistingFile )
-{
-	CHECK( this->tempFilePath() != NULL );
+        this->run();
 
-	FILE * f = fopen( this->tempFilePath(), "wb" );
+        CHECK(!pWriter->hasError());
+        CHECK(IncrementingFileWriter::verify(this->tempFilePath()));
+    }
 
-	const char TEST_DATA[] = "Some data";
-	CHECK_EQUAL( fwrite( TEST_DATA, sizeof( TEST_DATA ), 1, f ), size_t( 1 ) );
-	CHECK_EQUAL( fclose( f ), 0 );
+    /**
+     *	This listener stops running the test after receiving a set number of
+     *	callbacks.
+     */
+    class FixedTotalListener : public TestFileWriterListener
+    {
+      public:
+        FixedTotalListener(Fixture& fixture, uint expectedNumCallbacks)
+          : TestFileWriterListener(fixture)
+          , expectedNumCallbacks_(expectedNumCallbacks)
+          , numCallbacks_(0)
+        {
+        }
 
+        virtual ~FixedTotalListener() {}
 
-	BackgroundFileWriterPtr pWriter = new BackgroundFileWriter( 
-		BgTaskManager::instance() );
-	
-	pWriter->initWithFileSystemPath( this->tempFilePath(), 
-		/*shouldOverwrite: */ true );
+        // Overrides from BackgroundFileWriterListener
+        virtual void onBackgroundFileWritingComplete(
+          IBackgroundFileWriter& writer,
+          long                   filePosition,
+          int                    userArg)
+        {
+            ++numCallbacks_;
 
-	IncrementingFileWriter ifWriter( *this, pWriter );
+            if (numCallbacks_ == expectedNumCallbacks_) {
+                this->fixture().stopRunning();
+            } else if (numCallbacks_ > expectedNumCallbacks_) {
+                ERROR_MSG(
+                  "FixedTotalListener::onBackgroundFileWritingComplete: "
+                  "Got unexpected callback\n");
+                this->setError();
+            }
+        }
 
-	ifWriter.queueWrites();
+      private:
+        uint expectedNumCallbacks_;
+        uint numCallbacks_;
+    };
 
-	this->run();
+    TEST_F(Fixture, TestInterleavedSeekWriting)
+    {
+        CHECK(this->tempFilePath() != NULL);
 
-	CHECK( !pWriter->hasError() );
-	CHECK( IncrementingFileWriter::verify( this->tempFilePath() ) );
+        BackgroundFileWriterPtr pWriter =
+          new BackgroundFileWriter(BgTaskManager::instance());
 
-}
+        pWriter->initWithFileSystemPath(this->tempFilePath());
 
+        FixedTotalListener fixedTotalListener(*this, 200);
+        pWriter->setListener(&fixedTotalListener);
 
-/**
- *	This listener stops running the test after receiving a set number of
- *	callbacks.
- */
-class FixedTotalListener: 
-		public TestFileWriterListener 
-{
-public:
-	FixedTotalListener( Fixture & fixture, uint expectedNumCallbacks ) :
-			TestFileWriterListener( fixture ),
-			expectedNumCallbacks_( expectedNumCallbacks ),
-			numCallbacks_( 0 )
-	{}
+        for (uint32 i = 1; i <= 100; ++i) {
+            uint32 out = ((i % 2) != 0) ? i : uint32(-1);
 
-	virtual ~FixedTotalListener()
-	{}
+            pWriter->queueWriteBlob((const char*)&out, sizeof(i));
+        }
 
-	// Overrides from BackgroundFileWriterListener
-	virtual void onBackgroundFileWritingComplete( 
-			IBackgroundFileWriter & writer, long filePosition, int userArg )
-	{
-		++numCallbacks_;
+        for (uint32 i = 1; i <= 50; ++i) {
+            pWriter->queueSeek((i * 2 - 1) * sizeof(uint32), SEEK_SET);
+            uint32 out = i * 2;
+            pWriter->queueWriteBlob((const char*)&out, sizeof(i));
+        }
 
-		if (numCallbacks_ == expectedNumCallbacks_)
-		{
-			this->fixture().stopRunning();
-		}
-		else if (numCallbacks_ > expectedNumCallbacks_)
-		{
-			ERROR_MSG( "FixedTotalListener::onBackgroundFileWritingComplete: "
-					"Got unexpected callback\n" );
-			this->setError();
-		}
-	}
+        this->run();
 
-private:
-	uint expectedNumCallbacks_;
-	uint numCallbacks_;
-};
-
-TEST_F( Fixture, TestInterleavedSeekWriting )
-{
-	CHECK( this->tempFilePath() != NULL );
-
-	BackgroundFileWriterPtr pWriter = new BackgroundFileWriter( 
-		BgTaskManager::instance() );
-		
-	pWriter->initWithFileSystemPath( this->tempFilePath() );
-
-	FixedTotalListener fixedTotalListener( *this, 200 );
-	pWriter->setListener( &fixedTotalListener );
-
-	for (uint32 i = 1; i <= 100; ++i)
-	{
-		uint32 out = ((i % 2) != 0) ? i : uint32( -1 );
-		
-		pWriter->queueWriteBlob( (const char *)&out, sizeof( i ) );
-	}
-
-	for (uint32 i = 1; i <= 50; ++i)
-	{
-		pWriter->queueSeek( (i * 2 - 1) * sizeof( uint32 ), SEEK_SET );
-		uint32 out = i * 2;
-		pWriter->queueWriteBlob( (const char *)&out, sizeof( i ) );
-	}
-
-	this->run();
-
-	CHECK( !pWriter->hasError() );
-	CHECK( IncrementingFileWriter::verify( this->tempFilePath() ) );
-}
-
+        CHECK(!pWriter->hasError());
+        CHECK(IncrementingFileWriter::verify(this->tempFilePath()));
+    }
 
 } // end namespace TestBackgroundFileWriter
-
 
 BW_END_NAMESPACE
 

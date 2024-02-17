@@ -5,7 +5,6 @@
 
 #include <stdlib.h>
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -13,36 +12,36 @@ BW_BEGIN_NAMESPACE
  */
 class TextFileHandler : public FileHandler
 {
-public:
-	TextFileHandler();
-	virtual ~TextFileHandler();
+  public:
+    TextFileHandler();
+    virtual ~TextFileHandler();
 
-	bool init( const char *filename, const char *mode );
-	bool close();
-	bool isOpened() { return (fp_ != NULL); }
-	bool reopenIfChanged();
+    bool init(const char* filename, const char* mode);
+    bool close();
+    bool isOpened() { return (fp_ != NULL); }
+    bool reopenIfChanged();
 
-	virtual long length();
+    virtual long length();
 
-	virtual bool read();
-	virtual bool handleLine( const char *line ) = 0;
+    virtual bool read();
+    virtual bool handleLine(const char* line) = 0;
 
-	bool writeLine( const char *line ) const;
+    bool writeLine(const char* line) const;
 
-protected:
-	FILE *fp_;
+  protected:
+    FILE* fp_;
 
-private:
-	bool reopen();
+  private:
+    bool reopen();
 
-	enum InodeStatus
-	{
-		INODE_STATUS_ERROR,
-		INODE_STATUS_UNCHANGED,
-		INODE_STATUS_CHANGED
-	};
+    enum InodeStatus
+    {
+        INODE_STATUS_ERROR,
+        INODE_STATUS_UNCHANGED,
+        INODE_STATUS_CHANGED
+    };
 
-	InodeStatus getInodeStatus();
+    InodeStatus getInodeStatus();
 };
 
 BW_END_NAMESPACE

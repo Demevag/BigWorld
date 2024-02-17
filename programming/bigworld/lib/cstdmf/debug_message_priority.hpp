@@ -14,24 +14,24 @@ BW_BEGIN_NAMESPACE
  */
 enum DebugMessagePriority
 {
-	MESSAGE_PRIORITY_TRACE,
-	MESSAGE_PRIORITY_DEBUG,
-	MESSAGE_PRIORITY_INFO,
-	MESSAGE_PRIORITY_NOTICE,
-	MESSAGE_PRIORITY_WARNING,
-	MESSAGE_PRIORITY_ERROR,
-	MESSAGE_PRIORITY_CRITICAL,
-	MESSAGE_PRIORITY_HACK,
-	DEPRECATED_PRIORITY_SCRIPT,
-	MESSAGE_PRIORITY_ASSET,
-	NUM_MESSAGE_PRIORITY,
-	FORCE_32_BITS = 0x7fffffff
+    MESSAGE_PRIORITY_TRACE,
+    MESSAGE_PRIORITY_DEBUG,
+    MESSAGE_PRIORITY_INFO,
+    MESSAGE_PRIORITY_NOTICE,
+    MESSAGE_PRIORITY_WARNING,
+    MESSAGE_PRIORITY_ERROR,
+    MESSAGE_PRIORITY_CRITICAL,
+    MESSAGE_PRIORITY_HACK,
+    DEPRECATED_PRIORITY_SCRIPT,
+    MESSAGE_PRIORITY_ASSET,
+    NUM_MESSAGE_PRIORITY,
+    FORCE_32_BITS = 0x7fffffff
 };
 
-const char * messagePrefix( DebugMessagePriority p );
+const char* messagePrefix(DebugMessagePriority p);
 
-std::ostream& operator<<( std::ostream &s, const DebugMessagePriority &v );
-std::istream& operator>>( std::istream &s, DebugMessagePriority &v );
+std::ostream& operator<<(std::ostream& s, const DebugMessagePriority& v);
+std::istream& operator>>(std::istream& s, DebugMessagePriority& v);
 
 BW_END_NAMESPACE
 

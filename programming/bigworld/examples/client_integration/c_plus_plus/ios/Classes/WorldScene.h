@@ -6,16 +6,15 @@
 @class WorldLayer;
 @class WorldUIModel;
 
-@interface WorldScene : CCScene
-{
+@interface WorldScene : CCScene {
 }
 
-@property (nonatomic, retain, readonly) WorldLayer * worldLayer;
-@property (nonatomic, retain, readonly) HUDLayer * hudLayer;
-@property (nonatomic, retain, readonly) EntityInfoLayer * entityInfoLayer;
-@property (nonatomic, retain, readonly) WorldUIModel * uiModel;
+@property (nonatomic, retain, readonly) WorldLayer*      worldLayer;
+@property (nonatomic, retain, readonly) HUDLayer*        hudLayer;
+@property (nonatomic, retain, readonly) EntityInfoLayer* entityInfoLayer;
+@property (nonatomic, retain, readonly) WorldUIModel*    uiModel;
 
-+ (CCScene *) scene;
-+ (WorldScene *) sharedWorldScene;
++ (CCScene*)scene;
++ (WorldScene*)sharedWorldScene;
 
 @end

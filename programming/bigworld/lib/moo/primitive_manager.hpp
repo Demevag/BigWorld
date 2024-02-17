@@ -5,57 +5,57 @@
 #include "primitive.hpp"
 #include "device_callback.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Moo
-{
+namespace Moo {
 
-/**
- *	This singleton class keeps track of and loads Primitives.
- */
-class PrimitiveManager : public Moo::DeviceCallback
-{
-public:
-	typedef BW::map< BW::string, Primitive * > PrimitiveMap;
+    /**
+     *	This singleton class keeps track of and loads Primitives.
+     */
+    class PrimitiveManager : public Moo::DeviceCallback
+    {
+      public:
+        typedef BW::map<BW::string, Primitive*> PrimitiveMap;
 
-	~PrimitiveManager();
+        ~PrimitiveManager();
 
-	static PrimitiveManager* instance();
+        static PrimitiveManager* instance();
 
-	PrimitivePtr				get( const BW::string& resourceID );
+        PrimitivePtr get(const BW::string& resourceID);
 
-	virtual void				deleteManagedObjects( );
-	virtual void				createManagedObjects( );
+        virtual void deleteManagedObjects();
+        virtual void createManagedObjects();
 
-	static void init();
-	static void fini();
+        static void init();
+        static void fini();
 
-	void find( const BW::string & primitiveFile, PrimitivePtr primitives[], size_t& howMany );
+        void find(const BW::string& primitiveFile,
+                  PrimitivePtr      primitives[],
+                  size_t&           howMany);
 
-private:
-	PrimitiveManager();
-	PrimitiveManager(const PrimitiveManager&);
-	PrimitiveManager& operator=(const PrimitiveManager&);
+      private:
+        PrimitiveManager();
+        PrimitiveManager(const PrimitiveManager&);
+        PrimitiveManager& operator=(const PrimitiveManager&);
 
-	static void tryDestroy( const Primitive * pPrimitive, bool isInPrimativeMap );
+        static void tryDestroy(const Primitive* pPrimitive,
+                               bool             isInPrimativeMap);
 
-	void addInternal( Primitive * pPrimitive );
-	void delInternal( const Primitive * pPrimitive );
+        void addInternal(Primitive* pPrimitive);
+        void delInternal(const Primitive* pPrimitive);
 
-	PrimitivePtr find( const BW::string & resourceID );
+        PrimitivePtr find(const BW::string& resourceID);
 
-	PrimitiveMap				primitives_;
-	SimpleMutex					primitivesLock_;
+        PrimitiveMap primitives_;
+        SimpleMutex  primitivesLock_;
 
-	static PrimitiveManager*	pInstance_;
+        static PrimitiveManager* pInstance_;
 
-	friend void Primitive::destroy() const;
-};
+        friend void Primitive::destroy() const;
+    };
 
 } // namespace Moo
 
 BW_END_NAMESPACE
-
 
 #endif // PRIMITIVE_MANAGER_HPP

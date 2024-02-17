@@ -7,14 +7,17 @@ BW_BEGIN_NAMESPACE
 
 class DelBotsCallableWatcher : public SimpleCallableWatcher
 {
-public:
-	DelBotsCallableWatcher();
+  public:
+    DelBotsCallableWatcher();
 
-private:
-	bool setFromStream( void * base, const char * path,
-		WatcherPathRequestV2 & pathRequest );
-	bool onCall( BW::string & output, BW::string & value,
-		int parameterCount, BinaryIStream & parameters );
+  private:
+    bool setFromStream(void*                 base,
+                       const char*           path,
+                       WatcherPathRequestV2& pathRequest);
+    bool onCall(BW::string&    output,
+                BW::string&    value,
+                int            parameterCount,
+                BinaryIStream& parameters);
 };
 
 BW_END_NAMESPACE

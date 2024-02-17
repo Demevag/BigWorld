@@ -25,13 +25,13 @@ BW_BEGIN_NAMESPACE
  */
 class UserMetaDataType : public MetaDataType
 {
-public:
-	UserMetaDataType();
-	virtual ~UserMetaDataType();
+  public:
+    UserMetaDataType();
+    virtual ~UserMetaDataType();
 
-	virtual const char * name() const { return "USER_TYPE"; }
+    virtual const char* name() const { return "USER_TYPE"; }
 
-	virtual DataTypePtr getType( DataSectionPtr pSection );
+    virtual DataTypePtr getType(DataSectionPtr pSection);
 };
 
 BW_END_NAMESPACE

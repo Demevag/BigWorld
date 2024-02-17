@@ -14,93 +14,91 @@ class MD5;
 
 class MemberDescription
 {
-public:
-	enum OversizeWarnLevel
-	{
-		OVERSIZE_NO_WARNING = 0,
-		OVERSIZE_SHOULD_LOG,
-		OVERSIZE_SHOULD_PRINT_CALLSTACK,
-		OVERSIZE_SHOULD_RAISE_EXCEPTION
-	};
-	
-	static const char COMPONENT_NAME_SEPARATOR = '.';
+  public:
+    enum OversizeWarnLevel
+    {
+        OVERSIZE_NO_WARNING = 0,
+        OVERSIZE_SHOULD_LOG,
+        OVERSIZE_SHOULD_PRINT_CALLSTACK,
+        OVERSIZE_SHOULD_RAISE_EXCEPTION
+    };
 
-	MemberDescription( const char * name = NULL ) :
-		interfaceName_(),
-		name_(),
-		latestEventIndex_( -1 ),
-		isReliable_( true ),
-		varLenHeaderSize_( Mercury::DEFAULT_VARIABLE_LENGTH_HEADER_SIZE ),
-		oversizeWarnLevel_( OVERSIZE_SHOULD_LOG ),
-		stats_()
-	{
-		if (name)
-		{
-			name_ = name;
-		}
-	}
+    static const char COMPONENT_NAME_SEPARATOR = '.';
 
-	/** Destructor. */
-	virtual ~MemberDescription() {}
+    MemberDescription(const char* name = NULL)
+      : interfaceName_()
+      , name_()
+      , latestEventIndex_(-1)
+      , isReliable_(true)
+      , varLenHeaderSize_(Mercury::DEFAULT_VARIABLE_LENGTH_HEADER_SIZE)
+      , oversizeWarnLevel_(OVERSIZE_SHOULD_LOG)
+      , stats_()
+    {
+        if (name) {
+            name_ = name;
+        }
+    }
 
-	bool parse( const BW::string & interfaceName, DataSectionPtr pSection,
-		bool isForClient, unsigned int * pNumLatestEventMembers );
+    /** Destructor. */
+    virtual ~MemberDescription() {}
 
-	BWENTITY_API
-	const BW::string & name() const	{ return name_; }
+    bool parse(const BW::string& interfaceName,
+               DataSectionPtr    pSection,
+               bool              isForClient,
+               unsigned int*     pNumLatestEventMembers);
 
-	int latestEventIndex() const			{ return latestEventIndex_; }
-	bool isReliable() const					{ return isReliable_; }
+    BWENTITY_API
+    const BW::string& name() const { return name_; }
 
-	bool shouldSendLatestOnly() const		{ return latestEventIndex_ != -1; }
+    int  latestEventIndex() const { return latestEventIndex_; }
+    bool isReliable() const { return isReliable_; }
 
-	void setLatestEventIndex( int index );
+    bool shouldSendLatestOnly() const { return latestEventIndex_ != -1; }
 
-	bool checkForOversizeLength( size_t length, EntityID entityID ) const;
+    void setLatestEventIndex(int index);
 
-	EntityMemberStats & stats() const { return stats_; }
+    bool checkForOversizeLength(size_t length, EntityID entityID) const;
 
-	BW::string oversizeWarnLevelAsString() const;
+    EntityMemberStats& stats() const { return stats_; }
 
-	void watcherOversizeWarnLevelFromString( BW::string warnLevel );
+    BW::string oversizeWarnLevelAsString() const;
 
-protected:
-	void addToMD5( MD5 & md5 ) const;
+    void watcherOversizeWarnLevelFromString(BW::string warnLevel);
 
-	bool oversizeWarnLevelFromString( const BW::string & warnLevel );
+  protected:
+    void addToMD5(MD5& md5) const;
 
-	/**
-	 *	This method is used to describe this object in a human-readable way.
-	 */
-	virtual BW::string toString() const
-	{
-		return "MemberDescription";
-	}
+    bool oversizeWarnLevelFromString(const BW::string& warnLevel);
 
-	/**
-	 *	This method is used to get the size of the stream size when sending to
-	 *	the client from the server.
-	 */
-	virtual int getServerToClientStreamSize() const { return -1; }
+    /**
+     *	This method is used to describe this object in a human-readable way.
+     */
+    virtual BW::string toString() const { return "MemberDescription"; }
 
-	/**
-	 * This method returns the header size for a variable length message.
-	 */
-	virtual uint getVarLenHeaderSize() const { return varLenHeaderSize_; }
+    /**
+     *	This method is used to get the size of the stream size when sending to
+     *	the client from the server.
+     */
+    virtual int getServerToClientStreamSize() const { return -1; }
 
-	BW::string interfaceName_;
-	BW::string name_;
+    /**
+     * This method returns the header size for a variable length message.
+     */
+    virtual uint getVarLenHeaderSize() const { return varLenHeaderSize_; }
 
-	// This is an index into an array pointing to the latest instance of an
-	// event in an EventHistory. When <SendLatestOnly> is false, this is -1.
-	int latestEventIndex_;
-	bool isReliable_;
-	bool isForClient_;
+    BW::string interfaceName_;
+    BW::string name_;
 
-	uint 				varLenHeaderSize_;
-	OversizeWarnLevel 	oversizeWarnLevel_;
+    // This is an index into an array pointing to the latest instance of an
+    // event in an EventHistory. When <SendLatestOnly> is false, this is -1.
+    int  latestEventIndex_;
+    bool isReliable_;
+    bool isForClient_;
 
-	mutable EntityMemberStats stats_;
+    uint              varLenHeaderSize_;
+    OversizeWarnLevel oversizeWarnLevel_;
+
+    mutable EntityMemberStats stats_;
 };
 
 BW_END_NAMESPACE

@@ -9,18 +9,21 @@ class PsaEmptyProperties : public PsaProperties
 {
     DECLARE_DYNCREATE(PsaEmptyProperties)
 
-public:
-    enum { IDD = IDD_PSA_EMPTY };
+  public:
+    enum
+    {
+        IDD = IDD_PSA_EMPTY
+    };
 
-    PsaEmptyProperties(); 
+    PsaEmptyProperties();
 
     /*virtual*/ ~PsaEmptyProperties();
 
-    /*virtual*/ void *action();
+    /*virtual*/ void* action();
 
     /*virtual*/ void SetParameters(SetOperation);
 
-protected:
+  protected:
     DECLARE_MESSAGE_MAP()
 };
 

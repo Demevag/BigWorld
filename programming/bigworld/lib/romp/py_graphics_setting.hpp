@@ -6,7 +6,6 @@
 #include "pyscript/pyobject_plus.hpp"
 #include "pyscript/script.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -17,30 +16,27 @@ BW_BEGIN_NAMESPACE
  */
 class PyCallbackGraphicsSetting : public Moo::GraphicsSetting
 {
-public:
-	PyCallbackGraphicsSetting(
-		const BW::string & label, 
-		const BW::string & desc,
-		int                 activeOption,
-		bool                delayed,
-		bool                needsRestart,
-		PyObject*			callback);
+  public:
+    PyCallbackGraphicsSetting(const BW::string& label,
+                              const BW::string& desc,
+                              int               activeOption,
+                              bool              delayed,
+                              bool              needsRestart,
+                              PyObject*         callback);
 
-	~PyCallbackGraphicsSetting()	{};
+    ~PyCallbackGraphicsSetting(){};
 
-	//callback from the graphics settings system.
-	void onOptionSelected(int optionIndex);
+    // callback from the graphics settings system.
+    void onOptionSelected(int optionIndex);
 
-	void pCallback( PyObjectPtr pc );
-	PyObjectPtr pCallback() const;
+    void        pCallback(PyObjectPtr pc);
+    PyObjectPtr pCallback() const;
 
-private:
-	PyObjectPtr	pCallback_;
+  private:
+    PyObjectPtr pCallback_;
 };
 
-
 typedef SmartPointer<PyCallbackGraphicsSetting> PyCallbackGraphicsSettingPtr;
-
 
 /*~ class BigWorld.PyGraphicsSetting
  *	@components{ client,  tools }
@@ -68,36 +64,39 @@ typedef SmartPointer<PyCallbackGraphicsSetting> PyCallbackGraphicsSettingPtr;
  */
 class PyGraphicsSetting : public PyObjectPlus
 {
-	Py_Header( PyGraphicsSetting, PyObjectPlus )
+    Py_Header(PyGraphicsSetting, PyObjectPlus)
 
-public:
-	PyGraphicsSetting( PyCallbackGraphicsSettingPtr pSetting, PyTypeObject * pType = &s_type_ );
-	~PyGraphicsSetting() {};
+      public
+      : PyGraphicsSetting(PyCallbackGraphicsSettingPtr pSetting,
+                          PyTypeObject*                pType = &s_type_);
+    ~PyGraphicsSetting(){};
 
-	int addOption( const BW::string & label, const BW::string & desc, bool isSupported, bool isAdvanced );
-	void registerSetting();
-	void onOptionSelected(int optionIndex);
+    int  addOption(const BW::string& label,
+                   const BW::string& desc,
+                   bool              isSupported,
+                   bool              isAdvanced);
+    void registerSetting();
+    void onOptionSelected(int optionIndex);
 
-	void pCallback( PyObjectPtr pc ){ pSetting_->pCallback(pc); }
-	PyObjectPtr pCallback() const	{ return pSetting_->pCallback(); }
+    void        pCallback(PyObjectPtr pc) { pSetting_->pCallback(pc); }
+    PyObjectPtr pCallback() const { return pSetting_->pCallback(); }
 
-	PY_RW_ACCESSOR_ATTRIBUTE_DECLARE( PyObjectPtr, pCallback, callback )
-	PY_AUTO_METHOD_DECLARE( RETDATA, addOption,
-		ARG(BW::string,
-		ARG(BW::string,
-		ARG(bool,
-		ARG(bool, END ) ) ) ) );
-	PY_AUTO_METHOD_DECLARE( RETVOID, registerSetting, END );
+    PY_RW_ACCESSOR_ATTRIBUTE_DECLARE(PyObjectPtr, pCallback, callback)
+    PY_AUTO_METHOD_DECLARE(RETDATA,
+                           addOption,
+                           ARG(BW::string,
+                               ARG(BW::string, ARG(bool, ARG(bool, END)))));
+    PY_AUTO_METHOD_DECLARE(RETVOID, registerSetting, END);
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-protected:
-	PyCallbackGraphicsSettingPtr		pSetting_;
+  protected:
+    PyCallbackGraphicsSettingPtr pSetting_;
 };
 
-PY_SCRIPT_CONVERTERS_DECLARE( PyGraphicsSetting )
+PY_SCRIPT_CONVERTERS_DECLARE(PyGraphicsSetting)
 
-typedef SmartPointer<PyGraphicsSetting>	PyGraphicsSettingPtr;
+typedef SmartPointer<PyGraphicsSetting> PyGraphicsSettingPtr;
 
 BW_END_NAMESPACE
 

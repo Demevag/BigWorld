@@ -10,68 +10,60 @@
 #include "unit_test_lib/unit_test.hpp"
 #include <memory>
 
-
 BW_USE_NAMESPACE
 
-int main( int argc, char * argv[] )
+int main(int argc, char* argv[])
 {
-	BW_SYSTEMSTAGE_MAIN();
+    BW_SYSTEMSTAGE_MAIN();
 
-	BW::Allocator::setCrashOnLeak( true );
-	
-	const std::auto_ptr<CStdMf> cstdmfSingleton( new CStdMf );
+    BW::Allocator::setCrashOnLeak(true);
 
-	//For the unit tests, we force a particular resource path.
-	const char * myargv[] =
-		{
-			argv[0], "--res", UNIT_TEST_RESOURCE_PATH
-		};
-	int myargc = ARRAY_SIZE( myargv );
+    const std::auto_ptr<CStdMf> cstdmfSingleton(new CStdMf);
 
-	if ( !BWResource::init( myargc, myargv ) )
-	{
-		ERROR_MSG( "Unable to initialise BWResource.\n" );
-		return 1;
-	}
+    // For the unit tests, we force a particular resource path.
+    const char* myargv[] = { argv[0], "--res", UNIT_TEST_RESOURCE_PATH };
+    int         myargc   = ARRAY_SIZE(myargv);
 
-	if (!BgTaskManager::init())
-	{
-		ERROR_MSG( "Unable to initialise BgTaskManager.\n" );
-		BWResource::fini();
-		return 1;
-	}
-	if (!FileIOTaskManager::init())
-	{
-		ERROR_MSG( "Unable to initialise BgTaskManager.\n" );
-		BgTaskManager::fini();
-		BWResource::fini();
-		return 1;
-	}
+    if (!BWResource::init(myargc, myargv)) {
+        ERROR_MSG("Unable to initialise BWResource.\n");
+        return 1;
+    }
 
-	int result = 0;
-	if (!Moo::init())
-	{
-		ERROR_MSG( "Unable to initialise Moo.\n" );
-		FileIOTaskManager::fini();
-		BgTaskManager::fini();
-		BWResource::fini();
-		return 1;
-	}
+    if (!BgTaskManager::init()) {
+        ERROR_MSG("Unable to initialise BgTaskManager.\n");
+        BWResource::fini();
+        return 1;
+    }
+    if (!FileIOTaskManager::init()) {
+        ERROR_MSG("Unable to initialise BgTaskManager.\n");
+        BgTaskManager::fini();
+        BWResource::fini();
+        return 1;
+    }
 
-	Chunk::init();
+    int result = 0;
+    if (!Moo::init()) {
+        ERROR_MSG("Unable to initialise Moo.\n");
+        FileIOTaskManager::fini();
+        BgTaskManager::fini();
+        BWResource::fini();
+        return 1;
+    }
 
-	result = BWUnitTest::runTest( "moo", argc, argv );
+    Chunk::init();
 
-	Chunk::fini();
-	ChunkVLO::fini();
-	Moo::fini();
+    result = BWUnitTest::runTest("moo", argc, argv);
 
-	MainLoopTasks::finiAll();
-	DebugFilter::fini();
+    Chunk::fini();
+    ChunkVLO::fini();
+    Moo::fini();
 
-	FileIOTaskManager::fini();
-	BgTaskManager::fini();
-	BWResource::fini();
+    MainLoopTasks::finiAll();
+    DebugFilter::fini();
 
-	return result;
+    FileIOTaskManager::fini();
+    BgTaskManager::fini();
+    BWResource::fini();
+
+    return result;
 }

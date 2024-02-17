@@ -11,10 +11,9 @@ BW_BEGIN_NAMESPACE
 
 class WatcherProvider
 {
-public:
-	virtual WatcherPtr getWatcher() = 0;
+  public:
+    virtual WatcherPtr getWatcher() = 0;
 };
-
 
 /**
  *	This watcher supports looking at an object in a polymorphic way. That is,
@@ -32,39 +31,43 @@ public:
  */
 class PolymorphicWatcher : public Watcher
 {
-public:
-	/// @name Construction/Destruction
-	//@{
-	/// Constructor.
-	CSTDMF_DLL PolymorphicWatcher( const char * comment = "" );
-	//@}
+  public:
+    /// @name Construction/Destruction
+    //@{
+    /// Constructor.
+    CSTDMF_DLL PolymorphicWatcher(const char* comment = "");
+    //@}
 
-	virtual bool getAsString( const void * base,
-		const char * path,
-		BW::string & result,
-		BW::string & desc,
-		Mode & mode ) const;
+    virtual bool getAsString(const void* base,
+                             const char* path,
+                             BW::string& result,
+                             BW::string& desc,
+                             Mode&       mode) const;
 
-	virtual bool getAsString( const void * base, const char * path,
-		BW::string & result, Mode & mode ) const;
+    virtual bool getAsString(const void* base,
+                             const char* path,
+                             BW::string& result,
+                             Mode&       mode) const;
 
-	virtual bool setFromString( void * base,
-		const char * path,
-		const char * valueStr );
+    virtual bool setFromString(void*       base,
+                               const char* path,
+                               const char* valueStr);
 
-	virtual bool setFromStream( void * base,
-		const char * path,
-		WatcherPathRequestV2 & pathRequest );
+    virtual bool setFromStream(void*                 base,
+                               const char*           path,
+                               WatcherPathRequestV2& pathRequest);
 
-	virtual bool visitChildren( const void * base, const char *path,
-			WatcherPathRequest & pathRequest );
+    virtual bool visitChildren(const void*         base,
+                               const char*         path,
+                               WatcherPathRequest& pathRequest);
 
-	virtual bool getAsStream( const void * base,
-		const char * path, WatcherPathRequestV2 & pathRequest ) const;
+    virtual bool getAsStream(const void*           base,
+                             const char*           path,
+                             WatcherPathRequestV2& pathRequest) const;
 
-private:
-	WatcherPtr getWatcher( const void * base ) const;
-	WatcherProvider * getProvider( const void * base ) const;
+  private:
+    WatcherPtr       getWatcher(const void* base) const;
+    WatcherProvider* getProvider(const void* base) const;
 };
 
 BW_END_NAMESPACE

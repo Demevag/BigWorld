@@ -8,19 +8,16 @@
 
 #include "cstdmf/bw_list.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BinaryIStream;
 class BufferedInputMessage;
 class CellApp;
 
-namespace Mercury
-{
-class Address;
-class UnpackedMessageHeader;
+namespace Mercury {
+    class Address;
+    class UnpackedMessageHeader;
 }
-
 
 /**
  *	Objects of this type are used to handle variable length messages destined
@@ -29,21 +26,20 @@ class UnpackedMessageHeader;
  */
 class BufferedInputMessages
 {
-public:
-	void playBufferedMessages( CellApp & app );
+  public:
+    void playBufferedMessages(CellApp& app);
 
-	void add( Mercury::InputMessageHandler & handler,
-		const Mercury::Address & srcAddr,
-		Mercury::UnpackedMessageHeader & header,
-		BinaryIStream & data );
+    void add(Mercury::InputMessageHandler&   handler,
+             const Mercury::Address&         srcAddr,
+             Mercury::UnpackedMessageHeader& header,
+             BinaryIStream&                  data);
 
-	bool isEmpty() const
-		{ return bufferedMessages_.empty(); }
+    bool isEmpty() const { return bufferedMessages_.empty(); }
 
-	size_t size() const	{ return bufferedMessages_.size(); }
+    size_t size() const { return bufferedMessages_.size(); }
 
-private:
-	BW::list< BufferedInputMessage * > bufferedMessages_;
+  private:
+    BW::list<BufferedInputMessage*> bufferedMessages_;
 };
 
 BW_END_NAMESPACE

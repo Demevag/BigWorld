@@ -1,7 +1,6 @@
 #ifndef EDITOR_CHUNK_OVERLAPPER_HPP
 #define EDITOR_CHUNK_OVERLAPPER_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "chunk/chunk_item.hpp"
@@ -15,36 +14,39 @@ BW_BEGIN_NAMESPACE
  */
 class EditorChunkOverlapper : public ChunkOverlapper
 {
-	DECLARE_EDITOR_CHUNK_ITEM( EditorChunkOverlapper )
+    DECLARE_EDITOR_CHUNK_ITEM(EditorChunkOverlapper)
 
-public:
-	EditorChunkOverlapper();
-	~EditorChunkOverlapper();
+  public:
+    EditorChunkOverlapper();
+    ~EditorChunkOverlapper();
 
-	bool load( DataSectionPtr pSection, Chunk * pChunk, BW::string* errorString = NULL );
+    bool load(DataSectionPtr pSection,
+              Chunk*         pChunk,
+              BW::string*    errorString = NULL);
 
-	virtual void toss( Chunk * pChunk );
-	virtual void draw( Moo::DrawContext& drawContext );
-	virtual void lend( Chunk * pLender );
+    virtual void toss(Chunk* pChunk);
+    virtual void draw(Moo::DrawContext& drawContext);
+    virtual void lend(Chunk* pLender);
 
-	DataSectionPtr	pOwnSect()				{ return pOwnSect_; }
+    DataSectionPtr pOwnSect() { return pOwnSect_; }
 
-	/**
-	 * Chunks which should be drawn; must be cleared every frame
-	 */
-	static BW::vector<Chunk*> drawList;
+    /**
+     * Chunks which should be drawn; must be cleared every frame
+     */
+    static BW::vector<Chunk*> drawList;
 
-private:
-	EditorChunkOverlapper( const EditorChunkOverlapper& );
-	EditorChunkOverlapper& operator=( const EditorChunkOverlapper& );
+  private:
+    EditorChunkOverlapper(const EditorChunkOverlapper&);
+    EditorChunkOverlapper& operator=(const EditorChunkOverlapper&);
 
-	void bindStuff();
+    void bindStuff();
 
-	DataSectionPtr	pOwnSect_;
-	bool			bound_;
+    DataSectionPtr pOwnSect_;
+    bool           bound_;
 
-	static bool		s_drawAlways_;		// at options: render/scenery/shells/gameVisibility
-	static uint32	s_settingsMark_;
+    static bool
+      s_drawAlways_; // at options: render/scenery/shells/gameVisibility
+    static uint32 s_settingsMark_;
 };
 
 typedef SmartPointer<EditorChunkOverlapper> EditorChunkOverlapperPtr;
@@ -55,26 +57,24 @@ typedef SmartPointer<EditorChunkOverlapper> EditorChunkOverlapperPtr;
  */
 class EditorChunkOverlappers : public ChunkCache
 {
-public:
-	EditorChunkOverlappers( Chunk & chunk );
-	~EditorChunkOverlappers();
+  public:
+    EditorChunkOverlappers(Chunk& chunk);
+    ~EditorChunkOverlappers();
 
-	static Instance<EditorChunkOverlappers> instance;
+    static Instance<EditorChunkOverlappers> instance;
 
-	void add( EditorChunkOverlapperPtr pOverlapper );
-	void del( EditorChunkOverlapperPtr pOverlapper );
+    void add(EditorChunkOverlapperPtr pOverlapper);
+    void del(EditorChunkOverlapperPtr pOverlapper);
 
-	void form( Chunk * pOverlapper );
-	void cut( Chunk * pOverlapper );
+    void form(Chunk* pOverlapper);
+    void cut(Chunk* pOverlapper);
 
-	typedef BW::vector< EditorChunkOverlapperPtr > Items;
-	const Items& overlappers() const
-	{
-		return items_;
-	}
-private:
-	Chunk *				pChunk_;
-	Items				items_;
+    typedef BW::vector<EditorChunkOverlapperPtr> Items;
+    const Items& overlappers() const { return items_; }
+
+  private:
+    Chunk* pChunk_;
+    Items  items_;
 };
 
 BW_END_NAMESPACE

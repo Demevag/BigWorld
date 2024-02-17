@@ -15,60 +15,54 @@ BW_BEGIN_NAMESPACE
  */
 class MaterialKinds : public InitSingleton<MaterialKinds>
 {
-public:
-	MaterialKinds();
-	virtual ~MaterialKinds() {}
+  public:
+    MaterialKinds();
+    virtual ~MaterialKinds() {}
 
-	typedef BW::map< uint32, DataSectionPtr > Map;
+    typedef BW::map<uint32, DataSectionPtr> Map;
 
-	//retrieve material kind ID by texture Name
-	uint32 get( const BW::StringRef & textureName, bool preformatted = false );
+    // retrieve material kind ID by texture Name
+    uint32 get(const BW::StringRef& textureName, bool preformatted = false);
 
-	//retrieve a string associated with a material kind
-	BW::string userString( uint32 materialKind,
-		const BW::StringRef & keyName );
+    // retrieve a string associated with a material kind
+    BW::string userString(uint32 materialKind, const BW::StringRef& keyName);
 
-	//retrieve all data associated with a material kind
-	DataSectionPtr userData( uint32 materialKind );
+    // retrieve all data associated with a material kind
+    DataSectionPtr userData(uint32 materialKind);
 
-	//retrieve data associated with a material kind's texture.
-	DataSectionPtr textureData( uint32 materialKind,
-		const BW::StringRef & textureName );
+    // retrieve data associated with a material kind's texture.
+    DataSectionPtr textureData(uint32               materialKind,
+                               const BW::StringRef& textureName);
 
-	//indicate whether the provided material kind is valid
-	bool isValid( uint32 materialKind );
+    // indicate whether the provided material kind is valid
+    bool isValid(uint32 materialKind);
 
-	//the list of material kinds
-	const MaterialKinds::Map& materialKinds() const
-	{
-		return materialKinds_;
-	}
+    // the list of material kinds
+    const MaterialKinds::Map& materialKinds() const { return materialKinds_; }
 
 #ifdef EDITOR_ENABLED
-	///Populate a data section with ID, Description pairs
-	void populateDataSection( DataSectionPtr pSection );
-	///Copy material kinds to a string map
-	void createDescriptionMap( StringHashMap<uint32>& retMap );
-	///Reload material kinds
-	void reload();
-#endif	//EDITOR_ENABLED
+    /// Populate a data section with ID, Description pairs
+    void populateDataSection(DataSectionPtr pSection);
+    /// Copy material kinds to a string map
+    void createDescriptionMap(StringHashMap<uint32>& retMap);
+    /// Reload material kinds
+    void reload();
+#endif // EDITOR_ENABLED
 
+  protected:
+    bool doInit();
+    bool doFini();
 
-protected:
-	bool doInit();
-	bool doFini();
+  private:
+    static BW::StringRef format(const StringRef& textureName,
+                                char*            ptr,
+                                size_t           size);
 
+    void                          addMaterialKind(DataSectionPtr pSection);
+    StringRefUnorderedMap<uint32> textureToID_;
+    MaterialKinds::Map            materialKinds_;
 
-private:
-
-	static BW::StringRef format( const StringRef & textureName, 
-		char * ptr, size_t size );
-
-	void addMaterialKind( DataSectionPtr pSection );
-	StringRefUnorderedMap<uint32> textureToID_;
-	MaterialKinds::Map materialKinds_;
-
-	typedef MaterialKinds This;
+    typedef MaterialKinds This;
 };
 
 BW_END_NAMESPACE

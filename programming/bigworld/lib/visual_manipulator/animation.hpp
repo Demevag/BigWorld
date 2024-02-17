@@ -9,28 +9,28 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace VisualManipulator
-{
-	class Animation : public ReferenceCount
-	{
-	public:
-		Animation();
-		typedef BW::vector<Matrix> MatrixVector;
-		
-		void addChannel( const BW::string& identifier, const MatrixVector& transforms );
-		void name( const BW::string& name ) { name_ = name; }
+namespace VisualManipulator {
+    class Animation : public ReferenceCount
+    {
+      public:
+        Animation();
+        typedef BW::vector<Matrix> MatrixVector;
 
-		bool save( const BW::string& filename );
+        void addChannel(const BW::string&   identifier,
+                        const MatrixVector& transforms);
+        void name(const BW::string& name) { name_ = name; }
 
-	private:
-		typedef std::pair<BW::string, MatrixVector> Channel;
-		typedef BW::vector<Channel> Channels;
+        bool save(const BW::string& filename);
 
-		Channels channels_;
-		BW::string name_;
+      private:
+        typedef std::pair<BW::string, MatrixVector> Channel;
+        typedef BW::vector<Channel>                 Channels;
 
-		uint32 frameCount_;
-	};
+        Channels   channels_;
+        BW::string name_;
+
+        uint32 frameCount_;
+    };
 }
 
 BW_END_NAMESPACE

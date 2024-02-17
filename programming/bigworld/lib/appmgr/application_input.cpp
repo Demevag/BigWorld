@@ -17,34 +17,26 @@ bool ApplicationInput::disableModeSwitch_ = false;
 /**
  *	Constructor.
  */
-ApplicationInput::ApplicationInput()
-{
-}
-
+ApplicationInput::ApplicationInput() {}
 
 /**
  *	Destructor.
  */
-ApplicationInput::~ApplicationInput()
-{
-}
-
+ApplicationInput::~ApplicationInput() {}
 
 /**
  *	This method handles key events for the global application.
  */
-bool ApplicationInput::handleKeyEvent( const KeyEvent & event )
+bool ApplicationInput::handleKeyEvent(const KeyEvent& event)
 {
-	bool handled = ConsoleManager::instance().handleKeyEvent( event );
+    bool handled = ConsoleManager::instance().handleKeyEvent(event);
 
-	if (!handled && event.isKeyDown())
-	{
-		handled = handleKeyDown( event );
-	}
+    if (!handled && event.isKeyDown()) {
+        handled = handleKeyDown(event);
+    }
 
-	return handled;
+    return handled;
 }
-
 
 /**
  *	This method handles mouse events. Currently, it does nothing.
@@ -53,11 +45,10 @@ bool ApplicationInput::handleKeyEvent( const KeyEvent & event )
  *
  *	@return Always returns false.
  */
-bool ApplicationInput::handleMouseEvent( const MouseEvent & /*event*/ )
+bool ApplicationInput::handleMouseEvent(const MouseEvent& /*event*/)
 {
-	return false;
+    return false;
 }
-
 
 /**
  *	This method handles key and button down events. It is called by
@@ -68,47 +59,40 @@ bool ApplicationInput::handleMouseEvent( const MouseEvent & /*event*/ )
  *
  *	@see handleKeyEvent
  */
-bool ApplicationInput::handleKeyDown( const KeyEvent & event )
+bool ApplicationInput::handleKeyDown(const KeyEvent& event)
 {
-	bool handled = true;
+    bool handled = true;
 
-	switch (event.key())
-	{
-		case KeyCode::KEY_F4:
-		{
-			if (event.isAltDown())
-			{
-				//TEMP! WindowsMain::shutDown();
-			}
-			else if (event.isShiftDown())
-			{
-				Moo::rc().screenShot();
-			}
-			break;
-		}
+    switch (event.key()) {
+        case KeyCode::KEY_F4: {
+            if (event.isAltDown()) {
+                // TEMP! WindowsMain::shutDown();
+            } else if (event.isShiftDown()) {
+                Moo::rc().screenShot();
+            }
+            break;
+        }
 
-		case KeyCode::KEY_RETURN:
-			if ( !disableModeSwitch_ && InputDevices::isAltDown( ))
-			{
-				if (Moo::rc().device())
-				{
-					Moo::rc().changeMode( Moo::rc().modeIndex(),
-						!Moo::rc().windowed() );
-				}
-			}
-			break;
+        case KeyCode::KEY_RETURN:
+            if (!disableModeSwitch_ && InputDevices::isAltDown()) {
+                if (Moo::rc().device()) {
+                    Moo::rc().changeMode(Moo::rc().modeIndex(),
+                                         !Moo::rc().windowed());
+                }
+            }
+            break;
 
-		default:
-			handled = false;
-			break;
-	}
+        default:
+            handled = false;
+            break;
+    }
 
-	return handled;
+    return handled;
 }
 
 void ApplicationInput::disableModeSwitch()
 {
-	disableModeSwitch_ = true;
+    disableModeSwitch_ = true;
 }
 
 /**
@@ -116,8 +100,8 @@ void ApplicationInput::disableModeSwitch()
  */
 std::ostream& operator<<(std::ostream& o, const ApplicationInput& t)
 {
-	o << "ApplicationInput\n";
-	return o;
+    o << "ApplicationInput\n";
+    return o;
 }
 
 BW_END_NAMESPACE

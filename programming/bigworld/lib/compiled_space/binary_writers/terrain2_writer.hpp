@@ -11,52 +11,52 @@
 #include "math/loose_octree.hpp"
 #include "resmgr/datasection.hpp"
 
-namespace BW {
+namespace BW { namespace CompiledSpace {
 
-namespace CompiledSpace {
+    class BinaryFormatWriter;
+    class StringTableWriter;
 
-class BinaryFormatWriter;
-class StringTableWriter;
+    class Terrain2Writer : public ISpaceWriter
+    {
+      public:
+        Terrain2Writer();
+        ~Terrain2Writer();
 
-class Terrain2Writer :
-	public ISpaceWriter
-{
-public:
-	Terrain2Writer();
-	~Terrain2Writer();
-	
-	virtual bool initialize( const DataSectionPtr& pSpaceSettings,
-		const CommandLine& commandLine );
-	virtual void postProcess();
-	virtual bool write( BinaryFormatWriter& writer );
+        virtual bool initialize(const DataSectionPtr& pSpaceSettings,
+                                const CommandLine&    commandLine);
+        virtual void postProcess();
+        virtual bool write(BinaryFormatWriter& writer);
 
-	void convertTerrain( const ConversionContext& ctx,
-		const DataSectionPtr& pItemDS, const BW::string& uid );
-	void addFromChunk( int gridX, int gridZ, const DataSectionPtr& pDS,
-		StringTableWriter& stringTable, const DataSectionPtr & pCDataSection,
-		const Matrix & chunkTransform );
+        void convertTerrain(const ConversionContext& ctx,
+                            const DataSectionPtr&    pItemDS,
+                            const BW::string&        uid);
+        void addFromChunk(int                   gridX,
+                          int                   gridZ,
+                          const DataSectionPtr& pDS,
+                          StringTableWriter&    stringTable,
+                          const DataSectionPtr& pCDataSection,
+                          const Matrix&         chunkTransform);
 
-	size_t numBlocks() const;
-	AABB boundBox() const;
+        size_t numBlocks() const;
+        AABB   boundBox() const;
 
-private:
-	bool supportedVersion_;
+      private:
+        bool supportedVersion_;
 
-	typedef vector<DynamicLooseOctree::NodeDataReference> NodeContents;
-	typedef LookUpTable < NodeContents > NodeContentsTable;
-	void generateOctree( DynamicLooseOctree & octree,
-		NodeContentsTable & sceneOctreeContents );
+        typedef vector<DynamicLooseOctree::NodeDataReference> NodeContents;
+        typedef LookUpTable<NodeContents>                     NodeContentsTable;
+        void generateOctree(DynamicLooseOctree& octree,
+                            NodeContentsTable&  sceneOctreeContents);
 
-	Terrain2Types::Header header_;
-	BW::vector<Terrain2Types::BlockData> blocks_;
-	BW::vector<uint32> blockGridLookup_;
+        Terrain2Types::Header                header_;
+        BW::vector<Terrain2Types::BlockData> blocks_;
+        BW::vector<uint32>                   blockGridLookup_;
 
-	BW::vector<AABB> blockBounds_;
-	AABB terrainBounds_;
-};
+        BW::vector<AABB> blockBounds_;
+        AABB             terrainBounds_;
+    };
 
 } // namespace CompiledSpace
 } // namespace BW
-
 
 #endif // SRTING_TABLE_WRITER_HPP

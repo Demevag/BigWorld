@@ -8,8 +8,7 @@
 #include "cstdmf/debug.hpp"
 #include <algorithm>
 
-DECLARE_DEBUG_COMPONENT2( "ResMgr", 0 )
-
+DECLARE_DEBUG_COMPONENT2("ResMgr", 0)
 
 BW_BEGIN_NAMESPACE
 
@@ -17,13 +16,11 @@ BW_BEGIN_NAMESPACE
 #include "primitive_file.ipp"
 #endif
 
-
 // -----------------------------------------------------------------------------
 // Section: PrimitiveFile statics
 // -----------------------------------------------------------------------------
 
-
-#if 0	// ifdef'd out since functionality moved to BinSection
+#if 0 // ifdef'd out since functionality moved to BinSection
 uint32 g_primFileSize = 0;
 typedef BW::map< BW::string, PrimitiveFile * > PrimitiveFileMap;
 static PrimitiveFileMap * s_pfm = NULL;
@@ -35,10 +32,10 @@ static PrimitiveFileMap * s_pfm = NULL;
  *	This method always succeeds - an empty primitive file is created
  *	(but not saved) if the resource is not found.
  */
-DataSectionPtr PrimitiveFile::get( const BW::string & resourceID )
+DataSectionPtr PrimitiveFile::get(const BW::string& resourceID)
 {
-	static DataSectionPtr s_miniCache;
-#if 0	// ifdef'd out since functionality moved to BinSection
+    static DataSectionPtr s_miniCache;
+#if 0 // ifdef'd out since functionality moved to BinSection
 	// if there's already one of these objects still in memory,
 	// return that, so that no changes can get lost or overwritten
 	if (s_pfm != NULL)
@@ -51,19 +48,18 @@ DataSectionPtr PrimitiveFile::get( const BW::string & resourceID )
 		BWResource::instance().rootSection()->readBinary( resourceID ) );
 	PrimitiveFile::add( resourceID, pNew );
 #else
-	DataSectionPtr pNew =
-		BWResource::instance().openSection( resourceID + ".processed" );
+    DataSectionPtr pNew =
+      BWResource::instance().openSection(resourceID + ".processed");
 
-	if (!pNew)
-	{
-		pNew = BWResource::instance().openSection( resourceID );
-	}
+    if (!pNew) {
+        pNew = BWResource::instance().openSection(resourceID);
+    }
 #endif
-	s_miniCache = pNew;
-	return pNew;
+    s_miniCache = pNew;
+    return pNew;
 }
 
-#if 0	// ifdef'd out since functionality moved to BinSection
+#if 0  // ifdef'd out since functionality moved to BinSection
 /**
  *	The static primitive file add method (inserts into cache)
  */
@@ -249,7 +245,6 @@ void PrimitiveFile::save( const BW::string & resourceID )
 }
 #endif // ifdef'd out since functionality moved to BinSection
 
-
 // -----------------------------------------------------------------------------
 // Section: Utility
 // -----------------------------------------------------------------------------
@@ -258,53 +253,57 @@ void PrimitiveFile::save( const BW::string & resourceID )
  *	Split an old-style primitive name into its real file (resource) name
  *	and the part name inside that resource.
  */
-void splitOldPrimitiveName( const BW::string & resourceID,
-	BW::string & file, BW::string & part)
+void splitOldPrimitiveName(const BW::string& resourceID,
+                           BW::string&       file,
+                           BW::string&       part)
 {
-	int slashPos = static_cast<int>(resourceID.size()-1);
-	int dotPos = slashPos;
-	int dotPre = dotPos;
-	while (slashPos >= 0)
-	{
-		char c = resourceID[slashPos];
-		if (c == '.') { dotPre = dotPos; dotPos = slashPos; }
-		if (c == '/' || c == '\\') break;
-		slashPos--;
-	}
+    int slashPos = static_cast<int>(resourceID.size() - 1);
+    int dotPos   = slashPos;
+    int dotPre   = dotPos;
+    while (slashPos >= 0) {
+        char c = resourceID[slashPos];
+        if (c == '.') {
+            dotPre = dotPos;
+            dotPos = slashPos;
+        }
+        if (c == '/' || c == '\\')
+            break;
+        slashPos--;
+    }
 
-	// don't take off a .static
-	if (dotPre - dotPos == 7 && resourceID.compare(
-		dotPos, dotPre-dotPos, ".static" ) == 0) dotPos = dotPre;
+    // don't take off a .static
+    if (dotPre - dotPos == 7 &&
+        resourceID.compare(dotPos, dotPre - dotPos, ".static") == 0)
+        dotPos = dotPre;
 
-	file = resourceID.substr( 0, dotPos );
-	part = resourceID.substr( dotPos+1 );
+    file = resourceID.substr(0, dotPos);
+    part = resourceID.substr(dotPos + 1);
 }
-
 
 /**
  *	Get the given primitive part from the file, but if it's not there
  *	then look under the old name and put that in there.
  */
-BinaryPtr fetchOldPrimitivePart( BW::string & file, BW::string & part )
+BinaryPtr fetchOldPrimitivePart(BW::string& file, BW::string& part)
 {
-	BW::string id = file + ".primitives";
+    BW::string id = file + ".primitives";
 
-	DataSectionPtr pfp = PrimitiveFile::get( id );
-	if (!pfp) pfp = new BinSection( "temp", new BinaryBlock( NULL, 0, "BinaryBlock/PrimitiveFile" ) );
-	BinaryPtr binary = pfp->readBinary( part );
-	if (!binary)
-	{
-		binary = BWResource::instance().rootSection()->readBinary(
-			file + "." + part );
-		if (binary)
-		{
-			pfp->newSection( part )->setBinary( binary );
-			//pfp->updateBinary( part, binary );
-			pfp->save( id );	// this changes 'temp' tag above
-		}
-	}
+    DataSectionPtr pfp = PrimitiveFile::get(id);
+    if (!pfp)
+        pfp = new BinSection(
+          "temp", new BinaryBlock(NULL, 0, "BinaryBlock/PrimitiveFile"));
+    BinaryPtr binary = pfp->readBinary(part);
+    if (!binary) {
+        binary =
+          BWResource::instance().rootSection()->readBinary(file + "." + part);
+        if (binary) {
+            pfp->newSection(part)->setBinary(binary);
+            // pfp->updateBinary( part, binary );
+            pfp->save(id); // this changes 'temp' tag above
+        }
+    }
 
-	return binary;
+    return binary;
 }
 
 BW_END_NAMESPACE

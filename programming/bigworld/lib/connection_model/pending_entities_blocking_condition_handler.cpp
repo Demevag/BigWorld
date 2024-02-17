@@ -15,12 +15,12 @@ BW_BEGIN_NAMESPACE
  */
 void PendingEntitiesBlockingConditionHandler::onConditionCleared()
 {
-	// Avoid deletion during this routine
-	PendingEntitiesBlockingConditionHandlerPtr pHolder( this );
+    // Avoid deletion during this routine
+    PendingEntitiesBlockingConditionHandlerPtr pHolder(this);
 
-	pendingEntities_.releaseEntity( entityID_ );
+    pendingEntities_.releaseEntity(entityID_);
 
-	entityID_ = NULL_ENTITY_ID;
+    entityID_ = NULL_ENTITY_ID;
 }
 
 BW_END_NAMESPACE

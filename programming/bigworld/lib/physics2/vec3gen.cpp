@@ -12,7 +12,7 @@
 BW_BEGIN_NAMESPACE
 
 #ifndef CODE_INLINE
-	#include "vec3gen.ipp"
+#include "vec3gen.ipp"
 #endif
 
 // -----------------------------------------------------------------------------
@@ -24,19 +24,18 @@ BW_BEGIN_NAMESPACE
  *
  *	@param point	The point to generate Vector3 instances at.
  */
-PointV3Gen::PointV3Gen(const Vector3 & point) : point_(point)
+PointV3Gen::PointV3Gen(const Vector3& point)
+  : point_(point)
 {
 }
-
 
 /**
  *	This method sets the input Vector3 to a fixed point.
  */
-void PointV3Gen::generate( Vector3 & vec ) const
+void PointV3Gen::generate(Vector3& vec) const
 {
-	vec = point_;
+    vec = point_;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Line generator
@@ -48,22 +47,19 @@ void PointV3Gen::generate( Vector3 & vec ) const
  *	@param start	The point at the start of the line interval.
  *	@param end		The point at the start of the line interval.
  */
-LineV3Gen::LineV3Gen(const Vector3 & start,
-					 const Vector3 & end) :
-	start_(start),
-	dir_(end - start)
+LineV3Gen::LineV3Gen(const Vector3& start, const Vector3& end)
+  : start_(start)
+  , dir_(end - start)
 {
 }
-
 
 /**
  *	This method sets the input Vector3 to a random point on the specified line.
  */
-void LineV3Gen::generate(Vector3 & vec) const
+void LineV3Gen::generate(Vector3& vec) const
 {
-	vec = start_ + unitRand() * dir_;
+    vec = start_ + unitRand() * dir_;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Cylinder generator
@@ -79,51 +75,49 @@ void LineV3Gen::generate(Vector3 & vec) const
  *						the hole in the middle.
  *	@param maxRadius	The outer radius of the cylinder.
  */
-CylinderV3Gen::CylinderV3Gen(const Vector3 & source,
-		const Vector3 & target,
-		float minRadius,
-		float maxRadius) :
-	source_(source),
-	dir_(target - source),
-	r1_(minRadius),
-	r2_(maxRadius)
+CylinderV3Gen::CylinderV3Gen(const Vector3& source,
+                             const Vector3& target,
+                             float          minRadius,
+                             float          maxRadius)
+  : source_(source)
+  , dir_(target - source)
+  , r1_(minRadius)
+  , r2_(maxRadius)
 {
-	// Find base vectors
-	Vector3 n = dir_;
-	n.normalise();
+    // Find base vectors
+    Vector3 n = dir_;
+    n.normalise();
 
-	Vector3 basis(1.0f, 0.0f, 0.0f);
+    Vector3 basis(1.0f, 0.0f, 0.0f);
 
-	if (1.0f - fabs(basis.dotProduct(n)) < 1e-5f)
-		basis.set(0.0f, 1.0f, 0.0f);
+    if (1.0f - fabs(basis.dotProduct(n)) < 1e-5f)
+        basis.set(0.0f, 1.0f, 0.0f);
 
-	u_ = basis.crossProduct(dir_);
-	u_.normalise();
+    u_ = basis.crossProduct(dir_);
+    u_.normalise();
 
-	v_ = dir_.crossProduct(u_);
-	v_.normalise();
+    v_ = dir_.crossProduct(u_);
+    v_.normalise();
 }
-
 
 /**
  *	This method sets the input Vector3 to a random point in the specified
  *	cylinder.
  */
-void CylinderV3Gen::generate(Vector3 & vec) const
+void CylinderV3Gen::generate(Vector3& vec) const
 {
-	// Distance along axis
-	vec = source_ + unitRand() * dir_;
+    // Distance along axis
+    vec = source_ + unitRand() * dir_;
 
-	// Distance from axis
-	float angle = unitRand() * 2.0f * float(3.141f);
-	float r = r2_ + unitRand() * (r1_ - r2_);
+    // Distance from axis
+    float angle = unitRand() * 2.0f * float(3.141f);
+    float r     = r2_ + unitRand() * (r1_ - r2_);
 
-	float x = r * cosf(angle);
-	float y = r * sinf(angle);
+    float x = r * cosf(angle);
+    float y = r * sinf(angle);
 
-	vec += x * u_ + y * v_;
+    vec += x * u_ + y * v_;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Sphere generator
@@ -137,41 +131,36 @@ void CylinderV3Gen::generate(Vector3 & vec) const
  * 	@param maxRadius	The radius of the sphere.
  * 	@param minRadius	The radius of the hole in the centre of the sphere.
  */
-SphereV3Gen::SphereV3Gen(const Vector3 & centre,
-						 float maxRadius,
-						 float minRadius) :
-	minRadius_(minRadius),
-	maxRadius_(maxRadius),
-	centre_(centre)
+SphereV3Gen::SphereV3Gen(const Vector3& centre,
+                         float          maxRadius,
+                         float          minRadius)
+  : minRadius_(minRadius)
+  , maxRadius_(maxRadius)
+  , centre_(centre)
 {
 }
-
 
 /**
  *	This method sets the input Vector3 to a random point in the specified
  *	sphere.
  */
-void SphereV3Gen::generate(Vector3 & vec) const
+void SphereV3Gen::generate(Vector3& vec) const
 {
-	// This generator is not quite uniform.  It perfers points towards
-	// the corner of the bounding cube. For a uniform distribution we
-	// could use a rejection method.
+    // This generator is not quite uniform.  It perfers points towards
+    // the corner of the bounding cube. For a uniform distribution we
+    // could use a rejection method.
 
-	vec.set(unitRand() - 0.5f, unitRand() - 0.5f, unitRand() - 0.5f);
-	vec.normalise();
+    vec.set(unitRand() - 0.5f, unitRand() - 0.5f, unitRand() - 0.5f);
+    vec.normalise();
 
-	if (maxRadius_ == minRadius_)
-	{
-		vec *= maxRadius_;
-		vec += centre_;
-	}
-	else
-	{
-		vec *= minRadius_ + unitRand() * (maxRadius_ - minRadius_);
-		vec += centre_;
-	}
+    if (maxRadius_ == minRadius_) {
+        vec *= maxRadius_;
+        vec += centre_;
+    } else {
+        vec *= minRadius_ + unitRand() * (maxRadius_ - minRadius_);
+        vec += centre_;
+    }
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Box generator
@@ -183,23 +172,20 @@ void SphereV3Gen::generate(Vector3 & vec) const
  *	@param min	One corner of the box.
  *	@param max	The opposite corner of the box.
  */
-BoxV3Gen::BoxV3Gen(const Vector3 & min,
-				   const Vector3 & max) :
-	min_(min),
-	max_(max)
+BoxV3Gen::BoxV3Gen(const Vector3& min, const Vector3& max)
+  : min_(min)
+  , max_(max)
 {
 }
-
 
 /**
  *	This method sets the input Vector3 to a random point in the specified box.
  */
-void BoxV3Gen::generate(Vector3 & vec) const
+void BoxV3Gen::generate(Vector3& vec) const
 {
-	vec.set(
-		min_.x() + unitRand() * (max_.x() - min_.x()),
-		min_.y() + unitRand() * (max_.y() - min_.y()),
-		min_.z() + unitRand() * (max_.z() - min_.z()));
+    vec.set(min_.x() + unitRand() * (max_.x() - min_.x()),
+            min_.y() + unitRand() * (max_.y() - min_.y()),
+            min_.z() + unitRand() * (max_.z() - min_.z()));
 }
 
 BW_END_NAMESPACE

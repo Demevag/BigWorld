@@ -1,5 +1,5 @@
-#if defined( DEFINE_INTERFACE_HERE ) || defined( DEFINE_SERVER_HERE )
-	#undef REVIVER_INTERFACE_HPP
+#if defined(DEFINE_INTERFACE_HERE) || defined(DEFINE_SERVER_HERE)
+#undef REVIVER_INTERFACE_HPP
 #endif
 
 #ifndef REVIVER_INTERFACE_HPP
@@ -7,19 +7,17 @@
 
 #include "network/interface_macros.hpp"
 
-
 // -----------------------------------------------------------------------------
 // Section: Helper macro
 // -----------------------------------------------------------------------------
 
-#define BW_REVIVER_MSGS( COMPONENT )										\
-	MERCURY_FIXED_MESSAGE( handle##COMPONENT##Birth,						\
-							sizeof( Mercury::Address ),						\
-							&g_reviverOf##COMPONENT )						\
-	MERCURY_FIXED_MESSAGE( handle##COMPONENT##Death,						\
-							sizeof( Mercury::Address ),						\
-							&g_reviverOf##COMPONENT )						\
-
+#define BW_REVIVER_MSGS(COMPONENT)                                             \
+    MERCURY_FIXED_MESSAGE(handle##COMPONENT##Birth,                            \
+                          sizeof(Mercury::Address),                            \
+                          &g_reviverOf##COMPONENT)                             \
+    MERCURY_FIXED_MESSAGE(handle##COMPONENT##Death,                            \
+                          sizeof(Mercury::Address),                            \
+                          &g_reviverOf##COMPONENT)
 
 BW_BEGIN_NAMESPACE
 
@@ -28,13 +26,13 @@ BW_BEGIN_NAMESPACE
 // -----------------------------------------------------------------------------
 
 #pragma pack(push, 1)
-BEGIN_MERCURY_INTERFACE( ReviverInterface )
+BEGIN_MERCURY_INTERFACE(ReviverInterface)
 
-	BW_REVIVER_MSGS( CellAppMgr )
-	BW_REVIVER_MSGS( BaseAppMgr )
-	BW_REVIVER_MSGS( DBAppMgr )
-	BW_REVIVER_MSGS( DBApp )
-	BW_REVIVER_MSGS( Login )
+BW_REVIVER_MSGS(CellAppMgr)
+BW_REVIVER_MSGS(BaseAppMgr)
+BW_REVIVER_MSGS(DBAppMgr)
+BW_REVIVER_MSGS(DBApp)
+BW_REVIVER_MSGS(Login)
 
 END_MERCURY_INTERFACE()
 #pragma pack(pop)

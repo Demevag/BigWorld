@@ -10,25 +10,27 @@ BW_BEGIN_NAMESPACE
  */
 class UalNameDlg : public CDialog
 {
-public:
-	UalNameDlg(CWnd* pParent = NULL);   // standard constructor
-	virtual ~UalNameDlg();
+  public:
+    UalNameDlg(CWnd* pParent = NULL); // standard constructor
+    virtual ~UalNameDlg();
 
-// Dialog Data
-	enum { IDD = IDD_UALNAME };
+    // Dialog Data
+    enum
+    {
+        IDD = IDD_UALNAME
+    };
 
-	void getNames( BW::wstring& shortName, BW::wstring& longName );
-	void setNames( const BW::wstring& shortName, const BW::wstring& longName );
+    void getNames(BW::wstring& shortName, BW::wstring& longName);
+    void setNames(const BW::wstring& shortName, const BW::wstring& longName);
 
-protected:
-	CString longName_;
-	CString shortName_;
+  protected:
+    CString longName_;
+    CString shortName_;
 
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	void OnOK();
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
+    void         OnOK();
 
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 };
 
 BW_END_NAMESPACE
-

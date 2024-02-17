@@ -15,46 +15,48 @@ class OrbitorPSA;
 
 class PsaOrbitorProperties : public PsaProperties
 {
-	DECLARE_DYNCREATE(PsaOrbitorProperties)
+    DECLARE_DYNCREATE(PsaOrbitorProperties)
 
-public:
-	PsaOrbitorProperties(); 
-	virtual ~PsaOrbitorProperties();
+  public:
+    PsaOrbitorProperties();
+    virtual ~PsaOrbitorProperties();
 
-	enum { IDD = IDD_PSA_ORBITOR_PROPERTIES };
+    enum
+    {
+        IDD = IDD_PSA_ORBITOR_PROPERTIES
+    };
 #ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+    virtual void AssertValid() const;
+    virtual void Dump(CDumpContext& dc) const;
 #endif
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 
-public:
-	OrbitorPSA *	action();
-	void			SetParameters(SetOperation task);
+  public:
+    OrbitorPSA* action();
+    void        SetParameters(SetOperation task);
 
-	afx_msg void OnBnClickedPsaOrbitorButton();
+    afx_msg void OnBnClickedPsaOrbitorButton();
 
-	controls::EditNumeric x_;
-	controls::EditNumeric z_;
-	controls::EditNumeric angularVelocity_;
-	CButton affectVelocity_;
+    controls::EditNumeric x_;
+    controls::EditNumeric z_;
+    controls::EditNumeric angularVelocity_;
+    CButton               affectVelocity_;
 
-private:
-	void		position(const Vector3 & position);
-	Vector3 	position() const;
+  private:
+    void    position(const Vector3& position);
+    Vector3 position() const;
 
-	void		addPositionGizmo();
-	void		removePositionGizmo();
+    void addPositionGizmo();
+    void removePositionGizmo();
 
-	SmartPointer< VectorGeneratorMatrixProxy<PsaOrbitorProperties> > positionMatrixProxy_;
-	SmartPointer< PositionGizmo >		positionGizmo_;
-	controls::EditNumeric	delay_;
+    SmartPointer<VectorGeneratorMatrixProxy<PsaOrbitorProperties>>
+                                positionMatrixProxy_;
+    SmartPointer<PositionGizmo> positionGizmo_;
+    controls::EditNumeric       delay_;
 };
 
-
 BW_END_NAMESPACE
-

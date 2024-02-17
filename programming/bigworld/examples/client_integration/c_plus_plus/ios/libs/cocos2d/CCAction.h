@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,24 +23,23 @@
  *
  */
 
-
 #include <sys/time.h>
 #import <Foundation/Foundation.h>
 
 #import "ccTypes.h"
 
-enum {
-	//! Default tag
-	kCCActionTagInvalid = -1,
+enum
+{
+    //! Default tag
+    kCCActionTagInvalid = -1,
 };
 
 /** Base class for CCAction objects.
  */
-@interface CCAction : NSObject <NSCopying>
-{
-	id			originalTarget_;
-	id			target_;
-	NSInteger	tag_;
+@interface CCAction : NSObject<NSCopying> {
+    id        originalTarget_;
+    id        target_;
+    NSInteger tag_;
 }
 
 /** The "target". The action will modify the target properties.
@@ -48,41 +47,43 @@ enum {
  When the 'stop' method is called, target will be set to nil.
  The target is 'assigned', it is not 'retained'.
  */
-@property (nonatomic,readonly,assign) id target;
+@property (nonatomic, readonly, assign) id target;
 
 /** The original target, since target can be nil.
- Is the target that were used to run the action. Unless you are doing something complex, like ActionManager, you should NOT call this method.
+ Is the target that were used to run the action. Unless you are doing something
+ complex, like ActionManager, you should NOT call this method.
  @since v0.8.2
 */
-@property (nonatomic,readonly,assign) id originalTarget;
-
+@property (nonatomic, readonly, assign) id originalTarget;
 
 /** The action tag. An identifier of the action */
-@property (nonatomic,readwrite,assign) NSInteger tag;
+@property (nonatomic, readwrite, assign) NSInteger tag;
 
 /** Allocates and initializes the action */
-+(id) action;
++ (id)action;
 
 /** Initializes the action */
--(id) init;
+- (id)init;
 
--(id) copyWithZone: (NSZone*) zone;
+- (id)copyWithZone:(NSZone*)zone;
 
 //! return YES if the action has finished
--(BOOL) isDone;
+- (BOOL)isDone;
 //! called before the action start. It will also set the target.
--(void) startWithTarget:(id)target;
+- (void)startWithTarget:(id)target;
 //! called after the action has finished. It will set the 'target' to nil.
-//! IMPORTANT: You should never call "[action stop]" manually. Instead, use: "[target stopAction:action];"
--(void) stop;
-//! called every frame with it's delta time. DON'T override unless you know what you are doing.
--(void) step: (ccTime) dt;
+//! IMPORTANT: You should never call "[action stop]" manually. Instead, use:
+//! "[target stopAction:action];"
+- (void)stop;
+//! called every frame with it's delta time. DON'T override unless you know what
+//! you are doing.
+- (void)step:(ccTime)dt;
 //! called once per frame. time a value between 0 and 1
-//! For example: 
+//! For example:
 //! * 0 means that the action just started
 //! * 0.5 means that the action is in the middle
 //! * 1 means that the action is over
--(void) update: (ccTime) time;
+- (void)update:(ccTime)time;
 
 @end
 
@@ -92,35 +93,32 @@ enum {
    - An action with a duration of 35.5 seconds
  Infitite time actions are valid
  */
-@interface CCFiniteTimeAction : CCAction <NSCopying>
-{
-	//! duration in seconds
-	ccTime duration_;
+@interface CCFiniteTimeAction : CCAction<NSCopying> {
+    //! duration in seconds
+    ccTime duration_;
 }
 //! duration in seconds of the action
-@property (nonatomic,readwrite) ccTime duration;
+@property (nonatomic, readwrite) ccTime duration;
 
 /** returns a reversed action */
-- (CCFiniteTimeAction*) reverse;
+- (CCFiniteTimeAction*)reverse;
 @end
-
 
 @class CCActionInterval;
 /** Repeats an action for ever.
  To repeat the an action for a limited number of times use the Repeat action.
  @warning This action can't be Sequenceable because it is not an IntervalAction
  */
-@interface CCRepeatForever : CCAction <NSCopying>
-{
-	CCActionInterval *other;
+@interface CCRepeatForever : CCAction<NSCopying> {
+    CCActionInterval* other;
 }
 /** Inner action. It will be copied */
-@property (nonatomic,copy) CCActionInterval *action;
+@property (nonatomic, copy) CCActionInterval* action;
 
 /** creates the action */
-+(id) actionWithAction: (CCActionInterval*) action;
++ (id)actionWithAction:(CCActionInterval*)action;
 /** initializes the action */
--(id) initWithAction: (CCActionInterval*) action;
+- (id)initWithAction:(CCActionInterval*)action;
 @end
 
 /** Changes the speed of an action, making it take longer (speed>1)
@@ -128,64 +126,61 @@ enum {
  Useful to simulate 'slow motion' or 'fast forward' effect.
  @warning This action can't be Sequenceable because it is not an IntervalAction
  */
-@interface CCSpeed : CCAction <NSCopying>
-{
-	CCActionInterval	*other;
-	float speed;
+@interface CCSpeed : CCAction<NSCopying> {
+    CCActionInterval* other;
+    float             speed;
 }
 /** alter the speed of the inner function in runtime */
-@property (nonatomic,readwrite) float speed;
+@property (nonatomic, readwrite) float speed;
 /** creates the action */
-+(id) actionWithAction: (CCActionInterval*) action speed:(float)rate;
++ (id)actionWithAction:(CCActionInterval*)action speed:(float)rate;
 /** initializes the action */
--(id) initWithAction: (CCActionInterval*) action speed:(float)rate;
+- (id)initWithAction:(CCActionInterval*)action speed:(float)rate;
 @end
 
 @class CCNode;
 /** CCFollow is an action that "follows" a node.
- 
+
  Eg:
-	[layer runAction: [CCFollow actionWithTarget:hero]];
- 
+    [layer runAction: [CCFollow actionWithTarget:hero]];
+
  Instead of using CCCamera as a "follower", use this action instead.
  @since v0.99.2
  */
-@interface CCFollow : CCAction <NSCopying>
-{
-	/* node to follow */
-	CCNode	*followedNode_;
-	
-	/* whether camera should be limited to certain area */
-	BOOL boundarySet;
-	
-	/* if screensize is bigger than the boundary - update not needed */
-	BOOL boundaryFullyCovered;
-	
-	/* fast access to the screen dimensions */
-	CGPoint halfScreenSize;
-	CGPoint fullScreenSize;
-	
-	/* world boundaries */
-	float leftBoundary;
-	float rightBoundary;
-	float topBoundary;
-	float bottomBoundary;
+@interface CCFollow : CCAction<NSCopying> {
+    /* node to follow */
+    CCNode* followedNode_;
+
+    /* whether camera should be limited to certain area */
+    BOOL boundarySet;
+
+    /* if screensize is bigger than the boundary - update not needed */
+    BOOL boundaryFullyCovered;
+
+    /* fast access to the screen dimensions */
+    CGPoint halfScreenSize;
+    CGPoint fullScreenSize;
+
+    /* world boundaries */
+    float leftBoundary;
+    float rightBoundary;
+    float topBoundary;
+    float bottomBoundary;
 }
 
 /** alter behavior - turn on/off boundary */
-@property (nonatomic,readwrite) BOOL boundarySet;
+@property (nonatomic, readwrite) BOOL boundarySet;
 
 /** creates the action with no boundary set */
-+(id) actionWithTarget:(CCNode *)followedNode;
++ (id)actionWithTarget:(CCNode*)followedNode;
 
 /** creates the action with a set boundary */
-+(id) actionWithTarget:(CCNode *)followedNode worldBoundary:(CGRect)rect;
++ (id)actionWithTarget:(CCNode*)followedNode worldBoundary:(CGRect)rect;
 
 /** initializes the action */
--(id) initWithTarget:(CCNode *)followedNode;
+- (id)initWithTarget:(CCNode*)followedNode;
 
 /** initializes the action with a set boundary */
--(id) initWithTarget:(CCNode *)followedNode worldBoundary:(CGRect)rect;
+- (id)initWithTarget:(CCNode*)followedNode worldBoundary:(CGRect)rect;
 
 @end
-

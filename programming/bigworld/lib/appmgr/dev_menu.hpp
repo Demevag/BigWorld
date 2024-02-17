@@ -13,41 +13,41 @@ class Button;
 
 class DevMenu : public FrameworkModule
 {
-public:
-	DevMenu();
-	~DevMenu();
+  public:
+    DevMenu();
+    ~DevMenu();
 
-	virtual void onStart();
-	virtual int	 onStop();
+    virtual void onStart();
+    virtual int  onStop();
 
-	virtual void onPause();
-	virtual void onResume( int exitCode );
+    virtual void onPause();
+    virtual void onResume(int exitCode);
 
-	virtual void updateAnimations();
-	virtual void render( float dTime );
+    virtual void updateAnimations();
+    virtual void render(float dTime);
 
-	// Input handlers
-	virtual bool handleKeyEvent( const KeyEvent & /*event*/ );
-	virtual bool handleMouseEvent( const MouseEvent & /*event*/ );
-	virtual void setApp( App * app ) {};
-	virtual void setMainFrame( IMainFrame * mainFrame ) {};
+    // Input handlers
+    virtual bool handleKeyEvent(const KeyEvent& /*event*/);
+    virtual bool handleMouseEvent(const MouseEvent& /*event*/);
+    virtual void setApp(App* app){};
+    virtual void setMainFrame(IMainFrame* mainFrame){};
 
-private:
-	DevMenu(const DevMenu&);
-	DevMenu& operator=(const DevMenu&);
+  private:
+    DevMenu(const DevMenu&);
+    DevMenu& operator=(const DevMenu&);
 
-	typedef BW::vector< BW::string > Modules;
-	Modules	modules_;
+    typedef BW::vector<BW::string> Modules;
+    Modules                        modules_;
 
-	SimpleGUIComponent* watermark_;
+    SimpleGUIComponent* watermark_;
 
-	typedef BW::vector< Button* > Buttons;
-	Buttons	buttons_;
+    typedef BW::vector<Button*> Buttons;
+    Buttons                     buttons_;
 
-	typedef BW::vector< TextGUIComponent* > MenuItems;
-	MenuItems menuItems_;
+    typedef BW::vector<TextGUIComponent*> MenuItems;
+    MenuItems                             menuItems_;
 
-	friend std::ostream& operator<<(std::ostream&, const DevMenu&);
+    friend std::ostream& operator<<(std::ostream&, const DevMenu&);
 };
 
 BW_END_NAMESPACE

@@ -12,39 +12,39 @@ BW_BEGIN_NAMESPACE
  */
 class OrthographicCamera : public BaseCamera
 {
-public:
-	OrthographicCamera();
-	~OrthographicCamera();
+  public:
+    OrthographicCamera();
+    ~OrthographicCamera();
 
-	void update( float dTime, bool activeInputHandler = true );
-	bool handleKeyEvent( const KeyEvent & );
-	bool handleMouseEvent( const MouseEvent & );
+    void update(float dTime, bool activeInputHandler = true);
+    bool handleKeyEvent(const KeyEvent&);
+    bool handleMouseEvent(const MouseEvent&);
 
-    void view( const Matrix & );
-	void view( const OrthographicCamera& other );
+    void view(const Matrix&);
+    void view(const OrthographicCamera& other);
 
-private:
-	void	handleInput( float dTime );
-    void 	viewToPolar();
-    void 	polarToView();
+  private:
+    void handleInput(float dTime);
+    void viewToPolar();
+    void polarToView();
 
-	OrthographicCamera(const OrthographicCamera&);
-	OrthographicCamera& operator=(const OrthographicCamera&);
+    OrthographicCamera(const OrthographicCamera&);
+    OrthographicCamera& operator=(const OrthographicCamera&);
 
-	float		up_;
-	float		right_;
-	typedef BW::map< KeyCode::Key, bool>	KeyDownMap;
-	KeyDownMap	keyDown_;
+    float                               up_;
+    float                               right_;
+    typedef BW::map<KeyCode::Key, bool> KeyDownMap;
+    KeyDownMap                          keyDown_;
 
-	//For hiding and showing the mouse cursor
-	bool isCursorHidden_;
+    // For hiding and showing the mouse cursor
+    bool isCursorHidden_;
 
-	// Where the cursor was when we started looking around
-	POINT lastCursorPosition_;
+    // Where the cursor was when we started looking around
+    POINT lastCursorPosition_;
 
-	friend std::ostream& operator<<(std::ostream&, const OrthographicCamera&);
+    friend std::ostream& operator<<(std::ostream&, const OrthographicCamera&);
 };
 
 BW_END_NAMESPACE
 
-#endif  // ORTHOGRAPHIC_CAMERA_HPP
+#endif // ORTHOGRAPHIC_CAMERA_HPP

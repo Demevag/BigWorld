@@ -13,34 +13,39 @@ BW_BEGIN_NAMESPACE
  */
 class ArrayDataType : public SequenceDataType
 {
-public:
-	ArrayDataType( MetaDataType * pMeta, DataTypePtr elementType,
-			int size = 0, int dbLen = 0 );
+  public:
+    ArrayDataType(MetaDataType* pMeta,
+                  DataTypePtr   elementType,
+                  int           size  = 0,
+                  int           dbLen = 0);
 
-	static DataType * construct( MetaDataType * pMeta,
-		DataTypePtr elementType, int size, int dbLen );
+    static DataType* construct(MetaDataType* pMeta,
+                               DataTypePtr   elementType,
+                               int           size,
+                               int           dbLen);
 
-protected:
-	virtual bool startSequence( DataSink & sink, size_t count ) const;
+  protected:
+    virtual bool startSequence(DataSink& sink, size_t count) const;
 
-	virtual int compareDefaultValue( const DataType & other ) const;
+    virtual int compareDefaultValue(const DataType& other) const;
 
-	virtual void setDefaultValue( DataSectionPtr pSection );
-	virtual bool getDefaultValue( DataSink & output ) const;
+    virtual void setDefaultValue(DataSectionPtr pSection);
+    virtual bool getDefaultValue(DataSink& output) const;
 
-	virtual DataSectionPtr pDefaultSection() const;
+    virtual DataSectionPtr pDefaultSection() const;
 
-	virtual ScriptObject attach( ScriptObject pObject,
-		PropertyOwnerBase * pOwner, int ownerRef );
+    virtual ScriptObject attach(ScriptObject       pObject,
+                                PropertyOwnerBase* pOwner,
+                                int                ownerRef);
 
-	virtual void detach( ScriptObject pObject );
+    virtual void detach(ScriptObject pObject);
 
-	virtual PropertyOwnerBase * asOwner( ScriptObject pObject ) const;
+    virtual PropertyOwnerBase* asOwner(ScriptObject pObject) const;
 
-	virtual void addToMD5( MD5 & md5 ) const;
+    virtual void addToMD5(MD5& md5) const;
 
-private:
-	DataSectionPtr pDefaultSection_;
+  private:
+    DataSectionPtr pDefaultSection_;
 };
 
 BW_END_NAMESPACE

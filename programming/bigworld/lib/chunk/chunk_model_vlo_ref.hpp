@@ -12,20 +12,19 @@ BW_BEGIN_NAMESPACE
  * per chunk that the VLO spans.
  *
  */
-class ChunkModelVLORef
-	: public ChunkVLO
+class ChunkModelVLORef : public ChunkVLO
 {
-public:
-	DECLARE_CHUNK_ITEM( ChunkModelVLORef )
-	explicit ChunkModelVLORef( WantFlags wantFlags = WANTS_DRAW );
+  public:
+    DECLARE_CHUNK_ITEM(ChunkModelVLORef)
+    explicit ChunkModelVLORef(WantFlags wantFlags = WANTS_DRAW);
 
-	virtual void addCollisionScene();
-	virtual void removeCollisionScene();
+    virtual void addCollisionScene();
+    virtual void removeCollisionScene();
 
-	static BW::string & getSectionName();
+    static BW::string& getSectionName();
 
-protected:
-	bool collisionAdded_;
+  protected:
+    bool collisionAdded_;
 };
 
 BW_END_NAMESPACE

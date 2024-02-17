@@ -16,17 +16,16 @@
 #include "cstdmf/debug.hpp"
 
 #ifdef _WIN32
-	#include <direct.h>
+#include <direct.h>
 #else
-	#include <dirent.h>
-	#include <sys/stat.h>
-	#include <sys/types.h>
-	#include <fcntl.h>
-	#include <unistd.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <unistd.h>
 #endif
 
-
-DECLARE_DEBUG_COMPONENT2( "ResMgr", 0 )
+DECLARE_DEBUG_COMPONENT2("ResMgr", 0)
 
 BW_BEGIN_NAMESPACE
 
@@ -41,39 +40,38 @@ BW_BEGIN_NAMESPACE
  */
 class XMLHandle : public DataHandle
 {
-public:
-	///	@name Constructor(s).
-	//@{
-	///	Constructor for the XMLHandle class.
-	XMLHandle( const BW::string &fileName, bool empty = false );
-	//@}
+  public:
+    ///	@name Constructor(s).
+    //@{
+    ///	Constructor for the XMLHandle class.
+    XMLHandle(const BW::string& fileName, bool empty = false);
+    //@}
 
-	///	@name Methods associated with XML elements and sections.
-	//@{
-	/// This method returns a pointer to a DataSection representing the top of
-	///	the parse tree.
-	DataSectionPtr getRootSection();
+    ///	@name Methods associated with XML elements and sections.
+    //@{
+    /// This method returns a pointer to a DataSection representing the top of
+    ///	the parse tree.
+    DataSectionPtr getRootSection();
 
-	/// This method will reload the resource from the path specified.
-	DataHandle::Error reload();
+    /// This method will reload the resource from the path specified.
+    DataHandle::Error reload();
 
-	/// This method will save the resource to the path specified.
-	DataHandle::Error save( const BW::string &fileName );
-	//@}
+    /// This method will save the resource to the path specified.
+    DataHandle::Error save(const BW::string& fileName);
+    //@}
 
-	/// This method returns whether or not this handle is in a valid state.
-	bool isGood() const				{ return pRootSection_.hasObject(); }
+    /// This method returns whether or not this handle is in a valid state.
+    bool isGood() const { return pRootSection_.hasObject(); }
 
-	///	@name Destructor.
-	//@{
-	///	The destructor for the XMLHandle class.
-	~XMLHandle();
-	//@}
+    ///	@name Destructor.
+    //@{
+    ///	The destructor for the XMLHandle class.
+    ~XMLHandle();
+    //@}
 
-private:
-	XMLSectionPtr pRootSection_;
+  private:
+    XMLSectionPtr pRootSection_;
 };
-
 
 // -----------------------------------------------------------------------------
 // Section: Constructor(s) for DataHandle.
@@ -84,11 +82,11 @@ private:
  *
  *	@return None.
  */
-DataHandle::DataHandle( const BW::string &fileName )
+DataHandle::DataHandle(const BW::string& fileName)
 {
-	lastError_			= DataHandle::DHE_NoError;
-	lastErrorMessage_	= "*** No Error.\n";
-	fileName_ = fileName;
+    lastError_        = DataHandle::DHE_NoError;
+    lastErrorMessage_ = "*** No Error.\n";
+    fileName_         = fileName;
 }
 
 // -----------------------------------------------------------------------------
@@ -100,9 +98,9 @@ DataHandle::DataHandle( const BW::string &fileName )
  *
  *	@return A const string containing the file name of the resource.
  */
-const BW::string &DataHandle::fileName()
+const BW::string& DataHandle::fileName()
 {
-	return fileName_;
+    return fileName_;
 }
 
 // -----------------------------------------------------------------------------
@@ -115,20 +113,17 @@ const BW::string &DataHandle::fileName()
  *
  *	@return A string containing the error message.
  */
-const BW::string &DataHandle::errorMessage()
+const BW::string& DataHandle::errorMessage()
 {
-	// The default dummy no-error message.
-	static BW::string noError = "*** No error.\n";
+    // The default dummy no-error message.
+    static BW::string noError = "*** No error.\n";
 
-	// Only return the message if there was an error.
-	if (lastError_ == DataHandle::DHE_NoError)
-	{
-		return noError;
-	}
-	else
-	{
-		return lastErrorMessage_;
-	}
+    // Only return the message if there was an error.
+    if (lastError_ == DataHandle::DHE_NoError) {
+        return noError;
+    } else {
+        return lastErrorMessage_;
+    }
 }
 
 /**
@@ -139,9 +134,8 @@ const BW::string &DataHandle::errorMessage()
  */
 inline DataHandle::Error DataHandle::errorState()
 {
-	return lastError_;
+    return lastError_;
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Constructor(s) for DataResource.
@@ -151,7 +145,8 @@ inline DataHandle::Error DataHandle::errorState()
  *	The default constructor produces a DataResource on stand-by. The resource
  *	on stand-by still needs to be loaded using the load() method.
  */
-DataResource::DataResource() : pResource_( (DataHandle *)NULL )
+DataResource::DataResource()
+  : pResource_((DataHandle*)NULL)
 {
 }
 
@@ -162,9 +157,9 @@ DataResource::DataResource() : pResource_( (DataHandle *)NULL )
  *	@param	fileName	The full path and name of the file to be opened as
  *						a resource.
  */
-DataResource::DataResource( const BW::string &fileName )
+DataResource::DataResource(const BW::string& fileName)
 {
-	load( fileName );
+    load(fileName);
 }
 
 /**
@@ -178,58 +173,46 @@ DataResource::DataResource( const BW::string &fileName )
  *	@param createIfInvalid	Should the resource be created if the provided
  *							filename appears to be an invalid section.
  */
-DataResource::DataResource( const BW::string &fileName,
-		DataResourceType type, bool createIfInvalid )
+DataResource::DataResource(const BW::string& fileName,
+                           DataResourceType  type,
+                           bool              createIfInvalid)
 {
-	switch ( type )
-	{
-		case RESOURCE_TYPE_XML:
-		{
-			this->ensureFileExists( fileName );
+    switch (type) {
+        case RESOURCE_TYPE_XML: {
+            this->ensureFileExists(fileName);
 
-			XMLHandle * pHandle = new XMLHandle( fileName );
+            XMLHandle* pHandle = new XMLHandle(fileName);
 
-			if (pHandle->isGood())
-			{
-				pResource_ = pHandle;
-			}
-			else
-			{
-				bw_safe_delete( pHandle );
+            if (pHandle->isGood()) {
+                pResource_ = pHandle;
+            } else {
+                bw_safe_delete(pHandle);
 
-				if (createIfInvalid)
-				{
-					pHandle = new XMLHandle( fileName, true );
-					if (pHandle->isGood())
-					{
-						pResource_ = pHandle;
-					}
-					else
-					{
-						WARNING_MSG( "DataResource::DataResource: "
-								"Failed to create blank file %s\n",
-							fileName.c_str() );
-						bw_safe_delete( pHandle );
-					}
-				}
-				else
-				{
-					WARNING_MSG( "DataResource::DataResource: "
-							"Loading %s failed\n",
-						fileName.c_str() );
-				}
-			}
-		}
-		break;
+                if (createIfInvalid) {
+                    pHandle = new XMLHandle(fileName, true);
+                    if (pHandle->isGood()) {
+                        pResource_ = pHandle;
+                    } else {
+                        WARNING_MSG("DataResource::DataResource: "
+                                    "Failed to create blank file %s\n",
+                                    fileName.c_str());
+                        bw_safe_delete(pHandle);
+                    }
+                } else {
+                    WARNING_MSG("DataResource::DataResource: "
+                                "Loading %s failed\n",
+                                fileName.c_str());
+                }
+            }
+        } break;
 
-		default:
-			ERROR_MSG( "DataResource::DataResource: "
-						"Unknown resource type %d\n",
-					int( type ) );
-		break;
-	}
+        default:
+            ERROR_MSG("DataResource::DataResource: "
+                      "Unknown resource type %d\n",
+                      int(type));
+            break;
+    }
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: Interface Methods to the DataResource.
@@ -244,16 +227,12 @@ DataResource::DataResource( const BW::string &fileName,
  */
 DataSectionPtr DataResource::getRootSection()
 {
-	if (pResource_)
-	{
-		return pResource_->getRootSection().getObject();
-	}
-	else
-	{
-		return (DataSection *)NULL;
-	}
+    if (pResource_) {
+        return pResource_->getRootSection().getObject();
+    } else {
+        return (DataSection*)NULL;
+    }
 }
-
 
 /**
  *	This method will load the resource from the path specified. If already
@@ -266,67 +245,55 @@ DataSectionPtr DataResource::getRootSection()
  *	@return DataHandle::DHE_NoError if there was no problem, otherwise it
  *			returns the DataHandle::Error code.
  */
-DataHandle::Error DataResource::load( const BW::string &fileName,
-                                      DataResourceType type,
-									  bool createIfInvalid )
+DataHandle::Error DataResource::load(const BW::string& fileName,
+                                     DataResourceType  type,
+                                     bool              createIfInvalid)
 {
-	TRACE_MSG( "DataResource::load: %s\n", fileName.c_str() );
+    TRACE_MSG("DataResource::load: %s\n", fileName.c_str());
 
     DataHandle::Error result = DataHandle::DHE_LoadFailed;
 
-	// If not already loaded.
-	if ( !pResource_ )
-	{
-        switch ( type )
-        {
-            case RESOURCE_TYPE_XML:
-            {
-				XMLHandle * pHandle = new XMLHandle( fileName );
+    // If not already loaded.
+    if (!pResource_) {
+        switch (type) {
+            case RESOURCE_TYPE_XML: {
+                XMLHandle* pHandle = new XMLHandle(fileName);
 
-				if (pHandle->isGood())
-				{
-					pResource_ = pHandle;
+                if (pHandle->isGood()) {
+                    pResource_ = pHandle;
 
                     result = DataHandle::DHE_NoError;
-				}
-				else
-				{
-					bw_safe_delete(pHandle);
+                } else {
+                    bw_safe_delete(pHandle);
 
-					if (createIfInvalid)
-					{
-						pHandle = new XMLHandle( fileName, true );
-						if (pHandle->isGood())
-						{
-							pResource_ = pHandle;
+                    if (createIfInvalid) {
+                        pHandle = new XMLHandle(fileName, true);
+                        if (pHandle->isGood()) {
+                            pResource_ = pHandle;
 
-							result = DataHandle::DHE_NoError;
-						}
-						else
-						{
-							WARNING_MSG( "DataResource::DataResource: "
-								"Failed to create blank file %s\n",
-								fileName.c_str() );
-							bw_safe_delete( pHandle );
-						}
-					}
-					else
-					{
-						WARNING_MSG( "DataResource::DataResource: "
-							"Loading %s failed\n",
-							fileName.c_str() );
-					}
-				}
+                            result = DataHandle::DHE_NoError;
+                        } else {
+                            WARNING_MSG("DataResource::DataResource: "
+                                        "Failed to create blank file %s\n",
+                                        fileName.c_str());
+                            bw_safe_delete(pHandle);
+                        }
+                    } else {
+                        WARNING_MSG("DataResource::DataResource: "
+                                    "Loading %s failed\n",
+                                    fileName.c_str());
+                    }
+                }
 
                 break;
-			}
+            }
 
             default:
                 // It is not a file type we're aware of.
-    			pResource_ = (DataHandle *)NULL;
+                pResource_ = (DataHandle*)NULL;
                 break;
         }
-	}
+    }
 
     return result;
 }
@@ -339,14 +306,11 @@ DataHandle::Error DataResource::load( const BW::string &fileName,
  */
 DataHandle::Error DataResource::reload()
 {
-	if ( pResource_ )
-	{
-		return pResource_->reload();
-	}
-	else
-	{
-		return DataHandle::DHE_LoadFailed;
-	}
+    if (pResource_) {
+        return pResource_->reload();
+    } else {
+        return DataHandle::DHE_LoadFailed;
+    }
 }
 
 /**
@@ -357,20 +321,17 @@ DataHandle::Error DataResource::reload()
  *	@return DataHandle::DHE_NoError if there was no problem, otherwise it
  *			returns the DataHandle::Error code.
  */
-DataHandle::Error DataResource::save( const BW::string &fileName )
+DataHandle::Error DataResource::save(const BW::string& fileName)
 {
-	if ( pResource_ )
-	{
-        //Ensure the file exists
-        //ensureFileExists( fileName );
+    if (pResource_) {
+        // Ensure the file exists
+        // ensureFileExists( fileName );
 
-        //Now save the file
-		return pResource_->save( fileName );
-	}
-	else
-	{
-		return DataHandle::DHE_SaveFailed;
-	}
+        // Now save the file
+        return pResource_->save(fileName);
+    } else {
+        return DataHandle::DHE_SaveFailed;
+    }
 }
 
 /**
@@ -378,17 +339,14 @@ DataHandle::Error DataResource::save( const BW::string &fileName )
  *
  *	@return A const string containing the file name of the resource.
  */
-const BW::string &DataResource::fileName()
+const BW::string& DataResource::fileName()
 {
-	static const BW::string emptyFileName = "";
-	if ( pResource_ )
-	{
-		return pResource_->fileName();
-	}
-	else
-	{
-		return emptyFileName;
-	}
+    static const BW::string emptyFileName = "";
+    if (pResource_) {
+        return pResource_->fileName();
+    } else {
+        return emptyFileName;
+    }
 }
 
 /**
@@ -399,7 +357,7 @@ const BW::string &DataResource::fileName()
  */
 bool DataResource::loaded()
 {
-	return (bool) pResource_;
+    return (bool)pResource_;
 }
 
 // -----------------------------------------------------------------------------
@@ -412,21 +370,17 @@ bool DataResource::loaded()
  *
  *	@return A string containing the error message.
  */
-const BW::string &DataResource::errorMessage()
+const BW::string& DataResource::errorMessage()
 {
-	static BW::string nullMsg =
-		"*** Fatal Error: Could not open resource file.\n";
+    static BW::string nullMsg =
+      "*** Fatal Error: Could not open resource file.\n";
 
-	if ( pResource_ )
-	{
-		return pResource_->errorMessage();
-	}
-	else
-	{
-		return nullMsg;
-	}
+    if (pResource_) {
+        return pResource_->errorMessage();
+    } else {
+        return nullMsg;
+    }
 }
-
 
 /**
  *	This method is used to determine if the last operation resulted in success
@@ -436,42 +390,37 @@ const BW::string &DataResource::errorMessage()
  */
 DataHandle::Error DataResource::errorState()
 {
-	if ( pResource_ )
-	{
-		return pResource_->errorState();
-	}
-	else
-	{
-		return DataHandle::DHE_LoadFailed;
-	}
+    if (pResource_) {
+        return pResource_->errorState();
+    } else {
+        return DataHandle::DHE_LoadFailed;
+    }
 }
 
 /**
  * This method ensures that the specified file exists.
  * It will create paths, and a blank file if necessary.
  */
-void DataResource::ensureFileExists( const BW::string& fileName )
+void DataResource::ensureFileExists(const BW::string& fileName)
 {
     // does the file exist
-    if ( !BWResource::fileExists( fileName ) )
-    {
-	    BW::string subDir;
+    if (!BWResource::fileExists(fileName)) {
+        BW::string subDir;
 
-	    for ( int i = 1; i < (int)fileName.size(); i++ )
-    	{
-            if ( fileName[i] == '\\' || fileName[i] == '/' )
-            {
-				BWResource::instance().fileSystem()->makeDirectory( fileName.substr( 0, i ) );
+        for (int i = 1; i < (int)fileName.size(); i++) {
+            if (fileName[i] == '\\' || fileName[i] == '/') {
+                BWResource::instance().fileSystem()->makeDirectory(
+                  fileName.substr(0, i));
             }
         }
 
         // make a blank xml file
-        FILE* fh = BWResource::instance().fileSystem()->posixFileOpen( fileName, "w" );
+        FILE* fh =
+          BWResource::instance().fileSystem()->posixFileOpen(fileName, "w");
 
-        if ( fh )
-        {
-            fprintf( fh, "<root>\n</root>\n" );
-            fclose( fh );
+        if (fh) {
+            fprintf(fh, "<root>\n</root>\n");
+            fclose(fh);
         }
     }
 }
@@ -487,18 +436,15 @@ void DataResource::ensureFileExists( const BW::string& fileName )
  *	@param fileName		Full path and name of the XML file.
  *	@param isEmpty		Is this an empty file.
  */
-XMLHandle::XMLHandle( const BW::string &fileName, bool isEmpty ) :
-	DataHandle( fileName ),
-	pRootSection_( (XMLSection *)NULL )
+XMLHandle::XMLHandle(const BW::string& fileName, bool isEmpty)
+  : DataHandle(fileName)
+  , pRootSection_((XMLSection*)NULL)
 {
-	if (isEmpty)
-	{
-		pRootSection_ = new XMLSection( "root" );
-	}
-	else
-	{
-		this->reload();
-	}
+    if (isEmpty) {
+        pRootSection_ = new XMLSection("root");
+    } else {
+        this->reload();
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -517,9 +463,8 @@ XMLHandle::XMLHandle( const BW::string &fileName, bool isEmpty ) :
  */
 DataSectionPtr XMLHandle::getRootSection()
 {
-	return pRootSection_.getObject();
+    return pRootSection_.getObject();
 }
-
 
 /**
  *	This method will reload the resource from the path specified. Note: The
@@ -531,12 +476,11 @@ DataSectionPtr XMLHandle::getRootSection()
  */
 DataHandle::Error XMLHandle::reload()
 {
-	pRootSection_ = XMLSection::createFromFile( fileName_.c_str() );
+    pRootSection_ = XMLSection::createFromFile(fileName_.c_str());
 
-	return (pRootSection_.hasObject()) ?
-		DataHandle::DHE_NoError : DataHandle::DHE_LoadFailed;
+    return (pRootSection_.hasObject()) ? DataHandle::DHE_NoError
+                                       : DataHandle::DHE_LoadFailed;
 }
-
 
 /**
  *	This method will save the XML resource to the path specified.
@@ -546,24 +490,25 @@ DataHandle::Error XMLHandle::reload()
  *	@return DataHandle::DHE_NoError if there was no problem, otherwise it
  *			returns the DataHandle::Error code.
  */
-DataHandle::Error XMLHandle::save( const BW::string &fileName )
+DataHandle::Error XMLHandle::save(const BW::string& fileName)
 {
-    bool useThisFileName = ( fileName.compare( "" ) == 0 );
+    bool useThisFileName = (fileName.compare("") == 0);
 
 #ifdef WIN32
-	std::ofstream stream( useThisFileName ? bw_utf8tow( fileName_ ).c_str() : bw_utf8tow( fileName ).c_str() );
+    std::ofstream stream(useThisFileName ? bw_utf8tow(fileName_).c_str()
+                                         : bw_utf8tow(fileName).c_str());
 #else
-	std::ofstream stream( useThisFileName ? fileName_.c_str() : fileName.c_str() );
+    std::ofstream stream(useThisFileName ? fileName_.c_str()
+                                         : fileName.c_str());
 #endif
 
-	bool wasSuccessful = stream.good();
+    bool wasSuccessful = stream.good();
 
-	if (pRootSection_ && wasSuccessful)
-	{
-		wasSuccessful = pRootSection_->writeToStream( stream );
-	}
+    if (pRootSection_ && wasSuccessful) {
+        wasSuccessful = pRootSection_->writeToStream(stream);
+    }
 
-	return wasSuccessful ? DataHandle::DHE_NoError : DataHandle::DHE_SaveFailed;
+    return wasSuccessful ? DataHandle::DHE_NoError : DataHandle::DHE_SaveFailed;
 }
 
 // -----------------------------------------------------------------------------
@@ -577,7 +522,7 @@ DataHandle::Error XMLHandle::save( const BW::string &fileName )
  */
 XMLHandle::~XMLHandle()
 {
-	// pRootSection_ is a smart pointer and will be removed automatically.
+    // pRootSection_ is a smart pointer and will be removed automatically.
 }
 
 BW_END_NAMESPACE

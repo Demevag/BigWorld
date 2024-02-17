@@ -5,7 +5,6 @@
 
 #include "db_storage/idatabase.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class EntityKey;
@@ -20,21 +19,22 @@ class ISetEntityKeyForAccountHandler;
  */
 class SetEntityKeyForAccountTask : public MySqlBackgroundTask
 {
-public:
-	SetEntityKeyForAccountTask( const BW::string & username,
-			const BW::string & password, const EntityKey & ekey,
-			ISetEntityKeyForAccountHandler & handler );
+  public:
+    SetEntityKeyForAccountTask(const BW::string&               username,
+                               const BW::string&               password,
+                               const EntityKey&                ekey,
+                               ISetEntityKeyForAccountHandler& handler);
 
-	// MySqlBackgroundTask overrides
-	virtual void performBackgroundTask( MySql & conn );
-	virtual void performMainThreadTask( bool succeeded );
-	virtual void onException( const DatabaseException & e );
+    // MySqlBackgroundTask overrides
+    virtual void performBackgroundTask(MySql& conn);
+    virtual void performMainThreadTask(bool succeeded);
+    virtual void onException(const DatabaseException& e);
 
-private:
-	BW::string username_;
-	BW::string password_;
-	EntityKey entityKey_;
-	ISetEntityKeyForAccountHandler & handler_;
+  private:
+    BW::string                      username_;
+    BW::string                      password_;
+    EntityKey                       entityKey_;
+    ISetEntityKeyForAccountHandler& handler_;
 };
 
 BW_END_NAMESPACE

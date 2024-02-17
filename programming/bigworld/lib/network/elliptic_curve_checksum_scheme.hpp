@@ -1,13 +1,10 @@
 #ifndef ELLIPTIC_CURVE_CHECKSUM_SCHEME_HPP
 #define ELLIPTIC_CURVE_CHECKSUM_SCHEME_HPP
 
-
 #include "cstdmf/bw_string.hpp"
 #include "cstdmf/checksum_stream.hpp"
 
-
 BW_BEGIN_NAMESPACE
-
 
 /**
  *	This class implements signatures based on elliptic curve public-key
@@ -21,28 +18,25 @@ BW_BEGIN_NAMESPACE
  */
 class EllipticCurveChecksumScheme : public ChecksumScheme
 {
-public:
-	static ChecksumSchemePtr create( const BW::string & keyPEM,
-		bool isPrivate );
+  public:
+    static ChecksumSchemePtr create(const BW::string& keyPEM, bool isPrivate);
 
-	// Overrides from ChecksumScheme
-	virtual size_t streamSize() const;
-	virtual void readBlob( const void * data, size_t size );
-	virtual void addToStream( BinaryOStream & out );
+    // Overrides from ChecksumScheme
+    virtual size_t streamSize() const;
+    virtual void   readBlob(const void* data, size_t size);
+    virtual void   addToStream(BinaryOStream& out);
 
-private:
-	virtual void doReset();
-	virtual bool doVerifyFromStream( BinaryIStream & stream );
+  private:
+    virtual void doReset();
+    virtual bool doVerifyFromStream(BinaryIStream& stream);
 
-	EllipticCurveChecksumScheme( const BW::string & keyPEM, bool isPrivate );
-	virtual ~EllipticCurveChecksumScheme();
+    EllipticCurveChecksumScheme(const BW::string& keyPEM, bool isPrivate);
+    virtual ~EllipticCurveChecksumScheme();
 
-	class Impl;
-	Impl * pImpl_;
+    class Impl;
+    Impl* pImpl_;
 };
 
-
 BW_END_NAMESPACE
-
 
 #endif // ELLIPTIC_CURVE_CHECKSUM_SCHEME_HPP

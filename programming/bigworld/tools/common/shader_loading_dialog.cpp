@@ -8,59 +8,57 @@ BW_BEGIN_NAMESPACE
 
 // Default constructor.
 CShaderLoadingDialog::CShaderLoadingDialog()
-	: CDialog(CShaderLoadingDialog::IDD)
+  : CDialog(CShaderLoadingDialog::IDD)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	Create( IDD_SHADER_LOADING );
+    Create(IDD_SHADER_LOADING);
 }
 
 // Destructor.
 CShaderLoadingDialog::~CShaderLoadingDialog()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	DestroyWindow();
+    DestroyWindow();
 }
 
 // Setup data exchange with progress bar.
 void CShaderLoadingDialog::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_SHADER_PROGRESS_BAR, bar_);
+    CDialog::DoDataExchange(pDX);
+    DDX_Control(pDX, IDC_SHADER_PROGRESS_BAR, bar_);
 }
 
 // On initialisation centre the progress bar.
-BOOL CShaderLoadingDialog::OnInitDialog() 
+BOOL CShaderLoadingDialog::OnInitDialog()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	CDialog::OnInitDialog();
+    CDialog::OnInitDialog();
 
-	this->CenterWindow();
+    this->CenterWindow();
 
-	return TRUE;
+    return TRUE;
 }
 
 // Set the range of the progress bar.
-void CShaderLoadingDialog::setRange( int num )
+void CShaderLoadingDialog::setRange(int num)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	bar_.SetRange( 0, num );
-	bar_.SetStep( 1 );
+    bar_.SetRange(0, num);
+    bar_.SetStep(1);
 }
 
 // Step the progress bar on a unit.
 void CShaderLoadingDialog::step()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	bar_.StepIt();
+    bar_.StepIt();
 }
-
 
 BEGIN_MESSAGE_MAP(CShaderLoadingDialog, CDialog)
 END_MESSAGE_MAP()
 BW_END_NAMESPACE
-

@@ -7,24 +7,20 @@ BW_BEGIN_NAMESPACE
 
 class IMainFrame;
 
-class GuiTabContent
-	: public GUITABS::Content
+class GuiTabContent : public GUITABS::Content
 {
-public:
-	GuiTabContent()
-		: mainFrame_( NULL )
-	{
-	}
+  public:
+    GuiTabContent()
+      : mainFrame_(NULL)
+    {
+    }
 
-	void setMainFrame( IMainFrame * mainFrame )
-	{
-		mainFrame_ = mainFrame;
-	}
+    void setMainFrame(IMainFrame* mainFrame) { mainFrame_ = mainFrame; }
 
-protected:
-	IMainFrame * mainFrame_;
+  protected:
+    IMainFrame* mainFrame_;
 };
 
 BW_END_NAMESPACE
 
-#endif //GUI_TAB_CONTENT_HPP
+#endif // GUI_TAB_CONTENT_HPP

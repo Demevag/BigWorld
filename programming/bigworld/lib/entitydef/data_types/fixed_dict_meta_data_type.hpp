@@ -5,7 +5,6 @@
 
 #include "fixed_dict_data_type.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -13,24 +12,23 @@ BW_BEGIN_NAMESPACE
  */
 class FixedDictMetaDataType : public MetaDataType
 {
-public:
-	typedef FixedDictDataType DataType;
+  public:
+    typedef FixedDictDataType DataType;
 
-	FixedDictMetaDataType();
-	virtual ~FixedDictMetaDataType();
+    FixedDictMetaDataType();
+    virtual ~FixedDictMetaDataType();
 
-	virtual const char * name()	const { return "FIXED_DICT"; }
+    virtual const char* name() const { return "FIXED_DICT"; }
 
-	virtual DataTypePtr getType( DataSectionPtr pSection );
+    virtual DataTypePtr getType(DataSectionPtr pSection);
 
-private:
-	bool parseCustomTypeName( DataSectionPtr pSection, 
-		FixedDictDataType & dataType );
-	bool parseCustomClass( DataSectionPtr pSection,
-		FixedDictDataType & dataType );
+  private:
+    bool parseCustomTypeName(DataSectionPtr     pSection,
+                             FixedDictDataType& dataType);
+    bool parseCustomClass(DataSectionPtr pSection, FixedDictDataType& dataType);
 
-	typedef BW::set< BW::string > TypeNames;
-	TypeNames typeNames_;
+    typedef BW::set<BW::string> TypeNames;
+    TypeNames                   typeNames_;
 };
 
 BW_END_NAMESPACE

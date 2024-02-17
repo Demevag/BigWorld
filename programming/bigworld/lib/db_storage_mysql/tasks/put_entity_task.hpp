@@ -8,7 +8,6 @@
 
 #include "server/common.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class BufferedEntityTasks;
@@ -20,37 +19,37 @@ class EntityTypeMapping;
  */
 class PutEntityTask : public EntityTaskWithID
 {
-public:
-	PutEntityTask( const EntityTypeMapping * pEntityTypeMapping,
-							DatabaseID databaseID,
-							EntityID entityID,
-							BinaryIStream * pStream,
-							const EntityMailBoxRef * pBaseMailbox,
-							bool removeBaseMailbox,
-							bool putExplicitID,
-							UpdateAutoLoad updateAutoLoad,
-							IDatabase::IPutEntityHandler & handler,
-							GameTime * pGameTime = NULL );
+  public:
+    PutEntityTask(const EntityTypeMapping*      pEntityTypeMapping,
+                  DatabaseID                    databaseID,
+                  EntityID                      entityID,
+                  BinaryIStream*                pStream,
+                  const EntityMailBoxRef*       pBaseMailbox,
+                  bool                          removeBaseMailbox,
+                  bool                          putExplicitID,
+                  UpdateAutoLoad                updateAutoLoad,
+                  IDatabase::IPutEntityHandler& handler,
+                  GameTime*                     pGameTime = NULL);
 
-	virtual void performBackgroundTask( MySql & conn );
-	virtual void performEntityMainThreadTask( bool succeeded );
+    virtual void performBackgroundTask(MySql& conn);
+    virtual void performEntityMainThreadTask(bool succeeded);
 
-protected:
-	virtual void onRetry();
+  protected:
+    virtual void onRetry();
 
-private:
-	bool							writeEntityData_;
-	bool							writeBaseMailbox_;
-	bool							removeBaseMailbox_;
-	bool							putExplicitID_;
-	UpdateAutoLoad 					updateAutoLoad_;
+  private:
+    bool           writeEntityData_;
+    bool           writeBaseMailbox_;
+    bool           removeBaseMailbox_;
+    bool           putExplicitID_;
+    UpdateAutoLoad updateAutoLoad_;
 
-	MemoryOStream					stream_;
-	EntityMailBoxRef				baseMailbox_;
+    MemoryOStream    stream_;
+    EntityMailBoxRef baseMailbox_;
 
-	IDatabase::IPutEntityHandler &	handler_;
+    IDatabase::IPutEntityHandler& handler_;
 
-	GameTime * pGameTime_;
+    GameTime* pGameTime_;
 };
 
 BW_END_NAMESPACE

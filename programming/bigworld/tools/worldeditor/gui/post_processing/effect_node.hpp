@@ -1,21 +1,18 @@
 #ifndef EFFECT_NODE_HPP
 #define EFFECT_NODE_HPP
 
-
 #include "base_post_processing_node.hpp"
 
 BW_BEGIN_NAMESPACE
 
 // Forward declarations
-namespace PostProcessing
-{
-	class Effect;
-	typedef SmartPointer<Effect> EffectPtr;
+namespace PostProcessing {
+    class Effect;
+    typedef SmartPointer<Effect> EffectPtr;
 }
 
 class EffectNode;
-typedef SmartPointer< EffectNode > EffectNodePtr;
-
+typedef SmartPointer<EffectNode> EffectNodePtr;
 
 /**
  *	This class implements an Effect node, implementing the necessary additional
@@ -23,36 +20,36 @@ typedef SmartPointer< EffectNode > EffectNodePtr;
  */
 class EffectNode : public BasePostProcessingNode
 {
-public:
-	EffectNode( PostProcessing::Effect * pyEffect, NodeCallback * callback );
-	~EffectNode();
+  public:
+    EffectNode(PostProcessing::Effect* pyEffect, NodeCallback* callback);
+    ~EffectNode();
 
-	bool active() const;
-	void active( bool active );
+    bool active() const;
+    void active(bool active);
 
-	const BW::string & name() const { return name_; }
+    const BW::string& name() const { return name_; }
 
-	virtual EffectNode * effectNode() { return this; }
+    virtual EffectNode* effectNode() { return this; }
 
-	PostProcessing::EffectPtr pyEffect() const { return pyEffect_; }
+    PostProcessing::EffectPtr pyEffect() const { return pyEffect_; }
 
-	PyObject * pyObject() const { return (PyObject *)(pyEffect_.get()); }
+    PyObject* pyObject() const { return (PyObject*)(pyEffect_.get()); }
 
-	EffectNodePtr clone() const;
+    EffectNodePtr clone() const;
 
-	void edEdit( GeneralEditor * editor );
-	bool edLoad( DataSectionPtr pDS );
-	bool edSave( DataSectionPtr pDS );
+    void edEdit(GeneralEditor* editor);
+    bool edLoad(DataSectionPtr pDS);
+    bool edSave(DataSectionPtr pDS);
 
-	BW::string getName() const;
-	bool setName( const BW::string & name );
+    BW::string getName() const;
+    bool       setName(const BW::string& name);
 
-	Vector4 getBypass() const;
-	bool setBypass( const Vector4 & bypass );
+    Vector4 getBypass() const;
+    bool    setBypass(const Vector4& bypass);
 
-private:
-	PostProcessing::EffectPtr pyEffect_;
-	BW::string name_;
+  private:
+    PostProcessing::EffectPtr pyEffect_;
+    BW::string                name_;
 };
 
 BW_END_NAMESPACE

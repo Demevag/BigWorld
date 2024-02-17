@@ -14,145 +14,132 @@
 
 #include "mutant.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "Mutant_LOD", 0 )
+DECLARE_DEBUG_COMPONENT2("Mutant_LOD", 0)
 
 BW_BEGIN_NAMESPACE
 
-float Mutant::lodExtent( const BW::string& modelFile )
+float Mutant::lodExtent(const BW::string& modelFile)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	//First make sure the model exists
-	if (models_.find( modelFile ) == models_.end())
-	{
-		return Model::LOD_HIDDEN;
-	}
+    // First make sure the model exists
+    if (models_.find(modelFile) == models_.end()) {
+        return Model::LOD_HIDDEN;
+    }
 
-	return models_[modelFile]->readFloat( "extent", Model::LOD_HIDDEN );
+    return models_[modelFile]->readFloat("extent", Model::LOD_HIDDEN);
 }
 
-void Mutant::lodExtent( const BW::string& modelFile, float extent )
+void Mutant::lodExtent(const BW::string& modelFile, float extent)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	//First make sure the model exists
-	if (models_.find(modelFile) == models_.end())
-		return;
+    // First make sure the model exists
+    if (models_.find(modelFile) == models_.end())
+        return;
 
-	UndoRedo::instance().add( new UndoRedoOp( 0, models_[modelFile], models_[modelFile] ));
+    UndoRedo::instance().add(
+      new UndoRedoOp(0, models_[modelFile], models_[modelFile]));
 
-	if (!isEqual( extent, Model::LOD_HIDDEN ))
-	{
-		models_[modelFile]->writeFloat( "extent", extent );
-	}
-	else
-	{
-		models_[modelFile]->delChild( "extent" );
-	}
+    if (!isEqual(extent, Model::LOD_HIDDEN)) {
+        models_[modelFile]->writeFloat("extent", extent);
+    } else {
+        models_[modelFile]->delChild("extent");
+    }
 }
 
-void Mutant::lodParents( BW::string modelName, BW::vector< BW::string >& parents )
+void Mutant::lodParents(BW::string modelName, BW::vector<BW::string>& parents)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	DataSectionPtr model = BWResource::openSection( modelName, false );
-	while ( model )
-	{
-		parents.push_back( modelName );
-		modelName = model->readString( "parent", "" ) + ".model";
-		model = BWResource::openSection( modelName, false );
-	}
+    DataSectionPtr model = BWResource::openSection(modelName, false);
+    while (model) {
+        parents.push_back(modelName);
+        modelName = model->readString("parent", "") + ".model";
+        model     = BWResource::openSection(modelName, false);
+    }
 }
 
-bool Mutant::hasParent( const BW::string& modelName )
+bool Mutant::hasParent(const BW::string& modelName)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return (models_.find(modelName) != models_.end());
+    return (models_.find(modelName) != models_.end());
 }
 
-bool Mutant::isHidden( const BW::string& modelFile )
+bool Mutant::isHidden(const BW::string& modelFile)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	bool hidden = false;
-	float extent = 0.f;
+    bool  hidden = false;
+    float extent = 0.f;
 
-	for (size_t i=0; i<=lodList_.size(); i++)
-	{
-		if ((!isEqual( lodList_[i].second, Model::LOD_HIDDEN ) &&
-			(lodList_[i].second <= extent)) ||
-			isEqual( extent, Model::LOD_HIDDEN ))
-		{
-			hidden = true;
-		}
-		else
-		{
-			hidden = false;
-			extent = lodList_[i].second;
-		}
-		if (lodList_[i].first.second == modelFile )
-			break;
-	}
+    for (size_t i = 0; i <= lodList_.size(); i++) {
+        if ((!isEqual(lodList_[i].second, Model::LOD_HIDDEN) &&
+             (lodList_[i].second <= extent)) ||
+            isEqual(extent, Model::LOD_HIDDEN)) {
+            hidden = true;
+        } else {
+            hidden = false;
+            extent = lodList_[i].second;
+        }
+        if (lodList_[i].first.second == modelFile)
+            break;
+    }
 
-	return hidden;
+    return hidden;
 }
 
-BW::string Mutant::lodParent( const BW::string& modelFile )
+BW::string Mutant::lodParent(const BW::string& modelFile)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	//First make sure the model exists
-	if (models_.find(modelFile) == models_.end())
-		return "";
+    // First make sure the model exists
+    if (models_.find(modelFile) == models_.end())
+        return "";
 
-	return models_[modelFile]->readString( "parent", "" );
+    return models_[modelFile]->readString("parent", "");
 }
 
-void Mutant::lodParent( const BW::string& modelFile, const BW::string& parent )
+void Mutant::lodParent(const BW::string& modelFile, const BW::string& parent)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	//First make sure the model exists
-	if (models_.find(modelFile) == models_.end())
-		return;
+    // First make sure the model exists
+    if (models_.find(modelFile) == models_.end())
+        return;
 
-	UndoRedo::instance().add( new UndoRedoOp( 0, models_[modelFile], models_[modelFile] ));
+    UndoRedo::instance().add(
+      new UndoRedoOp(0, models_[modelFile], models_[modelFile]));
 
-	if (parent != "")
-	{
-		models_[modelFile]->writeString( "parent", parent );
-	}
-	else
-	{
-		models_[modelFile]->delChild( "parent" );
-		models_[modelFile]->delChild( "extent" );
-	}
+    if (parent != "") {
+        models_[modelFile]->writeString("parent", parent);
+    } else {
+        models_[modelFile]->delChild("parent");
+        models_[modelFile]->delChild("extent");
+    }
 }
 
 /*
  * This method commits a LOD list that has been edited by using the lod bar
  */
-void Mutant::lodList( LODList* newList )
+void Mutant::lodList(LODList* newList)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	//Update all the extents
-	for (unsigned i=0; i<newList->size(); i++)
-	{
-		lodExtent((*newList)[i].first.second, (*newList)[i].second );
-	}
+    // Update all the extents
+    for (unsigned i = 0; i < newList->size(); i++) {
+        lodExtent((*newList)[i].first.second, (*newList)[i].second);
+    }
 
-	reloadAllLists();
-
+    reloadAllLists();
 }
 
 /*
  * This method sets the virtual LOD distance
  */
-void Mutant::virtualDist( float dist )
+void Mutant::virtualDist(float dist)
 {
-	virtualDist_ = dist;
+    virtualDist_ = dist;
 }
 BW_END_NAMESPACE
-

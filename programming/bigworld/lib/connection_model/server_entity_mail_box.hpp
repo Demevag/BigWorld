@@ -9,24 +9,23 @@ BW_BEGIN_NAMESPACE
 class BWEntity;
 class ServerConnection;
 
-
 /**
  *	This class is the base class for all client-side mailboxes referring to
  *	server-side entities.
  */
-class BWENTITY_API ServerEntityMailBox 
+class BWENTITY_API ServerEntityMailBox
 {
-public:
-	ServerEntityMailBox( BWEntity & entity );
+  public:
+    ServerEntityMailBox(BWEntity& entity);
 
-protected:
-	BinaryOStream * startMessage( int methodID, bool isForBaseEntity,
-		bool & shouldDrop ) const;
+  protected:
+    BinaryOStream* startMessage(int   methodID,
+                                bool  isForBaseEntity,
+                                bool& shouldDrop) const;
 
-	BWEntity & entity_;
+    BWEntity& entity_;
 };
 
 BW_END_NAMESPACE
 
 #endif // SERVER_ENTITY_MAIL_BOX_HPP
-

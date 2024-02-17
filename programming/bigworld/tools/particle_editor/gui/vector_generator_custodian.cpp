@@ -5,10 +5,9 @@
 
 BW_BEGIN_NAMESPACE
 
-
-BW::string VecGenGUIStrFromID(BW::string const &str)
+BW::string VecGenGUIStrFromID(BW::string const& str)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     if (str == PointVectorGenerator::nameID_.c_str())
         return LocaliseUTF8(L"`RCS_IDS_POINT");
@@ -24,9 +23,9 @@ BW::string VecGenGUIStrFromID(BW::string const &str)
         return BW::string();
 }
 
-BW::string VecGenIDFromGuiStr(BW::string const &str)
+BW::string VecGenIDFromGuiStr(BW::string const& str)
 {
-	BW_GUARD;
+    BW_GUARD;
 
     if (str == LocaliseUTF8(L"`RCS_IDS_POINT"))
         return PointVectorGenerator::nameID_.c_str();
@@ -43,4 +42,3 @@ BW::string VecGenIDFromGuiStr(BW::string const &str)
 }
 
 BW_END_NAMESPACE
-

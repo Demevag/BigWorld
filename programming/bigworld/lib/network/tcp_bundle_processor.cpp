@@ -13,217 +13,201 @@
 #include "network/tcp_channel.hpp"
 #include "network/unpacked_message_header.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
+namespace Mercury {
 
-namespace Mercury
-{
+    /**
+     *	Constructor.
+     *
+     *	@param data 	The bundle data.
+     */
+    TCPBundleProcessor::TCPBundleProcessor(BinaryIStream& data)
+      : data_(data)
+    {
+    }
 
+    /**
+     *	This method dispatches messages as read from the bundle data.
+     *
+     *	@param channel 			The TCPChannel the bundle data was received on.
+     *	@param interfaceTable 	The interface table.
+     *
+     *	@return 				REASON_SUCCESS on success, otherwise the
+     *							appropriate error code.
+     */
+    Reason TCPBundleProcessor::dispatchMessages(TCPChannel&     channel,
+                                                InterfaceTable& interfaceTable)
+    {
+        ChannelPtr pChannel = &channel;
 
-/**
- *	Constructor.
- *
- *	@param data 	The bundle data.
- */
-TCPBundleProcessor::TCPBundleProcessor( BinaryIStream & data ) : 
-		data_( data )
-{
-}
+        const char* bundleStart =
+          reinterpret_cast<const char*>(data_.retrieve(0));
 
+        const int bundleLength = data_.remainingLength();
 
-/**
- *	This method dispatches messages as read from the bundle data.
- *
- *	@param channel 			The TCPChannel the bundle data was received on.
- *	@param interfaceTable 	The interface table.
- *
- *	@return 				REASON_SUCCESS on success, otherwise the
- *							appropriate error code.
- */
-Reason TCPBundleProcessor::dispatchMessages( TCPChannel & channel, 
-		InterfaceTable & interfaceTable )
-{
-	ChannelPtr pChannel = &channel;
+        uint                  offset = 0;
+        UnpackedMessageHeader header;
+        bool                  shouldBreakLoop = false;
+        header.pBreakLoop                     = &shouldBreakLoop;
+        TCPBundle::Offset nextRequestOffset =
+          static_cast<TCPBundle::Offset>(-1);
+        MessageFilterPtr pMessageFilter = channel.pMessageFilter();
 
-	const char * bundleStart = 
-		reinterpret_cast< const char * >( data_.retrieve( 0 ) );
+        TCPBundle::Flags flags;
+        data_ >> flags;
 
-	const int bundleLength = data_.remainingLength();
+        if (flags & ~TCPBundle::FLAG_MASK) {
+            ERROR_MSG("TCPBundleProcessor::dispatchMessages( %s ): "
+                      "Discarding bundle after invalid flags: %02x\n",
+                      channel.c_str(),
+                      flags);
+            return REASON_CORRUPTED_PACKET;
+        }
 
-	uint offset = 0;
-	UnpackedMessageHeader header;
-	bool shouldBreakLoop = false;
-	header.pBreakLoop = &shouldBreakLoop;
-	TCPBundle::Offset nextRequestOffset = static_cast< TCPBundle::Offset >(-1);
-	MessageFilterPtr pMessageFilter = channel.pMessageFilter();
+        if (flags & TCPBundle::FLAG_HAS_REQUESTS) {
+            data_ >> nextRequestOffset;
 
-	TCPBundle::Flags flags;
-	data_ >> flags;
+            if (static_cast<int>(nextRequestOffset) > bundleLength) {
+                ERROR_MSG("TCPBundleProcessor::dispatchMessages( %s ): "
+                          "Discarding bundle after out-of-bounds first request "
+                          "offset (got offset %u > %d bundle length)\n",
+                          channel.c_str(),
+                          nextRequestOffset,
+                          data_.remainingLength());
+                return REASON_CORRUPTED_PACKET;
+            }
+        }
 
-	if (flags & ~TCPBundle::FLAG_MASK)
-	{
-		ERROR_MSG( "TCPBundleProcessor::dispatchMessages( %s ): "
-				"Discarding bundle after invalid flags: %02x\n",
-			channel.c_str(), flags );
-		return REASON_CORRUPTED_PACKET;
-	}
+        while (data_.remainingLength() && !shouldBreakLoop) {
+            offset = static_cast<uint>(
+              reinterpret_cast<const char*>(data_.retrieve(0)) - bundleStart);
+            void* pHeaderData = const_cast<void*>(data_.retrieve(0));
 
-	if (flags & TCPBundle::FLAG_HAS_REQUESTS)
-	{
-		data_ >> nextRequestOffset;
+            MessageID messageID;
+            data_ >> messageID;
 
-		if (static_cast< int >(nextRequestOffset) > bundleLength)
-		{
-			ERROR_MSG( "TCPBundleProcessor::dispatchMessages( %s ): "
-					"Discarding bundle after out-of-bounds first request "
-					"offset (got offset %u > %d bundle length)\n",
-				channel.c_str(),
-				nextRequestOffset,
-				data_.remainingLength() );
-			return REASON_CORRUPTED_PACKET;
-		}
-	}
+            InterfaceElementWithStats& ie = interfaceTable[messageID];
 
-	while (data_.remainingLength() && !shouldBreakLoop)
-	{
-		offset = static_cast< uint >(
-			reinterpret_cast< const char * >( data_.retrieve( 0 ) ) - 
-				bundleStart );
-		void * pHeaderData = const_cast< void * >( data_.retrieve( 0 ) );
+            if (ie.pHandler() == NULL) {
 
-		MessageID messageID;
-		data_ >> messageID;
+                ERROR_MSG(
+                  "TCPBundleProcessor::dispatchMessages( %s ): "
+                  "Discarding bundle after hitting unhandled message ID %hu\n",
+                  channel.c_str(),
+                  (unsigned short)messageID);
+                data_.finish();
+                return REASON_NONEXISTENT_ENTRY;
+            }
 
-		InterfaceElementWithStats & ie = interfaceTable[ messageID ];
+            header.identifier        = messageID;
+            header.pInterfaceElement = &ie;
+            header.pChannel          = &channel;
+            header.pInterface        = &(channel.networkInterface());
 
-		if (ie.pHandler() == NULL)
-		{
+            bool isRequest = (offset == nextRequestOffset);
 
-			ERROR_MSG( "TCPBundleProcessor::dispatchMessages( %s ): "
-				"Discarding bundle after hitting unhandled message ID %hu\n",
-				channel.c_str(), (unsigned short)messageID );
-			data_.finish();
-			return REASON_NONEXISTENT_ENTRY;
-		}
+            InterfaceElement updatedIE = ie;
+            if (!updatedIE.updateLengthDetails(pChannel->networkInterface(),
+                                               pChannel->addr())) {
+                ERROR_MSG("TCPBundleProcessor::dispatchMessages( %s ): "
+                          "Discarding bundle after failure to update length "
+                          "details for message ID %hu\n",
+                          channel.c_str(),
+                          (unsigned short)messageID);
+                return REASON_CORRUPTED_PACKET;
+            }
 
-		header.identifier = messageID;
-		header.pInterfaceElement = &ie;
-		header.pChannel = &channel;
-		header.pInterface = &(channel.networkInterface());
+            header.length =
+              updatedIE.expandLength(pHeaderData, NULL, isRequest);
 
-		bool isRequest = (offset == nextRequestOffset);
+            if (updatedIE.lengthStyle() == VARIABLE_LENGTH_MESSAGE) {
+                data_.retrieve(updatedIE.lengthParam());
 
-		InterfaceElement updatedIE = ie;
-		if (!updatedIE.updateLengthDetails( pChannel->networkInterface(),
-				pChannel->addr() ))
-		{
-			ERROR_MSG( "TCPBundleProcessor::dispatchMessages( %s ): "
-					"Discarding bundle after failure to update length "
-					"details for message ID %hu\n",
-				channel.c_str(), (unsigned short)messageID );
-			return REASON_CORRUPTED_PACKET;
-		}
+                if (header.length == -1) {
+                    uint32 specialLengthHeader;
+                    data_ >> specialLengthHeader;
+                    header.length = specialLengthHeader;
+                }
+            }
 
-		header.length = updatedIE.expandLength( pHeaderData, NULL, isRequest );
+            if (data_.remainingLength() < header.length) {
+                ERROR_MSG(
+                  "TCPBundleProcessor::dispatchMessages( %s ): "
+                  "Discarding rest of bundle since chain too short for data "
+                  "of message ID %hu length %d (have %d bytes)\n",
+                  channel.addr().c_str(),
+                  (unsigned short)messageID,
+                  header.length,
+                  data_.remainingLength());
 
-		if (updatedIE.lengthStyle() == VARIABLE_LENGTH_MESSAGE)
-		{
-			data_.retrieve( updatedIE.lengthParam() );
+                return REASON_CORRUPTED_PACKET;
+            }
 
-			if (header.length == -1)
-			{
-				uint32 specialLengthHeader;
-				data_ >> specialLengthHeader;
-				header.length = specialLengthHeader;
+            if (isRequest) {
+                data_ >> header.replyID;
+                data_ >> nextRequestOffset;
 
-			}
-		}
+                if (static_cast<int>(nextRequestOffset) > bundleLength) {
+                    ERROR_MSG("TCPBundleProcessor::dispatchMessages( %s ): "
+                              "Discarding rest of bundle due to out-of-bounds "
+                              "next request offset "
+                              "(got offset %u > %d byte bundle length)\n",
+                              channel.addr().c_str(),
+                              nextRequestOffset,
+                              bundleLength);
 
-		if (data_.remainingLength() < header.length)
-		{
-			ERROR_MSG( "TCPBundleProcessor::dispatchMessages( %s ): "
-					"Discarding rest of bundle since chain too short for data "
-					"of message ID %hu length %d (have %d bytes)\n",
-				channel.addr().c_str(), (unsigned short)messageID, header.length,
-				data_.remainingLength() );
+                    return REASON_CORRUPTED_PACKET;
+                }
+            } else {
+                header.replyID = REPLY_ID_NONE;
+            }
 
-			return REASON_CORRUPTED_PACKET;
-		}
+            ie.startProfile();
 
-		if (isRequest)
-		{
-			data_ >> header.replyID;
-			data_ >> nextRequestOffset;
+            MemoryIStream mis(data_.retrieve(header.length), header.length);
 
-			if (static_cast< int >(nextRequestOffset) > bundleLength)
-			{
-				ERROR_MSG( "TCPBundleProcessor::dispatchMessages( %s ): "
-						"Discarding rest of bundle due to out-of-bounds "
-						"next request offset "
-						"(got offset %u > %d byte bundle length)\n",
-					channel.addr().c_str(), nextRequestOffset, bundleLength );
+            {
+                PROFILER_SCOPED_DYNAMIC_STRING(ie.c_str());
+                if (pMessageFilter) {
+                    pMessageFilter->filterMessage(
+                      channel.addr(), header, mis, ie.pHandler());
+                } else {
+                    ie.pHandler()->handleMessage(channel.addr(), header, mis);
+                }
+            }
 
-				return REASON_CORRUPTED_PACKET;
-			}
-		}
-		else
-		{
-			header.replyID = REPLY_ID_NONE;
-		}
+            ie.stopProfile(header.length);
 
-		ie.startProfile();
+            if (mis.remainingLength() != 0) {
+                if (header.identifier == REPLY_MESSAGE_IDENTIFIER) {
+                    WARNING_MSG("TCPBundleProcessor::dispatchMessages( %s ): "
+                                "Handler for reply left %d bytes\n",
+                                channel.c_str(),
+                                mis.remainingLength());
 
-		MemoryIStream mis( data_.retrieve( header.length ), header.length );
+                } else {
+                    WARNING_MSG(
+                      "TCPBundleProcessor::dispatchMessages( %s ): "
+                      "Handler for message %s (ID %hu) left %d bytes\n",
+                      channel.c_str(),
+                      ie.name(),
+                      (unsigned short)header.identifier,
+                      mis.remainingLength());
+                }
+                mis.finish();
+            }
+        }
 
-		{
-			PROFILER_SCOPED_DYNAMIC_STRING( ie.c_str() );
-			if (pMessageFilter)
-			{
-				pMessageFilter->filterMessage( channel.addr(), header, mis, 
-					ie.pHandler() );
-			}
-			else
-			{
-				ie.pHandler()->handleMessage( channel.addr(), header, mis );
-			}
-		}
+        if (shouldBreakLoop) {
+            data_.finish();
+        }
 
-		ie.stopProfile( header.length );
-
-		if (mis.remainingLength() != 0)
-		{
-			if (header.identifier == REPLY_MESSAGE_IDENTIFIER)
-			{
-				WARNING_MSG( "TCPBundleProcessor::dispatchMessages( %s ): "
-						"Handler for reply left %d bytes\n",
-					channel.c_str(), mis.remainingLength() );
-
-			}
-			else
-			{
-				WARNING_MSG( "TCPBundleProcessor::dispatchMessages( %s ): "
-						"Handler for message %s (ID %hu) left %d bytes\n",
-					channel.c_str(), ie.name(),
-					(unsigned short)header.identifier, mis.remainingLength() );
-			}
-			mis.finish();
-		}
-	}
-
-	if (shouldBreakLoop)
-	{
-		data_.finish();
-	}
-
-	return REASON_SUCCESS;
-}
-
+        return REASON_SUCCESS;
+    }
 
 } // end namespace Mercury
-
 
 BW_END_NAMESPACE
 
 // tcp_bundle_processor.cpp
-

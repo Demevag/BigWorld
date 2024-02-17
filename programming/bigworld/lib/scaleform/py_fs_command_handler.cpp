@@ -4,30 +4,28 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace ScaleformBW
-{
+namespace ScaleformBW {
 
-PyFSCommandHandler::PyFSCommandHandler( PyObject * callback ):
-	pCallback_( callback )
-{
-};
+    PyFSCommandHandler::PyFSCommandHandler(PyObject* callback)
+      : pCallback_(callback){};
 
+    PyFSCommandHandler::~PyFSCommandHandler() {}
 
-PyFSCommandHandler::~PyFSCommandHandler()
-{
-}
+    void PyFSCommandHandler::Callback(GFx::Movie* pmovie,
+                                      const char* command,
+                                      const char* args)
+    {
+        BW_GUARD;
+        PyObject* pyArgs = Py_BuildValue("(s s)", command, args);
+        Py_XINCREF(pCallback_.get());
+        Script::call(pCallback_.getObject(),
+                     pyArgs,
+                     "PyFSCommandHandler::Callback",
+                     false);
+    }
 
-
-void PyFSCommandHandler::Callback(GFx::Movie* pmovie, const char* command, const char* args)
-{
-	BW_GUARD;
-	PyObject* pyArgs = Py_BuildValue("(s s)", command, args);
-	Py_XINCREF( pCallback_.get() );
-	Script::call( pCallback_.getObject(), pyArgs, "PyFSCommandHandler::Callback", false );
-}
-
-}	// namespace ScaleformBW
+} // namespace ScaleformBW
 
 BW_END_NAMESPACE
 
-#endif //#if SCALEFORM_SUPPORT
+#endif // #if SCALEFORM_SUPPORT

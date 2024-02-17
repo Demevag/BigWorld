@@ -10,7 +10,6 @@
 
 #include "cstdmf/debug_message_callbacks.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class AssetClient;
@@ -20,13 +19,11 @@ class FontManager;
 class TextureFeeds;
 class LensEffectManager;
 
-namespace Terrain
-{
+namespace Terrain {
     class Manager;
 }
 
-namespace PostProcessing
-{
+namespace PostProcessing {
     class Manager;
 }
 
@@ -35,20 +32,17 @@ namespace PostProcessing
  */
 struct PeShellDebugMessageCallback : public DebugMessageCallback
 {
-    PeShellDebugMessageCallback()
-    {
-    }
+    PeShellDebugMessageCallback() {}
 
-    ~PeShellDebugMessageCallback()
-    {
-    }
+    ~PeShellDebugMessageCallback() {}
 
-    /*virtual*/ bool handleMessage(
-        DebugMessagePriority messagePriority, const char * pCategory,
-        DebugMessageSource messageSource, const LogMetaData & metaData,
-        char const * pFormat, va_list argPtr );
+    /*virtual*/ bool handleMessage(DebugMessagePriority messagePriority,
+                                   const char*          pCategory,
+                                   DebugMessageSource   messageSource,
+                                   const LogMetaData&   metaData,
+                                   char const*          pFormat,
+                                   va_list              argPtr);
 };
-
 
 /**
  *  This class adds solution specific routines to what already exists in
@@ -56,53 +50,43 @@ struct PeShellDebugMessageCallback : public DebugMessageCallback
  */
 class PeShell
 {
-public:
+  public:
     PeShell();
 
     ~PeShell();
 
-    static PeShell & instance();
+    static PeShell& instance();
 
     static bool hasInstance();
 
-    static bool 
-    initApp
-    ( 
-        HINSTANCE       hInstance, 
-        HWND            hWndApp, 
-        HWND            hWndGraphics 
-    ); 
-    
-    bool init
-    (
-        HINSTANCE       hInstance, 
-        HWND            hWndApp, 
-        HWND            hWndGraphics 
-    );
+    static bool initApp(HINSTANCE hInstance, HWND hWndApp, HWND hWndGraphics);
+
+    bool init(HINSTANCE hInstance, HWND hWndApp, HWND hWndGraphics);
 
     void fini();
 
-    HINSTANCE & hInstance();
+    HINSTANCE& hInstance();
 
-    HWND &hWndApp();
+    HWND& hWndApp();
 
-    HWND &hWndGraphics();
+    HWND& hWndGraphics();
 
-    RompHarness &romp();
+    RompHarness& romp();
 
-    ToolsCamera &camera();
+    ToolsCamera& camera();
 
-    Floor &floor();
+    Floor& floor();
 
     POINT currentCursorPosition() const;
 
-private:
+  private:
     friend std::ostream& operator<<(std::ostream&, const PeShell&);
 
     friend struct PeShellDebugMessageCallback;
 
-    static bool messageHandler( DebugMessagePriority messagePriority,
-            char const * pFormat, va_list argPtr );
+    static bool messageHandler(DebugMessagePriority messagePriority,
+                               char const*          pFormat,
+                               va_list              argPtr);
 
     bool initGraphics();
 
@@ -124,38 +108,39 @@ private:
 
     PeShellDebugMessageCallback debugMessageCallback_;
 
-private:
-    PeShell(PeShell const&);                // not permitted
-    PeShell& operator=(PeShell const &);    // not permitted
+  private:
+    PeShell(PeShell const&);            // not permitted
+    PeShell& operator=(PeShell const&); // not permitted
 
-private:    
-    static PeShell      *s_instance_;       // the instance of this class (there should be only one!)
-    bool                inited_;
-    HINSTANCE           hInstance_;         // the current instance of the application
-    HWND                hWndApp_;           // application window
-    HWND                hWndGraphics_;      // 3D window
-    RompHarness         *romp_;
-    ToolsCameraPtr      camera_;
-    Floor*              floor_;
-    ChunkSpacePtr       space_;
+  private:
+    static PeShell*
+         s_instance_; // the instance of this class (there should be only one!)
+    bool inited_;
+    HINSTANCE      hInstance_;    // the current instance of the application
+    HWND           hWndApp_;      // application window
+    HWND           hWndGraphics_; // 3D window
+    RompHarness*   romp_;
+    ToolsCameraPtr camera_;
+    Floor*         floor_;
+    ChunkSpacePtr  space_;
 
     std::auto_ptr<Renderer> m_renderer;
 
-    std::auto_ptr< AssetClient > pAssetClient_;
-    typedef std::auto_ptr< FontManager > FontManagerPtr;
-    FontManagerPtr pFontManager_;
+    std::auto_ptr<AssetClient>         pAssetClient_;
+    typedef std::auto_ptr<FontManager> FontManagerPtr;
+    FontManagerPtr                     pFontManager_;
 
-    typedef std::auto_ptr< TextureFeeds > TextureFeedsPtr;
-    TextureFeedsPtr pTextureFeeds_;
+    typedef std::auto_ptr<TextureFeeds> TextureFeedsPtr;
+    TextureFeedsPtr                     pTextureFeeds_;
 
-    typedef std::auto_ptr< Terrain::Manager > TerrainManagerPtr;
-    TerrainManagerPtr pTerrainManager_;
+    typedef std::auto_ptr<Terrain::Manager> TerrainManagerPtr;
+    TerrainManagerPtr                       pTerrainManager_;
 
-    typedef std::auto_ptr< PostProcessing::Manager > PostProcessingManagerPtr;
-    PostProcessingManagerPtr pPostProcessingManager_;
+    typedef std::auto_ptr<PostProcessing::Manager> PostProcessingManagerPtr;
+    PostProcessingManagerPtr                       pPostProcessingManager_;
 
-    typedef std::auto_ptr< LensEffectManager > LensEffectManagerPtr;
-    LensEffectManagerPtr pLensEffectManager_;
+    typedef std::auto_ptr<LensEffectManager> LensEffectManagerPtr;
+    LensEffectManagerPtr                     pLensEffectManager_;
 };
 
 BW_END_NAMESPACE

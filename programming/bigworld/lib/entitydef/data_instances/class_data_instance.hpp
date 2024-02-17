@@ -3,11 +3,9 @@
 
 #include "intermediate_property_owner.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class ClassDataType;
-
 
 /**
  *	This class is the Python object for instances of a CLASS.
@@ -16,62 +14,61 @@ class ClassDataType;
  */
 class PyClassDataInstance : public IntermediatePropertyOwner
 {
-	Py_Header( PyClassDataInstance, PropertyOwner );
+    Py_Header(PyClassDataInstance, PropertyOwner);
 
-public:
-	PyClassDataInstance( const ClassDataType * pDataType,
-		PyTypeObject * pPyType = &s_type_ );
-	~PyClassDataInstance();
+  public:
+    PyClassDataInstance(const ClassDataType* pDataType,
+                        PyTypeObject*        pPyType = &s_type_);
+    ~PyClassDataInstance();
 
-	void setToDefault();
-	void setToCopy( PyClassDataInstance & other );
+    void setToDefault();
+    void setToCopy(PyClassDataInstance& other);
 
-	typedef PyObject * (*Interrogator)( PyObject * pObj, const char * prop );
-	bool setToForeign( PyObject * pForeign, Interrogator interrogator );
+    typedef PyObject* (*Interrogator)(PyObject* pObj, const char* prop);
+    bool setToForeign(PyObject* pForeign, Interrogator interrogator);
 
 #ifndef _MSC_VER
-	#define FN(X) X
+#define FN(X) X
 #else
 #define FN(X) X##_FN
-	static Interrogator FOREIGN_MAPPING, FOREIGN_ATTRS;
+    static Interrogator FOREIGN_MAPPING, FOREIGN_ATTRS;
 #endif
-	static PyObject * FN(FOREIGN_MAPPING)( PyObject * pObj, const char * prop )
-		{ return PyMapping_GetItemString( pObj, const_cast<char*>(prop) ); }
-	static PyObject * FN(FOREIGN_ATTRS)( PyObject * pObj, const char * prop )
-		{ return PyObject_GetAttrString( pObj, const_cast<char*>(prop) ); }
+    static PyObject* FN(FOREIGN_MAPPING)(PyObject* pObj, const char* prop)
+    {
+        return PyMapping_GetItemString(pObj, const_cast<char*>(prop));
+    }
+    static PyObject* FN(FOREIGN_ATTRS)(PyObject* pObj, const char* prop)
+    {
+        return PyObject_GetAttrString(pObj, const_cast<char*>(prop));
+    }
 
+    PY_PICKLING_METHOD_DECLARE(Class)
+    static PyObject* PickleResolve(ScriptObject list);
+    PY_AUTO_UNPICKLING_FACTORY_DECLARE(ARG(ScriptObject, END), Class)
 
-	PY_PICKLING_METHOD_DECLARE( Class )
-	static PyObject * PickleResolve( ScriptObject list );
-	PY_AUTO_UNPICKLING_FACTORY_DECLARE( ARG( ScriptObject, END ), Class )
+    void         setFieldValue(int index, ScriptObject val);
+    ScriptObject getFieldValue(int index);
 
+    const ClassDataType* dataType() const { return pDataType_.get(); }
+    void setDataType(ClassDataType* pDataType) { pDataType_ = pDataType; }
 
-	void setFieldValue( int index, ScriptObject val );
-	ScriptObject getFieldValue( int index );
+    virtual int                getNumOwnedProperties() const;
+    virtual PropertyOwnerBase* getChildPropertyOwner(int ref) const;
+    virtual ScriptObject       setOwnedProperty(int ref, BinaryIStream& data);
 
+    ScriptObject getPyIndex(int index) const;
 
-	const ClassDataType * dataType() const			{ return pDataType_.get(); }
-	void setDataType( ClassDataType * pDataType )	{ pDataType_ = pDataType; }
+    ScriptObject pyGetAttribute(const ScriptString& attrObj);
+    bool pySetAttribute(const ScriptString& attrObj, const ScriptObject& value);
 
+    void pyAdditionalMembers(const ScriptList& pList) const;
 
-	virtual int getNumOwnedProperties() const;
-	virtual PropertyOwnerBase * getChildPropertyOwner( int ref ) const;
-	virtual ScriptObject setOwnedProperty( int ref, BinaryIStream & data );
+  private:
+    bool isSmart() const { return true; }
 
-	ScriptObject getPyIndex( int index ) const;
+    ConstSmartPointer<ClassDataType> pDataType_;
 
-	ScriptObject pyGetAttribute( const ScriptString & attrObj );
-	bool pySetAttribute( const ScriptString & attrObj,
-		const ScriptObject & value );
-
-	void pyAdditionalMembers( const ScriptList & pList ) const;
-
-private:
-	bool isSmart() const	{ return true; }
-
-	ConstSmartPointer<ClassDataType>	pDataType_;
-
-	BW::vector<ScriptObject>			fieldValues_;
+    BW::vector<ScriptObject> fieldValues_;
 };
 
 typedef ScriptObjectPtr<PyClassDataInstance> PyClassDataInstancePtr;

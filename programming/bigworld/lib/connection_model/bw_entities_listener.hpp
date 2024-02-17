@@ -10,11 +10,11 @@ class BWEntity;
  */
 class BWEntitiesListener
 {
-public:
-	virtual void onEntityEnter( BWEntity * pEntity ) = 0;
-	virtual void onEntityLeave( BWEntity * pEntity ) = 0;
+  public:
+    virtual void onEntityEnter(BWEntity* pEntity) = 0;
+    virtual void onEntityLeave(BWEntity* pEntity) = 0;
 
-	virtual void onEntitiesReset() = 0;
+    virtual void onEntitiesReset() = 0;
 };
 
 BW_END_NAMESPACE

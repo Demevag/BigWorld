@@ -13,23 +13,20 @@ BW_BEGIN_NAMESPACE
  */
 struct LoginReplyRecord
 {
-	Mercury::Address	serverAddr;			// send to here
-	uint32				sessionKey;			// use this session key
+    Mercury::Address serverAddr; // send to here
+    uint32           sessionKey; // use this session key
 };
 
-inline BinaryIStream& operator>>(
-	BinaryIStream &is, LoginReplyRecord &lrr )
+inline BinaryIStream& operator>>(BinaryIStream& is, LoginReplyRecord& lrr)
 {
-	return is >> lrr.serverAddr >> lrr.sessionKey;
+    return is >> lrr.serverAddr >> lrr.sessionKey;
 }
 
-inline BinaryOStream& operator<<(
-	BinaryOStream &os, const LoginReplyRecord &lrr )
+inline BinaryOStream& operator<<(BinaryOStream& os, const LoginReplyRecord& lrr)
 {
-	return os << lrr.serverAddr << lrr.sessionKey;
+    return os << lrr.serverAddr << lrr.sessionKey;
 }
 
 BW_END_NAMESPACE
 
 #endif // LOGIN_REPLY_RECORD_HPP
-

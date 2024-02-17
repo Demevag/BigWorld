@@ -8,7 +8,6 @@
 
 #include "network/bundle.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
@@ -20,112 +19,100 @@ BW_BEGIN_NAMESPACE
  */
 Cells::~Cells()
 {
-	Container::iterator iter = cells_.begin();
+    Container::iterator iter = cells_.begin();
 
-	while (iter != cells_.end())
-	{
-		delete *iter;
-		++iter;
-	}
+    while (iter != cells_.end()) {
+        delete *iter;
+        ++iter;
+    }
 }
-
 
 /**
  *	This method returns the cell that is in the input space.
  *
  *	@return If the desired cell is not found, NULL is returned.
  */
-CellData * Cells::findFromSpaceID( SpaceID spaceID ) const
+CellData* Cells::findFromSpaceID(SpaceID spaceID) const
 {
-	Container::const_iterator iter = cells_.begin();
+    Container::const_iterator iter = cells_.begin();
 
-	while (iter != cells_.end())
-	{
-		if ((*iter)->space().id() == spaceID)
-		{
-			return *iter;
-		}
+    while (iter != cells_.end()) {
+        if ((*iter)->space().id() == spaceID) {
+            return *iter;
+        }
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	return NULL;
+    return NULL;
 }
-
 
 /**
  *	This method returns the cell that is in the input app.
  *
  *	@return If the desired cell is not found, NULL is returned.
  */
-CellData * Cells::findFromCellAppAddr( const Mercury::Address & addr ) const
+CellData* Cells::findFromCellAppAddr(const Mercury::Address& addr) const
 {
-	Container::const_iterator iter = cells_.begin();
+    Container::const_iterator iter = cells_.begin();
 
-	while (iter != cells_.end())
-	{
-		if ((*iter)->addr() == addr)
-		{
-			return *iter;
-		}
+    while (iter != cells_.end()) {
+        if ((*iter)->addr() == addr) {
+            return *iter;
+        }
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	INFO_MSG( "Cells::findFromCellAppAddr: Did not find %s\n", addr.c_str() );
-	return NULL;
+    INFO_MSG("Cells::findFromCellAppAddr: Did not find %s\n", addr.c_str());
+    return NULL;
 }
-
 
 /**
  *
  */
-void Cells::notifyOfCellRemoval( SpaceID spaceID, CellData & removedCell ) const
+void Cells::notifyOfCellRemoval(SpaceID spaceID, CellData& removedCell) const
 {
-	const Mercury::Address removedAddress = removedCell.addr();
-	Mercury::Bundle & bundleToRemoved = removedCell.cellApp().bundle();
-	bundleToRemoved.startMessage( CellAppInterface::removeCell );
-	bundleToRemoved << spaceID;
+    const Mercury::Address removedAddress  = removedCell.addr();
+    Mercury::Bundle&       bundleToRemoved = removedCell.cellApp().bundle();
+    bundleToRemoved.startMessage(CellAppInterface::removeCell);
+    bundleToRemoved << spaceID;
 
-	Container::const_iterator iter = cells_.begin();
+    Container::const_iterator iter = cells_.begin();
 
-	while (iter != cells_.end())
-	{
-		CellData * pCell = *iter;
+    while (iter != cells_.end()) {
+        CellData* pCell = *iter;
 
-		// Should have been removed already.
-		MF_ASSERT( pCell != &removedCell );
+        // Should have been removed already.
+        MF_ASSERT(pCell != &removedCell);
 
-		CellApp & cellApp = pCell->cellApp();
+        CellApp& cellApp = pCell->cellApp();
 
-		bundleToRemoved << cellApp.addr();
+        bundleToRemoved << cellApp.addr();
 
-		Mercury::Bundle & bundle = cellApp.bundle();
-		bundle.startMessage( CellAppInterface::notifyOfCellRemoval );
-		bundle << spaceID;
-		bundle << removedAddress;
-		cellApp.channel().delayedSend();
+        Mercury::Bundle& bundle = cellApp.bundle();
+        bundle.startMessage(CellAppInterface::notifyOfCellRemoval);
+        bundle << spaceID;
+        bundle << removedAddress;
+        cellApp.channel().delayedSend();
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	removedCell.cellApp().channel().delayedSend();
+    removedCell.cellApp().channel().delayedSend();
 }
-
 
 /**
  *	This method removes the cell this collection.
  */
-void Cells::erase( CellData * pData )
+void Cells::erase(CellData* pData)
 {
-	Container::iterator iter = std::find( cells_.begin(), cells_.end(), pData );
+    Container::iterator iter = std::find(cells_.begin(), cells_.end(), pData);
 
-	if (iter != cells_.end())
-	{
-		cells_.erase( iter );
-	}
+    if (iter != cells_.end()) {
+        cells_.erase(iter);
+    }
 }
-
 
 /**
  *	This method deletes all cells in this collection.
@@ -133,57 +120,49 @@ void Cells::erase( CellData * pData )
  */
 void Cells::deleteAll()
 {
-	if (!cells_.empty())
-	{
-		WARNING_MSG( "Cells::deleteAll: Still have %" PRIzu " cells\n",
-				cells_.size() );
+    if (!cells_.empty()) {
+        WARNING_MSG("Cells::deleteAll: Still have %" PRIzu " cells\n",
+                    cells_.size());
 
-		while (!cells_.empty())
-		{
-			delete cells_.front();
-		}
-	}
+        while (!cells_.empty()) {
+            delete cells_.front();
+        }
+    }
 }
-
 
 /**
  *	This method tells all cells to start retiring.
  */
 void Cells::retireAll()
 {
-	Container::iterator iter = cells_.begin();
+    Container::iterator iter = cells_.begin();
 
-	while (iter != cells_.end())
-	{
-		(*iter)->startRetiring();
-		++iter;
-	}
+    while (iter != cells_.end()) {
+        (*iter)->startRetiring();
+        ++iter;
+    }
 }
-
 
 /**
  *
  */
 void Cells::cancelRetiring()
 {
-	Container::iterator iter = cells_.begin();
+    Container::iterator iter = cells_.begin();
 
-	while (iter != cells_.end())
-	{
-		(*iter)->cancelRetiring();
+    while (iter != cells_.end()) {
+        (*iter)->cancelRetiring();
 
-		++iter;
-	}
+        ++iter;
+    }
 }
-
 
 WatcherPtr Cells::pWatcher()
 {
-	WatcherPtr pWatcher = new SequenceWatcher< Container >();
-	pWatcher->addChild( "*", new BaseDereferenceWatcher(
-		CellData::pWatcher() ) );
+    WatcherPtr pWatcher = new SequenceWatcher<Container>();
+    pWatcher->addChild("*", new BaseDereferenceWatcher(CellData::pWatcher()));
 
-	return pWatcher;
+    return pWatcher;
 }
 
 BW_END_NAMESPACE

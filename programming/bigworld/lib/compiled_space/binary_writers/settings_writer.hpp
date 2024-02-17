@@ -8,37 +8,35 @@
 
 namespace BW {
 
-class CommandLine;
+    class CommandLine;
 
-namespace CompiledSpace {
+    namespace CompiledSpace {
 
-class BinaryFormatWriter;
+        class BinaryFormatWriter;
 
-class SettingsWriter :
-	public ISpaceWriter
-{
-public:
-	SettingsWriter();
-	~SettingsWriter();
-	
-	virtual bool initialize( const DataSectionPtr& pSpaceSettings,
-		const CommandLine& commandLine );
-	virtual void postProcess();
-	virtual bool write( BinaryFormatWriter& writer );
+        class SettingsWriter : public ISpaceWriter
+        {
+          public:
+            SettingsWriter();
+            ~SettingsWriter();
 
-	typedef std::tr1::function< const AABB() > BoundGeneratorFunc;
+            virtual bool initialize(const DataSectionPtr& pSpaceSettings,
+                                    const CommandLine&    commandLine);
+            virtual void postProcess();
+            virtual bool write(BinaryFormatWriter& writer);
 
-	void addBounds( const AABB& bb );
-	void addBoundGenerator( BoundGeneratorFunc callback );
+            typedef std::tr1::function<const AABB()> BoundGeneratorFunc;
 
-private:
-	CompiledSpaceSettingsTypes::Header header_;
-	typedef BW::vector< BoundGeneratorFunc > GeneratorList;
-	GeneratorList generators_;
-};
+            void addBounds(const AABB& bb);
+            void addBoundGenerator(BoundGeneratorFunc callback);
 
-} // namespace CompiledSpace
+          private:
+            CompiledSpaceSettingsTypes::Header     header_;
+            typedef BW::vector<BoundGeneratorFunc> GeneratorList;
+            GeneratorList                          generators_;
+        };
+
+    } // namespace CompiledSpace
 } // namespace BW
-
 
 #endif // SETTINGS_WRITER_HPP

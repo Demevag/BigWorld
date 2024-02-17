@@ -6,7 +6,6 @@
 #include "cstdmf/bw_string.hpp"
 #include <mysql/mysql.h>
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -14,18 +13,18 @@ BW_BEGIN_NAMESPACE
  */
 class DatabaseException : public std::exception
 {
-public:
-	DatabaseException( MYSQL * pConnection );
-	~DatabaseException() throw();
+  public:
+    DatabaseException(MYSQL* pConnection);
+    ~DatabaseException() throw();
 
-	virtual const char * what() const throw() { return errStr_.c_str(); }
+    virtual const char* what() const throw() { return errStr_.c_str(); }
 
-	bool shouldRetry() const;
-	bool isLostConnection() const;
+    bool shouldRetry() const;
+    bool isLostConnection() const;
 
-private:
-	BW::string errStr_;
-	unsigned int errNum_;
+  private:
+    BW::string   errStr_;
+    unsigned int errNum_;
 };
 
 BW_END_NAMESPACE

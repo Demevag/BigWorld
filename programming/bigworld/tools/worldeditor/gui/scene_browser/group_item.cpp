@@ -10,17 +10,14 @@ BW_BEGIN_NAMESPACE
  *	@param group	Group name, matching the type (chunk id, filename, etc).
  *	@param type		Type of the grouping property.
  */
-GroupItem::GroupItem(	const BW::string & group,
-										ItemInfoDB::Type type ) :
-	ItemInfoDB::Item( "", NULL, 0, 0, "", "", "",
-		ItemInfoDB::ItemProperties() ),
-	group_( group ),
-	type_( type ),
-	numItems_( 0 )
+GroupItem::GroupItem(const BW::string& group, ItemInfoDB::Type type)
+  : ItemInfoDB::Item("", NULL, 0, 0, "", "", "", ItemInfoDB::ItemProperties())
+  , group_(group)
+  , type_(type)
+  , numItems_(0)
 {
-	BW_GUARD;
+    BW_GUARD;
 }
-
 
 /**
  *	This method handles returning group-level property strings depending on the
@@ -29,72 +26,59 @@ GroupItem::GroupItem(	const BW::string & group,
  *	@param type		Type of the desired property.
  *	@return		The property string if it's a group-level property, "" if not.
  */
-BW::string GroupItem::propertyAsString( const ItemInfoDB::Type & type ) const
+BW::string GroupItem::propertyAsString(const ItemInfoDB::Type& type) const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	static ValueType s_valueTypeInt( ValueTypeDesc::INT );
+    static ValueType s_valueTypeInt(ValueTypeDesc::INT);
 
-	BW::string property;
-	if (type == type_)
-	{
-		return group_;
-	}
-	else if (type == ItemInfoDB::Type::builtinType(
-										ItemInfoDB::Type::TYPEID_NUMTRIS ))
-	{
-		s_valueTypeInt.toString( numTris_, property );
-	}
-	else if (type == ItemInfoDB::Type::builtinType(
-									ItemInfoDB::Type::TYPEID_NUMPRIMS ))
-	{
-		s_valueTypeInt.toString( numPrimitives_, property );
-	}
-	else if (type == groupNumItemsType())
-	{
-		s_valueTypeInt.toString( numItems_, property );
-	}
-	else if (type == groupNameType())
-	{
-		return group_;
-	}
+    BW::string property;
+    if (type == type_) {
+        return group_;
+    } else if (type == ItemInfoDB::Type::builtinType(
+                         ItemInfoDB::Type::TYPEID_NUMTRIS)) {
+        s_valueTypeInt.toString(numTris_, property);
+    } else if (type == ItemInfoDB::Type::builtinType(
+                         ItemInfoDB::Type::TYPEID_NUMPRIMS)) {
+        s_valueTypeInt.toString(numPrimitives_, property);
+    } else if (type == groupNumItemsType()) {
+        s_valueTypeInt.toString(numItems_, property);
+    } else if (type == groupNameType()) {
+        return group_;
+    }
 
-	return property;
+    return property;
 }
-
 
 /**
  *	This method sets the number of items in the group.
  */
-void GroupItem::numItems( int numItems )
+void GroupItem::numItems(int numItems)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	numItems_ = numItems;
+    numItems_ = numItems;
 }
-
 
 /**
  *	This method sets the number of triangles in the group.
  */
-void GroupItem::numTris( int numTris )
+void GroupItem::numTris(int numTris)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	numTris_ = numTris;
+    numTris_ = numTris;
 }
-
 
 /**
  *	This method sets the number of primitives in the group.
  */
-void GroupItem::numPrimitives( int numPrims )
+void GroupItem::numPrimitives(int numPrims)
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	numPrimitives_ = numPrims;
+    numPrimitives_ = numPrims;
 }
-
 
 /**
  *	This static member returns the type of the group-only property that stores
@@ -105,12 +89,10 @@ void GroupItem::numPrimitives( int numPrims )
 /*static*/
 ItemInfoDB::Type GroupItem::groupNumItemsType()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return ItemInfoDB::Type( "builtin_groupNumItems", ValueTypeDesc::STRING );
+    return ItemInfoDB::Type("builtin_groupNumItems", ValueTypeDesc::STRING);
 }
-
-
 
 /**
  *	This static member returns the type of the group-only property that stores
@@ -121,10 +103,9 @@ ItemInfoDB::Type GroupItem::groupNumItemsType()
 /*static*/
 ItemInfoDB::Type GroupItem::groupNameType()
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	return ItemInfoDB::Type( "builtin_groupName", ValueTypeDesc::STRING );
+    return ItemInfoDB::Type("builtin_groupName", ValueTypeDesc::STRING);
 }
 
 BW_END_NAMESPACE
-

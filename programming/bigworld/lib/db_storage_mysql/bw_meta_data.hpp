@@ -3,7 +3,6 @@
 
 #include "network/basictypes.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class MySql;
@@ -13,18 +12,18 @@ class MySql;
  */
 class BigWorldMetaData
 {
-public:
-	BigWorldMetaData( MySql & connection );
+  public:
+    BigWorldMetaData(MySql& connection);
 
-	MySql & connection()		{ return connection_; }
+    MySql& connection() { return connection_; }
 
-	EntityTypeID getEntityTypeID( const BW::string & entityName );
-	void setEntityTypeID( const BW::string & entityName, EntityTypeID typeID );
-	void addEntityType( const BW::string & entityName, EntityTypeID typeID );
-	void removeEntityType( const BW::string & entityName );
+    EntityTypeID getEntityTypeID(const BW::string& entityName);
+    void setEntityTypeID(const BW::string& entityName, EntityTypeID typeID);
+    void addEntityType(const BW::string& entityName, EntityTypeID typeID);
+    void removeEntityType(const BW::string& entityName);
 
-private:
-	MySql &				connection_;
+  private:
+    MySql& connection_;
 };
 
 BW_END_NAMESPACE

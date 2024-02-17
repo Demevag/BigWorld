@@ -20,70 +20,62 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
+namespace {
 
-namespace
-{
+    /*
+     *	This function is a convenience to test the existence of a directory
+     *without emitting any error messages.
+     */
+    bool directoryExists(const BW::string& directoryPath)
+    {
+        struct stat statBuf;
 
-
-/*
- *	This function is a convenience to test the existence of a directory without
- *	emitting any error messages.
- */
-bool directoryExists( const BW::string & directoryPath )
-{
-	struct stat statBuf;
-
-	// TODO: this only checks for existence rather than explicitly being a
-	// directory.
-	return (stat( directoryPath.c_str(), &statBuf ) == 0);
-}
+        // TODO: this only checks for existence rather than explicitly being a
+        // directory.
+        return (stat(directoryPath.c_str(), &statBuf) == 0);
+    }
 
 };
 
-
 BW_BEGIN_NAMESPACE
-
 
 /**
  *	Visitor class for binary paths.
  */
 class BinaryPathVisitor
 {
-public:
-	/** Destructor.*/
-	virtual ~BinaryPathVisitor() {}
+  public:
+    /** Destructor.*/
+    virtual ~BinaryPathVisitor() {}
 
-	/**
-	 *	This method is called for each binary path to visit, as well as chdir()
-	 *	being called for the path just before.
-	 *
-	 *	The original current working directory will be restored when the
-	 *	entire visit loop completes or terminates.
-	 *
-	 *	@param path A binary path.
-	 */
-	virtual void onBinaryPath( const BW::string & path ) = 0;
+    /**
+     *	This method is called for each binary path to visit, as well as chdir()
+     *	being called for the path just before.
+     *
+     *	The original current working directory will be restored when the
+     *	entire visit loop completes or terminates.
+     *
+     *	@param path A binary path.
+     */
+    virtual void onBinaryPath(const BW::string& path) = 0;
 
-protected:
-	/** Constructor. */
-	BinaryPathVisitor() {}
+  protected:
+    /** Constructor. */
+    BinaryPathVisitor() {}
 };
-
-
 
 /**
  *	Constructor.
  */
-ServerPlatformLinux::ServerPlatformLinux() :
-	ServerPlatform(),
-	hasExtendedStats_( false )
+ServerPlatformLinux::ServerPlatformLinux()
+  : ServerPlatform()
+  , hasExtendedStats_(false)
 {
-	this->initConfigSuffixes();
-	this->initKernelVersion();
+    this->initConfigSuffixes();
+    this->initKernelVersion();
 
-	isInitialised_ = this->initArchitecture();
+    isInitialised_ = this->initArchitecture();
 }
-
 
 /**
  *	This method initialises the suffixes of the binary paths to avoid costly
@@ -98,138 +90,132 @@ ServerPlatformLinux::ServerPlatformLinux() :
  */
 void ServerPlatformLinux::initConfigSuffixes()
 {
-	const BW::string newDirectoryPrefix( "/game/bin/server/" );
-	const BW::string oldDirectoryPrefix( "/bigworld/bin/" );
-	const BW::string serverSuffix( "/server" );
-	const BW::string arch64Suffix( "64" );
-	const BW::string bwConfigAsLowerHybrid( "hybrid" );
-	const BW::string bwConfigAsLowerDebug( "debug" );
+    const BW::string newDirectoryPrefix("/game/bin/server/");
+    const BW::string oldDirectoryPrefix("/bigworld/bin/");
+    const BW::string serverSuffix("/server");
+    const BW::string arch64Suffix("64");
+    const BW::string bwConfigAsLowerHybrid("hybrid");
+    const BW::string bwConfigAsLowerDebug("debug");
 
-	const BW::string & platformBuildStr = BW::PlatformInfo::buildStr();
-	const BW::string & platformStr = BW::PlatformInfo::str();
+    const BW::string& platformBuildStr = BW::PlatformInfo::buildStr();
+    const BW::string& platformStr      = BW::PlatformInfo::str();
 
-	// Hybrid
-	// /game/bin/server/BW::PlatformInfo::buildStr()/server
-	preparedHybridSuffix_.push_back( 
-		newDirectoryPrefix + platformBuildStr + serverSuffix );
+    // Hybrid
+    // /game/bin/server/BW::PlatformInfo::buildStr()/server
+    preparedHybridSuffix_.push_back(newDirectoryPrefix + platformBuildStr +
+                                    serverSuffix);
 
-	// /game/bin/server/BW::PlatformInfo::str()/server
-	preparedHybridSuffix_.push_back(
-		newDirectoryPrefix + platformStr + serverSuffix );
+    // /game/bin/server/BW::PlatformInfo::str()/server
+    preparedHybridSuffix_.push_back(newDirectoryPrefix + platformStr +
+                                    serverSuffix);
 
-	// /game/bin/server/Hybrid64
-	BW::string newDirOldHybrid( newDirectoryPrefix +
-		BW_CONFIG_HYBRID_OLD + arch64Suffix );
+    // /game/bin/server/Hybrid64
+    BW::string newDirOldHybrid(newDirectoryPrefix + BW_CONFIG_HYBRID_OLD +
+                               arch64Suffix);
 
-	preparedHybridSuffix_.push_back( newDirOldHybrid );
-	preparedOldHybridSuffix_.push_back( newDirOldHybrid );
+    preparedHybridSuffix_.push_back(newDirOldHybrid);
+    preparedOldHybridSuffix_.push_back(newDirOldHybrid);
 
-	// /game/bin/server/hybrid64
-	BW::string newDirOldLowcaseHybrid( newDirectoryPrefix +
-		bwConfigAsLowerHybrid + arch64Suffix );
-	preparedHybridSuffix_.push_back( newDirOldLowcaseHybrid );
-	preparedOldHybridSuffix_.push_back( newDirOldLowcaseHybrid );
+    // /game/bin/server/hybrid64
+    BW::string newDirOldLowcaseHybrid(newDirectoryPrefix +
+                                      bwConfigAsLowerHybrid + arch64Suffix);
+    preparedHybridSuffix_.push_back(newDirOldLowcaseHybrid);
+    preparedOldHybridSuffix_.push_back(newDirOldLowcaseHybrid);
 
-	// Now repeat the above for the old directory layout
+    // Now repeat the above for the old directory layout
 
-	// /bigworld/bin/BW::PlatformInfo::buildStr()/server
-	preparedHybridSuffix_.push_back(
-		oldDirectoryPrefix + platformBuildStr + serverSuffix );
+    // /bigworld/bin/BW::PlatformInfo::buildStr()/server
+    preparedHybridSuffix_.push_back(oldDirectoryPrefix + platformBuildStr +
+                                    serverSuffix);
 
-	// /bigworld/bin/BW::PlatformInfo::str()/server
-	preparedHybridSuffix_.push_back(
-		oldDirectoryPrefix + platformStr + serverSuffix );
+    // /bigworld/bin/BW::PlatformInfo::str()/server
+    preparedHybridSuffix_.push_back(oldDirectoryPrefix + platformStr +
+                                    serverSuffix);
 
-	// /bigworld/bin/Hybrid64
-	BW::string oldDirOldHybrid( oldDirectoryPrefix +
-		BW_CONFIG_HYBRID_OLD + arch64Suffix );
+    // /bigworld/bin/Hybrid64
+    BW::string oldDirOldHybrid(oldDirectoryPrefix + BW_CONFIG_HYBRID_OLD +
+                               arch64Suffix);
 
-	preparedHybridSuffix_.push_back( oldDirOldHybrid );
-	preparedOldHybridSuffix_.push_back( oldDirOldHybrid );
+    preparedHybridSuffix_.push_back(oldDirOldHybrid);
+    preparedOldHybridSuffix_.push_back(oldDirOldHybrid);
 
-	// /bigworld/bin/hybrid64
-	BW::string oldDirOldLowcaseHybrid( oldDirectoryPrefix +
-		bwConfigAsLowerHybrid + arch64Suffix );
-	preparedHybridSuffix_.push_back( oldDirOldLowcaseHybrid );
-	preparedOldHybridSuffix_.push_back( oldDirOldLowcaseHybrid );
+    // /bigworld/bin/hybrid64
+    BW::string oldDirOldLowcaseHybrid(oldDirectoryPrefix +
+                                      bwConfigAsLowerHybrid + arch64Suffix);
+    preparedHybridSuffix_.push_back(oldDirOldLowcaseHybrid);
+    preparedOldHybridSuffix_.push_back(oldDirOldLowcaseHybrid);
 
-	/*
-	 * Debug
-	 */
-	
-	// /game/bin/server/BW::PlatformInfo::buildStr()_debug/server
-	preparedDebugSuffix_.push_back(
-		newDirectoryPrefix + platformBuildStr + BW::string( "_debug" ) +
-		serverSuffix );
+    /*
+     * Debug
+     */
 
-	// /game/bin/server/BW::PlatformInfo::str()_debug/server
-	preparedDebugSuffix_.push_back(
-		newDirectoryPrefix + platformStr + BW::string( "_debug" ) +
-		serverSuffix );
+    // /game/bin/server/BW::PlatformInfo::buildStr()_debug/server
+    preparedDebugSuffix_.push_back(newDirectoryPrefix + platformBuildStr +
+                                   BW::string("_debug") + serverSuffix);
 
-	// /game/bin/server/Debug64
-	BW::string newDirOldDebug( newDirectoryPrefix +
-		BW_CONFIG_DEBUG_OLD + arch64Suffix );
-	preparedDebugSuffix_.push_back( newDirOldDebug );
-	preparedOldDebugSuffix_.push_back( newDirOldDebug );
+    // /game/bin/server/BW::PlatformInfo::str()_debug/server
+    preparedDebugSuffix_.push_back(newDirectoryPrefix + platformStr +
+                                   BW::string("_debug") + serverSuffix);
 
-	// /game/bin/server/debug64
-	BW::string newDirOldLowcaseDebug( newDirectoryPrefix +
-		bwConfigAsLowerDebug + arch64Suffix );
-	preparedDebugSuffix_.push_back( newDirOldLowcaseDebug );
-	preparedOldDebugSuffix_.push_back( newDirOldLowcaseDebug );
+    // /game/bin/server/Debug64
+    BW::string newDirOldDebug(newDirectoryPrefix + BW_CONFIG_DEBUG_OLD +
+                              arch64Suffix);
+    preparedDebugSuffix_.push_back(newDirOldDebug);
+    preparedOldDebugSuffix_.push_back(newDirOldDebug);
 
-	// Now repeat the above for the old directory layout
+    // /game/bin/server/debug64
+    BW::string newDirOldLowcaseDebug(newDirectoryPrefix + bwConfigAsLowerDebug +
+                                     arch64Suffix);
+    preparedDebugSuffix_.push_back(newDirOldLowcaseDebug);
+    preparedOldDebugSuffix_.push_back(newDirOldLowcaseDebug);
 
-	// /bigworld/bin/BW::PlatformInfo::buildStr()_debug/server
-	preparedDebugSuffix_.push_back(
-		oldDirectoryPrefix + platformBuildStr + BW::string( "_debug" ) +
-		serverSuffix );
+    // Now repeat the above for the old directory layout
 
-	// /bigworld/bin/BW::PlatformInfo::str()_debug/server
-	preparedDebugSuffix_.push_back(
-		oldDirectoryPrefix + platformStr + BW::string( "_debug" ) +
-		serverSuffix );
+    // /bigworld/bin/BW::PlatformInfo::buildStr()_debug/server
+    preparedDebugSuffix_.push_back(oldDirectoryPrefix + platformBuildStr +
+                                   BW::string("_debug") + serverSuffix);
 
-	// /bigworld/bin/Debug64
-	BW::string oldDirOldDebug( oldDirectoryPrefix +
-		BW_CONFIG_DEBUG_OLD + arch64Suffix );
-	preparedDebugSuffix_.push_back( oldDirOldDebug );
-	preparedOldDebugSuffix_.push_back( oldDirOldDebug );
+    // /bigworld/bin/BW::PlatformInfo::str()_debug/server
+    preparedDebugSuffix_.push_back(oldDirectoryPrefix + platformStr +
+                                   BW::string("_debug") + serverSuffix);
 
-	// /bigworld/bin/debug64
-	BW::string oldDirOldLowcaseDebug( oldDirectoryPrefix +
-		bwConfigAsLowerDebug + arch64Suffix );
-	preparedDebugSuffix_.push_back( oldDirOldLowcaseDebug );
-	preparedOldDebugSuffix_.push_back( oldDirOldLowcaseDebug );
+    // /bigworld/bin/Debug64
+    BW::string oldDirOldDebug(oldDirectoryPrefix + BW_CONFIG_DEBUG_OLD +
+                              arch64Suffix);
+    preparedDebugSuffix_.push_back(oldDirOldDebug);
+    preparedOldDebugSuffix_.push_back(oldDirOldDebug);
+
+    // /bigworld/bin/debug64
+    BW::string oldDirOldLowcaseDebug(oldDirectoryPrefix + bwConfigAsLowerDebug +
+                                     arch64Suffix);
+    preparedDebugSuffix_.push_back(oldDirOldLowcaseDebug);
+    preparedOldDebugSuffix_.push_back(oldDirOldLowcaseDebug);
 }
-
 
 /**
  * Determine whether we are running on a 32bit or 64bit machine.
  */
 bool ServerPlatformLinux::initArchitecture()
 {
-	struct utsname sysinfo;
+    struct utsname sysinfo;
 
-	if (uname( &sysinfo ) == -1)
-	{
-		syslog( LOG_ERR, "Unable to discover system architecture: %s. "
-				"Continuing with 64 bit architecture support. ",
-			strerror( errno ) );
-		return true;
-	}
+    if (uname(&sysinfo) == -1) {
+        syslog(LOG_ERR,
+               "Unable to discover system architecture: %s. "
+               "Continuing with 64 bit architecture support. ",
+               strerror(errno));
+        return true;
+    }
 
-	if (strcmp( sysinfo.machine, "x86_64") != 0)
-	{
-		syslog( LOG_CRIT, "Host architecture does not appear to be 64 bit."
-			" Only 64 bit Linux platforms are supported." );
-		return false;
-	}
+    if (strcmp(sysinfo.machine, "x86_64") != 0) {
+        syslog(LOG_CRIT,
+               "Host architecture does not appear to be 64 bit."
+               " Only 64 bit Linux platforms are supported.");
+        return false;
+    }
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method checks the local host's kernel version.
@@ -240,73 +226,70 @@ bool ServerPlatformLinux::initArchitecture()
  */
 void ServerPlatformLinux::initKernelVersion()
 {
-	// Determine which kernel version is running. This is important
-	// as before 2.6 /proc/stat didn't have as much information.
+    // Determine which kernel version is running. This is important
+    // as before 2.6 /proc/stat didn't have as much information.
 
-	hasExtendedStats_ = false;
+    hasExtendedStats_ = false;
 
-	FILE *fp;
-	const char *kernel_version_file = "/proc/sys/kernel/osrelease";
-	if ((fp = fopen( kernel_version_file, "r" )) == NULL)
-	{
-		syslog( LOG_ERR, "Couldn't read %s: %s", kernel_version_file,
-				strerror( errno ) );
-		hasExtendedStats_ = false;
-	}
+    FILE*       fp;
+    const char* kernel_version_file = "/proc/sys/kernel/osrelease";
+    if ((fp = fopen(kernel_version_file, "r")) == NULL) {
+        syslog(LOG_ERR,
+               "Couldn't read %s: %s",
+               kernel_version_file,
+               strerror(errno));
+        hasExtendedStats_ = false;
+    }
 
-	char line[ 512 ];
-	uint major, minor;
+    char line[512];
+    uint major, minor;
 
-	fgets( line, sizeof( line ), fp );
-	if (sscanf( line, "%d.%d", &major, &minor) != 2)
-	{
-		syslog( LOG_ERR, "Invalid line in %s: '%s'",
-				kernel_version_file, line );
-	}
-	else
-	{
-		if ((major > 2) || (minor > 4))
-		{
-			hasExtendedStats_ = true;
-		}
+    fgets(line, sizeof(line), fp);
+    if (sscanf(line, "%d.%d", &major, &minor) != 2) {
+        syslog(LOG_ERR, "Invalid line in %s: '%s'", kernel_version_file, line);
+    } else {
+        if ((major > 2) || (minor > 4)) {
+            hasExtendedStats_ = true;
+        }
 
-		if (hasExtendedStats_)
-		{
-			syslog( LOG_INFO, "Kernel version %d.%d detected: "
-				"Using extended stats from /proc/stats\n", major, minor );
-		}
-	}
+        if (hasExtendedStats_) {
+            syslog(LOG_INFO,
+                   "Kernel version %d.%d detected: "
+                   "Using extended stats from /proc/stats\n",
+                   major,
+                   minor);
+        }
+    }
 
-	fclose( fp );
+    fclose(fp);
 }
 
 /**
  *
  */
-bool ServerPlatformLinux::configDirectoryExists( const BW::string & bwRoot,
-	const StringList & pregeneratedConfigPaths, BW::string & binaryDir )
+bool ServerPlatformLinux::configDirectoryExists(
+  const BW::string& bwRoot,
+  const StringList& pregeneratedConfigPaths,
+  BW::string&       binaryDir)
 {
-	BW::string potentialPath;
+    BW::string potentialPath;
 
-	StringList::const_iterator iter;
+    StringList::const_iterator iter;
 
-	iter = pregeneratedConfigPaths.begin();
-	while (iter != pregeneratedConfigPaths.end())
-	{
-		potentialPath = bwRoot + (*iter);
+    iter = pregeneratedConfigPaths.begin();
+    while (iter != pregeneratedConfigPaths.end()) {
+        potentialPath = bwRoot + (*iter);
 
-		if (directoryExists( potentialPath ))
-		{
-			binaryDir = potentialPath;
-			return true;
-		}
+        if (directoryExists(potentialPath)) {
+            binaryDir = potentialPath;
+            return true;
+        }
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	return false;
+    return false;
 }
-
 
 /*
  *	Override from ServerPlatform.
@@ -332,375 +315,366 @@ bool ServerPlatformLinux::configDirectoryExists( const BW::string & bwRoot,
  *
  *	@returns true if a valid directory was discovered, false otherwise.
  */
-bool ServerPlatformLinux::findUserBinaryDirForConfig( const BW::string & bwRoot,
-		const BW::string & bwConfig, BW::string & binaryDir ) /* override */
+bool ServerPlatformLinux::findUserBinaryDirForConfig(
+  const BW::string& bwRoot,
+  const BW::string& bwConfig,
+  BW::string&       binaryDir) /* override */
 {
-	/*
-	 * This section is all that will be executed everytime the function
-	 * is invoked.
-	 */
-	// In Hybrid mode, populate the options
-	if (bwConfig == BW_CONFIG_HYBRID)
-	{
-		return this->configDirectoryExists( bwRoot,
-			preparedHybridSuffix_, binaryDir );
-	}
-	else if (bwConfig == BW_CONFIG_DEBUG)
-	{
-		return this->configDirectoryExists( bwRoot,
-			preparedDebugSuffix_, binaryDir );
-	}
-	else if (bwConfig == BW_CONFIG_HYBRID_OLD)
-	{
-		return this->configDirectoryExists( bwRoot,
-			preparedOldHybridSuffix_, binaryDir );
-	}
-	else if (bwConfig == BW_CONFIG_DEBUG_OLD)
-	{
-		return this->configDirectoryExists( bwRoot,
-			preparedOldDebugSuffix_, binaryDir );
-	}
+    /*
+     * This section is all that will be executed everytime the function
+     * is invoked.
+     */
+    // In Hybrid mode, populate the options
+    if (bwConfig == BW_CONFIG_HYBRID) {
+        return this->configDirectoryExists(
+          bwRoot, preparedHybridSuffix_, binaryDir);
+    } else if (bwConfig == BW_CONFIG_DEBUG) {
+        return this->configDirectoryExists(
+          bwRoot, preparedDebugSuffix_, binaryDir);
+    } else if (bwConfig == BW_CONFIG_HYBRID_OLD) {
+        return this->configDirectoryExists(
+          bwRoot, preparedOldHybridSuffix_, binaryDir);
+    } else if (bwConfig == BW_CONFIG_DEBUG_OLD) {
+        return this->configDirectoryExists(
+          bwRoot, preparedOldDebugSuffix_, binaryDir);
+    }
 
-	return false;
+    return false;
 }
-
 
 /*
  *	Override from ServerPlatform.
  */
-bool ServerPlatformLinux::isProcessRunning( uint16 pid ) const /* override */
+bool ServerPlatformLinux::isProcessRunning(uint16 pid) const /* override */
 {
-	char buf[32];
-	struct stat statinfo;
-	int ret;
+    char        buf[32];
+    struct stat statinfo;
+    int         ret;
 
-	snprintf( buf, sizeof( buf ) - 1, "/proc/%d", pid );
+    snprintf(buf, sizeof(buf) - 1, "/proc/%d", pid);
 
-	if ((ret = stat( buf, &statinfo )) == -1 && errno != ENOENT)
-	{
-		syslog( LOG_ERR, "isProcessRunning(): stat(%s) failed (%s)",
-			buf, strerror( errno ) );
-	}
+    if ((ret = stat(buf, &statinfo)) == -1 && errno != ENOENT) {
+        syslog(LOG_ERR,
+               "isProcessRunning(): stat(%s) failed (%s)",
+               buf,
+               strerror(errno));
+    }
 
-	return (ret == 0);
+    return (ret == 0);
 }
-
 
 /*
  *	Override from ServerPlatform.
  */
-bool ServerPlatformLinux::updateSystemInfo( SystemInfo & systemInfo,
-		ServerInfo * pServerInfo ) /* override */
+bool ServerPlatformLinux::updateSystemInfo(
+  SystemInfo& systemInfo,
+  ServerInfo* pServerInfo) /* override */
 {
-	char line[ 512 ];
-	FILE * fp;
+    char  line[512];
+    FILE* fp;
 
-	// CPU updates
-	uint32	cpu;
-	// These sizes are determined in Linux source code (fs/proc/stat.c)
-	uint64	jiffyUser, jiffyNice, jiffySyst, jiffyIdle;
-	uint64	jiffyIOwait, jiffyIRQ, jiffySoftIRQ;
+    // CPU updates
+    uint32 cpu;
+    // These sizes are determined in Linux source code (fs/proc/stat.c)
+    uint64 jiffyUser, jiffyNice, jiffySyst, jiffyIdle;
+    uint64 jiffyIOwait, jiffyIRQ, jiffySoftIRQ;
 
-	if ((fp = fopen( "/proc/stat", "r" )) == NULL)
-	{
-		syslog( LOG_ERR, "Couldn't read /proc/stat: %s", strerror( errno ) );
-		return false;
-	}
+    if ((fp = fopen("/proc/stat", "r")) == NULL) {
+        syslog(LOG_ERR, "Couldn't read /proc/stat: %s", strerror(errno));
+        return false;
+    }
 
-	// Line CPU load summary line
-	fgets( line, sizeof( line ), fp );
+    // Line CPU load summary line
+    fgets(line, sizeof(line), fp);
 
-	// Read each CPU load individually
-	uint64 totalWork, totalIdle;
-	uint64 systemIOwait = 0;
-	uint64 systemTotalWork = 0;
-	for (uint i=0; i < systemInfo.nCpus; i++)
-	{
-		fgets( line, sizeof( line ), fp );
+    // Read each CPU load individually
+    uint64 totalWork, totalIdle;
+    uint64 systemIOwait    = 0;
+    uint64 systemTotalWork = 0;
+    for (uint i = 0; i < systemInfo.nCpus; i++) {
+        fgets(line, sizeof(line), fp);
 
-		// If we can read in extended stats (as of kernel 2.6) do it
-		if (hasExtendedStats_)
-		{
-			if (sscanf( line, "cpu%u %" PRIu64 " %" PRIu64 " %" PRIu64
-							" %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64 "",
-					&cpu, &jiffyUser, &jiffyNice, &jiffySyst, &jiffyIdle,
-					&jiffyIOwait, &jiffyIRQ, &jiffySoftIRQ) != 8)
-			{
-				syslog( LOG_ERR, "Invalid line in /proc/stat: '%s'", line );
-				break;
-			}
-		}
-		else
-		{
-			// For kernel 2.4 support old style proc information
-			if (sscanf( line, "cpu%u %" PRIu64 " %" PRIu64 " %" PRIu64
-					" %" PRIu64,
-				&cpu, &jiffyUser, &jiffyNice, &jiffySyst, &jiffyIdle) != 5)
-			{
-				syslog( LOG_ERR, "Invalid line in /proc/stat: '%s'", line );
-				break;
-			}
-		}
+        // If we can read in extended stats (as of kernel 2.6) do it
+        if (hasExtendedStats_) {
+            if (sscanf(line,
+                       "cpu%u %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64
+                       " %" PRIu64 " %" PRIu64 " %" PRIu64 "",
+                       &cpu,
+                       &jiffyUser,
+                       &jiffyNice,
+                       &jiffySyst,
+                       &jiffyIdle,
+                       &jiffyIOwait,
+                       &jiffyIRQ,
+                       &jiffySoftIRQ) != 8) {
+                syslog(LOG_ERR, "Invalid line in /proc/stat: '%s'", line);
+                break;
+            }
+        } else {
+            // For kernel 2.4 support old style proc information
+            if (sscanf(line,
+                       "cpu%u %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64,
+                       &cpu,
+                       &jiffyUser,
+                       &jiffyNice,
+                       &jiffySyst,
+                       &jiffyIdle) != 5) {
+                syslog(LOG_ERR, "Invalid line in /proc/stat: '%s'", line);
+                break;
+            }
+        }
 
-		if (cpu != i)
-		{
-			syslog( LOG_CRIT, "Line %d of /proc/stat was cpu%u, not cpu%d",
-				i, cpu, i );
-		}
+        if (cpu != i) {
+            syslog(LOG_CRIT,
+                   "Line %d of /proc/stat was cpu%u, not cpu%d",
+                   i,
+                   cpu,
+                   i);
+        }
 
-		// val = total of all the time spent performing work
-		// max = total work time + total idle time
-		totalWork = jiffyUser + jiffyNice + jiffySyst;
-		totalIdle = jiffyIdle;
+        // val = total of all the time spent performing work
+        // max = total work time + total idle time
+        totalWork = jiffyUser + jiffyNice + jiffySyst;
+        totalIdle = jiffyIdle;
 
-		if (hasExtendedStats_)
-		{
-			totalIdle += jiffyIOwait + jiffyIRQ + jiffySoftIRQ;
-		}
+        if (hasExtendedStats_) {
+            totalIdle += jiffyIOwait + jiffyIRQ + jiffySoftIRQ;
+        }
 
-		systemInfo.cpu[i].val.update( totalWork );
-		systemInfo.cpu[i].max.update( totalWork + totalIdle );
+        systemInfo.cpu[i].val.update(totalWork);
+        systemInfo.cpu[i].max.update(totalWork + totalIdle);
 
-		systemIOwait += jiffyIOwait;
-		systemTotalWork += totalWork + totalIdle;
-	}
-	systemInfo.iowait.val.update( systemIOwait );
-	systemInfo.iowait.max.update( systemTotalWork );
+        systemIOwait += jiffyIOwait;
+        systemTotalWork += totalWork + totalIdle;
+    }
+    systemInfo.iowait.val.update(systemIOwait);
+    systemInfo.iowait.max.update(systemTotalWork);
 
-	fclose( fp );
+    fclose(fp);
 
-	// Memory updates
-	pServerInfo->updateMem();
-	systemInfo.mem.max.update( pServerInfo->memTotal() );
-	systemInfo.mem.val.update( pServerInfo->memUsed() );
+    // Memory updates
+    pServerInfo->updateMem();
+    systemInfo.mem.max.update(pServerInfo->memTotal());
+    systemInfo.mem.val.update(pServerInfo->memUsed());
 
-	// IP-level packet statistics
-	if ((fp = fopen( "/proc/net/snmp", "r" )) == NULL)
-	{
-		syslog( LOG_ERR, "Couldn't read /proc/net/snmp: %s",
-			strerror( errno ) );
-		return false;
-	}
+    // IP-level packet statistics
+    if ((fp = fopen("/proc/net/snmp", "r")) == NULL) {
+        syslog(LOG_ERR, "Couldn't read /proc/net/snmp: %s", strerror(errno));
+        return false;
+    }
 
-	// skip the IP header line
-	// format string sizes are determined in Linux source (net/ipv4/proc.c)
-	fgets( line, sizeof( line ), fp );
-	if (fscanf( fp,"%*s %*d %*d %*d %*d %*d %*d %*d "
-					"%" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64,
-		&systemInfo.packDropIn.next(), &systemInfo.packTotIn.next(),
-		&systemInfo.packTotOut.next(), &systemInfo.packDropOut.next() ) != 4)
-	{
-		syslog( LOG_ERR, "Failed to read packet loss information from "
-				"/proc/net/snmp" );
-	}
-	fclose( fp );
+    // skip the IP header line
+    // format string sizes are determined in Linux source (net/ipv4/proc.c)
+    fgets(line, sizeof(line), fp);
+    if (fscanf(fp,
+               "%*s %*d %*d %*d %*d %*d %*d %*d "
+               "%" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64,
+               &systemInfo.packDropIn.next(),
+               &systemInfo.packTotIn.next(),
+               &systemInfo.packTotOut.next(),
+               &systemInfo.packDropOut.next()) != 4) {
+        syslog(LOG_ERR,
+               "Failed to read packet loss information from "
+               "/proc/net/snmp");
+    }
+    fclose(fp);
 
-	// Interface level packet and bit counts
-	if ((fp = fopen( "/proc/net/dev", "r" )) == NULL)
-	{
-		syslog( LOG_ERR, "Couldn't open /proc/net/dev: %s", strerror( errno ) );
-		return false;
-	}
+    // Interface level packet and bit counts
+    if ((fp = fopen("/proc/net/dev", "r")) == NULL) {
+        syslog(LOG_ERR, "Couldn't open /proc/net/dev: %s", strerror(errno));
+        return false;
+    }
 
-	// Skip header lines
-	fgets( line, sizeof( line ), fp );
-	fgets( line, sizeof( line ), fp );
+    // Skip header lines
+    fgets(line, sizeof(line), fp);
+    fgets(line, sizeof(line), fp);
 
-	for (unsigned int i=0; fgets( line, sizeof( line ), fp ) != NULL; )
-	{
-		// If we've already got a struct for this interface, re-use it,
-		// otherwise make a new one
-		if (i >= systemInfo.ifInfo.size())
-			systemInfo.ifInfo.push_back( InterfaceInfo() );
-		struct InterfaceInfo &ifInfo = systemInfo.ifInfo[i];
-		char ifname[32];
+    for (unsigned int i = 0; fgets(line, sizeof(line), fp) != NULL;) {
+        // If we've already got a struct for this interface, re-use it,
+        // otherwise make a new one
+        if (i >= systemInfo.ifInfo.size())
+            systemInfo.ifInfo.push_back(InterfaceInfo());
+        struct InterfaceInfo& ifInfo = systemInfo.ifInfo[i];
+        char                  ifname[32];
 
-		// Drop info about the loopback interface
-		sscanf( line, " %[^:]", ifname );
-		if (strstr( ifname, "lo" ) == NULL)
-		{
-			ifInfo.name = ifname;
-			// format string sizes are determined in Linux source
-			// (net/core/dev.c)
-			sscanf( line,
-				" %*[^:]:%" PRIu64 " %" PRIu64 " %*d %*d %*d %*d %*d %*d "
-				"%" PRIu64 " %" PRIu64,
-				&ifInfo.bitsTotIn.next(),
-				&ifInfo.packTotIn.next(),
-				&ifInfo.bitsTotOut.next(),
-				&ifInfo.packTotOut.next() );
+        // Drop info about the loopback interface
+        sscanf(line, " %[^:]", ifname);
+        if (strstr(ifname, "lo") == NULL) {
+            ifInfo.name = ifname;
+            // format string sizes are determined in Linux source
+            // (net/core/dev.c)
+            sscanf(line,
+                   " %*[^:]:%" PRIu64 " %" PRIu64 " %*d %*d %*d %*d %*d %*d "
+                   "%" PRIu64 " %" PRIu64,
+                   &ifInfo.bitsTotIn.next(),
+                   &ifInfo.packTotIn.next(),
+                   &ifInfo.bitsTotOut.next(),
+                   &ifInfo.packTotOut.next());
 
-			// Turn byte counts into bit counts
-			ifInfo.bitsTotIn.cur() *= 8;
-			ifInfo.bitsTotOut.cur() *= 8;
-			i++;
-		}
-	}
+            // Turn byte counts into bit counts
+            ifInfo.bitsTotIn.cur() *= 8;
+            ifInfo.bitsTotOut.cur() *= 8;
+            i++;
+        }
+    }
 
-	fclose( fp );
+    fclose(fp);
 
-	return true;
+    return true;
 }
-
 
 namespace // (anonymous)
 {
 
-/**
- *	This class is used to visit binary paths to look for core dumps.
- */
-class CoreDumpBinaryPathVisitor : public BinaryPathVisitor
-{
-public:
-	/**
-	 *	Constructor
-	 *
-	 *	@param coreDumps 	This will be filled by core dump data.
-	 */
-	CoreDumpBinaryPathVisitor( UserMessage::CoreDumps & coreDumps ) :
-		coreDumps_( coreDumps )
-	{}
+    /**
+     *	This class is used to visit binary paths to look for core dumps.
+     */
+    class CoreDumpBinaryPathVisitor : public BinaryPathVisitor
+    {
+      public:
+        /**
+         *	Constructor
+         *
+         *	@param coreDumps 	This will be filled by core dump data.
+         */
+        CoreDumpBinaryPathVisitor(UserMessage::CoreDumps& coreDumps)
+          : coreDumps_(coreDumps)
+        {
+        }
 
-	// Override from BinaryPathVisitor.
-	void onBinaryPath( const BW::string & path ) /* override */;
+        // Override from BinaryPathVisitor.
+        void onBinaryPath(const BW::string& path) /* override */;
 
-private:
-	UserMessage::CoreDumps & coreDumps_;
-};
-
+      private:
+        UserMessage::CoreDumps& coreDumps_;
+    };
 
 } // end namespace (anonymous)
-
 
 /*
  *	Override from ServerPlatform.
  */
-bool ServerPlatformLinux::checkCoreDumps( MachineGuardMessage::UserId uid,
-		const BW::string & bwRoot,
-		UserMessage::CoreDumps & coreDumps ) /* override */
+bool ServerPlatformLinux::checkCoreDumps(
+  MachineGuardMessage::UserId uid,
+  const BW::string&           bwRoot,
+  UserMessage::CoreDumps&     coreDumps) /* override */
 {
-	if (bwRoot.empty())
-	{
-		syslog( LOG_ERR, "Unable to check core dumps for uid:%d, "
-				"bwRoot is empty\n",
-			uid );
-		return false;
-	}
+    if (bwRoot.empty()) {
+        syslog(LOG_ERR,
+               "Unable to check core dumps for uid:%d, "
+               "bwRoot is empty\n",
+               uid);
+        return false;
+    }
 
-	// The provided core dumps should be empty, but ensure it is before
-	// filling it with our contents.
-	coreDumps.clear();
+    // The provided core dumps should be empty, but ensure it is before
+    // filling it with our contents.
+    coreDumps.clear();
 
-	CoreDumpBinaryPathVisitor visitor( coreDumps );
+    CoreDumpBinaryPathVisitor visitor(coreDumps);
 
-	return this->visitBinaryPaths( uid, bwRoot, visitor, "checking cores" );
+    return this->visitBinaryPaths(uid, bwRoot, visitor, "checking cores");
 }
-
 
 /*
  *	This method is overridden from BinaryPathVisitor.
  */
-void CoreDumpBinaryPathVisitor::onBinaryPath( 
-		const BW::string & binaryPath ) /* override */
+void CoreDumpBinaryPathVisitor::onBinaryPath(
+  const BW::string& binaryPath) /* override */
 {
-	Glob coreGlobMatches;
+    Glob coreGlobMatches;
 
-	// It is nescessary to glob both * and */server due to the directory
-	// layouts changing over the years. The main targets to hit are
-	// game/bin/server/*/server       - centos5/el7
-	// bigworld/bin/server/*/server   - centos5/el7
-	// game/bin/*                     - Hybrid64/hybrid64
-	// bigworld/bin/*                 - Hybrid64/hybrid64
-	const bool foundMatches =
-		(0 == coreGlobMatches.match( "*/server/core.*" )) ||
-		(0 == coreGlobMatches.match( "*/core.*", GLOB_APPEND ));
+    // It is nescessary to glob both * and */server due to the directory
+    // layouts changing over the years. The main targets to hit are
+    // game/bin/server/*/server       - centos5/el7
+    // bigworld/bin/server/*/server   - centos5/el7
+    // game/bin/*                     - Hybrid64/hybrid64
+    // bigworld/bin/*                 - Hybrid64/hybrid64
+    const bool foundMatches =
+      (0 == coreGlobMatches.match("*/server/core.*")) ||
+      (0 == coreGlobMatches.match("*/core.*", GLOB_APPEND));
 
-	if (!foundMatches)
-	{
-		return;
-	}
+    if (!foundMatches) {
+        return;
+    }
 
-	// Limiting the reporting of core dumps to only 10 to avoid
-	// exceeding the MGMPacket::MAX_SIZE.
-	static const size_t MAX_CORES = 10;
+    // Limiting the reporting of core dumps to only 10 to avoid
+    // exceeding the MGMPacket::MAX_SIZE.
+    static const size_t MAX_CORES = 10;
 
-	char coreFilePathCopy[ PATH_MAX ];
+    char coreFilePathCopy[PATH_MAX];
 
-	size_t numReplied = 0;
-	
-	while ((numReplied < coreGlobMatches.size()) && 
-			(coreDumps_.size() < MAX_CORES))
-	{
-		const char * coreFilePath = coreGlobMatches[ numReplied ];
-		UserMessage::CoreDump cd;
-		cd.filename_ = coreFilePath;
+    size_t numReplied = 0;
 
-		// Extract subdirectory that the coredump is in
-		strcpy( coreFilePathCopy, coreFilePath );
+    while ((numReplied < coreGlobMatches.size()) &&
+           (coreDumps_.size() < MAX_CORES)) {
+        const char*           coreFilePath = coreGlobMatches[numReplied];
+        UserMessage::CoreDump cd;
+        cd.filename_ = coreFilePath;
 
-		// Use info from assertion if it's there.  Magic 6 is length of the
-		// string '/core.'.
-		const char * corePrefix = "/core.";
+        // Extract subdirectory that the coredump is in
+        strcpy(coreFilePathCopy, coreFilePath);
 
-		char assertFilePath[ PATH_MAX ];
+        // Use info from assertion if it's there.  Magic 6 is length of the
+        // string '/core.'.
+        const char* corePrefix = "/core.";
 
-		bw_snprintf( assertFilePath, sizeof( assertFilePath ),
-			"%s/assert.%s.log", dirname( coreFilePathCopy ),
-			strstr( coreFilePath, corePrefix ) + strlen( corePrefix ) );
+        char assertFilePath[PATH_MAX];
 
-		FILE * fp = fopen( assertFilePath, "r" );
+        bw_snprintf(assertFilePath,
+                    sizeof(assertFilePath),
+                    "%s/assert.%s.log",
+                    dirname(coreFilePathCopy),
+                    strstr(coreFilePath, corePrefix) + strlen(corePrefix));
 
-		if (fp != NULL)
-		{
-			char c;
+        FILE* fp = fopen(assertFilePath, "r");
 
-			while ((c = fgetc( fp )) != EOF)
-			{
-				cd.assert_.push_back( c );
-			}
+        if (fp != NULL) {
+            char c;
 
-			fclose( fp );
-		}
-		/*
-		 * We're attempting to open an assertion file even though it may
-		 * not exist. The alternative would be to stat the file first and
-		 * incur the extra syscall.
-		else
-		{
-			syslog( LOG_ERR, "Unable to open assertion file %s: %s",
-				assertFilePath, strerror( errno ) );
-		}
-		*/
+            while ((c = fgetc(fp)) != EOF) {
+                cd.assert_.push_back(c);
+            }
 
-		// Get timestamp for coredump
-		struct stat statinfo;
+            fclose(fp);
+        }
+        /*
+         * We're attempting to open an assertion file even though it may
+         * not exist. The alternative would be to stat the file first and
+         * incur the extra syscall.
+        else
+        {
+            syslog( LOG_ERR, "Unable to open assertion file %s: %s",
+                assertFilePath, strerror( errno ) );
+        }
+        */
 
-		if (stat( coreFilePath, &statinfo ) == 0)
-		{
-			cd.time_ = statinfo.st_ctime;
-		}
-		else
-		{
-			syslog( LOG_ERR, "Couldn't stat() %s: %s",
-				coreFilePath, strerror( errno ) );
-		}
+        // Get timestamp for coredump
+        struct stat statinfo;
 
-		coreDumps_.push_back( cd );
-		++numReplied;
-	}
+        if (stat(coreFilePath, &statinfo) == 0) {
+            cd.time_ = statinfo.st_ctime;
+        } else {
+            syslog(
+              LOG_ERR, "Couldn't stat() %s: %s", coreFilePath, strerror(errno));
+        }
 
-	int syslogStatusPriority = LOG_INFO;
+        coreDumps_.push_back(cd);
+        ++numReplied;
+    }
 
-	if (numReplied < coreGlobMatches.size())
-	{
-		syslogStatusPriority = LOG_ERR;
-	}
+    int syslogStatusPriority = LOG_INFO;
 
-	syslog( syslogStatusPriority,
-			"Found %" PRIzu " coredumps in %s, %" PRIzu " reported.",
-			coreGlobMatches.size(), binaryPath.c_str(), numReplied );
+    if (numReplied < coreGlobMatches.size()) {
+        syslogStatusPriority = LOG_ERR;
+    }
+
+    syslog(syslogStatusPriority,
+           "Found %" PRIzu " coredumps in %s, %" PRIzu " reported.",
+           coreGlobMatches.size(),
+           binaryPath.c_str(),
+           numReplied);
 }
-
 
 /**
  *	This method visits all possible existing binary paths.
@@ -714,193 +688,176 @@ void CoreDumpBinaryPathVisitor::onBinaryPath(
  *	@return true on success, false otherwise.
  */
 bool ServerPlatformLinux::visitBinaryPaths(
-		MachineGuardMessage::UserId uid,
-		const BW::string & bwRoot,
-		BinaryPathVisitor & visitor,
-		const char * purposeString /* = NULL */ )
+  MachineGuardMessage::UserId uid,
+  const BW::string&           bwRoot,
+  BinaryPathVisitor&          visitor,
+  const char*                 purposeString /* = NULL */)
 {
-	if (!purposeString)
-	{
-		purposeString = "visiting binary paths";
-	}
+    if (!purposeString) {
+        purposeString = "visiting binary paths";
+    }
 
-	// Save the current working directory as we chdir to reduce the path
-	// size.
-	char cwd[ PATH_MAX ];
+    // Save the current working directory as we chdir to reduce the path
+    // size.
+    char cwd[PATH_MAX];
 
-	if (getcwd( cwd, sizeof( cwd ) ) == NULL)
-	{
-		syslog( LOG_ERR, "Failed to get CWD while %s for uid:%d: %s",
-			purposeString,
-			uid, strerror( errno ) );
-		return false;
-	}
+    if (getcwd(cwd, sizeof(cwd)) == NULL) {
+        syslog(LOG_ERR,
+               "Failed to get CWD while %s for uid:%d: %s",
+               purposeString,
+               uid,
+               strerror(errno));
+        return false;
+    }
 
-	StringList potentialBinaryPaths;
+    StringList potentialBinaryPaths;
 
-	potentialBinaryPaths.push_back( bwRoot + "/game/bin/server" );
-	potentialBinaryPaths.push_back( bwRoot + "/bigworld/bin" );
+    potentialBinaryPaths.push_back(bwRoot + "/game/bin/server");
+    potentialBinaryPaths.push_back(bwRoot + "/bigworld/bin");
 
-	// This vector contains pairs of <potential bin path, errno>
-	typedef BW::vector< std::pair< BW::string, int > > PathErrorList;
-	PathErrorList pathErrors;
+    // This vector contains pairs of <potential bin path, errno>
+    typedef BW::vector<std::pair<BW::string, int>> PathErrorList;
+    PathErrorList                                  pathErrors;
 
-	StringList::const_iterator iter = potentialBinaryPaths.begin();
+    StringList::const_iterator iter = potentialBinaryPaths.begin();
 
-	while (iter != potentialBinaryPaths.end())
-	{
-		const BW::string & potentialPath = *iter;
-		if (chdir( potentialPath.c_str() ) == -1)
-		{
-			pathErrors.push_back( std::make_pair( potentialPath, errno ) );
-		}
-		else
-		{
-			visitor.onBinaryPath( potentialPath );
-		}
+    while (iter != potentialBinaryPaths.end()) {
+        const BW::string& potentialPath = *iter;
+        if (chdir(potentialPath.c_str()) == -1) {
+            pathErrors.push_back(std::make_pair(potentialPath, errno));
+        } else {
+            visitor.onBinaryPath(potentialPath);
+        }
 
-		++iter;
-	}
+        ++iter;
+    }
 
-	// Only log errors if all paths failed.
-	if (potentialBinaryPaths.size() == pathErrors.size())
-	{
-		syslog( LOG_ERR,
-			"Failed to chdir to bin paths to %s for uid:%d. "
-				"Paths attempted:",
-			purposeString, uid );
+    // Only log errors if all paths failed.
+    if (potentialBinaryPaths.size() == pathErrors.size()) {
+        syslog(LOG_ERR,
+               "Failed to chdir to bin paths to %s for uid:%d. "
+               "Paths attempted:",
+               purposeString,
+               uid);
 
-		PathErrorList::const_iterator badPathIter = pathErrors.begin();
+        PathErrorList::const_iterator badPathIter = pathErrors.begin();
 
-		while (badPathIter != pathErrors.end())
-		{
-			syslog( LOG_ERR, "%s (%s);",
-				badPathIter->first.c_str(), strerror( badPathIter->second ) );
+        while (badPathIter != pathErrors.end()) {
+            syslog(LOG_ERR,
+                   "%s (%s);",
+                   badPathIter->first.c_str(),
+                   strerror(badPathIter->second));
 
-			++badPathIter;
-		}
-	}
+            ++badPathIter;
+        }
+    }
 
-	// Now return to the original directory
-	chdir( cwd );
+    // Now return to the original directory
+    chdir(cwd);
 
-	return true;
+    return true;
 }
-
 
 namespace // (anonymous)
 {
 
+    /**
+     *	This class is a visitor that tries to find a set of process binaries in
+     *any of the binary paths visited.
+     */
+    class ProcessBinarySetMatcher : public BinaryPathVisitor
+    {
+      public:
+        /**
+         *	Cosntructor.
+         *
+         *	@param processSet 	The process binary name set to check.
+         */
+        ProcessBinarySetMatcher(const ServerPlatform::ProcessSet& processSet)
+          : BinaryPathVisitor()
+          , processSet_(processSet)
+          , hasMatch_(false)
+        {
+        }
 
-/**
- *	This class is a visitor that tries to find a set of process binaries in any
- *	of the binary paths visited.
- */
-class ProcessBinarySetMatcher : public BinaryPathVisitor
-{
-public:
+        // Override from BinaryPathVisitor.
+        void onBinaryPath(const BW::string& path) /* override */;
 
-	/**
-	 *	Cosntructor.
-	 *
-	 *	@param processSet 	The process binary name set to check.
-	 */
-	ProcessBinarySetMatcher( const ServerPlatform::ProcessSet & processSet ) :
-			BinaryPathVisitor(),
-			processSet_( processSet ),
-			hasMatch_( false )
-	{}
+        /**
+         *	This method returns the version string in the first version file
+         *found.
+         */
+        bool hasMatch() const { return hasMatch_; }
 
-	// Override from BinaryPathVisitor.
-	void onBinaryPath( const BW::string & path ) /* override */;
+      private:
+        const ServerPlatform::ProcessSet& processSet_;
+        bool                              hasMatch_;
+    };
 
-	/**
-	 *	This method returns the version string in the first version file found.
-	 */
-	bool hasMatch() const { return hasMatch_; }
+    /*
+     *	Override from BinaryPathVisitor.
+     */
+    void ProcessBinarySetMatcher::onBinaryPath(
+      const BW::string& path) /* override */
+    {
+        if (hasMatch_) {
+            // We already found our process set in an earlier binary path. No
+            // need to check this time.
+            return;
+        }
 
-private:
-	const ServerPlatform::ProcessSet & processSet_;
-	bool hasMatch_;
-};
+        static const char* GLOB_PREFIXES[] = { "/*/server/", "/*/" };
 
+        for (size_t i = 0; i < ARRAY_SIZE(GLOB_PREFIXES); ++i) {
+            Glob processSetGlob;
 
-/*
- *	Override from BinaryPathVisitor.
- */
-void ProcessBinarySetMatcher::onBinaryPath(
-		const BW::string & path ) /* override */
-{
-	if (hasMatch_)
-	{
-		// We already found our process set in an earlier binary path. No need
-		// to check this time.
-		return;
-	}
+            bool haveMissingProcess = false;
 
-	static const char * GLOB_PREFIXES[] = {
-		"/*/server/",
-		"/*/"
-	};
+            ServerPlatform::ProcessSet::const_iterator iter =
+              processSet_.begin();
+            while (iter != processSet_.end()) {
+                if (0 !=
+                    processSetGlob.match(
+                      (path + BW::string(GLOB_PREFIXES[i]) + *iter).c_str())) {
+                    // No match or some other error.
+                    // Give up on this prefix.
+                    haveMissingProcess = true;
+                    break;
+                }
 
-	for (size_t i = 0; i < ARRAY_SIZE( GLOB_PREFIXES ); ++i)
-	{
-		Glob processSetGlob;
+                ++iter;
+            }
 
-		bool haveMissingProcess = false;
+            if (!haveMissingProcess) {
+                // We have a complete set, we can finish now without checking
+                // the other binary paths.
 
-		ServerPlatform::ProcessSet::const_iterator iter =
-			processSet_.begin();
-		while (iter != processSet_.end())
-		{
-			if (0 != processSetGlob.match( 
-					(path + BW::string( GLOB_PREFIXES[i] ) + *iter).c_str() ))
-			{
-				// No match or some other error.
-				// Give up on this prefix.
-				haveMissingProcess = true;
-				break;
-			}
-
-			++iter;
-		}
-
-		if (!haveMissingProcess)
-		{
-			// We have a complete set, we can finish now without checking
-			// the other binary paths.
-
-			hasMatch_ = true;
-		}
-	}
-}
-
+                hasMatch_ = true;
+            }
+        }
+    }
 
 } // end namespace (anonymous)
-
 
 /*
  *	Override from ServerPlatform.
  */
 bool ServerPlatformLinux::checkBinariesExist(
-		MachineGuardMessage::UserId uid,
-		const BW::string & bwRoot,
-		const ProcessSet & processSet ) /* override */
+  MachineGuardMessage::UserId uid,
+  const BW::string&           bwRoot,
+  const ProcessSet&           processSet) /* override */
 {
-	ProcessBinarySetMatcher visitor( processSet );
+    ProcessBinarySetMatcher visitor(processSet);
 
-	if (!this->visitBinaryPaths( uid, bwRoot, visitor, 
-			"checking binary existence" ))
-	{
-		// Failed to visit binary paths - no match then.
-		return false;
-	}
+    if (!this->visitBinaryPaths(
+          uid, bwRoot, visitor, "checking binary existence")) {
+        // Failed to visit binary paths - no match then.
+        return false;
+    }
 
-	return visitor.hasMatch();
+    return visitor.hasMatch();
 }
-
 
 BW_END_NAMESPACE
 
 // server_platform_linux.cpp
-

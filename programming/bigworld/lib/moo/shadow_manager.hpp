@@ -20,7 +20,7 @@ class Chunk;
 typedef SmartPointer<DataSection> DataSectionPtr;
 
 namespace Moo {
-    
+
     class DrawContext;
     class DynamicShadow;
     class SemiDynamicShadow;
@@ -31,23 +31,22 @@ namespace Moo {
 
     class IShadowRenderItem
     {
-    public:
-        virtual ~IShadowRenderItem() {};
+      public:
+        virtual ~IShadowRenderItem(){};
         virtual void render(Moo::DrawContext& drawContext) = 0;
-        virtual void release() = 0;
+        virtual void release()                             = 0;
     };
 
     class ShadowManager : public Moo::DeviceCallback
     {
-    public:
-
+      public:
         enum Quality
         {
-            QUALITY_MAX = 0,
-            QUALITY_HIGH = 1,
-            QUALITY_MEDIUM = 2,
-            QUALITY_LOW = 3,
-            QUALITY_OFF = 4,
+            QUALITY_MAX     = 0,
+            QUALITY_HIGH    = 1,
+            QUALITY_MEDIUM  = 2,
+            QUALITY_LOW     = 3,
+            QUALITY_OFF     = 4,
             QUALITY_EDITORS = 5,
             QUALITY_TOTAL,
         };
@@ -73,9 +72,9 @@ namespace Moo {
         //-- ToDo (b_sviglo):
         void setQualityOption(int optionIndex);
 
-        bool isDynamicShadowsEnabled() const;
-        bool isSemiDynamicShadowsEnabled() const;
-        bool isShadowsEnabled() const;
+        bool  isDynamicShadowsEnabled() const;
+        bool  isSemiDynamicShadowsEnabled() const;
+        bool  isShadowsEnabled() const;
         float dynamicShadowsDistance() const;
 
         void tick(float dTime);
@@ -87,17 +86,16 @@ namespace Moo {
 
         void drawDebugInfo();
 
-        void addRenderItem(IShadowRenderItem* item);
+        void             addRenderItem(IShadowRenderItem* item);
         RenderItemsList& getRenderItems() { return m_renderItems; }
 
 #ifdef EDITOR_ENABLED
         typedef void (*GenerationFinishedCallback)();
-        void setGenerationFinishedCallback(
-            GenerationFinishedCallback callback);
+        void setGenerationFinishedCallback(GenerationFinishedCallback callback);
         void resetAll();
 #endif
 
-    private:
+      private:
         int  m_shadowQualityIndex;
         bool m_enabledManager;
 
@@ -106,7 +104,7 @@ namespace Moo {
 
         float getBlendDistance() const; // between dyanmic and static
 
-        DynamicShadow* m_pShadowsWrapper;
+        DynamicShadow*                   m_pShadowsWrapper;
         std::auto_ptr<SemiDynamicShadow> m_semiDynamicShadows;
 
         bool m_isShadowQualityChanged;
@@ -114,11 +112,12 @@ namespace Moo {
         RenderItemsList      m_renderItems;
         Moo::RenderTargetPtr m_screenSpaceShadowMap;
 
-#define DECLARE_MEMBER(var_type, var_name)  \
-public:                                 \
-    void set_##var_name(var_type val);  \
-    var_type get_##var_name() const;    \
-private:                                \
+#define DECLARE_MEMBER(var_type, var_name)                                     \
+  public:                                                                      \
+    void     set_##var_name(var_type val);                                     \
+    var_type get_##var_name() const;                                           \
+                                                                               \
+  private:                                                                     \
     var_type m_##var_name
 
         DECLARE_MEMBER(bool, debugMode);

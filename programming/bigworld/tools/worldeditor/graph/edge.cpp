@@ -5,31 +5,24 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Graph
-{
+namespace Graph {
 
+    /**
+     *	Constructor.
+     *
+     *	@param start	Starting node.
+     *	@param end		Ending node.
+     */
+    Edge::Edge(const NodePtr& start, const NodePtr& end)
+      : start_(start)
+      , end_(end)
+    {
+    }
 
-/**
- *	Constructor.
- *
- *	@param start	Starting node.
- *	@param end		Ending node.
- */
-Edge::Edge( const NodePtr & start, const NodePtr & end ) :
-	start_( start ),
-	end_( end )
-{
-}
-
-
-/**
- *	Destructor.
- */
-Edge::~Edge()
-{
-}
-
+    /**
+     *	Destructor.
+     */
+    Edge::~Edge() {}
 
 } // namespace Graph
 BW_END_NAMESPACE
-

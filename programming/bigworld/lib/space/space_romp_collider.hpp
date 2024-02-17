@@ -5,47 +5,46 @@
 
 #include <romp/romp_collider.hpp>
 
-namespace BW
-{
+namespace BW {
 
-/**
- *	This class implements the standard ground specifier for the
- *	grounded source action of a particle system.
- */
-class SpaceRompCollider : public RompCollider
-{
-public:
-	/**
-	 *	Constructor
-	 */
-	SpaceRompCollider() { }
+    /**
+     *	This class implements the standard ground specifier for the
+     *	grounded source action of a particle system.
+     */
+    class SpaceRompCollider : public RompCollider
+    {
+      public:
+        /**
+         *	Constructor
+         */
+        SpaceRompCollider() {}
 
-    virtual float ground( const Vector3 &pos, float dropDistance, 
-		bool onesided );
-	virtual float ground( const Vector3 & pos );
-	virtual float collide( const Vector3 &start, const Vector3& end, 
-		WorldTriangle& result );
+        virtual float ground(const Vector3& pos,
+                             float          dropDistance,
+                             bool           onesided);
+        virtual float ground(const Vector3& pos);
+        virtual float collide(const Vector3& start,
+                              const Vector3& end,
+                              WorldTriangle& result);
 
-	static RompColliderPtr create( FilterType filter );
-};
+        static RompColliderPtr create(FilterType filter);
+    };
 
+    /**
+     *	This class implements the standard ground specifier for the
+     *	grounded source action of a particle system.
+     *	It uses terrain as ground
+     */
+    class SpaceRompTerrainCollider : public SpaceRompCollider
+    {
+      public:
+        /**
+         *	Constructor
+         */
+        SpaceRompTerrainCollider() {}
 
-/**
- *	This class implements the standard ground specifier for the
- *	grounded source action of a particle system.
- *	It uses terrain as ground
- */
-class SpaceRompTerrainCollider : public SpaceRompCollider
-{
-public:
-	/**
-	 *	Constructor
-	 */
-	SpaceRompTerrainCollider() { }
-
-	virtual float ground( const Vector3 & pos );
-};
-
+        virtual float ground(const Vector3& pos);
+    };
 
 } // namespace BW
 

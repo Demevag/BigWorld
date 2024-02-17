@@ -3,7 +3,6 @@
 
 #include "cstdmf/smartpointer.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,11 +10,10 @@ BW_BEGIN_NAMESPACE
  */
 class WriteToDBReplyHandler
 {
-public:
-	virtual ~WriteToDBReplyHandler() {};
-	virtual void onWriteToDBComplete( bool succeeded ) = 0;
+  public:
+    virtual ~WriteToDBReplyHandler(){};
+    virtual void onWriteToDBComplete(bool succeeded) = 0;
 };
-
 
 /**
  *	This class calls the reply handler once the entity has been written
@@ -23,17 +21,17 @@ public:
  */
 class WriteToDBReplyStruct : public ReferenceCount
 {
-public:
-	WriteToDBReplyStruct( WriteToDBReplyHandler * pHandler );
-	bool expectsReply()	const { return pHandler_ != NULL; }
-	void onWriteToDBComplete( bool succeeded );
-	void onBackupComplete();
+  public:
+    WriteToDBReplyStruct(WriteToDBReplyHandler* pHandler);
+    bool expectsReply() const { return pHandler_ != NULL; }
+    void onWriteToDBComplete(bool succeeded);
+    void onBackupComplete();
 
-private:
-	bool succeeded_;
-	bool backedUp_;
-	bool writtenToDB_;
-	WriteToDBReplyHandler * pHandler_;
+  private:
+    bool                   succeeded_;
+    bool                   backedUp_;
+    bool                   writtenToDB_;
+    WriteToDBReplyHandler* pHandler_;
 };
 
 typedef SmartPointer<WriteToDBReplyStruct> WriteToDBReplyStructPtr;

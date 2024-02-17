@@ -13,17 +13,14 @@
 
 #include <signal.h>
 
-
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
-	class EventDispatcher;
+namespace Mercury {
+    class EventDispatcher;
 }
 
-namespace Signal
-{
-	class Set;
+namespace Signal {
+    class Set;
 }
 
 /**
@@ -31,61 +28,61 @@ namespace Signal
  */
 class SignalHandler
 {
-public:
-	virtual ~SignalHandler();
+  public:
+    virtual ~SignalHandler();
 
-	virtual void handleSignal( int sigNum ) = 0;
+    virtual void handleSignal(int sigNum) = 0;
 };
-
 
 /**
  *	Signal processing class.
  */
-class SignalProcessor : private Mercury::FrequentTask,
-		public Singleton< SignalProcessor >
+class SignalProcessor
+  : private Mercury::FrequentTask
+  , public Singleton<SignalProcessor>
 {
-public:
-	SignalProcessor( Mercury::EventDispatcher & dispatcher );
-	virtual ~SignalProcessor();
+  public:
+    SignalProcessor(Mercury::EventDispatcher& dispatcher);
+    virtual ~SignalProcessor();
 
-	void ignoreSignal( int sigNum );
+    void ignoreSignal(int sigNum);
 
-	void setDefaultSignalHandler( int sigNum );
+    void setDefaultSignalHandler(int sigNum);
 
-	void addSignalHandler( int sigNum, SignalHandler * pSignalHandler, 
-		int flags = 0 );
+    void addSignalHandler(int            sigNum,
+                          SignalHandler* pSignalHandler,
+                          int            flags = 0);
 
-	void clearSignalHandlers( int sigNum );
-	void clearSignalHandler( int sigNum, SignalHandler * pSignalHandler );
-	void clearSignalHandler( SignalHandler * pSignalHandler );
+    void clearSignalHandlers(int sigNum);
+    void clearSignalHandler(int sigNum, SignalHandler* pSignalHandler);
+    void clearSignalHandler(SignalHandler* pSignalHandler);
 
-	int waitForSignals( const Signal::Set & signalSet );
+    int waitForSignals(const Signal::Set& signalSet);
 
-	void handleSignal( int sigNum );
+    void handleSignal(int sigNum);
 
-	static const char * signalNumberToString( int sigNum );
-private:
-	// Override from Mercury::FrequentTask
-	virtual void doTask()
-		{ this->dispatch(); }
+    static const char* signalNumberToString(int sigNum);
 
-	void dispatch();
-	void dispatchSignal( int sigNum );
+  private:
+    // Override from Mercury::FrequentTask
+    virtual void doTask() { this->dispatch(); }
 
-	void enableDetectSignal( int sigNum, int flags = 0 );
+    void dispatch();
+    void dispatchSignal(int sigNum);
 
-// Member data
-	Mercury::EventDispatcher & dispatcher_;
+    void enableDetectSignal(int sigNum, int flags = 0);
 
-	typedef BW::multimap< int, SignalHandler * > SignalHandlers;
-	SignalHandlers signalHandlers_;
+    // Member data
+    Mercury::EventDispatcher& dispatcher_;
 
-	SignalHandler * pSigQuitHandler_;
+    typedef BW::multimap<int, SignalHandler*> SignalHandlers;
+    SignalHandlers                            signalHandlers_;
 
-	Signal::Set signals_;
+    SignalHandler* pSigQuitHandler_;
+
+    Signal::Set signals_;
 };
 
 BW_END_NAMESPACE
 
 #endif // LIB__SERVER__SIGNAL_PROCESSOR_HPP
-

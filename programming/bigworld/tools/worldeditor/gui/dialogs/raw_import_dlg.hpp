@@ -1,7 +1,6 @@
 #ifndef RAW_IMPORT_DLG_HPP
 #define RAW_IMPORT_DLG_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "worldeditor/resource.h"
@@ -14,24 +13,24 @@ BW_BEGIN_NAMESPACE
 
 class RawImportDlg : public CDialog
 {
-public:
-    enum { IDD = IDD_RAW_IMPORT_DLG };
+  public:
+    enum
+    {
+        IDD = IDD_RAW_IMPORT_DLG
+    };
 
-    explicit RawImportDlg(char const *filename);
+    explicit RawImportDlg(char const* filename);
 
     /*virtual*/ ~RawImportDlg();
 
-    void getResult
-    (
-        unsigned int    &width, 
-        unsigned int    &height, 
-        bool            &littleEndian
-    ) const;
+    void getResult(unsigned int& width,
+                   unsigned int& height,
+                   bool&         littleEndian) const;
 
-protected:
+  protected:
     /*virtual*/ BOOL OnInitDialog();
 
-    /*virtual*/ void DoDataExchange(CDataExchange *dx);
+    /*virtual*/ void DoDataExchange(CDataExchange* dx);
 
     /*virtual*/ void OnOK();
 
@@ -41,18 +40,18 @@ protected:
 
     DECLARE_AUTO_TOOLTIP(RawImportDlg, CDialog)
 
-private:
-    BW::string             	filename_;
-    CEdit                   	filenameEdit_;
-    CComboBox               	sizeCB_;
-    controls::ImageControl8		bmpImage_;
-    CButton                 	littleEndianButton_;
-    CButton                 	bigEndianButton_;
-    uint8                   	*data_;
-    size_t                  	dataSize_;
-    unsigned int            	selWidth_;
-    unsigned int            	selHeight_;
-    bool                    	littleEndian_;
+  private:
+    BW::string              filename_;
+    CEdit                   filenameEdit_;
+    CComboBox               sizeCB_;
+    controls::ImageControl8 bmpImage_;
+    CButton                 littleEndianButton_;
+    CButton                 bigEndianButton_;
+    uint8*                  data_;
+    size_t                  dataSize_;
+    unsigned int            selWidth_;
+    unsigned int            selHeight_;
+    bool                    littleEndian_;
 };
 
 BW_END_NAMESPACE

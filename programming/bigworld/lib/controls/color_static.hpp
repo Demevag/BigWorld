@@ -1,33 +1,31 @@
 #ifndef CONTROLS_COLORSTATIC_HPP
 #define CONTROLS_COLORSTATIC_HPP
 
-
 #include "controls/defs.hpp"
 #include "controls/fwd.hpp"
 
 BW_BEGIN_NAMESPACE
 
-namespace controls
-{
+namespace controls {
     //
     // This is a CStatic class where the colour of the text and the
     // background can be set.
     //
     class CONTROLS_DLL ColorStatic : public CStatic
     {
-    public:
+      public:
         ColorStatic();
         ~ColorStatic();
 
-        void SetTextColour(COLORREF colour);
+        void     SetTextColour(COLORREF colour);
         COLORREF GetTextColour() const;
 
-        void SetBkColour(COLORREF colour);
+        void     SetBkColour(COLORREF colour);
         COLORREF GetBkColour() const;
 
         static COLORREF TransparentBackground();
 
-    protected:
+      protected:
         //
         // Windows callback.  Does the actual setting of colours.
         //
@@ -35,14 +33,14 @@ namespace controls
         // @param cltColour     The control's colour (not used).
         // @returns             The background brush.
         //
-        afx_msg HBRUSH CtlColor(CDC *dc, UINT ctlColour);
+        afx_msg HBRUSH CtlColor(CDC* dc, UINT ctlColour);
 
         DECLARE_MESSAGE_MAP()
 
-    protected:
-        CBrush              m_backBrush;
-        COLORREF            m_textColour;
-        COLORREF            m_backColour;
+      protected:
+        CBrush   m_backBrush;
+        COLORREF m_textColour;
+        COLORREF m_backColour;
     };
 }
 

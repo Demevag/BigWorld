@@ -7,20 +7,19 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
+namespace Mercury {
 
-// -----------------------------------------------------------------------------
-// Section: UnpackedMessageHeader
-// -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
+    // Section: UnpackedMessageHeader
+    // -----------------------------------------------------------------------------
 
-/**
- *	This method returns the name of the message.
- */
-const char * UnpackedMessageHeader::msgName() const
-{
-	return pInterfaceElement ? pInterfaceElement->name() : "";
-}
+    /**
+     *	This method returns the name of the message.
+     */
+    const char* UnpackedMessageHeader::msgName() const
+    {
+        return pInterfaceElement ? pInterfaceElement->name() : "";
+    }
 
 }
 

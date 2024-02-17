@@ -10,27 +10,28 @@
 
 BW_BEGIN_NAMESPACE
 
-TaskListBoxBase::TaskListBoxBase(TaskStore & store, MainMessageLoop & messageLoop) : 
-	store_(store),
-	messageLoop_(messageLoop)
+TaskListBoxBase::TaskListBoxBase(TaskStore& store, MainMessageLoop& messageLoop)
+  : store_(store)
+  , messageLoop_(messageLoop)
 {
 }
 
-void TaskListBoxBase::createDetailsDialog(HWND parentWindow, TaskInfoPtr taskInfo)
+void TaskListBoxBase::createDetailsDialog(HWND        parentWindow,
+                                          TaskInfoPtr taskInfo)
 {
-	DetailsDialog::createDialog(parentWindow, taskInfo, messageLoop_, store_);
+    DetailsDialog::createDialog(parentWindow, taskInfo, messageLoop_, store_);
 }
 
 void TaskListBoxBase::openTaskApplication(TaskInfoPtr taskInfo)
 {
-	BW::wstring fileName = bw_utf8tow(taskInfo->source());
-	::ShellExecute(NULL, NULL, fileName.c_str(), NULL, NULL, SW_SHOWNORMAL);
+    BW::wstring fileName = bw_utf8tow(taskInfo->source());
+    ::ShellExecute(NULL, NULL, fileName.c_str(), NULL, NULL, SW_SHOWNORMAL);
 }
 
 void TaskListBoxBase::openTaskFolder(TaskInfoPtr taskInfo)
 {
-	BW::wstring filePath = bw_utf8tow(BWUtil::getFilePath(taskInfo->source()));
-	::ShellExecute(NULL, NULL, filePath.c_str(), NULL, NULL, SW_SHOWNORMAL);
+    BW::wstring filePath = bw_utf8tow(BWUtil::getFilePath(taskInfo->source()));
+    ::ShellExecute(NULL, NULL, filePath.c_str(), NULL, NULL, SW_SHOWNORMAL);
 }
 
 BW_END_NAMESPACE

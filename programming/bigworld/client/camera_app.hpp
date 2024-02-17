@@ -12,39 +12,41 @@ BW_BEGIN_NAMESPACE
 /**
  *	Camera task
  */
-class CameraApp : public Singleton<CameraApp>, public MainLoopTask
+class CameraApp
+  : public Singleton<CameraApp>
+  , public MainLoopTask
 {
-public:
-	CameraApp();
-	~CameraApp();
+  public:
+    CameraApp();
+    ~CameraApp();
 
-	virtual bool init();
-	virtual void fini();
-	virtual void tick( float dGameTime, float dRenderTime );
-	virtual void draw();
-	virtual void inactiveTick( float dGameTime, float dRenderTime );
+    virtual bool init();
+    virtual void fini();
+    virtual void tick(float dGameTime, float dRenderTime);
+    virtual void draw();
+    virtual void inactiveTick(float dGameTime, float dRenderTime);
 
-	EntityPicker& entityPicker();
-	AutoAimPtr autoAim();
-	TargetingPtr targeting();
-	CameraSpeedPtr cameraSpeed();
-	ClientSpeedProvider& clientSpeedProvider();
-	ClientCamera& clientCamera();
+    EntityPicker&        entityPicker();
+    AutoAimPtr           autoAim();
+    TargetingPtr         targeting();
+    CameraSpeedPtr       cameraSpeed();
+    ClientSpeedProvider& clientSpeedProvider();
+    ClientCamera&        clientCamera();
 
-	const EntityPicker& entityPicker() const;
-	const AutoAimPtr autoAim() const;
-	const TargetingPtr targeting() const;
-	const CameraSpeedPtr cameraSpeed() const;
-	const ClientSpeedProvider& clientSpeedProvider() const;
-	const ClientCamera& clientCamera() const;
+    const EntityPicker&        entityPicker() const;
+    const AutoAimPtr           autoAim() const;
+    const TargetingPtr         targeting() const;
+    const CameraSpeedPtr       cameraSpeed() const;
+    const ClientSpeedProvider& clientSpeedProvider() const;
+    const ClientCamera&        clientCamera() const;
 
-private:
-	EntityPicker entityPicker_;
-	AutoAimPtr pyAutoAim_;
-	TargetingPtr pyTargeting_;
-	CameraSpeedPtr pyCameraSpeed_;
-	ClientSpeedProvider* clientSpeedProvider_;
-	ClientCamera* clientCamera_;
+  private:
+    EntityPicker         entityPicker_;
+    AutoAimPtr           pyAutoAim_;
+    TargetingPtr         pyTargeting_;
+    CameraSpeedPtr       pyCameraSpeed_;
+    ClientSpeedProvider* clientSpeedProvider_;
+    ClientCamera*        clientCamera_;
 };
 
 #ifdef CODE_INLINE

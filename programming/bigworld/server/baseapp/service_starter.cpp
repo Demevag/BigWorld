@@ -6,19 +6,16 @@
 
 #include "entity_creator.hpp"
 
-
-
 BW_BEGIN_NAMESPACE
 
 /**
  *	Constructor.
  */
-ServiceStarter::ServiceStarter() :
-	tags_(),
-	hasTags_( false )
+ServiceStarter::ServiceStarter()
+  : tags_()
+  , hasTags_(false)
 {
 }
-
 
 /**
  *	This method initialises the service starter with the set of service names
@@ -26,168 +23,148 @@ ServiceStarter::ServiceStarter() :
  */
 bool ServiceStarter::init()
 {
-	TagsMessage query;
-	query.tags_.push_back( "Services" );
+    TagsMessage query;
+    query.tags_.push_back("Services");
 
-	Mercury::Reason reason = query.sendAndRecv( 0, LOCALHOST, this );
+    Mercury::Reason reason = query.sendAndRecv(0, LOCALHOST, this);
 
-	if (reason != Mercury::REASON_SUCCESS)
-	{
-		ERROR_MSG( "ServiceStarter::init: MGM query failed (%s)\n",
-				Mercury::reasonToString( reason ) );
+    if (reason != Mercury::REASON_SUCCESS) {
+        ERROR_MSG("ServiceStarter::init: MGM query failed (%s)\n",
+                  Mercury::reasonToString(reason));
 
-		return false;
-	}
+        return false;
+    }
 
-	return true;
+    return true;
 }
-
 
 /**
  *	This method handles the reply from bwmachined.
  */
-bool ServiceStarter::onTagsMessage( TagsMessage &tm, uint32 addr )
+bool ServiceStarter::onTagsMessage(TagsMessage& tm, uint32 addr)
 {
-	hasTags_ = tm.exists_;
+    hasTags_ = tm.exists_;
 
-	if (hasTags_)
-	{
-		std::swap( tags_, tm.tags_ );
-	}
+    if (hasTags_) {
+        std::swap(tags_, tm.tags_);
+    }
 
-	CONFIG_INFO_MSG( "Found %d service fragments in [Services] "
-					"section in /etc/bwmachined.conf",
-				(int)tags_.size() );
-	return true;
+    CONFIG_INFO_MSG("Found %d service fragments in [Services] "
+                    "section in /etc/bwmachined.conf",
+                    (int)tags_.size());
+    return true;
 }
-
 
 /**
  *	This method merges the set of service names with an initial layout,
  *	if specified.
  */
-bool ServiceStarter::finishInit( int layoutId )
+bool ServiceStarter::finishInit(int layoutId)
 {
-	// Iterate through all serviceApp/app layouts.
-	DataSectionPtr pLayouts =
-		BWConfig::getSection( "serviceApp/initialLayouts" );
+    // Iterate through all serviceApp/app layouts.
+    DataSectionPtr pLayouts = BWConfig::getSection("serviceApp/initialLayouts");
 
-	if (!pLayouts)
-	{
-		return true;
-	}
+    if (!pLayouts) {
+        return true;
+    }
 
-	Tags fragments;
+    Tags fragments;
 
-	DataSection::iterator iLayoutConfig = pLayouts->begin();
+    DataSection::iterator iLayoutConfig = pLayouts->begin();
 
-	bool hasFoundLayout = false;
-	int currLayout = 0;
+    bool hasFoundLayout = false;
+    int  currLayout     = 0;
 
-	while (iLayoutConfig != pLayouts->end())
-	{
-		DataSectionPtr pLayout = *iLayoutConfig;
+    while (iLayoutConfig != pLayouts->end()) {
+        DataSectionPtr pLayout = *iLayoutConfig;
 
-		if (pLayout)
-		{
-			if (pLayout->sectionName() == "app")
-			{
-				if (currLayout == layoutId)
-				{
-					CONFIG_INFO_MSG(
-								"ServiceStarter: Applying initial layout #%d "
-								"for this ServiceApp.",
-							layoutId );
+        if (pLayout) {
+            if (pLayout->sectionName() == "app") {
+                if (currLayout == layoutId) {
+                    CONFIG_INFO_MSG(
+                      "ServiceStarter: Applying initial layout #%d "
+                      "for this ServiceApp.",
+                      layoutId);
 
-					this->readFragmentsFromLayout( pLayout, fragments );
-					hasFoundLayout = true;
-					break;
-				}
+                    this->readFragmentsFromLayout(pLayout, fragments);
+                    hasFoundLayout = true;
+                    break;
+                }
 
-				currLayout++;
-			}
-		}
+                currLayout++;
+            }
+        }
 
-		++iLayoutConfig;
-	}
+        ++iLayoutConfig;
+    }
 
-	if (!hasFoundLayout)
-	{
-		DataSectionPtr pDefaultLayout = pLayouts->openSection( "default" );
+    if (!hasFoundLayout) {
+        DataSectionPtr pDefaultLayout = pLayouts->openSection("default");
 
-		if (pDefaultLayout)
-		{
-			this->readFragmentsFromLayout( pDefaultLayout, fragments );
+        if (pDefaultLayout) {
+            this->readFragmentsFromLayout(pDefaultLayout, fragments);
 
-			CONFIG_INFO_MSG( "ServiceStarter: Applying default initial layout for "
-						"this ServiceApp." );
+            CONFIG_INFO_MSG(
+              "ServiceStarter: Applying default initial layout for "
+              "this ServiceApp.");
 
-			hasFoundLayout = true;
-		}
-	}
+            hasFoundLayout = true;
+        }
+    }
 
-	if (!hasFoundLayout)
-	{
-		return true;
-	}
+    if (!hasFoundLayout) {
+        return true;
+    }
 
-	if (fragments.empty())
-	{
-		CONFIG_WARNING_MSG( "ServiceStarter: An initial layout found for "
-					"this ServiceApp but the list is empty!\n" );
-	}
+    if (fragments.empty()) {
+        CONFIG_WARNING_MSG("ServiceStarter: An initial layout found for "
+                           "this ServiceApp but the list is empty!\n");
+    }
 
-	for (Tags::iterator iFragment = fragments.begin();
-			iFragment != fragments.end();)
-	{
-		if (hasTags_ &&
-			std::find( tags_.begin(), tags_.end(), *iFragment ) == tags_.end())
-		{
-			CONFIG_WARNING_MSG( "ServiceStarter: Service fragment %s is not "
-					"present in [Services] section in /etc/bwmachined.conf. "
-					"It will be ignored.\n",
-				(*iFragment).c_str() );
+    for (Tags::iterator iFragment = fragments.begin();
+         iFragment != fragments.end();) {
+        if (hasTags_ &&
+            std::find(tags_.begin(), tags_.end(), *iFragment) == tags_.end()) {
+            CONFIG_WARNING_MSG(
+              "ServiceStarter: Service fragment %s is not "
+              "present in [Services] section in /etc/bwmachined.conf. "
+              "It will be ignored.\n",
+              (*iFragment).c_str());
 
-			iFragment = fragments.erase( iFragment );
-		}
-		else
-		{
-			CONFIG_INFO_MSG( "ServiceStarter: Registered fragment %s "
-							"from initial services layout.\n",
-						(*iFragment).c_str() );
+            iFragment = fragments.erase(iFragment);
+        } else {
+            CONFIG_INFO_MSG("ServiceStarter: Registered fragment %s "
+                            "from initial services layout.\n",
+                            (*iFragment).c_str());
 
-			iFragment++;
-		}
-	}
+            iFragment++;
+        }
+    }
 
-	tags_.swap( fragments );
+    tags_.swap(fragments);
 
-	// if there's an initial layout but no fragments in the list,
-	// we don't run any service fragments
-	hasTags_ = true;
+    // if there's an initial layout but no fragments in the list,
+    // we don't run any service fragments
+    hasTags_ = true;
 
-	return true;
+    return true;
 }
-
 
 /**
  * This method is a helper to read fragments from a layout section
  */
-void ServiceStarter::readFragmentsFromLayout( DataSectionPtr pLayout,
-											Tags &fragments )
+void ServiceStarter::readFragmentsFromLayout(DataSectionPtr pLayout,
+                                             Tags&          fragments)
 {
-	for (DataSection::iterator iFragment = pLayout->begin();
-			iFragment != pLayout->end();
-			iFragment++)
-	{
-		DataSectionPtr pFragment = *iFragment;
-		if (pFragment)
-		{
-			fragments.push_back( pFragment->sectionName() );
-		}
-	}
+    for (DataSection::iterator iFragment = pLayout->begin();
+         iFragment != pLayout->end();
+         iFragment++) {
+        DataSectionPtr pFragment = *iFragment;
+        if (pFragment) {
+            fragments.push_back(pFragment->sectionName());
+        }
+    }
 }
-
 
 /**
  *	This method returns whether the service with the given name should be
@@ -196,66 +173,59 @@ void ServiceStarter::readFragmentsFromLayout( DataSectionPtr pLayout,
  *	on current serverMode
  *
  */
-bool ServiceStarter::shouldStartService(
-		const EntityTypePtr & pType ) const
+bool ServiceStarter::shouldStartService(const EntityTypePtr& pType) const
 {
-	bool isValidServerMode;
-	INFO_MSG( "ServiceStarter::shouldStartService: service '%s',  "
-			"activeOnServerModes: '%s' [any if empty]\n",
-			pType->name(),
-			pType->description().activeOnServerModes().c_str() );
+    bool isValidServerMode;
+    INFO_MSG("ServiceStarter::shouldStartService: service '%s',  "
+             "activeOnServerModes: '%s' [any if empty]\n",
+             pType->name(),
+             pType->description().activeOnServerModes().c_str());
 
-	isValidServerMode = (pType->description().activeOnServerModes().length() == 0) ||
-			(pType->description().activeOnServerModes().find(
-					BaseAppConfig::serverMode.getRef()
-					) != BW::string::npos);
+    isValidServerMode =
+      (pType->description().activeOnServerModes().length() == 0) ||
+      (pType->description().activeOnServerModes().find(
+         BaseAppConfig::serverMode.getRef()) != BW::string::npos);
 
-	// Note: Brute-force search but should be small.
-	return isValidServerMode && (!hasTags_ ||
-		(std::find( tags_.begin(), tags_.end(), pType->name() ) != tags_.end()));
+    // Note: Brute-force search but should be small.
+    return isValidServerMode &&
+           (!hasTags_ ||
+            (std::find(tags_.begin(), tags_.end(), pType->name()) !=
+             tags_.end()));
 }
-
 
 /**
  *	This method starts the appropriate services on this ServiceApp.
  */
-bool ServiceStarter::run( EntityCreator & entityCreator ) const
+bool ServiceStarter::run(EntityCreator& entityCreator) const
 {
-	EntityTypeID typeID = 0;
-	EntityTypePtr pType = EntityType::getType( typeID++ );
+    EntityTypeID  typeID = 0;
+    EntityTypePtr pType  = EntityType::getType(typeID++);
 
-	while (pType)
-	{
-		if (pType->description().isService())
-		{
-			if (this->shouldStartService( pType ))
-			{
-				PyObject * pNewEntity =
-					entityCreator.createBase( pType.get(), NULL );
+    while (pType) {
+        if (pType->description().isService()) {
+            if (this->shouldStartService(pType)) {
+                PyObject* pNewEntity =
+                  entityCreator.createBase(pType.get(), NULL);
 
-				if (!pNewEntity)
-				{
-					ERROR_MSG( "BaseApp::startServiceFragments: "
-							"Failed to start %s\n", pType->name() );
-					PyErr_Clear();
-					return false;
-				}
-				else
-				{
-					Py_DECREF( pNewEntity );
-				}
-			}
-			else
-			{
-				INFO_MSG( "ServiceStarter::run: Not starting '%s'\n",
-						pType->name() );
-			}
-		}
+                if (!pNewEntity) {
+                    ERROR_MSG("BaseApp::startServiceFragments: "
+                              "Failed to start %s\n",
+                              pType->name());
+                    PyErr_Clear();
+                    return false;
+                } else {
+                    Py_DECREF(pNewEntity);
+                }
+            } else {
+                INFO_MSG("ServiceStarter::run: Not starting '%s'\n",
+                         pType->name());
+            }
+        }
 
-		pType = EntityType::getType( typeID++ );
-	}
+        pType = EntityType::getType(typeID++);
+    }
 
-	return true;
+    return true;
 }
 
 BW_END_NAMESPACE

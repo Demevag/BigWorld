@@ -16,60 +16,61 @@ BW_BEGIN_NAMESPACE
  */
 class ListMultiProvider : public ListProvider
 {
-public:
-	ListMultiProvider();
-	virtual ~ListMultiProvider();
+  public:
+    ListMultiProvider();
+    virtual ~ListMultiProvider();
 
-	virtual void refresh();
+    virtual void refresh();
 
-	virtual bool finished();
+    virtual bool finished();
 
-	virtual int getNumItems();
+    virtual int getNumItems();
 
-	virtual	const AssetInfo getAssetInfo( int index );
-	virtual void getThumbnail( ThumbnailManager& manager,
-								int index, CImage& img, int w, int h,
-								ThumbnailUpdater* updater );
+    virtual const AssetInfo getAssetInfo(int index);
+    virtual void            getThumbnail(ThumbnailManager& manager,
+                                         int               index,
+                                         CImage&           img,
+                                         int               w,
+                                         int               h,
+                                         ThumbnailUpdater* updater);
 
-	virtual void filterItems();
+    virtual void filterItems();
 
-	// additional interface
-	void addProvider( ListProviderPtr provider );
+    // additional interface
+    void addProvider(ListProviderPtr provider);
 
-private:
-	typedef BW::vector<ListProviderPtr> ProvVec;
-	ProvVec providers_;
+  private:
+    typedef BW::vector<ListProviderPtr> ProvVec;
+    ProvVec                             providers_;
 
+    /**
+     *	This internal class caches a list item, also storing information about
+     *	it's source provider.
+     */
+    class ListItem
+    {
+      public:
+        ListItem(ListProviderPtr provider, int index);
 
-	/**
-	 *	This internal class caches a list item, also storing information about
-	 *	it's source provider.
-	 */
-	class ListItem
-	{
-	public:
-		ListItem( ListProviderPtr provider, int index );
+        ListProviderPtr provider() const { return provider_; }
+        int             index() const { return index_; }
 
-		ListProviderPtr provider() const { return provider_; }
-		int index() const { return index_; }
+        const wchar_t* text() const;
 
-		const wchar_t* text() const;
+      private:
+        ListProviderPtr     provider_;
+        int                 index_;
+        mutable BW::wstring text_;
+        mutable bool        inited_;
+    };
 
-	private:
-		ListProviderPtr provider_;
-		int index_;
-		mutable BW::wstring text_;
-		mutable bool inited_;
-	};
+    BW::vector<ListItem> items_;
+    int                  lastNumItems_;
 
+    static bool s_comparator(const ListItem& a, const ListItem& b);
 
-	BW::vector<ListItem> items_;
-	int lastNumItems_;
-
-	static bool s_comparator( const ListItem& a, const ListItem& b );
-
-	void updateItems();
-	void fillItems();
+    void updateItems();
+    void fillItems();
 };
 
 BW_END_NAMESPACE

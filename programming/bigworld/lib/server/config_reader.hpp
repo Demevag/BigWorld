@@ -7,7 +7,6 @@
 #include "cstdmf/bw_string.hpp"
 #include "cstdmf/bw_vector.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -16,32 +15,34 @@ BW_BEGIN_NAMESPACE
  */
 class ConfigReader
 {
-public:
-	ConfigReader( const char *filename );
-	~ConfigReader();
+  public:
+    ConfigReader(const char* filename);
+    ~ConfigReader();
 
-	bool read();
+    bool read();
 
-	bool getValue( const BW::string section, const BW::string key,
-				BW::string &value ) const;
+    bool getValue(const BW::string section,
+                  const BW::string key,
+                  BW::string&      value) const;
 
-	static void separateLine( const BW::string &line, char sep,
-				BW::vector< BW::string > &resultList );
+    static void separateLine(const BW::string&       line,
+                             char                    sep,
+                             BW::vector<BW::string>& resultList);
 
-	const char *filename() const { return filename_.c_str(); }
+    const char* filename() const { return filename_.c_str(); }
 
-private:
-	ConfigReader();
+  private:
+    ConfigReader();
 
-	typedef BW::map< BW::string, BW::string > SectionEntries;
-	typedef BW::map< BW::string, SectionEntries * > Sections;
+    typedef BW::map<BW::string, BW::string>      SectionEntries;
+    typedef BW::map<BW::string, SectionEntries*> Sections;
 
-	Sections sections_;
+    Sections sections_;
 
-	BW::string filename_;
-	char separator_;
+    BW::string filename_;
+    char       separator_;
 
-	bool handleLine( const char *line, SectionEntries* & currSection );
+    bool handleLine(const char* line, SectionEntries*& currSection);
 };
 
 BW_END_NAMESPACE

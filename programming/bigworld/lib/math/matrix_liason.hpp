@@ -10,12 +10,12 @@ BW_BEGIN_NAMESPACE
  */
 class MatrixLiaison
 {
-public:
-	virtual ~MatrixLiaison() {}
-	virtual const Matrix & getMatrix() const = 0;
-	virtual bool setMatrix( const Matrix & m ) = 0;
+  public:
+    virtual ~MatrixLiaison() {}
+    virtual const Matrix& getMatrix() const          = 0;
+    virtual bool          setMatrix(const Matrix& m) = 0;
 };
 
 BW_END_NAMESPACE
 
-#endif //MATRIX_LIASON_HPP
+#endif // MATRIX_LIASON_HPP

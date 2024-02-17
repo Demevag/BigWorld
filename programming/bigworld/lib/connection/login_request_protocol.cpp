@@ -19,48 +19,38 @@
 #include "network/interfaces.hpp"
 #include "network/nub_exception.hpp"
 
-
 BW_BEGIN_NAMESPACE
-
 
 /**
  *	Constructor.
  */
-LoginRequestProtocol::LoginRequestProtocol() :
-		ReferenceCount()
+LoginRequestProtocol::LoginRequestProtocol()
+  : ReferenceCount()
 {
 }
-
 
 /**
  *	Destructor.
  */
-LoginRequestProtocol::~LoginRequestProtocol()
-{
-}
-
+LoginRequestProtocol::~LoginRequestProtocol() {}
 
 /**
  *	This method gets the protocol object for communicating with the LoginApp.
  */
 LoginRequestProtocolPtr LoginRequestProtocol::getForLoginApp()
 {
-	static LoginRequestProtocolPtr protocol(
-		new LoginAppLoginRequestProtocol() );
-	return protocol;
+    static LoginRequestProtocolPtr protocol(new LoginAppLoginRequestProtocol());
+    return protocol;
 }
-
 
 /**
  *	This method gets the protocol object for communicating with the BaseApp.
  */
 LoginRequestProtocolPtr LoginRequestProtocol::getForBaseApp()
 {
-	static LoginRequestProtocolPtr protocol(
-		new BaseAppLoginRequestProtocol() );
-	return protocol;
+    static LoginRequestProtocolPtr protocol(new BaseAppLoginRequestProtocol());
+    return protocol;
 }
-
 
 /**
  *	This method handles any Mercury-level exceptions that may come up in
@@ -69,25 +59,23 @@ LoginRequestProtocolPtr LoginRequestProtocol::getForBaseApp()
  *	@param reason 	The reason for the failure.
  *	@param message 	A human-readable description of the error.
  */
-void LoginRequestProtocol::onAttemptFailed( LoginRequest & request,
-		Mercury::Reason reason, const BW::string & message ) const
+void LoginRequestProtocol::onAttemptFailed(LoginRequest&     request,
+                                           Mercury::Reason   reason,
+                                           const BW::string& message) const
 {
-	BW_GUARD;
+    BW_GUARD;
 
-	LoginHandler & loginHandler = request.loginHandler();
+    LoginHandler& loginHandler = request.loginHandler();
 
-	// We need these to stick around to access any state.
-	LoginRequestPtr pLoginRequestHolder( &request );
-	LoginHandlerPtr pLoginHandlerHolder( &loginHandler );
+    // We need these to stick around to access any state.
+    LoginRequestPtr pLoginRequestHolder(&request);
+    LoginHandlerPtr pLoginHandlerHolder(&loginHandler);
 
-	request.finish();
+    request.finish();
 
-	loginHandler.onRequestFailed( request, reason, message );
+    loginHandler.onRequestFailed(request, reason, message);
 }
-
 
 BW_END_NAMESPACE
 
-
 // login_request_protocol.cpp
-

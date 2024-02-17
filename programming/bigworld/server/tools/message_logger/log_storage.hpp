@@ -11,7 +11,6 @@
 #include "logger.hpp"
 #include "types.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -20,51 +19,54 @@ BW_BEGIN_NAMESPACE
  */
 class LogStorage
 {
-public:
-	enum AddLogMessageResult
-	{
-		LOG_ADDITION_SUCCESS,
-		LOG_ADDITION_IGNORED,
-		LOG_ADDITION_FAILED
-	};
+  public:
+    enum AddLogMessageResult
+    {
+        LOG_ADDITION_SUCCESS,
+        LOG_ADDITION_IGNORED,
+        LOG_ADDITION_FAILED
+    };
 
-	LogStorage( Logger & logger );
+    LogStorage(Logger& logger);
 
-	virtual ~LogStorage();
+    virtual ~LogStorage();
 
-	// TODO: replace the root parameter with more generic parameter for MongoDB
-	virtual bool init( const ConfigReader &config, const char *root ) = 0;
-	virtual void tick() = 0;
+    // TODO: replace the root parameter with more generic parameter for MongoDB
+    virtual bool init(const ConfigReader& config, const char* root) = 0;
+    virtual void tick()                                             = 0;
 
-	virtual bool roll() = 0;
-	virtual bool stopLoggingFromComponent( const Mercury::Address &addr ) = 0;
-	virtual HostnamesValidatorProcessStatus validateNextHostname() = 0;
-	virtual bool setAppInstanceID( const Mercury::Address &addr, int id ) = 0;
-	virtual AddLogMessageResult writeLogToDB(
-	 	const LoggerComponentMessage & componentMessage,
-	 	const Mercury::Address & address, MemoryIStream & inputStream,
-	 	const LoggerMessageHeader & header,
-		LogStringInterpolator *pHandler,
-		MessageLogger::CategoryID categoryID ) = 0;
-	virtual FormatStrings * getFormatStrings() = 0;
-	virtual Hostnames * getHostnames() = 0;
-	virtual HostnamesValidator * getHostnamesValidator() = 0;
-	virtual Categories * getCategories() = 0;
+    virtual bool roll()                                                 = 0;
+    virtual bool stopLoggingFromComponent(const Mercury::Address& addr) = 0;
+    virtual HostnamesValidatorProcessStatus validateNextHostname()      = 0;
+    virtual bool setAppInstanceID(const Mercury::Address& addr, int id) = 0;
+    virtual AddLogMessageResult writeLogToDB(
+      const LoggerComponentMessage& componentMessage,
+      const Mercury::Address&       address,
+      MemoryIStream&                inputStream,
+      const LoggerMessageHeader&    header,
+      LogStringInterpolator*        pHandler,
+      MessageLogger::CategoryID     categoryID)             = 0;
+    virtual FormatStrings*      getFormatStrings()      = 0;
+    virtual Hostnames*          getHostnames()          = 0;
+    virtual HostnamesValidator* getHostnamesValidator() = 0;
+    virtual Categories*         getCategories()         = 0;
 
-	void writeToStdout( bool status );
+    void writeToStdout(bool status);
 
-	virtual AddLogMessageResult addLogMessage(
-	 	const LoggerComponentMessage & componentMessage,
-	 	const Mercury::Address & address, MemoryIStream & inputStream );
+    virtual AddLogMessageResult addLogMessage(
+      const LoggerComponentMessage& componentMessage,
+      const Mercury::Address&       address,
+      MemoryIStream&                inputStream);
 
-	static Mercury::Reason resolveUID( uint16 uid,
-		MessageLogger::IPAddress ipAddress, BW::string &result );
+    static Mercury::Reason resolveUID(uint16                   uid,
+                                      MessageLogger::IPAddress ipAddress,
+                                      BW::string&              result);
 
-protected:
-	bool writeToStdout_;
+  protected:
+    bool writeToStdout_;
 
-private:
-	Logger &logger_;
+  private:
+    Logger& logger_;
 };
 
 BW_END_NAMESPACE

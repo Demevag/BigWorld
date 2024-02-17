@@ -16,22 +16,16 @@ BW_BEGIN_NAMESPACE
 /**
  *	Constructor
  */
-ActiveEntities::ActiveEntities( BWEntities & entities ) :
-	entities_( entities ),
-	listeners_()
+ActiveEntities::ActiveEntities(BWEntities& entities)
+  : entities_(entities)
+  , listeners_()
 {
-
 }
-
 
 /**
  *	Destructor
  */
-ActiveEntities::~ActiveEntities()
-{
-
-}
-
+ActiveEntities::~ActiveEntities() {}
 
 /// Entity List Management
 /**
@@ -41,13 +35,12 @@ ActiveEntities::~ActiveEntities()
  *	@param entityID	The EntityID to search for.
  *	@return The BWEntity * of the found entity, or NULL if not known
  */
-BWEntity * ActiveEntities::findEntity( EntityID entityID ) const
+BWEntity* ActiveEntities::findEntity(EntityID entityID) const
 {
-	Collection::const_iterator iEntity = collection_.find( entityID );
+    Collection::const_iterator iEntity = collection_.find(entityID);
 
-	return (iEntity != collection_.end()) ? iEntity->second.get() : NULL;
+    return (iEntity != collection_.end()) ? iEntity->second.get() : NULL;
 }
-
 
 /**
  *	This method add the given BWEntity to our list of known entities, and
@@ -58,19 +51,16 @@ BWEntity * ActiveEntities::findEntity( EntityID entityID ) const
  *	@param pEntity	The BWEntity to add
  *	@see ActiveEntities::eraseCellEntity
  */
-void ActiveEntities::addEntityToWorld( BWEntity * pEntity )
+void ActiveEntities::addEntityToWorld(BWEntity* pEntity)
 {
-	MF_ASSERT( collection_.find( pEntity->entityID() ) ==
-		collection_.end() );
+    MF_ASSERT(collection_.find(pEntity->entityID()) == collection_.end());
 
-	collection_[ pEntity->entityID() ] = pEntity;
+    collection_[pEntity->entityID()] = pEntity;
 
-	pEntity->triggerOnEnterWorld();
+    pEntity->triggerOnEnterWorld();
 
-	this->callListeners( &BWEntitiesListener::onEntityEnter, pEntity );
-
+    this->callListeners(&BWEntitiesListener::onEntityEnter, pEntity);
 }
-
 
 /**
  *	This method erases an entity from our collection of in-world entities.
@@ -91,20 +81,18 @@ void ActiveEntities::addEntityToWorld( BWEntity * pEntity )
  *	@return true if the entity was in our collection and in-world.
  *	@see ActiveEntities::addCellEntity
  */
-bool ActiveEntities::removeEntityFromWorld( EntityID entityID,
-	PassengersVector * pFormerPassengers )
+bool ActiveEntities::removeEntityFromWorld(EntityID          entityID,
+                                           PassengersVector* pFormerPassengers)
 {
-	Collection::iterator iEntity = collection_.find( entityID );
+    Collection::iterator iEntity = collection_.find(entityID);
 
-	if (iEntity == collection_.end())
-	{
-		return false;
-	}
+    if (iEntity == collection_.end()) {
+        return false;
+    }
 
-	this->doRemoveEntityFromWorld( iEntity, pFormerPassengers );		
-	return true;
+    this->doRemoveEntityFromWorld(iEntity, pFormerPassengers);
+    return true;
 }
-
 
 /**
  *	This method erases an entry from the in-world entity collection.
@@ -118,26 +106,26 @@ bool ActiveEntities::removeEntityFromWorld( EntityID entityID,
  *			If this is NULL, the passenger entities will be removed from world,
  *			destroyed if not a player, and no references will be held.
  */
-void ActiveEntities::doRemoveEntityFromWorld( Collection::iterator iter,
-		PassengersVector * pFormerPassengers /* = NULL */ )
+void ActiveEntities::doRemoveEntityFromWorld(
+  Collection::iterator iter,
+  PassengersVector*    pFormerPassengers /* = NULL */)
 {
-	BWEntityPtr pEntity = iter->second;
+    BWEntityPtr pEntity = iter->second;
 
-	entities_.onEntityInconsistent( pEntity.get(), pFormerPassengers );
+    entities_.onEntityInconsistent(pEntity.get(), pFormerPassengers);
 
-	// Notify the entity that it's left the world
-	pEntity->triggerOnLeaveWorld();
+    // Notify the entity that it's left the world
+    pEntity->triggerOnLeaveWorld();
 
-	// Now take it out of our inWorld entities list
-	collection_.erase( iter );
+    // Now take it out of our inWorld entities list
+    collection_.erase(iter);
 
-	MF_ASSERT( pEntity->passengers().empty() );
+    MF_ASSERT(pEntity->passengers().empty());
 
-	this->callListeners( &BWEntitiesListener::onEntityLeave, pEntity.get() );
+    this->callListeners(&BWEntitiesListener::onEntityLeave, pEntity.get());
 
-	pEntity->triggerOnLeaveAoI();
+    pEntity->triggerOnLeaveAoI();
 }
-
 
 /**
  *	This method clears our list of in-world entities, optionally leaving
@@ -149,38 +137,34 @@ void ActiveEntities::doRemoveEntityFromWorld( Collection::iterator iter,
  *	@param keepLocalEntities 	If true, locally created entities are not
  *								cleared.
  */
-void ActiveEntities::clearEntities( bool keepLocalEntities )
+void ActiveEntities::clearEntities(bool keepLocalEntities)
 {
-	// We make a copy of the collection to iterate over because 
-	// removeEntityFromWorld() will mutate collection_, possibly multiple
-	// additional times for each passenger, one of which might end up being 
-	// the next element to be iterated over, and so iterating over collection_
-	// directly in the usual increment-then-erase fashion is unsafe. 
-	// This might be very big, but clearEntities() shouldn't be called that
-	// regularly.
+    // We make a copy of the collection to iterate over because
+    // removeEntityFromWorld() will mutate collection_, possibly multiple
+    // additional times for each passenger, one of which might end up being
+    // the next element to be iterated over, and so iterating over collection_
+    // directly in the usual increment-then-erase fashion is unsafe.
+    // This might be very big, but clearEntities() shouldn't be called that
+    // regularly.
 
-	Collection collectionCopy( collection_ );
+    Collection collectionCopy(collection_);
 
-	Collection::iterator iEntity = collectionCopy.begin();
-	while (iEntity != collectionCopy.end())
-	{
-		BWEntityPtr pEntity = iEntity->second;
-		
-		if (!keepLocalEntities || !pEntity->isLocalEntity())
-		{
-			if (this->removeEntityFromWorld( iEntity->first, NULL ))
-			{
-				// If we failed to remove this entity from world, then it's 
-				// likely we have removed it earlier as the passenger of a
-				// vehicle.
-				pEntity->destroyNonPlayer();
-			}
-		}
+    Collection::iterator iEntity = collectionCopy.begin();
+    while (iEntity != collectionCopy.end()) {
+        BWEntityPtr pEntity = iEntity->second;
 
-		++iEntity; 
-	}
+        if (!keepLocalEntities || !pEntity->isLocalEntity()) {
+            if (this->removeEntityFromWorld(iEntity->first, NULL)) {
+                // If we failed to remove this entity from world, then it's
+                // likely we have removed it earlier as the passenger of a
+                // vehicle.
+                pEntity->destroyNonPlayer();
+            }
+        }
+
+        ++iEntity;
+    }
 }
-
 
 /**
  *	This method clears our list of in-world entities, except for the given
@@ -194,49 +178,44 @@ void ActiveEntities::clearEntities( bool keepLocalEntities )
  *		or NULL if that entity is still in our active list, or was already not
  *		active.
  */
-BWEntityPtr ActiveEntities::clearEntitiesWithException(
-	EntityID exceptEntityID )
+BWEntityPtr ActiveEntities::clearEntitiesWithException(EntityID exceptEntityID)
 {
-	Collection::iterator iEntity = collection_.find( exceptEntityID );
+    Collection::iterator iEntity = collection_.find(exceptEntityID);
 
-	if (iEntity == collection_.end())
-	{
-		// Shortcut case: The exception is not in our list.
-		this->clearEntities();
-		return NULL;
-	}
+    if (iEntity == collection_.end()) {
+        // Shortcut case: The exception is not in our list.
+        this->clearEntities();
+        return NULL;
+    }
 
-	// This protects against accidental deletion further down.
-	BWEntityPtr pException = iEntity->second;
+    // This protects against accidental deletion further down.
+    BWEntityPtr pException = iEntity->second;
 
-	// TODO: This is "assuming" that the only reason pException may be forced
-	// out of the world is if it has a vehicle.
-	if (pException->pVehicle() != NULL)
-	{
-		// Take the vehicle out of the world.
-		BWEntityPtr pVehicle = pException->pVehicle();
+    // TODO: This is "assuming" that the only reason pException may be forced
+    // out of the world is if it has a vehicle.
+    if (pException->pVehicle() != NULL) {
+        // Take the vehicle out of the world.
+        BWEntityPtr pVehicle = pException->pVehicle();
 
-		// TODO: Don't waste the map lookup, we know it's there.
-		MF_VERIFY( this->removeEntityFromWorld( pVehicle->entityID(), NULL ) );
-		pVehicle->destroyNonPlayer();
+        // TODO: Don't waste the map lookup, we know it's there.
+        MF_VERIFY(this->removeEntityFromWorld(pVehicle->entityID(), NULL));
+        pVehicle->destroyNonPlayer();
 
-		// If the exception is no longer in world, this is really a full-reset.
-		if (!pException->isInWorld())
-		{
-			this->clearEntities();
-			return pException;
-		}
-	}
+        // If the exception is no longer in world, this is really a full-reset.
+        if (!pException->isInWorld()) {
+            this->clearEntities();
+            return pException;
+        }
+    }
 
-	// Take the exception out of the list while we reset it, then put it back
-	// in.
-	collection_.erase( iEntity );
-	this->clearEntities();
-	collection_[ pException->entityID() ] = pException;
+    // Take the exception out of the list while we reset it, then put it back
+    // in.
+    collection_.erase(iEntity);
+    this->clearEntities();
+    collection_[pException->entityID()] = pException;
 
-	return NULL;
+    return NULL;
 }
-
 
 /**
  *	This method moves through all our entities, processes their filters
@@ -250,21 +229,20 @@ BWEntityPtr ActiveEntities::clearEntitiesWithException(
  *	@param inconsistentEntities A list of BWEntity * to populate with entities
  *			which do not have a consistent world-space representation.
  */
-void ActiveEntities::processEntityFilters( double gameTime,
-	BW::list< BWEntity * > & inconsistentEntities )
+void ActiveEntities::processEntityFilters(
+  double               gameTime,
+  BW::list<BWEntity*>& inconsistentEntities)
 {
-	for (Collection::iterator iEntity = collection_.begin();
-		iEntity != collection_.end(); ++iEntity)
-	{
-		BWEntity & entity = *(iEntity->second);
+    for (Collection::iterator iEntity = collection_.begin();
+         iEntity != collection_.end();
+         ++iEntity) {
+        BWEntity& entity = *(iEntity->second);
 
-		if (!entity.applyFilter( gameTime ))
-		{
-			inconsistentEntities.push_back( &entity );
-		}
-	}
+        if (!entity.applyFilter(gameTime)) {
+            inconsistentEntities.push_back(&entity);
+        }
+    }
 }
-
 
 /**
  *	This method moves through all our entities, and sends the current
@@ -272,23 +250,21 @@ void ActiveEntities::processEntityFilters( double gameTime,
  *
  *	@param gameTime	The client-based game time at which we are sending
  */
-void ActiveEntities::sendControlledEntitiesUpdates( double gameTime )
+void ActiveEntities::sendControlledEntitiesUpdates(double gameTime)
 {
-	for (Collection::iterator iEntity = collection_.begin();
-		iEntity != collection_.end(); ++iEntity)
-	{
-		BWEntity & entity = *(iEntity->second);
+    for (Collection::iterator iEntity = collection_.begin();
+         iEntity != collection_.end();
+         ++iEntity) {
+        BWEntity& entity = *(iEntity->second);
 
-		if (!entity.isControlled() || entity.isLocalEntity() ||
-			entity.isPhysicsCorrected())
-		{
-			continue;
-		}
+        if (!entity.isControlled() || entity.isLocalEntity() ||
+            entity.isPhysicsCorrected()) {
+            continue;
+        }
 
-		entity.sendLatestLocalMove();
-	}
+        entity.sendLatestLocalMove();
+    }
 }
-
 
 /// BWEntitiesListener registration
 /**
@@ -299,11 +275,10 @@ void ActiveEntities::sendControlledEntitiesUpdates( double gameTime )
  *
  *	@see removeListener
  */
-void ActiveEntities::addListener( BWEntitiesListener * pListener )
+void ActiveEntities::addListener(BWEntitiesListener* pListener)
 {
-	listeners_.push_back( pListener );
+    listeners_.push_back(pListener);
 }
-
 
 /**
  *	This method removes a registered listener to this object.
@@ -315,43 +290,38 @@ void ActiveEntities::addListener( BWEntitiesListener * pListener )
  *
  *	@see addListener
  */
-bool ActiveEntities::removeListener( BWEntitiesListener * pListener )
+bool ActiveEntities::removeListener(BWEntitiesListener* pListener)
 {
-	Listeners::iterator iter = std::find( listeners_.begin(), listeners_.end(),
-			pListener );
+    Listeners::iterator iter =
+      std::find(listeners_.begin(), listeners_.end(), pListener);
 
-	if (iter == listeners_.end())
-	{
-		WARNING_MSG( "ActiveEntities::removeListener: "
-				"Unable to remove listener.\n" );
-		return false;
-	}
+    if (iter == listeners_.end()) {
+        WARNING_MSG("ActiveEntities::removeListener: "
+                    "Unable to remove listener.\n");
+        return false;
+    }
 
-	listeners_.erase( iter );
+    listeners_.erase(iter);
 
-	return true;
+    return true;
 }
 
-
 /// BWEntitiesListener support
-
 
 /**
  *	This method notifies listeners that entities have been reset.
  */
 void ActiveEntities::notifyListenersOfEntitiesReset() const
 {
-	Listeners::const_iterator iter = listeners_.begin();
+    Listeners::const_iterator iter = listeners_.begin();
 
-	while (iter != listeners_.end())
-	{
-		BWEntitiesListener * pListener = *iter;
-		++iter;
+    while (iter != listeners_.end()) {
+        BWEntitiesListener* pListener = *iter;
+        ++iter;
 
-		pListener->onEntitiesReset();
-	}
+        pListener->onEntitiesReset();
+    }
 }
-
 
 /**
  *	This method informs the listeners that an event has occurred.
@@ -359,18 +329,17 @@ void ActiveEntities::notifyListenersOfEntitiesReset() const
  *	@param func 	The callback to call.
  *	@param pEntity 	The entity to pass to the callback function.
  */
-void ActiveEntities::callListeners( ActiveEntities::ListenerFunc func,
-	   BWEntity * pEntity ) const
+void ActiveEntities::callListeners(ActiveEntities::ListenerFunc func,
+                                   BWEntity*                    pEntity) const
 {
-	Listeners::const_iterator iter = listeners_.begin();
+    Listeners::const_iterator iter = listeners_.begin();
 
-	while (iter != listeners_.end())
-	{
-		BWEntitiesListener * pListener = *iter;
-		++iter;
+    while (iter != listeners_.end()) {
+        BWEntitiesListener* pListener = *iter;
+        ++iter;
 
-		(pListener->*func)( pEntity );
-	}
+        (pListener->*func)(pEntity);
+    }
 }
 
 BW_END_NAMESPACE

@@ -9,79 +9,74 @@ BW_BEGIN_NAMESPACE
 class EditorChunkModel;
 class EditorChunkModelVLORef;
 
-typedef EditorChunkSubstance< ChunkModelVLORef > EditorChunkModelVLOParent;
-typedef SmartPointer< EditorChunkModel > EditorChunkModelPtr;
-typedef SmartPointer< EditorChunkModelVLORef > EditorChunkModelVLORefPtr;
+typedef EditorChunkSubstance<ChunkModelVLORef> EditorChunkModelVLOParent;
+typedef SmartPointer<EditorChunkModel>         EditorChunkModelPtr;
+typedef SmartPointer<EditorChunkModelVLORef>   EditorChunkModelVLORefPtr;
 
-class EditorChunkModelVLORef
-	: public EditorChunkModelVLOParent
+class EditorChunkModelVLORef : public EditorChunkModelVLOParent
 {
-public:
-	DECLARE_CHUNK_ITEM( EditorChunkModelVLORef )
+  public:
+    DECLARE_CHUNK_ITEM(EditorChunkModelVLORef)
 
-	EditorChunkModelVLORef();
-	virtual ~EditorChunkModelVLORef();
+    EditorChunkModelVLORef();
+    virtual ~EditorChunkModelVLORef();
 
-	static DataSectionPtr createDataSection( DataSectionPtr pModelSection );
-	static void startCreation() { s_creating = true; }
-	static void endCreation() { s_creating = false; }
+    static DataSectionPtr createDataSection(DataSectionPtr pModelSection);
+    static void           startCreation() { s_creating = true; }
+    static void           endCreation() { s_creating = false; }
 
-	virtual bool edIsVLO() const { return true; }
+    virtual bool edIsVLO() const { return true; }
 
-	virtual Name edClassName()
-	{
-		static Name name( "EditorChunkModelVLORef" );
-		return pObject_ ? pObject_->edClassName() : name;
-	}
+    virtual Name edClassName()
+    {
+        static Name name("EditorChunkModelVLORef");
+        return pObject_ ? pObject_->edClassName() : name;
+    }
 
-	virtual const char * sectName() const;
-	virtual bool isDrawFlagVisible() const;
-	virtual const char * drawFlag() const;
-	virtual ModelPtr reprModel() const;
-	virtual void edPreDelete();
-	virtual void toss( Chunk * pChunk );
-	
-	virtual DataSectionPtr pOwnSect();
+    virtual const char* sectName() const;
+    virtual bool        isDrawFlagVisible() const;
+    virtual const char* drawFlag() const;
+    virtual ModelPtr    reprModel() const;
+    virtual void        edPreDelete();
+    virtual void        toss(Chunk* pChunk);
 
-	bool edEdit( class GeneralEditor & editor );
-	virtual void edBounds( BoundingBox & bbRet ) const;
-	virtual void edWorldBounds( BoundingBox & bbRet );
-	virtual void edPostCreate();
-	virtual const Matrix & edTransform();
-	virtual bool edTransform( const Matrix & m, bool transient = false );
-	virtual bool edShouldDraw();
-	virtual bool edSave( DataSectionPtr pSection );
+    virtual DataSectionPtr pOwnSect();
 
-	bool load( const BW::string & uid, Chunk * pChunk );
-	bool load( DataSectionPtr pSection, Chunk * pChunk,
-		BW::string * errorString = NULL );	
+    bool                  edEdit(class GeneralEditor& editor);
+    virtual void          edBounds(BoundingBox& bbRet) const;
+    virtual void          edWorldBounds(BoundingBox& bbRet);
+    virtual void          edPostCreate();
+    virtual const Matrix& edTransform();
+    virtual bool          edTransform(const Matrix& m, bool transient = false);
+    virtual bool          edShouldDraw();
+    virtual bool          edSave(DataSectionPtr pSection);
 
-	virtual void draw( Moo::DrawContext& drawContext );
+    bool load(const BW::string& uid, Chunk* pChunk);
+    bool load(DataSectionPtr pSection,
+              Chunk*         pChunk,
+              BW::string*    errorString = NULL);
 
-	ChunkItemPtr convertToChunkModel( const Matrix & world );
-	static ChunkItemPtr convertToChunkModelVLO(
-		ChunkItemPtr chunkModel, const Matrix & world );
+    virtual void draw(Moo::DrawContext& drawContext);
 
-	struct ProxyChunkCreationHelper
-	{
-		ProxyChunkCreationHelper()
-		{
-			EditorChunkModelVLORef::startCreation();
-		}
+    ChunkItemPtr        convertToChunkModel(const Matrix& world);
+    static ChunkItemPtr convertToChunkModelVLO(ChunkItemPtr  chunkModel,
+                                               const Matrix& world);
 
-		~ProxyChunkCreationHelper()
-		{
-			EditorChunkModelVLORef::endCreation();
-		}
-	};
-private:
-	void updateWorldVars( const Matrix & m );
+    struct ProxyChunkCreationHelper
+    {
+        ProxyChunkCreationHelper() { EditorChunkModelVLORef::startCreation(); }
 
-	bool			drawTransient_;
-	BW::string		uid_;
-	bool			readonly_;
-	mutable bool	highlight_;
-	static bool		s_creating;
+        ~ProxyChunkCreationHelper() { EditorChunkModelVLORef::endCreation(); }
+    };
+
+  private:
+    void updateWorldVars(const Matrix& m);
+
+    bool         drawTransient_;
+    BW::string   uid_;
+    bool         readonly_;
+    mutable bool highlight_;
+    static bool  s_creating;
 };
 
 BW_END_NAMESPACE

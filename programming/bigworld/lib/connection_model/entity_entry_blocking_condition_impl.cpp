@@ -10,18 +10,16 @@ BW_BEGIN_NAMESPACE
 // Section: EntityEntryBlockingConditionImpl
 // ----------------------------------------------------------------------------
 
-
 /**
  *	Destructor
  */
 EntityEntryBlockingConditionImpl::~EntityEntryBlockingConditionImpl()
 {
-	if (pHandler_ == NULL)
-	{
-		return;
-	}
+    if (pHandler_ == NULL) {
+        return;
+    }
 
-	pHandler_->onBlockingConditionCleared();
+    pHandler_->onBlockingConditionCleared();
 }
 
 /**
@@ -30,12 +28,12 @@ EntityEntryBlockingConditionImpl::~EntityEntryBlockingConditionImpl()
  *	@param pHandler The handler for this EntityEntryBlockingConditionImpl
  */
 void EntityEntryBlockingConditionImpl::setHandler(
-	EntityEntryBlockingConditionHandler * pHandler )
+  EntityEntryBlockingConditionHandler* pHandler)
 {
-	// Our previous Handler must have been aborted before we can set a new
-	// Handler
-	MF_ASSERT( pHandler_ == NULL || pHandler == NULL );
-	pHandler_ = pHandler;
+    // Our previous Handler must have been aborted before we can set a new
+    // Handler
+    MF_ASSERT(pHandler_ == NULL || pHandler == NULL);
+    pHandler_ = pHandler;
 }
 
 BW_END_NAMESPACE

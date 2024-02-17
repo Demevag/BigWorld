@@ -9,7 +9,6 @@
 
 DECLARE_DEBUG_COMPONENT(0)
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -20,78 +19,78 @@ BW_BEGIN_NAMESPACE
  */
 class ProximityRangeTrigger : public RangeTrigger
 {
-public:
-	ProximityRangeTrigger( Entity & around,
-			float range, ControllerID id, int userArg ) :
-		RangeTrigger( around.pRangeListNode(), range,
-				/* lowerWants: */ RangeListNode::FLAG_ENTITY_TRIGGER,
-				/* upperWants: */ RangeListNode::FLAG_ENTITY_TRIGGER,
-				/* lowerMakes: */ RangeListNode::FLAG_NO_TRIGGERS,
-				/* upperMakes: */ RangeListNode::FLAG_NO_TRIGGERS ),
-		id_( id ),
-		pAlternateHandler_( NULL ),
-		inited_( false ),
-		userArg_( userArg )
-	{
-	}
-	~ProximityRangeTrigger()
-	{
-		this->pEntity()->delTrigger( this );
-		this->remove();
-	}
+  public:
+    ProximityRangeTrigger(Entity&      around,
+                          float        range,
+                          ControllerID id,
+                          int          userArg)
+      : RangeTrigger(around.pRangeListNode(),
+                     range,
+                     /* lowerWants: */ RangeListNode::FLAG_ENTITY_TRIGGER,
+                     /* upperWants: */ RangeListNode::FLAG_ENTITY_TRIGGER,
+                     /* lowerMakes: */ RangeListNode::FLAG_NO_TRIGGERS,
+                     /* upperMakes: */ RangeListNode::FLAG_NO_TRIGGERS)
+      , id_(id)
+      , pAlternateHandler_(NULL)
+      , inited_(false)
+      , userArg_(userArg)
+    {
+    }
+    ~ProximityRangeTrigger()
+    {
+        this->pEntity()->delTrigger(this);
+        this->remove();
+    }
 
-	void init()
-	{
-		if (!inited_)
-		{
-			inited_ = true;
-			this->insert();
-			this->pEntity()->addTrigger( this );
-		}
-	}
+    void init()
+    {
+        if (!inited_) {
+            inited_ = true;
+            this->insert();
+            this->pEntity()->addTrigger(this);
+        }
+    }
 
-	void setRangeAndMod( float r )
-	{
-		this->setRange( r );
-		this->pEntity()->modTrigger( this );
-	}
+    void setRangeAndMod(float r)
+    {
+        this->setRange(r);
+        this->pEntity()->modTrigger(this);
+    }
 
-	virtual BW::string debugString() const;
+    virtual BW::string debugString() const;
 
-	virtual void triggerEnter( Entity & entity );
-	virtual void triggerLeave( Entity & entity );
-	virtual Entity * pEntity() const { return
-		EntityRangeListNode::getEntity( this->pCentralNode() ); }
+    virtual void    triggerEnter(Entity& entity);
+    virtual void    triggerLeave(Entity& entity);
+    virtual Entity* pEntity() const
+    {
+        return EntityRangeListNode::getEntity(this->pCentralNode());
+    }
 
-	void standardEnter( Entity * pWho );
-	void standardLeave( Entity * pWho );
-	void nonstandardLeave( EntityID who );
+    void standardEnter(Entity* pWho);
+    void standardLeave(Entity* pWho);
+    void nonstandardLeave(EntityID who);
 
-	/**
-	 *	This interface is implemented by classes that handle the enter and leave
-	 *	events.
-	 */
-	class Handler
-	{
-	public:
-		virtual ~Handler() {};
+    /**
+     *	This interface is implemented by classes that handle the enter and leave
+     *	events.
+     */
+    class Handler
+    {
+      public:
+        virtual ~Handler(){};
 
-		virtual void handle( Entity * pEntity, bool isEnter ) = 0;
-		virtual void attached( ProximityRangeTrigger * pTo ) {}
-	};
+        virtual void handle(Entity* pEntity, bool isEnter) = 0;
+        virtual void attached(ProximityRangeTrigger* pTo) {}
+    };
 
-	void pAlternateHandler( Handler * pHandler )
-	{
-		pAlternateHandler_ = pHandler;
-	}
+    void pAlternateHandler(Handler* pHandler) { pAlternateHandler_ = pHandler; }
 
-private:
-	ControllerID id_;
-	Handler * pAlternateHandler_;
-	bool inited_;
-	int userArg_;
+  private:
+    ControllerID id_;
+    Handler*     pAlternateHandler_;
+    bool         inited_;
+    int          userArg_;
 };
-
 
 /*~ function Entity addProximity
  *  @components{ cell }
@@ -103,19 +102,19 @@ private:
  *	which can be defined as follows:
  *
  *	@{
- *		def onEnterTrap( self, entityEntering, range, controllerID, userArg = 0 ):
- *		def onLeaveTrap( self, entityLeaving, range, controllerID, userArg = 0 ):
+ *		def onEnterTrap( self, entityEntering, range, controllerID, userArg = 0
+ *): def onLeaveTrap( self, entityLeaving, range, controllerID, userArg = 0 ):
  *	@}
  *	There is also a rare case where a message is triggered when the entity
  *	is onloaded to a new cell and a "trapped" entity which was present before
- *	is not present on the new cell. In this situation, getting a reference to 
+ *	is not present on the new cell. In this situation, getting a reference to
  *	the trapped entity object is not possible - only the entity ID is available.
  *
  *	@{
  *		def onLeaveTrapID( self, entityID, range, controllerID, userArg = 0 ):
  *	@}
  *
- *	Since the trap is a controller, use Entity.cancel with the controller ID 
+ *	Since the trap is a controller, use Entity.cancel with the controller ID
  *	to delete the trap.
  *
  *	Note that it is possible for the callbacks to be triggered immediately,
@@ -130,223 +129,187 @@ private:
  *	recommended to set a default value of 0 for userArg in the callback
  *	prototypes.
  *  @return addProximity returns the id of the created controller.
-*/
-IMPLEMENT_CONTROLLER_TYPE_WITH_PY_FACTORY( ProximityController, DOMAIN_REAL )
+ */
+IMPLEMENT_CONTROLLER_TYPE_WITH_PY_FACTORY(ProximityController, DOMAIN_REAL)
 
-Controller::FactoryFnRet ProximityController::New(
-	float range, int userArg )
+Controller::FactoryFnRet ProximityController::New(float range, int userArg)
 {
-	if( range <= 0.f )
-	{
-		PyErr_SetString( PyExc_AttributeError,
-			"Can't add proximity controller 0 or negative range" );
-		return NULL;
-	}
+    if (range <= 0.f) {
+        PyErr_SetString(PyExc_AttributeError,
+                        "Can't add proximity controller 0 or negative range");
+        return NULL;
+    }
 
-	return FactoryFnRet( new ProximityController( range ), userArg );
+    return FactoryFnRet(new ProximityController(range), userArg);
 }
-
 
 /**
  * 	ProximityController constructor
  *
  *	@param range This is the range of the proximity check
  */
-ProximityController::ProximityController( float range ):
-	range_( range ),
-	pProximityTrigger_( NULL ),
-	pOnloadedSet_( NULL )
+ProximityController::ProximityController(float range)
+  : range_(range)
+  , pProximityTrigger_(NULL)
+  , pOnloadedSet_(NULL)
 {
 }
-
 
 /**
  *	Destructor.
  */
-ProximityController::~ProximityController()
-{
+ProximityController::~ProximityController() {}
+
+namespace {
+    class OnloadHandler : public ProximityRangeTrigger::Handler
+    {
+      public:
+        OnloadHandler(ProximityRangeTrigger* pTrigger,
+                      BW::vector<EntityID>&  onloadSet)
+          : pTrigger_(pTrigger)
+          , set_(onloadSet)
+          , matched_(onloadSet.size())
+        {
+        }
+
+        virtual ~OnloadHandler()
+        {
+            for (size_t i = 0; i < matched_.size(); ++i) {
+                if (!matched_[i]) {
+                    Entity* pEntity = CellApp::instance().findEntity(set_[i]);
+
+                    if (pEntity) {
+                        pTrigger_->standardLeave(pEntity);
+                    } else {
+                        pTrigger_->nonstandardLeave(set_[i]);
+                    }
+                }
+            }
+        }
+
+      private:
+        void handle(Entity* pEntity, bool isEnter)
+        {
+            MF_ASSERT(isEnter);
+
+            BW::vector<EntityID>::iterator iter =
+              std::find(set_.begin(), set_.end(), pEntity->id());
+
+            if (iter != set_.end()) {
+                int index       = iter - set_.begin();
+                matched_[index] = true;
+            } else {
+                pTrigger_->standardEnter(pEntity);
+            }
+        }
+
+        ProximityRangeTrigger* pTrigger_;
+        BW::vector<EntityID>&  set_;
+        BW::vector<bool>       matched_;
+    };
 }
-
-
-namespace
-{
-class OnloadHandler : public ProximityRangeTrigger::Handler
-{
-public:
-	OnloadHandler( ProximityRangeTrigger * pTrigger,
-			BW::vector< EntityID > & onloadSet ) :
-		pTrigger_( pTrigger ),
-		set_( onloadSet ),
-		matched_( onloadSet.size() )
-	{
-	}
-
-	virtual ~OnloadHandler()
-	{
-		for (size_t i = 0; i < matched_.size(); ++i)
-		{
-			if (!matched_[i])
-			{
-				Entity * pEntity =
-					CellApp::instance().findEntity( set_[i] );
-
-				if (pEntity)
-				{
-					pTrigger_->standardLeave( pEntity );
-				}
-				else
-				{
-					pTrigger_->nonstandardLeave( set_[i] );
-				}
-			}
-		}
-	}
-
-private:
-	void handle( Entity * pEntity, bool isEnter )
-	{
-		MF_ASSERT( isEnter );
-
-		BW::vector< EntityID >::iterator iter =
-			std::find( set_.begin(), set_.end(), pEntity->id() );
-
-		if (iter != set_.end())
-		{
-			int index = iter - set_.begin();
-			matched_[ index ] = true;
-		}
-		else
-		{
-			pTrigger_->standardEnter( pEntity );
-		}
-	}
-
-	ProximityRangeTrigger * pTrigger_;
-	BW::vector< EntityID > & set_;
-	BW::vector< bool > matched_;
-};
-}
-
 
 /**
  *	This method overrides the Controller method.
  */
-void ProximityController::startReal( bool isInitialStart )
+void ProximityController::startReal(bool isInitialStart)
 {
-	if (!isInitialStart && (pOnloadedSet_ != NULL))
-	{
-		// keep a reference to ourselves in case we are cancelled by a
-		// script callback at the close of the scope below
-		ControllerPtr pThis = this;
+    if (!isInitialStart && (pOnloadedSet_ != NULL)) {
+        // keep a reference to ourselves in case we are cancelled by a
+        // script callback at the close of the scope below
+        ControllerPtr pThis = this;
 
-		pProximityTrigger_ = new ProximityRangeTrigger( this->entity(),
-				range_, this->id(), this->userArg() );
+        pProximityTrigger_ = new ProximityRangeTrigger(
+          this->entity(), range_, this->id(), this->userArg());
 
-		// This scope is important. The handler's destructor must be called
-		// before deleting pOnloadedSet changes.
-		{
-			OnloadHandler handler( pProximityTrigger_, *pOnloadedSet_ );
-			pProximityTrigger_->pAlternateHandler( &handler );
-			pProximityTrigger_->init();
-			pProximityTrigger_->pAlternateHandler( NULL );
-		}
-		// we might now be cancelled (but not deleted due to smart pointer)
-		delete pOnloadedSet_;
-		pOnloadedSet_ = NULL;
-	}
-	else
-	{
-		this->setRange( range_ );
-		// we might now be deleted
-	}
+        // This scope is important. The handler's destructor must be called
+        // before deleting pOnloadedSet changes.
+        {
+            OnloadHandler handler(pProximityTrigger_, *pOnloadedSet_);
+            pProximityTrigger_->pAlternateHandler(&handler);
+            pProximityTrigger_->init();
+            pProximityTrigger_->pAlternateHandler(NULL);
+        }
+        // we might now be cancelled (but not deleted due to smart pointer)
+        delete pOnloadedSet_;
+        pOnloadedSet_ = NULL;
+    } else {
+        this->setRange(range_);
+        // we might now be deleted
+    }
 }
 
-
-namespace
-{
-class NoOpHandler : public ProximityRangeTrigger::Handler
-{
-public:
-	void handle( Entity * pEntity, bool isEnter )
-	{
-		MF_ASSERT( !isEnter );
-	}
-};
+namespace {
+    class NoOpHandler : public ProximityRangeTrigger::Handler
+    {
+      public:
+        void handle(Entity* pEntity, bool isEnter) { MF_ASSERT(!isEnter); }
+    };
 }
-
 
 /**
  *	This method overrides the Controller method.
  */
-void ProximityController::stopReal( bool isFinalStop )
+void ProximityController::stopReal(bool isFinalStop)
 {
-	NoOpHandler handler;
+    NoOpHandler handler;
 
-	if (pProximityTrigger_ != NULL)
-	{
-		// TODO: Could just remove triggers in this case instead of
-		// shuffling them back to range 0 and ignoring the results.
-		pProximityTrigger_->pAlternateHandler( &handler );
-	}
+    if (pProximityTrigger_ != NULL) {
+        // TODO: Could just remove triggers in this case instead of
+        // shuffling them back to range 0 and ignoring the results.
+        pProximityTrigger_->pAlternateHandler(&handler);
+    }
 
-	this->setRange( 0.f );
-	// we might now be deleted
+    this->setRange(0.f);
+    // we might now be deleted
 }
-
 
 /**
  *	This method write our state to a stream.
  *
  *	@param stream		Stream to which we should write
  */
-void ProximityController::writeRealToStream( BinaryOStream & stream )
+void ProximityController::writeRealToStream(BinaryOStream& stream)
 {
-	this->Controller::writeRealToStream( stream );
-	stream << range_;
+    this->Controller::writeRealToStream(stream);
+    stream << range_;
 
-	// TODO: It may be an idea to support proximity controllers that are only
-	// triggered by a subset of entities (say by entity type).
+    // TODO: It may be an idea to support proximity controllers that are only
+    // triggered by a subset of entities (say by entity type).
 
-	// Add all of the entities in our proximity.
-	RangeListNode * pOurNode = pProximityTrigger_->pCentralNode();
-	RangeListNode * pCurr = pProximityTrigger_->pLowerTrigger()->nextX();
-	const RangeListNode * pEnd = pProximityTrigger_->pUpperTrigger();
+    // Add all of the entities in our proximity.
+    RangeListNode*       pOurNode = pProximityTrigger_->pCentralNode();
+    RangeListNode*       pCurr = pProximityTrigger_->pLowerTrigger()->nextX();
+    const RangeListNode* pEnd  = pProximityTrigger_->pUpperTrigger();
 
-	int32 count = 0;
+    int32 count = 0;
 
-	while (pCurr != pEnd)
-	{
-		if (pCurr->isEntity() &&
-			pProximityTrigger_->containsInZ( pCurr ) &&
-			pCurr != pOurNode)
-		{
-			++count;
-		}
+    while (pCurr != pEnd) {
+        if (pCurr->isEntity() && pProximityTrigger_->containsInZ(pCurr) &&
+            pCurr != pOurNode) {
+            ++count;
+        }
 
-		pCurr = pCurr->nextX();
-	}
+        pCurr = pCurr->nextX();
+    }
 
-	stream << count;
+    stream << count;
 
-	pCurr = pProximityTrigger_->pLowerTrigger()->nextX();
+    pCurr = pProximityTrigger_->pLowerTrigger()->nextX();
 
-	while ((pCurr != pEnd) && (count > 0))
-	{
-		if (pCurr->isEntity() &&
-			pProximityTrigger_->containsInZ( pCurr ) &&
-			pCurr != pOurNode)
-		{
-			Entity * pEntity = EntityRangeListNode::getEntity( pCurr );
-			stream << pEntity->id();
-			--count;
-		}
+    while ((pCurr != pEnd) && (count > 0)) {
+        if (pCurr->isEntity() && pProximityTrigger_->containsInZ(pCurr) &&
+            pCurr != pOurNode) {
+            Entity* pEntity = EntityRangeListNode::getEntity(pCurr);
+            stream << pEntity->id();
+            --count;
+        }
 
-		pCurr = pCurr->nextX();
-	}
+        pCurr = pCurr->nextX();
+    }
 
-	MF_ASSERT( count == 0 );
+    MF_ASSERT(count == 0);
 }
-
 
 /**
  *	This method reads our state from a stream.
@@ -354,63 +317,54 @@ void ProximityController::writeRealToStream( BinaryOStream & stream )
  *	@param stream		Stream from which to read
  *	@return				true if successful, false otherwise
  */
-bool ProximityController::readRealFromStream( BinaryIStream & stream )
+bool ProximityController::readRealFromStream(BinaryIStream& stream)
 {
-	this->Controller::readRealFromStream( stream );
-	stream >> range_;
-	int count;
-	stream >> count;
+    this->Controller::readRealFromStream(stream);
+    stream >> range_;
+    int count;
+    stream >> count;
 
-	if (count > 0)
-	{
-		pOnloadedSet_ = new BW::vector< EntityID >( count );
+    if (count > 0) {
+        pOnloadedSet_ = new BW::vector<EntityID>(count);
 
-		for (int i = 0; i < count; ++i)
-		{
-			stream >> (*pOnloadedSet_)[i];
-		}
+        for (int i = 0; i < count; ++i) {
+            stream >> (*pOnloadedSet_)[i];
+        }
 
-		std::sort( pOnloadedSet_->begin(), pOnloadedSet_->end() );
-	}
+        std::sort(pOnloadedSet_->begin(), pOnloadedSet_->end());
+    }
 
-	return true;
+    return true;
 }
-
 
 /**
  *	Set the range of proximity. Note: We may be cancelled or deleted when
  *	this function returns.
  */
-void ProximityController::setRange( float range )
+void ProximityController::setRange(float range)
 {
-	range_ = range;
+    range_ = range;
 
-	// all three of the cases below can call script
-	Entity::callbacksPermitted( false );
+    // all three of the cases below can call script
+    Entity::callbacksPermitted(false);
 
-	START_PROFILE( SHUFFLE_TRIGGERS_PROFILE );
-	if (range <= 0.f)
-	{
-		delete pProximityTrigger_;	// could be NULL
-		pProximityTrigger_ = NULL;
-		range_ = 0.f;
-	}
-	else if (pProximityTrigger_ == NULL)
-	{
-		pProximityTrigger_ = new ProximityRangeTrigger( this->entity(),
-				range, this->id(), this->userArg() );
-		pProximityTrigger_->init();
-	}
-	else
-	{
-		pProximityTrigger_->setRangeAndMod( range );
-	}
-	STOP_PROFILE( SHUFFLE_TRIGGERS_PROFILE );
+    START_PROFILE(SHUFFLE_TRIGGERS_PROFILE);
+    if (range <= 0.f) {
+        delete pProximityTrigger_; // could be NULL
+        pProximityTrigger_ = NULL;
+        range_             = 0.f;
+    } else if (pProximityTrigger_ == NULL) {
+        pProximityTrigger_ = new ProximityRangeTrigger(
+          this->entity(), range, this->id(), this->userArg());
+        pProximityTrigger_->init();
+    } else {
+        pProximityTrigger_->setRangeAndMod(range);
+    }
+    STOP_PROFILE(SHUFFLE_TRIGGERS_PROFILE);
 
-	Entity::callbacksPermitted( true );
-	// we might now be cancelled or deleted
+    Entity::callbacksPermitted(true);
+    // we might now be cancelled or deleted
 }
-
 
 // -----------------------------------------------------------------------------
 // Section: ProximityRangeTrigger
@@ -423,12 +377,11 @@ void ProximityController::setRange( float range )
  */
 BW::string ProximityRangeTrigger::debugString() const
 {
-	char buf[80];
-	bw_snprintf( buf, sizeof(buf), "%d for script", this->pEntity()->id() );
+    char buf[80];
+    bw_snprintf(buf, sizeof(buf), "%d for script", this->pEntity()->id());
 
-	return buf;
+    return buf;
 }
-
 
 /**
  *	This method is called when an entity triggers the node. It forwards the call
@@ -436,30 +389,25 @@ BW::string ProximityRangeTrigger::debugString() const
  *
  * @param entity	The entity that triggered this proximity trigger.
  */
-void ProximityRangeTrigger::triggerEnter( Entity & entity )
+void ProximityRangeTrigger::triggerEnter(Entity& entity)
 {
-	Entity * pThis = this->pEntity();
-	Entity * pWho = &entity;
+    Entity* pThis = this->pEntity();
+    Entity* pWho  = &entity;
 
-	if (pThis->isDestroyed())
-	{
-		// TODO: This is not really an error but we may want to look at handling
-		// these differently.
-		// ERROR_MSG( "ProximityRangeTrigger::triggerEnter: "
-		//			"Called on destroyed entity %d\n", pThis->id() );
-		return;
-	}
+    if (pThis->isDestroyed()) {
+        // TODO: This is not really an error but we may want to look at handling
+        // these differently.
+        // ERROR_MSG( "ProximityRangeTrigger::triggerEnter: "
+        //			"Called on destroyed entity %d\n", pThis->id() );
+        return;
+    }
 
-	if (pAlternateHandler_ != NULL)
-	{
-		pAlternateHandler_->handle( pWho, true );
-	}
-	else
-	{
-		this->standardEnter( pWho );
-	}
+    if (pAlternateHandler_ != NULL) {
+        pAlternateHandler_->handle(pWho, true);
+    } else {
+        this->standardEnter(pWho);
+    }
 }
-
 
 /*~ callback Entity.onEnterTrap
  *  @components{ cell }
@@ -475,16 +423,16 @@ void ProximityRangeTrigger::triggerEnter( Entity & entity )
 /**
  *	This method handles the case where an entity has entered our proximity.
  */
-void ProximityRangeTrigger::standardEnter( Entity * pWho )
+void ProximityRangeTrigger::standardEnter(Entity* pWho)
 {
-	PyObject * pArgs = (userArg_ != 0) ?
-		Py_BuildValue( "(Ofii)", pWho, this->range(), id_, userArg_ ) :
-		Py_BuildValue( "(Ofi)", pWho, this->range(), id_ );
+    PyObject* pArgs =
+      (userArg_ != 0)
+        ? Py_BuildValue("(Ofii)", pWho, this->range(), id_, userArg_)
+        : Py_BuildValue("(Ofi)", pWho, this->range(), id_);
 
-	this->pEntity()->callback( "onEnterTrap", pArgs,
-		"RealEntity::triggerEnter: ", false );
+    this->pEntity()->callback(
+      "onEnterTrap", pArgs, "RealEntity::triggerEnter: ", false);
 }
-
 
 /**
  *	This method is called when an entity untriggers the node. It forwards the
@@ -492,28 +440,24 @@ void ProximityRangeTrigger::standardEnter( Entity * pWho )
  *
  * @param entity	The entity that left the proximity trigger.
  */
-void ProximityRangeTrigger::triggerLeave( Entity & entity )
+void ProximityRangeTrigger::triggerLeave(Entity& entity)
 {
-	Entity * pThis = this->pEntity();
-	Entity * pWho = &entity;
+    Entity* pThis = this->pEntity();
+    Entity* pWho  = &entity;
 
-	if (pThis->isDestroyed())
-	{
-		// TODO: This is not really an error but we may want to look at handling
-		// these differently.
-		// ERROR_MSG( "ProximityRangeTrigger::triggerLeave: "
-		//			"Called on destroyed entity %d\n", pThis->id() );
-		return;
-	}
+    if (pThis->isDestroyed()) {
+        // TODO: This is not really an error but we may want to look at handling
+        // these differently.
+        // ERROR_MSG( "ProximityRangeTrigger::triggerLeave: "
+        //			"Called on destroyed entity %d\n", pThis->id() );
+        return;
+    }
 
-	if (pAlternateHandler_ != NULL)
-	{
-		pAlternateHandler_->handle( pWho, false );
-	}
-	else
-	{
-		this->standardLeave( pWho );
-	}
+    if (pAlternateHandler_ != NULL) {
+        pAlternateHandler_->handle(pWho, false);
+    } else {
+        this->standardLeave(pWho);
+    }
 }
 
 /*~ callback Entity.onLeaveTrap
@@ -530,14 +474,15 @@ void ProximityRangeTrigger::triggerLeave( Entity & entity )
 /**
  *	This method handles the case where an entity has left our proximity.
  */
-void ProximityRangeTrigger::standardLeave( Entity * pWho )
+void ProximityRangeTrigger::standardLeave(Entity* pWho)
 {
-	PyObject * pArgs = (userArg_ != 0) ?
-		Py_BuildValue( "(Ofii)", pWho, this->range(), id_, userArg_ ) :
-		Py_BuildValue( "(Ofi)", pWho, this->range(), id_ );
+    PyObject* pArgs =
+      (userArg_ != 0)
+        ? Py_BuildValue("(Ofii)", pWho, this->range(), id_, userArg_)
+        : Py_BuildValue("(Ofi)", pWho, this->range(), id_);
 
-	this->pEntity()->callback( "onLeaveTrap", pArgs,
-		"RealEntity::triggerLeave: ", true );
+    this->pEntity()->callback(
+      "onLeaveTrap", pArgs, "RealEntity::triggerLeave: ", true);
 }
 
 /*~ callback Entity.onLeaveTrapID
@@ -557,16 +502,17 @@ void ProximityRangeTrigger::standardLeave( Entity * pWho )
  *	This method handles the case where we know that an entity has left our
  *	proximity but we cannot get a pointer to it.
  */
-void ProximityRangeTrigger::nonstandardLeave( EntityID who )
+void ProximityRangeTrigger::nonstandardLeave(EntityID who)
 {
-	PyObject * pArgs = (userArg_ != 0) ?
-		Py_BuildValue( "(ifii)", who, this->range(), id_, userArg_ ) :
-		Py_BuildValue( "(ifi)", who, this->range(), id_ );
+    PyObject* pArgs =
+      (userArg_ != 0)
+        ? Py_BuildValue("(ifii)", who, this->range(), id_, userArg_)
+        : Py_BuildValue("(ifi)", who, this->range(), id_);
 
-	// TODO: This is pretty ugly and we should get rid of it somehow. We should
-	// at least document it well.
-	this->pEntity()->callback( "onLeaveTrapID", pArgs,
-		"RealEntity::triggerLeave: ", true );
+    // TODO: This is pretty ugly and we should get rid of it somehow. We should
+    // at least document it well.
+    this->pEntity()->callback(
+      "onLeaveTrapID", pArgs, "RealEntity::triggerLeave: ", true);
 }
 
 BW_END_NAMESPACE

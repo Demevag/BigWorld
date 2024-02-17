@@ -14,37 +14,35 @@ typedef SmartPointer<FloatProxy> FloatProxyPtr;
 
 /*~ class NoModule.PropertyScaler
  *	@components{ tools }
- *	
+ *
  *	This scales all the current scale properties
  */
 class PropertyScaler : public AlwaysApplyingFunctor
 {
-	Py_Header( PropertyScaler, AlwaysApplyingFunctor )
-public:
-	PropertyScaler( float scaleSpeedFactor = 1.f,
-		FloatProxyPtr scaleX = NULL,
-		FloatProxyPtr scaleY = NULL,
-		FloatProxyPtr scaleZ = NULL,
-		bool allowedToDiscardChanges = true,
-		PyTypeObject * pType = &s_type_ );
+    Py_Header(PropertyScaler, AlwaysApplyingFunctor) public
+      : PropertyScaler(float         scaleSpeedFactor        = 1.f,
+                       FloatProxyPtr scaleX                  = NULL,
+                       FloatProxyPtr scaleY                  = NULL,
+                       FloatProxyPtr scaleZ                  = NULL,
+                       bool          allowedToDiscardChanges = true,
+                       PyTypeObject* pType                   = &s_type_);
 
-protected:
-	virtual void doApply( float dTime, Tool & tool );
-	virtual void stopApplyCommitChanges( Tool& tool, bool addUndoBarrier );
-	virtual void stopApplyDiscardChanges( Tool& tool );
+  protected:
+    virtual void doApply(float dTime, Tool& tool);
+    virtual void stopApplyCommitChanges(Tool& tool, bool addUndoBarrier);
+    virtual void stopApplyDiscardChanges(Tool& tool);
 
-private:
-	float scaleSpeedFactor_;
+  private:
+    float scaleSpeedFactor_;
 
-	FloatProxyPtr scaleX_;
-	FloatProxyPtr scaleY_;
-	FloatProxyPtr scaleZ_;
+    FloatProxyPtr scaleX_;
+    FloatProxyPtr scaleY_;
+    FloatProxyPtr scaleZ_;
 
-	bool					grabOffsetSet_;
-	Matrix					invGrabOffset_;
+    bool   grabOffsetSet_;
+    Matrix invGrabOffset_;
 
-	PropertyScalerHelper	scalerHelper_;
-
+    PropertyScalerHelper scalerHelper_;
 };
 
 BW_END_NAMESPACE

@@ -5,20 +5,19 @@
 
 #include "Python.h"
 
-
 BW_BEGIN_NAMESPACE
 
 class BinaryIStream;
 
-#pragma pack( push, 1 )
+#pragma pack(push, 1)
 class LogEntryAddressReader : public LogEntryAddress
 {
-public:
-	bool isValid() const;
+  public:
+    bool isValid() const;
 
-	bool fromPyTuple( PyObject *tuple );
+    bool fromPyTuple(PyObject* tuple);
 };
-#pragma pack( pop )
+#pragma pack(pop)
 
 BW_END_NAMESPACE
 

@@ -8,11 +8,9 @@
 
 #include "cstdmf/bw_util.hpp"
 
-
 #ifdef EDITOR_ENABLED
 #include "resmgr/multi_file_system.hpp"
 #endif // EDITOR_ENABLED
-
 
 BW_BEGIN_NAMESPACE
 
@@ -42,11 +40,11 @@ BW_BEGIN_NAMESPACE
  *	This function implements a script function. It checks if a path name
  *	is a directory.
  */
-static int isDir( const BW::string & pathName )
+static int isDir(const BW::string& pathName)
 {
-	return BWResource::isDir( pathName );
+    return BWResource::isDir(pathName);
 }
-PY_AUTO_MODULE_FUNCTION( RETDATA, isDir,	ARG( BW::string, END ), ResMgr )
+PY_AUTO_MODULE_FUNCTION(RETDATA, isDir, ARG(BW::string, END), ResMgr)
 
 /*~ function ResMgr.isFile
  *	@components{ all }
@@ -62,11 +60,11 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, isDir,	ARG( BW::string, END ), ResMgr )
  *	This function implements a script function. It checks if a path name
  *	is a file.
  */
-static int isFile( const BW::string & pathName )
+static int isFile(const BW::string& pathName)
 {
-	return BWResource::isFile( pathName );
+    return BWResource::isFile(pathName);
 }
-PY_AUTO_MODULE_FUNCTION( RETDATA, isFile,	ARG( BW::string, END ), ResMgr )
+PY_AUTO_MODULE_FUNCTION(RETDATA, isFile, ARG(BW::string, END), ResMgr)
 
 /*~ function ResMgr.openSection
  *	@components{ all }
@@ -89,30 +87,30 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, isFile,	ARG( BW::string, END ), ResMgr )
  *	This function implements a script function. It converts a data section into
  *	a hierarchy of Python maps (aka a DataSection)
  */
-static PyObject * openSection( const BW::string & resourceID,
-	bool makeNewSection = false )
+static PyObject* openSection(const BW::string& resourceID,
+                             bool              makeNewSection = false)
 {
-	DataSectionPtr pSection = BWResource::openSection(
-		resourceID, makeNewSection );
+    DataSectionPtr pSection =
+      BWResource::openSection(resourceID, makeNewSection);
 
-	if (!pSection)
-	{
-		if (!makeNewSection)
-		{
-			Py_RETURN_NONE;	// just return None if there is no section
-		}
-		else
-		{
-			PyErr_Format( PyExc_ValueError, "ResMgr.openSection(): "
-				"Could not make new section '%s'", resourceID.c_str() );
-			return NULL;
-		}
-	}
+    if (!pSection) {
+        if (!makeNewSection) {
+            Py_RETURN_NONE; // just return None if there is no section
+        } else {
+            PyErr_Format(PyExc_ValueError,
+                         "ResMgr.openSection(): "
+                         "Could not make new section '%s'",
+                         resourceID.c_str());
+            return NULL;
+        }
+    }
 
-	return new PyDataSection( pSection );
+    return new PyDataSection(pSection);
 }
-PY_AUTO_MODULE_FUNCTION( RETOWN, openSection,
-	ARG( BW::string, OPTARG( bool, false, END ) ), ResMgr )
+PY_AUTO_MODULE_FUNCTION(RETOWN,
+                        openSection,
+                        ARG(BW::string, OPTARG(bool, false, END)),
+                        ResMgr)
 
 /*~ function ResMgr.save
  *	@components{ all }
@@ -129,15 +127,15 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, openSection,
  *	This function implements a script function. It saves this section at the
  *	input path.
  */
-static bool save( const BW::string & resourceID )
+static bool save(const BW::string& resourceID)
 {
-	if (BWResource::instance().save( resourceID )) return true;
+    if (BWResource::instance().save(resourceID))
+        return true;
 
-	PyErr_Format( PyExc_IOError, "Save of %s failed", resourceID.c_str() );
-	return false;
+    PyErr_Format(PyExc_IOError, "Save of %s failed", resourceID.c_str());
+    return false;
 }
-PY_AUTO_MODULE_FUNCTION( RETOK, save, ARG( BW::string, END ), ResMgr )
-
+PY_AUTO_MODULE_FUNCTION(RETOK, save, ARG(BW::string, END), ResMgr)
 
 /*~ function ResMgr.purge
  *	@components{ all }
@@ -155,16 +153,16 @@ PY_AUTO_MODULE_FUNCTION( RETOK, save, ARG( BW::string, END ), ResMgr )
  *	This function implements a script function. It purges the given section
  *	from the cache, enabling the copy on disk to be read in.
  */
-static void purge( const BW::string & resourceID, bool recurse = false )
+static void purge(const BW::string& resourceID, bool recurse = false)
 {
-	BWResource::instance().purge( resourceID, recurse );
+    BWResource::instance().purge(resourceID, recurse);
 }
-PY_AUTO_MODULE_FUNCTION( RETVOID, purge,
-	ARG( BW::string, OPTARG( bool, false, END ) ), ResMgr )
-
+PY_AUTO_MODULE_FUNCTION(RETVOID,
+                        purge,
+                        ARG(BW::string, OPTARG(bool, false, END)),
+                        ResMgr)
 
 #ifdef EDITOR_ENABLED
-
 
 /*~ function ResMgr.remove
  *	@components{ tools }
@@ -178,18 +176,16 @@ PY_AUTO_MODULE_FUNCTION( RETVOID, purge,
 /**
  *	This function implements a script function. It deletes this file.
  */
-static bool remove( const BW::string & resID )
+static bool remove(const BW::string& resID)
 {
-	if (BWResource::instance().fileSystem()->eraseFileOrDirectory( resID ))
-	{
-		return true;
-	}
+    if (BWResource::instance().fileSystem()->eraseFileOrDirectory(resID)) {
+        return true;
+    }
 
-	PyErr_Format( PyExc_IOError, "Removing of %s failed", resID.c_str() );
-	return false;
+    PyErr_Format(PyExc_IOError, "Removing of %s failed", resID.c_str());
+    return false;
 }
-PY_AUTO_MODULE_FUNCTION( RETDATA, remove, ARG( BW::string, END ), ResMgr )
-
+PY_AUTO_MODULE_FUNCTION(RETDATA, remove, ARG(BW::string, END), ResMgr)
 
 /*~ function ResMgr.rename
  *	@components{ tools }
@@ -204,22 +200,23 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, remove, ARG( BW::string, END ), ResMgr )
 /**
  *	This function implements a script function. It renames this file.
  */
-static bool rename( const BW::string & oldResID,
-												const BW::string & newResID )
+static bool rename(const BW::string& oldResID, const BW::string& newResID)
 {
-	if (BWResource::instance().fileSystem()->moveFileOrDirectory( oldResID,
-																	newResID ))
-	{
-		return true;
-	}
+    if (BWResource::instance().fileSystem()->moveFileOrDirectory(oldResID,
+                                                                 newResID)) {
+        return true;
+    }
 
-	PyErr_Format( PyExc_IOError, "Renaming of %s to %s failed",
-										oldResID.c_str(), newResID.c_str() );
-	return false;
+    PyErr_Format(PyExc_IOError,
+                 "Renaming of %s to %s failed",
+                 oldResID.c_str(),
+                 newResID.c_str());
+    return false;
 }
-PY_AUTO_MODULE_FUNCTION( RETDATA, rename,
-						ARG( BW::string, ARG( BW::string, END ) ), ResMgr )
-
+PY_AUTO_MODULE_FUNCTION(RETDATA,
+                        rename,
+                        ARG(BW::string, ARG(BW::string, END)),
+                        ResMgr)
 
 /*~ function ResMgr.copy
  *	@components{ tools }
@@ -234,28 +231,28 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, rename,
 /**
  *	This function implements a script function. It copies this file.
  */
-static bool copy( const BW::string & srcResID,
-												const BW::string & dstResID )
+static bool copy(const BW::string& srcResID, const BW::string& dstResID)
 {
-	BinaryPtr fileData =
-					BWResource::instance().fileSystem()->readFile( srcResID );
+    BinaryPtr fileData =
+      BWResource::instance().fileSystem()->readFile(srcResID);
 
-	if (fileData)
-	{
-		if (BWResource::instance().fileSystem()->writeFile(
-													dstResID, fileData, true ))
-		{
-			return true;
-		}
-	}
+    if (fileData) {
+        if (BWResource::instance().fileSystem()->writeFile(
+              dstResID, fileData, true)) {
+            return true;
+        }
+    }
 
-	PyErr_Format( PyExc_IOError, "Copying of %s to %s failed",
-										srcResID.c_str(), dstResID.c_str() );
-	return false;
+    PyErr_Format(PyExc_IOError,
+                 "Copying of %s to %s failed",
+                 srcResID.c_str(),
+                 dstResID.c_str());
+    return false;
 }
-PY_AUTO_MODULE_FUNCTION( RETDATA, copy,
-						ARG( BW::string, ARG( BW::string, END ) ), ResMgr )
-
+PY_AUTO_MODULE_FUNCTION(RETDATA,
+                        copy,
+                        ARG(BW::string, ARG(BW::string, END)),
+                        ResMgr)
 
 #endif // EDITOR_ENABLED
 
@@ -268,27 +265,24 @@ PY_AUTO_MODULE_FUNCTION( RETDATA, copy,
  *
  *	@return The absolute path
  */
-static PyObject * resolveToAbsolutePath( const BW::string & path )
+static PyObject* resolveToAbsolutePath(const BW::string& path)
 {
-	BW::string resolvedPath( path );
-	if (BWResource::resolveToAbsolutePath( resolvedPath ) ==
-			IFileSystem::FT_NOT_FOUND)
-	{
-		if (BWUtil::isAbsolutePath( path ))
-		{
-			resolvedPath = path;
-		}
-		else
-		{
-			resolvedPath = BWResource::getPath( 0 ) + "/" + path;
-		}
-	}
+    BW::string resolvedPath(path);
+    if (BWResource::resolveToAbsolutePath(resolvedPath) ==
+        IFileSystem::FT_NOT_FOUND) {
+        if (BWUtil::isAbsolutePath(path)) {
+            resolvedPath = path;
+        } else {
+            resolvedPath = BWResource::getPath(0) + "/" + path;
+        }
+    }
 
-	return Script::getData( BWUtil::normalisePath( resolvedPath ) );
+    return Script::getData(BWUtil::normalisePath(resolvedPath));
 }
-PY_AUTO_MODULE_FUNCTION( RETOWN, resolveToAbsolutePath,
-		ARG( BW::string, END ), ResMgr )
-
+PY_AUTO_MODULE_FUNCTION(RETOWN,
+                        resolveToAbsolutePath,
+                        ARG(BW::string, END),
+                        ResMgr)
 
 /*~ function ResMgr.localise
  *	@components{ all }
@@ -304,39 +298,45 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, resolveToAbsolutePath,
  *	This function implements a script function. It checks if a path name
  *	is a directory.
  */
-static PyObject* py_localise( PyObject* args )
+static PyObject* py_localise(PyObject* args)
 {
-	const char* str = "";
-	const char* s[8] = { "", "", "", "", "", "", "", "" };
+    const char* str  = "";
+    const char* s[8] = { "", "", "", "", "", "", "", "" };
 
-	if (!PyArg_ParseTuple( args, "s|ssssssss", &str,
-		&s[0] ,&s[1], &s[2], &s[3], &s[4], &s[5], &s[6], &s[7] ))
-	{
-		return NULL;
-	}
+    if (!PyArg_ParseTuple(args,
+                          "s|ssssssss",
+                          &str,
+                          &s[0],
+                          &s[1],
+                          &s[2],
+                          &s[3],
+                          &s[4],
+                          &s[5],
+                          &s[6],
+                          &s[7])) {
+        return NULL;
+    }
 
-	return Script::getData( LocaliseUTF8(
-		bw_utf8tow( str ).c_str(),
-		bw_utf8tow( s[0] ).c_str(),
-		bw_utf8tow( s[1] ).c_str(),
-		bw_utf8tow( s[2] ).c_str(),
-		bw_utf8tow( s[3] ).c_str(),
-		bw_utf8tow( s[4] ).c_str(),
-		bw_utf8tow( s[5] ).c_str(),
-		bw_utf8tow( s[6] ).c_str(),
-		bw_utf8tow( s[7] ).c_str() ) );
+    return Script::getData(LocaliseUTF8(bw_utf8tow(str).c_str(),
+                                        bw_utf8tow(s[0]).c_str(),
+                                        bw_utf8tow(s[1]).c_str(),
+                                        bw_utf8tow(s[2]).c_str(),
+                                        bw_utf8tow(s[3]).c_str(),
+                                        bw_utf8tow(s[4]).c_str(),
+                                        bw_utf8tow(s[5]).c_str(),
+                                        bw_utf8tow(s[6]).c_str(),
+                                        bw_utf8tow(s[7]).c_str()));
 }
-PY_MODULE_FUNCTION( localise, ResMgr )
-
+PY_MODULE_FUNCTION(localise, ResMgr)
 
 // -----------------------------------------------------------------------------
 // Section: Initialisation
 // -----------------------------------------------------------------------------
 
-#if !defined( BW_BLOB_CONFIG )
+#if !defined(BW_BLOB_CONFIG)
 extern int PyDataSection_token;
 extern int ResourceTable_token;
-int ResMgr_token = PyDataSection_token | ResourceTable_token;
+int        ResMgr_token = PyDataSection_token | ResourceTable_token;
 #else
 int ResMgr_token = true;
 #endif // !(defined( BW_BLOB_CONFIG )
@@ -351,8 +351,9 @@ int ResMgr_token = true;
 /**
  *	This init time job adds the root attribute to the ResMgr module
  */
-PY_MODULE_ATTRIBUTE( ResMgr, root,
-	new PyDataSection( BWResource::instance().rootSection() ) );
+PY_MODULE_ATTRIBUTE(ResMgr,
+                    root,
+                    new PyDataSection(BWResource::instance().rootSection()));
 
 BW_END_NAMESPACE
 

@@ -11,49 +11,48 @@
 #define BW_CONFIG_PREFIX "baseApp/"
 #include "server/server_app_option_macros.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
 // Section: General settings
 // -----------------------------------------------------------------------------
 
-BW_OPTION( float, createBaseElsewhereThreshold, 0.f );
+BW_OPTION(float, createBaseElsewhereThreshold, 0.f);
 
-BW_OPTION( float, backupPeriod, 10.f );
-DERIVED_BW_OPTION( int, backupPeriodInTicks );
-BW_OPTION( int, backupSizeWarningLevel, 102400 );
-BW_OPTION( bool, shouldLogBackups, false );
+BW_OPTION(float, backupPeriod, 10.f);
+DERIVED_BW_OPTION(int, backupPeriodInTicks);
+BW_OPTION(int, backupSizeWarningLevel, 102400);
+BW_OPTION(bool, shouldLogBackups, false);
 
-BW_OPTION( float, archivePeriod, 100.f );
-DERIVED_BW_OPTION( int, archivePeriodInTicks );
-BW_OPTION( float, archiveEmergencyThreshold, 0.25f );
+BW_OPTION(float, archivePeriod, 100.f);
+DERIVED_BW_OPTION(int, archivePeriodInTicks);
+BW_OPTION(float, archiveEmergencyThreshold, 0.25f);
 
-BW_OPTION_RO( bool, sendAuthToClient, false );
+BW_OPTION_RO(bool, sendAuthToClient, false);
 
-BW_OPTION_RO( bool, shouldShutDownIfPortUsed, true );
+BW_OPTION_RO(bool, shouldShutDownIfPortUsed, true);
 
-BW_OPTION( float, inactivityTimeout, 30.f );
-BW_OPTION( int, clientOverflowLimit, 1000 );
+BW_OPTION(float, inactivityTimeout, 30.f);
+BW_OPTION(int, clientOverflowLimit, 1000);
 
-BW_OPTION_RO_AT( int, bitsPerSecondToClient, 20000, "" );
-DERIVED_BW_OPTION( int, bytesPerPacketToClient );
+BW_OPTION_RO_AT(int, bitsPerSecondToClient, 20000, "");
+DERIVED_BW_OPTION(int, bytesPerPacketToClient);
 
-BW_OPTION( bool, backUpUndefinedProperties, false );
-BW_OPTION( bool, shouldResolveMailBoxes, false );
-BW_OPTION( bool, warnOnNoDef, true );
+BW_OPTION(bool, backUpUndefinedProperties, false);
+BW_OPTION(bool, shouldResolveMailBoxes, false);
+BW_OPTION(bool, warnOnNoDef, true);
 
-BW_OPTION( float, loadSmoothingBias, 0.01f );
+BW_OPTION(float, loadSmoothingBias, 0.01f);
 
-BW_OPTION_RO( float, reservedTickFraction, 0.05f );
-DERIVED_BW_OPTION( uint64, reservedTickTime );
+BW_OPTION_RO(float, reservedTickFraction, 0.05f);
+DERIVED_BW_OPTION(uint64, reservedTickTime);
 
-BW_OPTION_RO( bool, verboseExternalInterface, false );
-BW_OPTION_RO( float, maxExternalSocketProcessingTime, -1.f );
+BW_OPTION_RO(bool, verboseExternalInterface, false);
+BW_OPTION_RO(float, maxExternalSocketProcessingTime, -1.f);
 
-BW_OPTION_RO( float, sendWindowCallbackThreshold, 0.5f );
+BW_OPTION_RO(float, sendWindowCallbackThreshold, 0.5f);
 
-BW_OPTION( bool, shouldDelayLookUpSend, false );
+BW_OPTION(bool, shouldDelayLookUpSend, false);
 
 // -----------------------------------------------------------------------------
 // Section: Custom initialisation
@@ -65,37 +64,33 @@ BW_OPTION( bool, shouldDelayLookUpSend, false );
  */
 bool BaseAppConfig::postInit()
 {
-	if (!EntityAppConfig::postInit() ||
-			!ExternalAppConfig::postInit() ||
-			!RateLimitConfig::postInit() ||
-			!DownloadStreamerConfig::postInit())
-	{
-		return false;
-	}
+    if (!EntityAppConfig::postInit() || !ExternalAppConfig::postInit() ||
+        !RateLimitConfig::postInit() || !DownloadStreamerConfig::postInit()) {
+        return false;
+    }
 
-	bool result = true;
+    bool result = true;
 
-	BWConfig::update( "baseApp/externalLatencyMin", externalLatencyMin.getRef() );
-	BWConfig::update( "baseApp/externalLatencyMax", externalLatencyMax.getRef() );
-	BWConfig::update( "baseApp/externalLossRatio", externalLossRatio.getRef() );
+    BWConfig::update("baseApp/externalLatencyMin", externalLatencyMin.getRef());
+    BWConfig::update("baseApp/externalLatencyMax", externalLatencyMax.getRef());
+    BWConfig::update("baseApp/externalLossRatio", externalLossRatio.getRef());
 
-	BWConfig::update( "baseApp/externalInterface", externalInterface.getRef() );
+    BWConfig::update("baseApp/externalInterface", externalInterface.getRef());
 
-	backupPeriodInTicks.set( secondsToTicks( backupPeriod(), 0 ) );
-	archivePeriodInTicks.set( secondsToTicks( archivePeriod(), 0 ) );
+    backupPeriodInTicks.set(secondsToTicks(backupPeriod(), 0));
+    archivePeriodInTicks.set(secondsToTicks(archivePeriod(), 0));
 
-	bytesPerPacketToClient.set(
-			ServerUtil::bpsToPacketSize( bitsPerSecondToClient(), updateHertz() ) );
+    bytesPerPacketToClient.set(
+      ServerUtil::bpsToPacketSize(bitsPerSecondToClient(), updateHertz()));
 
-	reservedTickTime.set( 
-		uint64( reservedTickFraction()/updateHertz()/stampsPerSecondD() ) );
+    reservedTickTime.set(
+      uint64(reservedTickFraction() / updateHertz() / stampsPerSecondD()));
 
-	if (maxExternalSocketProcessingTime() < 0.f)
-	{
-		maxExternalSocketProcessingTime.set( expectedTickPeriod() );
-	}
+    if (maxExternalSocketProcessingTime() < 0.f) {
+        maxExternalSocketProcessingTime.set(expectedTickPeriod());
+    }
 
-	return result;
+    return result;
 }
 
 BW_END_NAMESPACE

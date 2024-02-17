@@ -5,82 +5,71 @@
 
 #include "cstdmf/bw_set.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
  *	Constructor.
  */
-BackupHashChain::BackupHashChain():
-		history_()
+BackupHashChain::BackupHashChain()
+  : history_()
 {
 }
-
 
 /**
- *	Destructor. 
+ *	Destructor.
  */
-BackupHashChain::~BackupHashChain()
-{
-}
-
+BackupHashChain::~BackupHashChain() {}
 
 /**
  *	Add an app failure to this hash chain.
  */
-void BackupHashChain::adjustForDeadBaseApp( const Mercury::Address & deadApp, 
-											const BackupHash & hash )
+void BackupHashChain::adjustForDeadBaseApp(const Mercury::Address& deadApp,
+                                           const BackupHash&       hash)
 {
-	history_.insert( std::make_pair( deadApp, hash ) );
+    history_.insert(std::make_pair(deadApp, hash));
 }
-
 
 /**
  *	Resolve an address for a potentially dead app address through this hash
  *	chain.
  */
-Mercury::Address 
-BackupHashChain::addressFor( const Mercury::Address & address,
-							 EntityID entityID ) const
+Mercury::Address BackupHashChain::addressFor(const Mercury::Address& address,
+                                             EntityID entityID) const
 {
-	// Quickly look up the address to see if it needs redirection
-	History::const_iterator firstMatch = history_.find( address );
-	// If we don't know about any crash at that address, it's valid.
-	if (firstMatch == history_.end())
-	{
-		return address;
-	}
+    // Quickly look up the address to see if it needs redirection
+    History::const_iterator firstMatch = history_.find(address);
+    // If we don't know about any crash at that address, it's valid.
+    if (firstMatch == history_.end()) {
+        return address;
+    }
 
-	// Leave a trail to prevent infinite recursion
-	BW::set< Mercury::Address > visited;
+    // Leave a trail to prevent infinite recursion
+    BW::set<Mercury::Address> visited;
 
-	// Keep the first match around for the failure case.
-	History::const_iterator match = firstMatch;
-	Mercury::Address position = address;
+    // Keep the first match around for the failure case.
+    History::const_iterator match    = firstMatch;
+    Mercury::Address        position = address;
 
-	// Iteration is easier to track loops than recursion, also could be
-	// implemented by passing visited up the call chain.
-	while (match != history_.end())
-	{
-		if (visited.count( position ))
-		{
-			WARNING_MSG( "BackupHashChain::addressFor( %s, %u ): "
-						 "Infinite loop\n",
-						 address.c_str(), entityID );
-			return address;
-		}
-		visited.insert( position );
+    // Iteration is easier to track loops than recursion, also could be
+    // implemented by passing visited up the call chain.
+    while (match != history_.end()) {
+        if (visited.count(position)) {
+            WARNING_MSG("BackupHashChain::addressFor( %s, %u ): "
+                        "Infinite loop\n",
+                        address.c_str(),
+                        entityID);
+            return address;
+        }
+        visited.insert(position);
 
-		// Do the same thing again to find out where it would have gone.
-		position = match->second.addressFor( entityID );
-		match = history_.find( position );
+        // Do the same thing again to find out where it would have gone.
+        position = match->second.addressFor(entityID);
+        match    = history_.find(position);
+    }
 
-	}
-
-	// We've encountered a live app, hurrah! 
-	return position;
+    // We've encountered a live app, hurrah!
+    return position;
 }
-
 
 /**
  *	Streaming operator for BackupHashChain.
@@ -90,22 +79,19 @@ BackupHashChain::addressFor( const Mercury::Address & address,
  *
  *	@return 			The reference to the output binary stream.
  */
-BinaryOStream & operator<<( BinaryOStream & os,
-		const BackupHashChain & hashChain )
+BinaryOStream& operator<<(BinaryOStream& os, const BackupHashChain& hashChain)
 {
-	os << uint16( hashChain.history_.size() );
-	typedef BackupHashChain::History History;
-	History::const_iterator iHash = hashChain.history_.begin();
+    os << uint16(hashChain.history_.size());
+    typedef BackupHashChain::History History;
+    History::const_iterator          iHash = hashChain.history_.begin();
 
-	while (iHash != hashChain.history_.end())
-	{
-		os << iHash->first << iHash->second;
-		++iHash;
-	}
+    while (iHash != hashChain.history_.end()) {
+        os << iHash->first << iHash->second;
+        ++iHash;
+    }
 
-	return os;
+    return os;
 }
-
 
 /**
  *	De-streaming operator for BackupHashChain.
@@ -115,28 +101,25 @@ BinaryOStream & operator<<( BinaryOStream & os,
  *
  *	@return 			The reference to the input binary stream.
  */
-BinaryIStream & operator>>( BinaryIStream & is, 
-		BackupHashChain & hashChain )
+BinaryIStream& operator>>(BinaryIStream& is, BackupHashChain& hashChain)
 {
-	hashChain.history_.clear();
+    hashChain.history_.clear();
 
-	uint16 numHashChainEntries;
-	is >> numHashChainEntries;
+    uint16 numHashChainEntries;
+    is >> numHashChainEntries;
 
-	while (numHashChainEntries--)
-	{
-		Mercury::Address addr;
-		BackupHash hash;
+    while (numHashChainEntries--) {
+        Mercury::Address addr;
+        BackupHash       hash;
 
-		is >> addr >> hash;
+        is >> addr >> hash;
 
-		hashChain.history_.insert( std::make_pair( addr, hash ) );
-	}
+        hashChain.history_.insert(std::make_pair(addr, hash));
+    }
 
-	return is;
+    return is;
 }
 
 BW_END_NAMESPACE
 
 // backup_hash_chain.cpp
-

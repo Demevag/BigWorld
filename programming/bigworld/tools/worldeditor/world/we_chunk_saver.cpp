@@ -6,15 +6,14 @@
 
 BW_BEGIN_NAMESPACE
 
-bool WEChunkSaver::save( Chunk* chunk )
+bool WEChunkSaver::save(Chunk* chunk)
 {
-	BW_GUARD;
-	return EditorChunkCache::instance( *chunk ).edSave();
+    BW_GUARD;
+    return EditorChunkCache::instance(*chunk).edSave();
 }
-bool WEChunkSaver::isDeleted( Chunk& chunk ) const
+bool WEChunkSaver::isDeleted(Chunk& chunk) const
 {
-	BW_GUARD;
-	return EditorChunkCache::instance( chunk ).edIsDeleted();
+    BW_GUARD;
+    return EditorChunkCache::instance(chunk).edIsDeleted();
 }
 BW_END_NAMESPACE
-

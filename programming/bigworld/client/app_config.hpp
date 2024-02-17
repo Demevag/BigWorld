@@ -1,10 +1,8 @@
 #ifndef APP_CONFIG_HPP
 #define APP_CONFIG_HPP
 
-
 #include "resmgr/datasection.hpp"
 #include "resmgr/dataresource.hpp"
-
 
 BW_BEGIN_NAMESPACE
 
@@ -14,23 +12,22 @@ BW_BEGIN_NAMESPACE
  */
 class AppConfig
 {
-public:
-	AppConfig();
-	~AppConfig();
+  public:
+    AppConfig();
+    ~AppConfig();
 
-	bool init( DataSectionPtr configSection );
+    bool init(DataSectionPtr configSection);
 
-	DataSectionPtr pRoot() const			{ return pRoot_; }
+    DataSectionPtr pRoot() const { return pRoot_; }
 
-	static AppConfig & instance();
+    static AppConfig& instance();
 
-private:
-	AppConfig( const AppConfig& );
-	AppConfig& operator=( const AppConfig& );
+  private:
+    AppConfig(const AppConfig&);
+    AppConfig& operator=(const AppConfig&);
 
-	DataSectionPtr	pRoot_;
+    DataSectionPtr pRoot_;
 };
-
 
 #ifdef CODE_INLINE
 #include "app_config.ipp"

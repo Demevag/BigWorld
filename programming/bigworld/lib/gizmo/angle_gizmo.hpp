@@ -8,8 +8,7 @@
 BW_BEGIN_NAMESPACE
 
 typedef SmartPointer<class MatrixProxy> MatrixProxyPtr;
-typedef SmartPointer<class FloatProxy> FloatProxyPtr;
-
+typedef SmartPointer<class FloatProxy>  FloatProxyPtr;
 
 class AngleShapePart;
 
@@ -25,36 +24,38 @@ class AngleShapePart;
  */
 class AngleGizmo : public Gizmo
 {
-public:
-	AngleGizmo( MatrixProxyPtr pMatrix,
-		FloatProxyPtr pAngle,
-		int enablerModifier = MODIFIER_ALT );
-	~AngleGizmo();
+  public:
+    AngleGizmo(MatrixProxyPtr pMatrix,
+               FloatProxyPtr  pAngle,
+               int            enablerModifier = MODIFIER_ALT);
+    ~AngleGizmo();
 
-	void drawZBufferedStuff( bool force );
-	bool draw( Moo::DrawContext& drawContext, bool force );
-	bool intersects( const Vector3& origin, const Vector3& direction,
-														float& t, bool force );
-	void click( const Vector3& origin, const Vector3& direction );
-	void rollOver( const Vector3& origin, const Vector3& direction );
+    void drawZBufferedStuff(bool force);
+    bool draw(Moo::DrawContext& drawContext, bool force);
+    bool intersects(const Vector3& origin,
+                    const Vector3& direction,
+                    float&         t,
+                    bool           force);
+    void click(const Vector3& origin, const Vector3& direction);
+    void rollOver(const Vector3& origin, const Vector3& direction);
 
-protected:
-	Matrix	objectTransform() const;
-	Matrix	gizmoTransform() const;
+  protected:
+    Matrix objectTransform() const;
+    Matrix gizmoTransform() const;
 
-	void init();
+    void init();
 
-	bool					active_;
-	bool					inited_;
-	SolidShapeMesh			mesh_;
-	class AngleShapePart*	currentPart_;
-	MatrixProxyPtr			pMatrix_;
-	FloatProxyPtr			pAngle_;
-	Moo::Colour				lightColour_;
-	int						enablerModifier_;
+    bool                  active_;
+    bool                  inited_;
+    SolidShapeMesh        mesh_;
+    class AngleShapePart* currentPart_;
+    MatrixProxyPtr        pMatrix_;
+    FloatProxyPtr         pAngle_;
+    Moo::Colour           lightColour_;
+    int                   enablerModifier_;
 
-	AngleGizmo( const AngleGizmo& );
-	AngleGizmo& operator=( const AngleGizmo& );
+    AngleGizmo(const AngleGizmo&);
+    AngleGizmo& operator=(const AngleGizmo&);
 };
 
 BW_END_NAMESPACE

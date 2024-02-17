@@ -10,35 +10,37 @@ class StringPropertyItem;
 
 class GenLinkView : public BaseView
 {
-public:
-	GenLinkView( LinkProperty & property );
-	StringPropertyItem* item();
-	
-	virtual void elect();
+  public:
+    GenLinkView(LinkProperty& property);
+    StringPropertyItem* item();
 
-	virtual void onSelect();
+    virtual void elect();
 
-	virtual void onChange(bool transient, bool addBarrier = true) {}
-	virtual void cloneValue( BaseView* another ) {}
+    virtual void onSelect();
 
-	virtual bool updateGUI();
+    virtual void onChange(bool transient, bool addBarrier = true) {}
+    virtual void cloneValue(BaseView* another) {}
 
-	static LinkProperty::View * create(LinkProperty & property );
+    virtual bool updateGUI();
 
-	virtual PropertyManagerPtr getPropertyManager() const;
+    static LinkProperty::View* create(LinkProperty& property);
 
-private:
-	LinkProperty & property_;
-	CString oldValue_;
-	class Enroller {
-		Enroller() {
-			BW_GUARD;
+    virtual PropertyManagerPtr getPropertyManager() const;
 
-			LinkProperty_registerViewFactory(
-				GeneralProperty::nextViewKindID(), &create );
-		}
-		static Enroller s_instance;
-	};
+  private:
+    LinkProperty& property_;
+    CString       oldValue_;
+    class Enroller
+    {
+        Enroller()
+        {
+            BW_GUARD;
+
+            LinkProperty_registerViewFactory(GeneralProperty::nextViewKindID(),
+                                             &create);
+        }
+        static Enroller s_instance;
+    };
 };
 
 BW_END_NAMESPACE

@@ -6,70 +6,64 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace controls
-{
+namespace controls {
     /**
      *  A RowSizer keeps track of a bunch of sizers in either the
      *  vertical or horizontal orientation.
      */
     class RowSizer : public Sizer
     {
-    public:
+      public:
         enum Orientation
         {
-            VERTICAL,           // vertically orientated
-            HORIZONTAL          // horizontally orientated
+            VERTICAL,  // vertically orientated
+            HORIZONTAL // horizontally orientated
         };
 
         enum SizeUnits
         {
-            PIXELS,             // size is pixels
-            WEIGHT              // size is a weight
+            PIXELS, // size is pixels
+            WEIGHT  // size is a weight
         };
 
         explicit RowSizer(Orientation orientation);
-		RowSizer(Orientation orientation, CWnd *container);
-		RowSizer(Orientation orientation, CWnd *parent, uint32 containerID);
+        RowSizer(Orientation orientation, CWnd* container);
+        RowSizer(Orientation orientation, CWnd* parent, uint32 containerID);
         /*virtual*/ ~RowSizer();
 
         Orientation orientation() const;
-        void orientation(Orientation orientation);
+        void        orientation(Orientation orientation);
 
-        void addChild
-        (
-            SizerPtr            child,
-            uint32				size,
-            SizeUnits           sizeUnits
-        );
-		void addChild(SizerPtr child);
+        void addChild(SizerPtr child, uint32 size, SizeUnits sizeUnits);
+        void addChild(SizerPtr child);
 
         uint32 edgeGap() const;
-        void edgeGap(uint32 gap);
+        void   edgeGap(uint32 gap);
 
         uint32 childGap() const;
-        void childGap(uint32 g);
+        void   childGap(uint32 g);
 
-        /*virtual*/ void onSize(CRect const &extents);
+        /*virtual*/ void  onSize(CRect const& extents);
         /*virtual*/ CSize minimumSize() const;
-        /*virtual*/ void draw(CDC *dc);
+        /*virtual*/ void  draw(CDC* dc);
 
-    protected:
-        CWnd *window();
+      protected:
+        CWnd* window();
 
-    private:
+      private:
         struct Child
         {
-            SizerPtr            sizer_;
-            uint32				size_;
-            SizeUnits           sizeUnits_;
+            SizerPtr  sizer_;
+            uint32    size_;
+            SizeUnits sizeUnits_;
         };
 
-        CWnd                	*wnd_;
-        uint32        			id_;
-        Orientation             orientation_;
-        uint32					edgeGap_;
-        uint32					childGap_;
-        BW::vector<Child>      children_;
+        CWnd*             wnd_;
+        uint32            id_;
+        Orientation       orientation_;
+        uint32            edgeGap_;
+        uint32            childGap_;
+        BW::vector<Child> children_;
     };
 }
 

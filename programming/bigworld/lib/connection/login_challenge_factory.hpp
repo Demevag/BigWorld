@@ -6,20 +6,17 @@
 #include "cstdmf/bw_safe_allocatable.hpp"
 #include "cstdmf/smartpointer.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
-
 class LoginChallenge;
-typedef SmartPointer< LoginChallenge > LoginChallengePtr;
+typedef SmartPointer<LoginChallenge> LoginChallengePtr;
 class LoginChallengeConfig;
-typedef SmartPointer< LoginChallengeConfig > LoginChallengeConfigPtr;
+typedef SmartPointer<LoginChallengeConfig> LoginChallengeConfigPtr;
 class LoginChallengeFactory;
-typedef SmartPointer< LoginChallengeFactory > LoginChallengeFactoryPtr;
+typedef SmartPointer<LoginChallengeFactory> LoginChallengeFactoryPtr;
 
 class Watcher;
-typedef SmartPointer< Watcher > WatcherPtr;
-
+typedef SmartPointer<Watcher> WatcherPtr;
 
 /**
  *	This class is used to configure the LoginChallengeFactory instances on the
@@ -31,34 +28,32 @@ typedef SmartPointer< Watcher > WatcherPtr;
  */
 class LoginChallengeConfig : public SafeReferenceCount
 {
-public:
-	virtual LoginChallengeConfigPtr getChild(
-		const BW::string & childName ) const = 0;
+  public:
+    virtual LoginChallengeConfigPtr getChild(
+      const BW::string& childName) const = 0;
 
-	virtual const BW::string getString( const BW::string & path,
-		BW::string defaultValue = BW::string() ) const = 0;
+    virtual const BW::string getString(
+      const BW::string& path,
+      BW::string        defaultValue = BW::string()) const = 0;
 
-	virtual long getLong( const BW::string & path,
-		long defaultValue = 0 ) const = 0;
+    virtual long getLong(const BW::string& path,
+                         long              defaultValue = 0) const = 0;
 
-	virtual double getDouble( const BW::string & path,
-		double defaultValue = 0.0 ) const = 0;
+    virtual double getDouble(const BW::string& path,
+                             double            defaultValue = 0.0) const = 0;
 
-protected:
+  protected:
+    /**
+     *	Constructor.
+     */
+    LoginChallengeConfig()
+      : SafeReferenceCount()
+    {
+    }
 
-	/**
-	 *	Constructor.
-	 */
-	LoginChallengeConfig() :
-			SafeReferenceCount()
-	{}
-
-
-	/** Destructor.*/
-	virtual ~LoginChallengeConfig()
-	{}
+    /** Destructor.*/
+    virtual ~LoginChallengeConfig() {}
 };
-
 
 /**
  *	This class is the base class for LoginChallenge factory instances.
@@ -69,53 +64,39 @@ protected:
  */
 class LoginChallengeFactory : public SafeReferenceCount
 {
-public:
+  public:
+    /** Destructor. */
+    virtual ~LoginChallengeFactory() {}
 
-	/** Destructor. */
-	virtual ~LoginChallengeFactory()
-	{}
+    /**
+     *	This method creates a new login challenge.
+     */
+    virtual LoginChallengePtr create() = 0;
 
-
-	/**
-	 *	This method creates a new login challenge.
-	 */
-	virtual LoginChallengePtr create() = 0;
-
-
-	/**
-	 *	This method is used to configure this object using a configuration
-	 *	object.
-	 */
-	virtual bool configure( const LoginChallengeConfig & config )
-	{
-		return true;
-	}
-
+    /**
+     *	This method is used to configure this object using a configuration
+     *	object.
+     */
+    virtual bool configure(const LoginChallengeConfig& config) { return true; }
 
 #if ENABLE_WATCHERS
-	/**
-	 *	This method creates a directory watcher for this factory. The watcher
-	 *	is only valid for the duration of the lifetime of this factory
-	 *	instance.
-	 */
-	virtual WatcherPtr pWatcher() 
-	{
-		return WatcherPtr( NULL );
-	}
+    /**
+     *	This method creates a directory watcher for this factory. The watcher
+     *	is only valid for the duration of the lifetime of this factory
+     *	instance.
+     */
+    virtual WatcherPtr pWatcher() { return WatcherPtr(NULL); }
 #endif // ENABLE_WATCHERS
 
-
-protected:
-
-
-	/**
-	 *	Constructor.
-	 */
-	LoginChallengeFactory() :
-		SafeReferenceCount()
-	{}
+  protected:
+    /**
+     *	Constructor.
+     */
+    LoginChallengeFactory()
+      : SafeReferenceCount()
+    {
+    }
 };
-
 
 /**
  *	This class initialises all available LoginChallengeFactory instances on
@@ -123,32 +104,29 @@ protected:
  */
 class LoginChallengeFactories : public SafeAllocatable
 {
-public:
-	BWENTITY_API LoginChallengeFactories();
-	BWENTITY_API ~LoginChallengeFactories();
+  public:
+    BWENTITY_API LoginChallengeFactories();
+    BWENTITY_API ~LoginChallengeFactories();
 
-	void registerDefaultFactories();
+    void registerDefaultFactories();
 
-	void registerFactory( const BW::string & name,
-		LoginChallengeFactory * pFactory );
-	void deregisterFactory( const BW::string & name );
+    void registerFactory(const BW::string&      name,
+                         LoginChallengeFactory* pFactory);
+    void deregisterFactory(const BW::string& name);
 
-	LoginChallengePtr createChallenge( const BW::string & name );
-	LoginChallengeFactoryPtr getFactory( const BW::string & name );
-	bool configureFactories( const LoginChallengeConfig & config );
+    LoginChallengePtr        createChallenge(const BW::string& name);
+    LoginChallengeFactoryPtr getFactory(const BW::string& name);
+    bool configureFactories(const LoginChallengeConfig& config);
 
 #if ENABLE_WATCHERS
-	void addWatchers( WatcherPtr pWatcherRoot );
+    void addWatchers(WatcherPtr pWatcherRoot);
 #endif // ENABLE_WATCHERS
 
-private:
-
-	typedef BW::map< BW::string, LoginChallengeFactoryPtr > FactoryMap;
-	FactoryMap map_;
+  private:
+    typedef BW::map<BW::string, LoginChallengeFactoryPtr> FactoryMap;
+    FactoryMap                                            map_;
 };
 
-
 BW_END_NAMESPACE
-
 
 #endif // LOGIN_CHALLENGE_FACTORY_HPP

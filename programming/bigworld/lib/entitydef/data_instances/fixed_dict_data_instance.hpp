@@ -16,81 +16,80 @@ BW_BEGIN_NAMESPACE
  */
 class PyFixedDictDataInstance : public IntermediatePropertyOwner
 {
-	Py_Header( PyFixedDictDataInstance, PropertyOwner );
+    Py_Header(PyFixedDictDataInstance, PropertyOwner);
 
-public:
-	PyFixedDictDataInstance( FixedDictDataType* pDataType );
-	PyFixedDictDataInstance( FixedDictDataType* pDataType,
-		const PyFixedDictDataInstance& other );
-	~PyFixedDictDataInstance();
+  public:
+    PyFixedDictDataInstance(FixedDictDataType* pDataType);
+    PyFixedDictDataInstance(FixedDictDataType*             pDataType,
+                            const PyFixedDictDataInstance& other);
+    ~PyFixedDictDataInstance();
 
-	void initFieldValue( int index, ScriptObject val );
+    void initFieldValue(int index, ScriptObject val);
 
-	ScriptObject getFieldValue( int index )	{ return fieldValues_[index]; }
+    ScriptObject getFieldValue(int index) { return fieldValues_[index]; }
 
-	const FixedDictDataType& dataType() const		{ return *pDataType_; }
-	void setDataType( FixedDictDataType* pDataType ){ pDataType_ = pDataType; }
+    const FixedDictDataType& dataType() const { return *pDataType_; }
+    void setDataType(FixedDictDataType* pDataType) { pDataType_ = pDataType; }
 
-	static bool isSameType( ScriptObject pValue,
-			const FixedDictDataType& dataType );
+    static bool isSameType(ScriptObject             pValue,
+                           const FixedDictDataType& dataType);
 
-	// PropertyOwner overrides
-	virtual int getNumOwnedProperties() const;
-	virtual PropertyOwnerBase * getChildPropertyOwner( int ref ) const;
-	virtual ScriptObject setOwnedProperty( int ref, BinaryIStream & data );
-	virtual ScriptObject getPyIndex( int index ) const;
+    // PropertyOwner overrides
+    virtual int                getNumOwnedProperties() const;
+    virtual PropertyOwnerBase* getChildPropertyOwner(int ref) const;
+    virtual ScriptObject       setOwnedProperty(int ref, BinaryIStream& data);
+    virtual ScriptObject       getPyIndex(int index) const;
 
-	// PyObjectPlus framework
-	ScriptObject pyGetAttribute( const ScriptString & attrObj );
-	bool pySetAttribute( const ScriptString & attrObj,
-		const ScriptObject & value );
+    // PyObjectPlus framework
+    ScriptObject pyGetAttribute(const ScriptString& attrObj);
+    bool pySetAttribute(const ScriptString& attrObj, const ScriptObject& value);
 
-	PY_PICKLING_METHOD_DECLARE( FixedDict )
-	static PyObject * PickleResolve( ScriptObject list );
-	PY_AUTO_UNPICKLING_FACTORY_DECLARE( ARG( ScriptObject, END ), FixedDict )
+    PY_PICKLING_METHOD_DECLARE(FixedDict)
+    static PyObject* PickleResolve(ScriptObject list);
+    PY_AUTO_UNPICKLING_FACTORY_DECLARE(ARG(ScriptObject, END), FixedDict)
 
-	// Python Mapping interface functions
-	PY_METHOD_DECLARE( py_has_key )
-	PY_METHOD_DECLARE( py_keys )
-	PY_METHOD_DECLARE( py_values )
-	PY_METHOD_DECLARE( py_items )
+    // Python Mapping interface functions
+    PY_METHOD_DECLARE(py_has_key)
+    PY_METHOD_DECLARE(py_keys)
+    PY_METHOD_DECLARE(py_values)
+    PY_METHOD_DECLARE(py_items)
 
-	static Py_ssize_t pyGetLength( PyObject* self );
-	static PyObject* pyGetFieldByKey( PyObject* self, PyObject* key );
-	static int pySetFieldByKey( PyObject* self, PyObject* key, PyObject* value );
+    static Py_ssize_t pyGetLength(PyObject* self);
+    static PyObject*  pyGetFieldByKey(PyObject* self, PyObject* key);
+    static int pySetFieldByKey(PyObject* self, PyObject* key, PyObject* value);
 
-	PyObject * pyRepr();
+    PyObject* pyRepr();
 
-	PY_METHOD_DECLARE( py_getFieldNameForIndex )
+    PY_METHOD_DECLARE(py_getFieldNameForIndex)
 
-	size_t getNumFields() const	{ return fieldValues_.size(); }
+    size_t getNumFields() const { return fieldValues_.size(); }
 
-	PyObject* getFieldByKey( PyObject * key );
-	PyObject* getFieldByKey( const char * keyString );
+    PyObject* getFieldByKey(PyObject* key);
+    PyObject* getFieldByKey(const char* keyString);
 
-	int setFieldByKey( PyObject * key, PyObject * value );
-	int setFieldByKey( const char * key, PyObject * value );
+    int setFieldByKey(PyObject* key, PyObject* value);
+    int setFieldByKey(const char* key, PyObject* value);
 
-	static int pyCompare( PyObject * a, PyObject * b );
+    static int pyCompare(PyObject* a, PyObject* b);
 
-private:
-	static int pyCompareKeys( PyFixedDictDataInstance * pFixedDictA, 
-		PyFixedDictDataInstance * pFixedDictB );
+  private:
+    static int pyCompareKeys(PyFixedDictDataInstance* pFixedDictA,
+                             PyFixedDictDataInstance* pFixedDictB);
 
-	static bool pyCompareValuesWithEqualKeys( 
-		PyFixedDictDataInstance * pFixedDictA, 
-		PyFixedDictDataInstance * pFixedDictB,
-		int & compareResult );
+    static bool pyCompareValuesWithEqualKeys(
+      PyFixedDictDataInstance* pFixedDictA,
+      PyFixedDictDataInstance* pFixedDictB,
+      int&                     compareResult);
 
-	bool isSmart() const	{ return true; }
+    bool isSmart() const { return true; }
 
-	SmartPointer<FixedDictDataType>	pDataType_;
+    SmartPointer<FixedDictDataType> pDataType_;
 
-	typedef	BW::vector<ScriptObject> FieldValues;
-	FieldValues					fieldValues_;
+    typedef BW::vector<ScriptObject> FieldValues;
+    FieldValues                      fieldValues_;
 };
 
-typedef ScriptObjectPtr< PyFixedDictDataInstance > PyFixedDictDataInstancePtr;
+typedef ScriptObjectPtr<PyFixedDictDataInstance> PyFixedDictDataInstancePtr;
 
 BW_END_NAMESPACE
 

@@ -1,4 +1,4 @@
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 #pragma once
 #endif
 
@@ -9,7 +9,6 @@
 #include "moo/forward_declarations.hpp"
 #include "moo/visual.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -17,34 +16,32 @@ BW_BEGIN_NAMESPACE
  */
 class Matter
 {
-public:
-	typedef BW::vector<TintPtr>	Tints;
-	typedef BW::vector< Moo::Visual::PrimitiveGroup * >	PrimitiveGroups;
+  public:
+    typedef BW::vector<TintPtr>                      Tints;
+    typedef BW::vector<Moo::Visual::PrimitiveGroup*> PrimitiveGroups;
 
-public:
-	Matter(	const BW::string & name,
-			const BW::string & replaces );
-	Matter( const BW::string & name,
-			const BW::string & replaces,
-			const Tints & tints );
-	Matter( const Matter & other );
-	~Matter();
+  public:
+    Matter(const BW::string& name, const BW::string& replaces);
+    Matter(const BW::string& name,
+           const BW::string& replaces,
+           const Tints&      tints);
+    Matter(const Matter& other);
+    ~Matter();
 
-	Matter & operator= ( const Matter & other );
+    Matter& operator=(const Matter& other);
 
-	void emulsify( int tint = 0 );
-	void soak();
+    void emulsify(int tint = 0);
+    void soak();
 
+    BW::string name_;
+    BW::string replaces_;
 
-	BW::string				name_;
-	BW::string				replaces_;
+    Tints           tints_;
+    PrimitiveGroups primitiveGroups_;
 
-	Tints					tints_;
-	PrimitiveGroups			primitiveGroups_;
-
-private:
-	int		emulsion_;
-	int		emulsionCookie_;
+  private:
+    int emulsion_;
+    int emulsionCookie_;
 };
 
 BW_END_NAMESPACE

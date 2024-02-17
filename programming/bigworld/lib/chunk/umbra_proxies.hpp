@@ -5,15 +5,10 @@
 
 #if UMBRA_ENABLE
 
-namespace Umbra
-{
-	namespace OB 
-	{
-		class Model;
-		class Object;
-	}
-};
-
+namespace Umbra { namespace OB {
+    class Model;
+    class Object;
+}};
 
 BW_BEGIN_NAMESPACE
 
@@ -25,28 +20,28 @@ BW_BEGIN_NAMESPACE
  */
 class UmbraModelProxy : public SafeReferenceCount
 {
-public:
+  public:
+    void invalidate();
 
-	void invalidate();
+    Umbra::OB::Model* model() const { return pModel_; }
+    void              model(Umbra::OB::Model* pModel) { pModel_ = pModel; }
 
-	Umbra::OB::Model *	model() const { return pModel_; }
-	void				model(Umbra::OB::Model * pModel){ pModel_ = pModel; }
+    static UmbraModelProxy* getObbModel(const Matrix& obb);
+    static UmbraModelProxy* getObbModel(const Vector3* pVertices,
+                                        uint32         nVertices);
+    static UmbraModelProxy* getObbModel(const Vector3& min, const Vector3& max);
+    static void             invalidateAll();
 
-	static UmbraModelProxy* getObbModel( const Matrix& obb );
-	static UmbraModelProxy* getObbModel( const Vector3* pVertices, uint32 nVertices );
-	static UmbraModelProxy* getObbModel( const Vector3& min, const Vector3& max );
-	static void invalidateAll();
-private:
-	static UmbraModelProxy * get( Umbra::OB::Model* pModel );
-	static void tryDestroy( const UmbraModelProxy * pProxy );
-	virtual void destroy() const;
-	UmbraModelProxy();
-	~UmbraModelProxy();
-	Umbra::OB::Model * pModel_;
+  private:
+    static UmbraModelProxy* get(Umbra::OB::Model* pModel);
+    static void             tryDestroy(const UmbraModelProxy* pProxy);
+    virtual void            destroy() const;
+    UmbraModelProxy();
+    ~UmbraModelProxy();
+    Umbra::OB::Model* pModel_;
 
-	typedef BW::vector<UmbraModelProxy*> Proxies;
-	static Proxies proxies_;
-
+    typedef BW::vector<UmbraModelProxy*> Proxies;
+    static Proxies                       proxies_;
 };
 
 typedef SmartPointer<UmbraModelProxy> UmbraModelProxyPtr;
@@ -59,30 +54,32 @@ typedef SmartPointer<UmbraModelProxy> UmbraModelProxyPtr;
  */
 class UmbraObjectProxy : public SafeReferenceCount
 {
-public:
-	void invalidate();
-	void				pModelProxy( UmbraModelProxyPtr pModel );
-	UmbraModelProxyPtr	pModelProxy() const { return pModel_; }
-	Umbra::OB::Object*	object() const { return pObject_; }
-	void				object(Umbra::OB::Object* pObject){ pObject_ = pObject; }
+  public:
+    void               invalidate();
+    void               pModelProxy(UmbraModelProxyPtr pModel);
+    UmbraModelProxyPtr pModelProxy() const { return pModel_; }
+    Umbra::OB::Object* object() const { return pObject_; }
+    void object(Umbra::OB::Object* pObject) { pObject_ = pObject; }
 
-	static UmbraObjectProxy* get( UmbraModelProxyPtr pModel, const BW::string& identifier = "" );
-	static UmbraObjectProxy* getCopy( const BW::string& identifier );
-	static UmbraObjectProxy* get( Umbra::OB::Object* pObject );
+    static UmbraObjectProxy* get(UmbraModelProxyPtr pModel,
+                                 const BW::string&  identifier = "");
+    static UmbraObjectProxy* getCopy(const BW::string& identifier);
+    static UmbraObjectProxy* get(Umbra::OB::Object* pObject);
 
-	static void invalidateAll();
-private:
-	static void tryDestroy( const UmbraObjectProxy * pProxy );
-	virtual void destroy() const;
-	UmbraObjectProxy(UmbraModelProxyPtr pModel = NULL);
-	~UmbraObjectProxy();
-	Umbra::OB::Object* pObject_;
+    static void invalidateAll();
 
-	UmbraModelProxyPtr pModel_;
-	typedef BW::vector<UmbraObjectProxy*> Proxies;
-	static Proxies proxies_;
-	typedef BW::map<BW::string, UmbraObjectProxy*> NamedProxies;
-	static NamedProxies namedProxies_;
+  private:
+    static void  tryDestroy(const UmbraObjectProxy* pProxy);
+    virtual void destroy() const;
+    UmbraObjectProxy(UmbraModelProxyPtr pModel = NULL);
+    ~UmbraObjectProxy();
+    Umbra::OB::Object* pObject_;
+
+    UmbraModelProxyPtr                             pModel_;
+    typedef BW::vector<UmbraObjectProxy*>          Proxies;
+    static Proxies                                 proxies_;
+    typedef BW::map<BW::string, UmbraObjectProxy*> NamedProxies;
+    static NamedProxies                            namedProxies_;
 };
 
 typedef SmartPointer<UmbraObjectProxy> UmbraObjectProxyPtr;

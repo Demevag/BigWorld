@@ -3,7 +3,6 @@
 
 #include "network/channel_owner.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -11,22 +10,22 @@ BW_BEGIN_NAMESPACE
  */
 class CellAppChannel : public Mercury::ChannelOwner
 {
-public:
-	int mark() const				{ return mark_; }
-	void mark( int v )				{ mark_ = v; }
+  public:
+    int  mark() const { return mark_; }
+    void mark(int v) { mark_ = v; }
 
-	GameTime lastReceivedTime() const { return lastReceivedTime_; }
-	void lastReceivedTime( GameTime time ) { lastReceivedTime_ = time; }
+    GameTime lastReceivedTime() const { return lastReceivedTime_; }
+    void     lastReceivedTime(GameTime time) { lastReceivedTime_ = time; }
 
-	bool isGood() const 			{ return !this->channel().hasRemoteFailed(); }
+    bool isGood() const { return !this->channel().hasRemoteFailed(); }
 
-private:
-	explicit CellAppChannel( const Mercury::Address & addr );
+  private:
+    explicit CellAppChannel(const Mercury::Address& addr);
 
-	int		mark_;
-	GameTime lastReceivedTime_;
+    int      mark_;
+    GameTime lastReceivedTime_;
 
-	friend class CellAppChannels;
+    friend class CellAppChannels;
 };
 
 BW_END_NAMESPACE

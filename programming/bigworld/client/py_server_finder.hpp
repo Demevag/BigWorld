@@ -4,7 +4,6 @@
 #include "connection/server_finder.hpp"
 #include "script/script_object.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 // -----------------------------------------------------------------------------
@@ -17,16 +16,15 @@ BW_BEGIN_NAMESPACE
  */
 class FindServerDoneCaller : public ReferenceCount
 {
-public:
-	FindServerDoneCaller( ScriptObject pCallback );
-	~FindServerDoneCaller();
+  public:
+    FindServerDoneCaller(ScriptObject pCallback);
+    ~FindServerDoneCaller();
 
-private:
-	ScriptObject pCallback_;
+  private:
+    ScriptObject pCallback_;
 };
 
-typedef SmartPointer< FindServerDoneCaller > FindServerDoneCallerPtr;
-
+typedef SmartPointer<FindServerDoneCaller> FindServerDoneCallerPtr;
 
 // -----------------------------------------------------------------------------
 // Section: ProbeReplyHandler
@@ -34,22 +32,20 @@ typedef SmartPointer< FindServerDoneCaller > FindServerDoneCallerPtr;
 
 class PyServerProbeHandler : public ServerProbeHandler
 {
-public:
-	PyServerProbeHandler( ScriptObject pCallback,
-			const ServerInfo & serverInfo,
-			FindServerDoneCallerPtr pDoneCaller );
+  public:
+    PyServerProbeHandler(ScriptObject            pCallback,
+                         const ServerInfo&       serverInfo,
+                         FindServerDoneCallerPtr pDoneCaller);
 
-	virtual void onKeyValue( const BW::string & key,
-		const BW::string & value );
+    virtual void onKeyValue(const BW::string& key, const BW::string& value);
 
-	virtual void onSuccess();
+    virtual void onSuccess();
 
-private:
-	ScriptDict pDict_;
-	ScriptObject pCallback_;
-	FindServerDoneCallerPtr pDoneCaller_;
+  private:
+    ScriptDict              pDict_;
+    ScriptObject            pCallback_;
+    FindServerDoneCallerPtr pDoneCaller_;
 };
-
 
 // -----------------------------------------------------------------------------
 // Section: PyServerFinder
@@ -57,17 +53,18 @@ private:
 
 class PyServerFinder : public ServerFinder
 {
-public:
-	PyServerFinder( PyObjectPtr pFoundCallback,
-		PyObjectPtr pDetailsCallback, PyObjectPtr pDoneCallback );
+  public:
+    PyServerFinder(PyObjectPtr pFoundCallback,
+                   PyObjectPtr pDetailsCallback,
+                   PyObjectPtr pDoneCallback);
 
-protected:
-	virtual void onServerFound( const ServerInfo & serverInfo );
+  protected:
+    virtual void onServerFound(const ServerInfo& serverInfo);
 
-private:
-	ScriptObject pFoundCallback_;
-	ScriptObject pDetailsCallback_;
-	FindServerDoneCallerPtr pDoneCaller_;
+  private:
+    ScriptObject            pFoundCallback_;
+    ScriptObject            pDetailsCallback_;
+    FindServerDoneCallerPtr pDoneCaller_;
 };
 
 BW_END_NAMESPACE

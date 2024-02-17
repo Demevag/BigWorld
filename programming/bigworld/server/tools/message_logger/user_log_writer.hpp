@@ -8,11 +8,10 @@
 BW_BEGIN_NAMESPACE
 
 class UserLogWriter;
-typedef SmartPointer< UserLogWriter > UserLogWriterPtr;
-typedef BW::map< uint16, UserLogWriterPtr > UserLogs;
+typedef SmartPointer<UserLogWriter>       UserLogWriterPtr;
+typedef BW::map<uint16, UserLogWriterPtr> UserLogs;
 
 BW_END_NAMESPACE
-
 
 #include "user_log.hpp"
 #include "log_string_interpolator.hpp"
@@ -23,7 +22,6 @@ BW_END_NAMESPACE
 #include "cstdmf/bw_string.hpp"
 #include "cstdmf/bw_vector.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 class LogStorageMLDB;
@@ -32,34 +30,40 @@ class UserSegmentWriter;
 
 class UserLogWriter : public UserLog
 {
-public:
-	UserLogWriter( uint16 uid, const BW::string &username );
+  public:
+    UserLogWriter(uint16 uid, const BW::string& username);
 
-	bool init( const BW::string rootPath );
+    bool init(const BW::string rootPath);
 
-	LoggingComponent * findLoggingComponent( const Mercury::Address & addr );
-	LoggingComponent * findLoggingComponent(
-		const LoggerComponentMessage & msg, const Mercury::Address & addr,
-		LogComponentNamesMLDB & logComponents );
+    LoggingComponent* findLoggingComponent(const Mercury::Address& addr);
+    LoggingComponent* findLoggingComponent(
+      const LoggerComponentMessage& msg,
+      const Mercury::Address&       addr,
+      LogComponentNamesMLDB&        logComponents);
 
-	bool addEntry( LoggingComponent * component, LogEntry & entry,
-		LogStringInterpolator & handler, MemoryIStream & inputStream,
-		LogStorageMLDB * pLogStorage, MessageLogger::NetworkVersion version );
+    bool addEntry(LoggingComponent*             component,
+                  LogEntry&                     entry,
+                  LogStringInterpolator&        handler,
+                  MemoryIStream&                inputStream,
+                  LogStorageMLDB*               pLogStorage,
+                  MessageLogger::NetworkVersion version);
 
-	bool updateComponent( LoggingComponent *component );
-	bool removeUserComponent( const Mercury::Address &addr );
+    bool updateComponent(LoggingComponent* component);
+    bool removeUserComponent(const Mercury::Address& addr);
 
-	void rollActiveSegment();
+    void rollActiveSegment();
 
-	const char *logEntryToString( const LogEntry & entry,
-		LogCommonMLDB * pBWLog, const LoggingComponent * component,
-		LogStringInterpolator & handler, MemoryIStream & inputStream,
-		MessageLogger::NetworkVersion version ) const;
+    const char* logEntryToString(const LogEntry&               entry,
+                                 LogCommonMLDB*                pBWLog,
+                                 const LoggingComponent*       component,
+                                 LogStringInterpolator&        handler,
+                                 MemoryIStream&                inputStream,
+                                 MessageLogger::NetworkVersion version) const;
 
-	static bool validateUserComponents( const BW::string & rootPath );
+    static bool validateUserComponents(const BW::string& rootPath);
 
-private:
-	UserSegmentWriter * getLastSegment();
+  private:
+    UserSegmentWriter* getLastSegment();
 };
 
 BW_END_NAMESPACE

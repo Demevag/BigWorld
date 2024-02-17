@@ -45,7 +45,7 @@
  *
  *  QuadTreeMemPool and related changes:
  *		- The QuadTree was a source of many memory allocations, showing
- *			second in the list of top 32. This was because the nodes 
+ *			second in the list of top 32. This was because the nodes
  *			were being allocated using new and the vector of elements was
  *			growing from zero size, causing many allocations as it grew.
  *			These allocations were often scattered across address space
@@ -54,10 +54,10 @@
  *			up to 2ms just to add one new object in the tree.
  *		- To reduce the numbers of allocations a QuadTreeMemPool was
  *			introduced. Instead of pointers, nodes are
- *			now referenced by an index into this pool. 
+ *			now referenced by an index into this pool.
  *			By doing this we can generate
  *			a single memory block of nodes that grows by 50% each time
- *			the space is exhausted. This relies on the nodes and the 
+ *			the space is exhausted. This relies on the nodes and the
  *			elements to be plain old data (POD) so that the
  *			quad tree can realloc when it runs out of room.
  *			Unfortunately this has made the code harder to read.
@@ -71,7 +71,7 @@
  *			vector is empty and on the stack, so you are going to get
  *			a least two allocations associated with these, a
  *			reason I didn't continue to use them.
- *        
+ *
  *	TODO:	Need to implement deletion.
  */
 
@@ -88,9 +88,12 @@
 
 BW_BEGIN_NAMESPACE
 
-template <class MEMBER_TYPE> class QTTraversal;
-template <class MEMBER_TYPE> struct QuadTreeNode;
-template <class MEMBER_TYPE> class QTTraversal;
+template <class MEMBER_TYPE>
+class QTTraversal;
+template <class MEMBER_TYPE>
+struct QuadTreeNode;
+template <class MEMBER_TYPE>
+class QTTraversal;
 
 typedef int QTIndex;
 
@@ -99,12 +102,11 @@ typedef int QTIndex;
  */
 enum Quad
 {
-	QUAD_BL = 0,
-	QUAD_BR = 1,
-	QUAD_TL = 2,
-	QUAD_TR = 3
+    QUAD_BL = 0,
+    QUAD_BR = 1,
+    QUAD_TL = 2,
+    QUAD_TR = 3
 };
-
 
 // -----------------------------------------------------------------------------
 // Section: QTCoord
@@ -115,56 +117,55 @@ enum Quad
  */
 class QTCoord
 {
-public:
-	/**
-	 *	This method makes sure that the coordinate is not outside the bottom and
-	 *	and left sides.
-	 */
-	void clipMin()
-	{
-		x_ = std::max( 0, x_ );
-		y_ = std::max( 0, y_ );
-	}
+  public:
+    /**
+     *	This method makes sure that the coordinate is not outside the bottom and
+     *	and left sides.
+     */
+    void clipMin()
+    {
+        x_ = std::max(0, x_);
+        y_ = std::max(0, y_);
+    }
 
-	/**
-	 *	This method makes sure that the coordinate is not outside the right and
-	 *	top sides.
-	 */
-	void clipMax( int depth )
-	{
-		const int MAX = (1 << depth) - 1;
-		x_ = std::min( x_, MAX );
-		y_ = std::min( y_, MAX );
-	}
+    /**
+     *	This method makes sure that the coordinate is not outside the right and
+     *	top sides.
+     */
+    void clipMax(int depth)
+    {
+        const int MAX = (1 << depth) - 1;
+        x_            = std::min(x_, MAX);
+        y_            = std::min(y_, MAX);
+    }
 
-	/**
-	 *	This method returns the quadrant that a child coord is in.
-	 *
-	 *	@param depth	The depth that the child is at.
-	 */
-	int findChild( int depth ) const
-	{
-		const int MASK = (1 << depth);
+    /**
+     *	This method returns the quadrant that a child coord is in.
+     *
+     *	@param depth	The depth that the child is at.
+     */
+    int findChild(int depth) const
+    {
+        const int MASK = (1 << depth);
 
-		return ((x_ & MASK) + 2 * (y_ & MASK)) >> depth;
-	}
+        return ((x_ & MASK) + 2 * (y_ & MASK)) >> depth;
+    }
 
-	/**
-	 *	This method converts this coord to indicate a child of the current node.
-	 *
-	 *	@param quad		The desired child quadrant.
-	 *	@param depth	The depth of the child node.
-	 */
-	void offset( int quad, int depth )
-	{
-		x_ |= ((quad & 0x1) << depth);
-		y_ |= ((quad > 1) << depth);
-	}
+    /**
+     *	This method converts this coord to indicate a child of the current node.
+     *
+     *	@param quad		The desired child quadrant.
+     *	@param depth	The depth of the child node.
+     */
+    void offset(int quad, int depth)
+    {
+        x_ |= ((quad & 0x1) << depth);
+        y_ |= ((quad > 1) << depth);
+    }
 
-	int x_;
-	int y_;
+    int x_;
+    int y_;
 };
-
 
 // -----------------------------------------------------------------------------
 // Section: QTRange
@@ -175,75 +176,72 @@ public:
  */
 class QTRange
 {
-public:
-	/**
-	 *	This method returns whether or not this range fills a node at the input
-	 *	depth.
-	 */
-	bool fills( int depth ) const
-	{
-		const int MAX = (1 << depth) - 1;
-		return left_ == 0 && bottom_ == 0 &&
-			right_ == MAX && top_ == MAX;
-	}
+  public:
+    /**
+     *	This method returns whether or not this range fills a node at the input
+     *	depth.
+     */
+    bool fills(int depth) const
+    {
+        const int MAX = (1 << depth) - 1;
+        return left_ == 0 && bottom_ == 0 && right_ == MAX && top_ == MAX;
+    }
 
-	/**
-	 *	This method returns whether or not this range is valid. It is only used
-	 *	for debugging.
-	 */
-	bool isValid( int depth ) const
-	{
-		const int MAX = 1 << depth;
-		return
-			(0 <= left_) && (left_ <= right_) && (right_ < MAX) &&
-			(0 <= bottom_) && (bottom_ <= top_) && (top_ < MAX) &&
-			depth >= 0;
-	}
+    /**
+     *	This method returns whether or not this range is valid. It is only used
+     *	for debugging.
+     */
+    bool isValid(int depth) const
+    {
+        const int MAX = 1 << depth;
+        return (0 <= left_) && (left_ <= right_) && (right_ < MAX) &&
+               (0 <= bottom_) && (bottom_ <= top_) && (top_ < MAX) &&
+               depth >= 0;
+    }
 
-	/**
-	 *	This method returns whether or not this range is in the quadtree with
-	 *	the input depth.
-	 */
-	bool inQuad( int depth ) const
-	{
-		const int MAX = 1 << depth;
+    /**
+     *	This method returns whether or not this range is in the quadtree with
+     *	the input depth.
+     */
+    bool inQuad(int depth) const
+    {
+        const int MAX = 1 << depth;
 
-		return 0 <= right_ && 0 <= top_ &&
-			left_ < MAX && bottom_ < MAX;
-	}
+        return 0 <= right_ && 0 <= top_ && left_ < MAX && bottom_ < MAX;
+    }
 
-	/**
-	 *	This method clips this range so that it is entirely in the range of a
-	 *	quadtree with the input depth.
-	 */
-	void clip( int depth )
-	{
-		corner_[0].clipMin();
-		corner_[1].clipMax( depth );
-	}
+    /**
+     *	This method clips this range so that it is entirely in the range of a
+     *	quadtree with the input depth.
+     */
+    void clip(int depth)
+    {
+        corner_[0].clipMin();
+        corner_[1].clipMax(depth);
+    }
 
-	// ---- Data ----
-	union
-	{
-		QTIndex	ranges_[4];
-		QTCoord	corner_[2];
-		struct
-		{
-			QTIndex	left_;
-			QTIndex	bottom_;
-			QTIndex	right_;
-			QTIndex	top_;
-		};
-	};
+    // ---- Data ----
+    union
+    {
+        QTIndex ranges_[4];
+        QTCoord corner_[2];
+        struct
+        {
+            QTIndex left_;
+            QTIndex bottom_;
+            QTIndex right_;
+            QTIndex top_;
+        };
+    };
 };
 
 // -----------------------------------------------------------------------------
 // Section: QuadTreeMemPool
 // -----------------------------------------------------------------------------
 /**
- *	This class implements a special resizable memory pool for objects 
+ *	This class implements a special resizable memory pool for objects
  *  in the quadtree.
- *  
+ *
  *  ***For use only with plain old data types (POD)***
  *
  *  If the objects are not POD then things will go bad because the pool
@@ -261,24 +259,24 @@ public:
  *  and does a bitwise copy from the old memory location to the new.
  *  Hence the reason that it only works with plain old data.
  */
-template<typename MEM_TYPE>
+template <typename MEM_TYPE>
 struct QuadTreeMemPool
 {
-	void init();
-	void destroy();
+    void init();
+    void destroy();
 
-	size_t size() const;
-	size_t capacity() const;
-	void reserve( size_t num );
+    size_t size() const;
+    size_t capacity() const;
+    void   reserve(size_t num);
 
-	MEM_TYPE & createNew();
+    MEM_TYPE& createNew();
 
-	const MEM_TYPE & operator[] ( size_t index ) const;
-	MEM_TYPE & operator[] ( size_t index );
+    const MEM_TYPE& operator[](size_t index) const;
+    MEM_TYPE&       operator[](size_t index);
 
-	size_t capacity_;
-	size_t size_;
-	MEM_TYPE* data_;
+    size_t    capacity_;
+    size_t    size_;
+    MEM_TYPE* data_;
 };
 
 // -----------------------------------------------------------------------------
@@ -293,80 +291,68 @@ struct QuadTreeMemPool
 template <class MEMBER_TYPE>
 struct QuadTreeNode
 {
-	//The type of NodeRef and value of INVALID_NODE are linked
-	typedef uint16 NodeRef;
-	enum { INVALID_NODE = 0xffff };
+    // The type of NodeRef and value of INVALID_NODE are linked
+    typedef uint16 NodeRef;
+    enum
+    {
+        INVALID_NODE = 0xffff
+    };
 
-	void init()
-	{
-		child_[0] = INVALID_NODE;
-		child_[1] = INVALID_NODE;
-		child_[2] = INVALID_NODE;
-		child_[3] = INVALID_NODE;
+    void init()
+    {
+        child_[0] = INVALID_NODE;
+        child_[1] = INVALID_NODE;
+        child_[2] = INVALID_NODE;
+        child_[3] = INVALID_NODE;
 
-		elements_.init();
-	}
+        elements_.init();
+    }
 
-	void destroy()
-	{
-		child_[0] = INVALID_NODE;
-		child_[1] = INVALID_NODE;
-		child_[2] = INVALID_NODE;
-		child_[3] = INVALID_NODE;
+    void destroy()
+    {
+        child_[0] = INVALID_NODE;
+        child_[1] = INVALID_NODE;
+        child_[2] = INVALID_NODE;
+        child_[3] = INVALID_NODE;
 
-		elements_.destroy();
-	}
+        elements_.destroy();
+    }
 
-	bool del( const MEMBER_TYPE * element, const QTRange & range, int depth );
+    bool del(const MEMBER_TYPE* element, const QTRange& range, int depth);
 
-	void addElement( const MEMBER_TYPE * element )
-	{		
-		//Reserving a few elements can halve the number of
-		//allocations that occur as new elements are added.
-		//Reserve here instead of inside init(),
-		//if we have a node it does not imply it will have
-		//elements.
-		const int numToReserve = 16;
-		elements_.reserve(numToReserve);
+    void addElement(const MEMBER_TYPE* element)
+    {
+        // Reserving a few elements can halve the number of
+        // allocations that occur as new elements are added.
+        // Reserve here instead of inside init(),
+        // if we have a node it does not imply it will have
+        // elements.
+        const int numToReserve = 16;
+        elements_.reserve(numToReserve);
 
-		elements_.createNew() = element;
-	}
+        elements_.createNew() = element;
+    }
 
-	size_t getNumElements() const
-	{
-		return elements_.size();
-	}
+    size_t getNumElements() const { return elements_.size(); }
 
-	const MEMBER_TYPE * getElement( size_t index ) const
-	{		
-		return elements_[index];
-	}
+    const MEMBER_TYPE* getElement(size_t index) const
+    {
+        return elements_[index];
+    }
 
-	void swapLastRemove( size_t index );
+    void swapLastRemove(size_t index);
 
-	void removeElement( size_t index )
-	{
-		this->swapLastRemove(index);
-	}
+    void removeElement(size_t index) { this->swapLastRemove(index); }
 
-	size_t getElementsCapacity() const
-	{
-		return elements_.capacity();
-	}
-	
-	NodeRef getChildRef( Quad i ) const
-	{
-		return child_[i];
-	}
+    size_t getElementsCapacity() const { return elements_.capacity(); }
 
-	void setChild( NodeRef nodeRef, Quad i )
-	{
-		child_[i] = nodeRef;
-	}
+    NodeRef getChildRef(Quad i) const { return child_[i]; }
 
-	typedef QuadTreeMemPool<const MEMBER_TYPE*> ElementPool;
-	NodeRef child_[4];
-	ElementPool	elements_;
+    void setChild(NodeRef nodeRef, Quad i) { child_[i] = nodeRef; }
+
+    typedef QuadTreeMemPool<const MEMBER_TYPE*> ElementPool;
+    NodeRef                                     child_[4];
+    ElementPool                                 elements_;
 };
 
 // -----------------------------------------------------------------------------
@@ -391,73 +377,77 @@ struct QuadTreeNode
 template <class MEMBER_TYPE>
 class QuadTree
 {
-public:
-	typedef QTTraversal< MEMBER_TYPE > Traversal;
-	typedef QuadTreeNode< MEMBER_TYPE > Node;
-	typedef typename QuadTreeNode< MEMBER_TYPE >::NodeRef NodeRef;
-	typedef QuadTreeMemPool<Node> NodePool;
+  public:
+    typedef QTTraversal<MEMBER_TYPE>                    Traversal;
+    typedef QuadTreeNode<MEMBER_TYPE>                   Node;
+    typedef typename QuadTreeNode<MEMBER_TYPE>::NodeRef NodeRef;
+    typedef QuadTreeMemPool<Node>                       NodePool;
 
-	QuadTree( float x, float z, int depth, float range );
-	~QuadTree();
+    QuadTree(float x, float z, int depth, float range);
+    ~QuadTree();
 
-	void add( const MEMBER_TYPE & element );
-	void del( const MEMBER_TYPE & element );
+    void add(const MEMBER_TYPE& element);
+    void del(const MEMBER_TYPE& element);
 
-	void addToRoot( const MEMBER_TYPE & element );
-	bool removeFromRoot( const MEMBER_TYPE & element );
+    void addToRoot(const MEMBER_TYPE& element);
+    bool removeFromRoot(const MEMBER_TYPE& element);
 
-	const MEMBER_TYPE* testPoint( const Vector3 & point ) const;
+    const MEMBER_TYPE* testPoint(const Vector3& point) const;
 
-	NodeRef root() const;	
-	NodeRef getChildRef( NodeRef nodeRef, Quad i ) const;
+    NodeRef root() const;
+    NodeRef getChildRef(NodeRef nodeRef, Quad i) const;
 
-	size_t getNumElements( NodeRef nodeRef ) const;
-	const MEMBER_TYPE* getElement( NodeRef nodeRef, size_t elementIndex ) const;
+    size_t             getNumElements(NodeRef nodeRef) const;
+    const MEMBER_TYPE* getElement(NodeRef nodeRef, size_t elementIndex) const;
 
-	Traversal traverse( const Vector3 & source, const Vector3 & extent,
-		float radius = 0.f ) const;
+    Traversal traverse(const Vector3& source,
+                       const Vector3& extent,
+                       float          radius = 0.f) const;
 
-	int depth() const	{ return depth_; }
-	float range() const	{ return range_; }
+    int   depth() const { return depth_; }
+    float range() const { return range_; }
 
-	//Debugging functions
-	void print() const;
-	long size() const;
-	int countNodes() const;
-	int countElements() const;
-	void getUniqueElements( BW::set<const MEMBER_TYPE*>& elements ) const;
+    // Debugging functions
+    void print() const;
+    long size() const;
+    int  countNodes() const;
+    int  countElements() const;
+    void getUniqueElements(BW::set<const MEMBER_TYPE*>& elements) const;
 
-private:
+  private:
+    QuadTree();
+    QuadTree(const QuadTree&);
+    QuadTree& operator=(const QuadTree&);
 
-	QuadTree();
-	QuadTree( const QuadTree& );
-	QuadTree& operator=( const QuadTree& );
+    NodeRef createNewNode();
+    NodeRef getOrCreateChild(NodeRef nodeRef, Quad i);
 
-	NodeRef createNewNode();
-	NodeRef getOrCreateChild( NodeRef nodeRef, Quad i );
+    void addElement(NodeRef nodeRef, const MEMBER_TYPE* element);
+    void addElement(const MEMBER_TYPE* element,
+                    NodeRef            node,
+                    const QTRange&     range,
+                    int                depth);
 
-	void addElement( NodeRef nodeRef, const MEMBER_TYPE * element );
-	void addElement( const MEMBER_TYPE * element, 
-		NodeRef node, const QTRange & range, int depth );
+    const MEMBER_TYPE* testPoint(const Vector3& point,
+                                 NodeRef        nodeRef,
+                                 QTCoord        coord,
+                                 int            depth) const;
 
-	const MEMBER_TYPE * testPoint( const Vector3 & point,
-		NodeRef nodeRef, QTCoord coord, int depth ) const;
+    // Debugging functions
+    int  size(NodeRef nodeRef) const;
+    void print(NodeRef nodeRef, int depth) const;
+    int  countAt(NodeRef nodeRef, QTCoord coord, int depth) const;
+    int  countElements(NodeRef nodeRef) const;
+    int  countNodes(NodeRef nodeRef) const;
 
-	//Debugging functions
-	int size( NodeRef nodeRef ) const;
-	void print( NodeRef nodeRef, int depth ) const;
-	int countAt( NodeRef nodeRef, QTCoord coord, int depth ) const;
-	int countElements( NodeRef nodeRef ) const;
-	int countNodes( NodeRef nodeRef ) const;
+    void getUniqueElements(BW::set<const MEMBER_TYPE*>& elements,
+                           NodeRef                      nodeRef) const;
 
-	void getUniqueElements( BW::set<const MEMBER_TYPE*>& elements, 
-		NodeRef nodeRef ) const;
+    NodePool nodes_;
 
-	NodePool nodes_;
-
-	const Vector2 origin_;	/// The coordinate of the bottom-left corner.
-	const int depth_;
-	const float range_;
+    const Vector2 origin_; /// The coordinate of the bottom-left corner.
+    const int     depth_;
+    const float   range_;
 };
 
 // -----------------------------------------------------------------------------
@@ -470,78 +460,80 @@ private:
 template <class MEMBER_TYPE>
 class QTTraversal
 {
-	static const int Q0 = 1 << 0;	// Bottom left
-	static const int Q1 = 1 << 1;	// Bottom right
-	static const int Q2 = 1 << 2;	// Top left
-	static const int Q3 = 1 << 3;	// Top right
+    static const int Q0 = 1 << 0; // Bottom left
+    static const int Q1 = 1 << 1; // Bottom right
+    static const int Q2 = 1 << 2; // Top left
+    static const int Q3 = 1 << 3; // Top right
 
-	typedef QuadTree<MEMBER_TYPE> Tree;
-	typedef typename Tree::NodeRef NodeRef;
+    typedef QuadTree<MEMBER_TYPE>  Tree;
+    typedef typename Tree::NodeRef NodeRef;
 
-public:
-	const MEMBER_TYPE * next();
-	~QTTraversal() { pTree_ = NULL; }
+  public:
+    const MEMBER_TYPE* next();
+    ~QTTraversal() { pTree_ = NULL; }
 
-private:
-	QTTraversal() { pTree_ = NULL; }
+  private:
+    QTTraversal() { pTree_ = NULL; }
 
-	QTTraversal( const Tree * pTree, const Vector3 & src,
-			const Vector3 & dst, float radius,
-			const Vector2 & origin );
+    QTTraversal(const Tree*    pTree,
+                const Vector3& src,
+                const Vector3& dst,
+                float          radius,
+                const Vector2& origin);
 
-	struct StackElement
-	{
-		NodeRef nodeRef;
-		QTCoord coord;
-		int depth;
-	};
+    struct StackElement
+    {
+        NodeRef nodeRef;
+        QTCoord coord;
+        int     depth;
+    };
 
-	inline void pushChild( const StackElement & curr, int quad );
-	void push( NodeRef node, QTCoord coord, int depth );
-	StackElement pop();
+    inline void  pushChild(const StackElement& curr, int quad);
+    void         push(NodeRef node, QTCoord coord, int depth);
+    StackElement pop();
 
-	const MEMBER_TYPE * processHead();
+    const MEMBER_TYPE* processHead();
 
-	// TODO: Should not hard-code the stack size. It should be something like:
-	//	3 * depth_ + 1
-	static const int STACK_SIZE = 20;
-	StackElement stack_[ STACK_SIZE ];
-	int size_;
+    // TODO: Should not hard-code the stack size. It should be something like:
+    //	3 * depth_ + 1
+    static const int STACK_SIZE = 20;
+    StackElement     stack_[STACK_SIZE];
+    int              size_;
 
-	size_t			headIndex_;
+    size_t headIndex_;
 
-	// The following members are used to describe the query. We think of the
-	// query interval parameterised as: src + t*dir, for t in [0,1]. Since the
-	// query line has width, we end have a high side of the line and the low
-	// side of the line.
-	float			xLow0_;		///< Stores the t where the low line cuts x=0
-	float			yLow0_;		///< Stores the t where the low line cuts y=0
+    // The following members are used to describe the query. We think of the
+    // query interval parameterised as: src + t*dir, for t in [0,1]. Since the
+    // query line has width, we end have a high side of the line and the low
+    // side of the line.
+    float xLow0_; ///< Stores the t where the low line cuts x=0
+    float yLow0_; ///< Stores the t where the low line cuts y=0
 
-	float			xHigh0_;	///< Stores the t where the high line cuts x=0
-	float			yHigh0_;	///< Stores the t where the high line cuts y=0
+    float xHigh0_; ///< Stores the t where the high line cuts x=0
+    float yHigh0_; ///< Stores the t where the high line cuts y=0
 
-	// The following store how much t changes for each grid square movement at
-	// the lowest level along their relevant axis. The reason we keep separate
-	// deltas for the low line and the high line is for the degenerate case when
-	// the query line is along an axis.
-	float			xLowDelta_;
-	float			yLowDelta_;
+    // The following store how much t changes for each grid square movement at
+    // the lowest level along their relevant axis. The reason we keep separate
+    // deltas for the low line and the high line is for the degenerate case when
+    // the query line is along an axis.
+    float xLowDelta_;
+    float yLowDelta_;
 
-	float			xHighDelta_;
-	float			yHighDelta_;
+    float xHighDelta_;
+    float yHighDelta_;
 
-	/**
-	 *	Stores the direction of the traversal.
-	 *	0 - Bottom-left to top-right
-	 *	1 - Bottom-right to top-left
-	 *	2 - Top-left to bottom-right
-	 *	3 -	Top-right to bottom-left
-	 */
-	int				dirType_;
+    /**
+     *	Stores the direction of the traversal.
+     *	0 - Bottom-left to top-right
+     *	1 - Bottom-right to top-left
+     *	2 - Top-left to bottom-right
+     *	3 -	Top-right to bottom-left
+     */
+    int dirType_;
 
-	const Tree*		pTree_;
+    const Tree* pTree_;
 
-	friend class QuadTree< MEMBER_TYPE >;
+    friend class QuadTree<MEMBER_TYPE>;
 };
 
 #include "quad_tree.ipp"

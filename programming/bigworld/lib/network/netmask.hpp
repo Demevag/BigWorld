@@ -10,20 +10,19 @@ BW_BEGIN_NAMESPACE
  */
 class NetMask
 {
-public:
-	NetMask();
+  public:
+    NetMask();
 
-	bool			parse( const char* str );
-	bool			containsAddress( uint32 addr ) const;
+    bool parse(const char* str);
+    bool containsAddress(uint32 addr) const;
 
-	void			clear();
+    void clear();
 
-private:
-	uint32			mask_;
-	int				bits_;
+  private:
+    uint32 mask_;
+    int    bits_;
 };
 
 BW_END_NAMESPACE
 
 #endif // NETMASK_HPP
-

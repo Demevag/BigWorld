@@ -3,9 +3,9 @@
 
 class WaitCursor
 {
-public:
-	WaitCursor();
-	~WaitCursor();
+  public:
+    WaitCursor();
+    ~WaitCursor();
 };
 
-#endif //WAIT_CURSOR_HPP
+#endif // WAIT_CURSOR_HPP

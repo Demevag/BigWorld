@@ -1,7 +1,6 @@
 #ifndef EDITOR_CHUNK_CACHE_BASE_HPP
 #define EDITOR_CHUNK_CACHE_BASE_HPP
 
-
 #include "chunk/chunk.hpp"
 #include "chunk/chunk_processor_manager.hpp"
 #include "chunk/chunk_terrain.hpp"
@@ -15,7 +14,8 @@ BW_BEGIN_NAMESPACE
 // We need to specialise EditorChunkCacheBase::instance()
 class EditorChunkCacheBase;
 template <>
-EditorChunkCacheBase & ChunkCache::Instance<EditorChunkCacheBase>::operator()( Chunk & chunk ) const;
+EditorChunkCacheBase& ChunkCache::Instance<EditorChunkCacheBase>::operator()(
+  Chunk& chunk) const;
 
 /**
  *	This is a chunk cache that caches editor specific chunk information.
@@ -31,58 +31,50 @@ EditorChunkCacheBase & ChunkCache::Instance<EditorChunkCacheBase>::operator()( C
  */
 class EditorChunkCacheBase : public EditorChunkProcessorCache
 {
-public:
-	EditorChunkCacheBase( Chunk & chunk );
+  public:
+    EditorChunkCacheBase(Chunk& chunk);
 
-	virtual bool load( DataSectionPtr pSec, DataSectionPtr pCdata );
+    virtual bool load(DataSectionPtr pSec, DataSectionPtr pCdata);
 
-	static void touch( Chunk & chunk );
+    static void touch(Chunk& chunk);
 
-	bool edSave();
-	bool edSaveCData();
+    bool edSave();
+    bool edSaveCData();
 
-	/**
-	 * Returns an string to identify this ChunkCache uniquely
-	 */
-	const char* id() const { return "Lighting"; }
+    /**
+     * Returns an string to identify this ChunkCache uniquely
+     */
+    const char* id() const { return "Lighting"; }
 
-	DataSectionPtr	pChunkSection();
-	DataSectionPtr	pCDataSection();
+    DataSectionPtr pChunkSection();
+    DataSectionPtr pCDataSection();
 
-	static Instance<EditorChunkCacheBase>	instance;
+    static Instance<EditorChunkCacheBase> instance;
 
-protected:
-	virtual bool saveCDataInternal( DataSectionPtr ds,  
-									const BW::string& filename );
+  protected:
+    virtual bool saveCDataInternal(DataSectionPtr    ds,
+                                   const BW::string& filename);
 
-	Chunk & chunk_;
-	DataSectionPtr	pChunkSection_;
+    Chunk&         chunk_;
+    DataSectionPtr pChunkSection_;
 };
-
 
 class ChunkSaver : public UnsavedChunks::IChunkSaver
 {
-	virtual bool save( Chunk* chunk )
-	{
-		return EditorChunkCacheBase::instance( *chunk ).edSave();
-	}
-	bool isDeleted( Chunk& chunk ) const
-	{
-		return false;
-	}
+    virtual bool save(Chunk* chunk)
+    {
+        return EditorChunkCacheBase::instance(*chunk).edSave();
+    }
+    bool isDeleted(Chunk& chunk) const { return false; }
 };
-
 
 class CdataSaver : public UnsavedChunks::IChunkSaver
 {
-	virtual bool save( Chunk* chunk )
-	{
-		return EditorChunkCacheBase::instance( *chunk ).edSaveCData();
-	}
-	bool isDeleted( Chunk& chunk ) const
-	{
-		return false;
-	}
+    virtual bool save(Chunk* chunk)
+    {
+        return EditorChunkCacheBase::instance(*chunk).edSaveCData();
+    }
+    bool isDeleted(Chunk& chunk) const { return false; }
 };
 
 BW_END_NAMESPACE

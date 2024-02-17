@@ -10,7 +10,6 @@
 
 #include "cstdmf/bw_vector.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -20,76 +19,76 @@ BW_BEGIN_NAMESPACE
  */
 class CreateBaseReplyHandler : public Mercury::ReplyMessageHandler
 {
-public:
-	CreateBaseReplyHandler( const Mercury::Address & srcAddr,
-		 	Mercury::ReplyID replyID,
-			const Mercury::Address & externalAddr );
+  public:
+    CreateBaseReplyHandler(const Mercury::Address& srcAddr,
+                           Mercury::ReplyID        replyID,
+                           const Mercury::Address& externalAddr);
 
-private:
-	void handleMessage( const Mercury::Address & srcAddr,
-		Mercury::UnpackedMessageHeader & header,
-		BinaryIStream & data, void * arg );
+  private:
+    void handleMessage(const Mercury::Address&         srcAddr,
+                       Mercury::UnpackedMessageHeader& header,
+                       BinaryIStream&                  data,
+                       void*                           arg);
 
-	void handleException( const Mercury::NubException & ne, void * arg );
-	void handleShuttingDown( const Mercury::NubException & ne, void * arg );
+    void handleException(const Mercury::NubException& ne, void* arg);
+    void handleShuttingDown(const Mercury::NubException& ne, void* arg);
 
-	Mercury::Address 	srcAddr_;
-	Mercury::ReplyID	replyID_;
-	Mercury::Address 	externalAddr_;
+    Mercury::Address srcAddr_;
+    Mercury::ReplyID replyID_;
+    Mercury::Address externalAddr_;
 };
-
 
 /**
  *	This class is used to handle the controlled shutdown stage that can be sent
  *	to all BaseApps at the same time.
  */
-class SyncControlledShutDownHandler :
-	public Mercury::ShutdownSafeReplyMessageHandler
+class SyncControlledShutDownHandler
+  : public Mercury::ShutdownSafeReplyMessageHandler
 {
-public:
-	SyncControlledShutDownHandler( ShutDownStage stage, int count );
+  public:
+    SyncControlledShutDownHandler(ShutDownStage stage, int count);
 
-private:
-	virtual void handleMessage( const Mercury::Address & srcAddr,
-			Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data, void * );
+  private:
+    virtual void handleMessage(const Mercury::Address&         srcAddr,
+                               Mercury::UnpackedMessageHeader& header,
+                               BinaryIStream&                  data,
+                               void*);
 
-	virtual void handleException( const Mercury::NubException & ne, void * );
+    virtual void handleException(const Mercury::NubException& ne, void*);
 
-	void finalise();
-	void decCount();
+    void finalise();
+    void decCount();
 
-	ShutDownStage stage_;
-	int count_;
+    ShutDownStage stage_;
+    int           count_;
 };
-
 
 /**
  *	This class is used to handle the controlled shutdown stage that is sent to
  *	all BaseApps sequentially.
  */
-class AsyncControlledShutDownHandler :
-	public Mercury::ShutdownSafeReplyMessageHandler
+class AsyncControlledShutDownHandler
+  : public Mercury::ShutdownSafeReplyMessageHandler
 {
-public:
-	AsyncControlledShutDownHandler( ShutDownStage stage,
-			BW::vector< Mercury::Address > & addrs );
-	virtual ~AsyncControlledShutDownHandler() {}
+  public:
+    AsyncControlledShutDownHandler(ShutDownStage                 stage,
+                                   BW::vector<Mercury::Address>& addrs);
+    virtual ~AsyncControlledShutDownHandler() {}
 
-private:
-	virtual void handleMessage( const Mercury::Address & srcAddr,
-			Mercury::UnpackedMessageHeader & header,
-			BinaryIStream & data, void * );
+  private:
+    virtual void handleMessage(const Mercury::Address&         srcAddr,
+                               Mercury::UnpackedMessageHeader& header,
+                               BinaryIStream&                  data,
+                               void*);
 
-	virtual void handleException( const Mercury::NubException & ne, void * );
+    virtual void handleException(const Mercury::NubException& ne, void*);
 
-	void sendNext();
+    void sendNext();
 
-	ShutDownStage stage_;
-	BW::vector< Mercury::Address > addrs_;
-	int numToSend_;
+    ShutDownStage                stage_;
+    BW::vector<Mercury::Address> addrs_;
+    int                          numToSend_;
 };
-
 
 /**
  *	This class is used to handle replies from the CellAppMgr to the checkStatus
@@ -97,12 +96,11 @@ private:
  */
 class CheckStatusReplyHandler : public ForwardingReplyHandler
 {
-public:
-	CheckStatusReplyHandler( const Mercury::Address & srcAddr,
-			Mercury::ReplyID replyID );
+  public:
+    CheckStatusReplyHandler(const Mercury::Address& srcAddr,
+                            Mercury::ReplyID        replyID);
 
-	virtual void prependData( BinaryIStream & inStream,
-			BinaryOStream & outStream );
+    virtual void prependData(BinaryIStream& inStream, BinaryOStream& outStream);
 };
 
 BW_END_NAMESPACE

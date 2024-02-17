@@ -8,62 +8,59 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace Mercury
-{
+namespace Mercury {
 
-class Channel;
-class EventDispatcher;
-class InterfaceTable;
-class NetworkInterface;
-class ReplyOrder;
-class Request;
-class RequestManager;
+    class Channel;
+    class EventDispatcher;
+    class InterfaceTable;
+    class NetworkInterface;
+    class ReplyOrder;
+    class Request;
+    class RequestManager;
 
+    /**
+     *
+     */
+    class RequestManager : public InputMessageHandler
+    {
+      public:
+        RequestManager(bool isExternal, EventDispatcher& dispatcher);
+        ~RequestManager();
 
-/**
- *
- */
-class RequestManager : public InputMessageHandler
-{
-public:
-	RequestManager( bool isExternal,
-		EventDispatcher & dispatcher );
-	~RequestManager();
+        void cancelRequestsFor(Channel* pChannel);
+        void cancelRequestsFor(ReplyMessageHandler* pHandler,
+                               Reason reason = REASON_CHANNEL_LOST);
 
-	void cancelRequestsFor( Channel * pChannel );
-	void cancelRequestsFor( ReplyMessageHandler * pHandler,
-			Reason reason = REASON_CHANNEL_LOST );
+        void addReplyOrder(const ReplyOrder& replyOrder, Channel* pChannel);
 
-	void addReplyOrder( const ReplyOrder & replyOrder, Channel * pChannel );
+        void failRequest(Request& request, Reason reason);
 
-	void failRequest( Request & request, Reason reason );
+      private:
+        ReplyID getNextReplyID()
+        {
+            if (nextReplyID_ > REPLY_ID_MAX)
+                nextReplyID_ = 1;
 
-private:
-	ReplyID getNextReplyID()
-	{
-		if (nextReplyID_ > REPLY_ID_MAX)
-			nextReplyID_ = 1;
+            return nextReplyID_++;
+        }
 
-		return nextReplyID_++;
-	}
+        virtual void handleMessage(const Address&         source,
+                                   UnpackedMessageHeader& header,
+                                   BinaryIStream&         data);
 
-	virtual void handleMessage( const Address & source,
-		UnpackedMessageHeader & header,
-		BinaryIStream & data );
+        // -------------------------------------------------------------------------
+        // Section: Properties
+        // -------------------------------------------------------------------------
 
-	// -------------------------------------------------------------------------
-	// Section: Properties
-	// -------------------------------------------------------------------------
+        typedef BW::map<int, Request*> RequestMap;
+        RequestMap                     requestMap_;
 
-	typedef BW::map< int, Request * > RequestMap;
-	RequestMap requestMap_;
+        ReplyID nextReplyID_;
 
-	ReplyID nextReplyID_;
+        EventDispatcher& dispatcher_;
 
-	EventDispatcher & dispatcher_;
-
-	const bool isExternal_; 
-};
+        const bool isExternal_;
+    };
 
 } // namespace Mercury
 

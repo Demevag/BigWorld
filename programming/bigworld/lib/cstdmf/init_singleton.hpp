@@ -34,99 +34,94 @@ BW_BEGIN_NAMESPACE
 template <class T>
 class InitSingleton : public Singleton<T>
 {
-public:
+  public:
+    /**
+     *	This method creates the singleton object and calls the virtual doInit
+     *	method in the derived class if the reference count is 0.
+     *
+     *	@return		True if it was successful, false otherwise.
+     */
+    static bool init()
+    {
+        MF_ASSERT_DEV(!s_finalised_);
 
-	/**
-	 *	This method creates the singleton object and calls the virtual doInit
-	 *	method in the derived class if the reference count is 0.
-	 *
-	 *	@return		True if it was successful, false otherwise.
-	 */
-	static bool init()
-	{
-		MF_ASSERT_DEV( !s_finalised_ );
+        bool result = true;
 
-		bool result = true;
+        if (s_initedCount_ == 0) {
+            // The Singleton base class will init the instance in the
+            // constructor, which will hold the object, so no need to store it
+            // anywhere, "managerInstance" is just a local pointer.
+            InitSingleton<T>* baseInstance = new T();
 
-		if ( s_initedCount_ == 0 )
-		{
-			// The Singleton base class will init the instance in the constructor, which
-			// will hold the object, so no need to store it anywhere, "managerInstance"
-			// is just a local pointer.
-			InitSingleton<T>* baseInstance = new T();
+            // Do init
+            result = baseInstance->doInit();
+        }
 
-			// Do init
-			result = baseInstance->doInit();
-		}
+        ++s_initedCount_;
+        return result;
+    }
 
-		++s_initedCount_;
-		return result;
-	}
+    /**
+     *	This method calls the virtual doFini method in the derived class and
+     *	deletes the singleton object if the reference count reaches 0.
+     *
+     *	@return		True if it was succesful, false otherwise.
+     */
+    static bool fini()
+    {
+        MF_ASSERT_DEV(!s_finalised_);
 
+        IF_NOT_MF_ASSERT_DEV(s_initedCount_ > 0)
+        {
+            return true;
+        }
 
-	/**
-	 *	This method calls the virtual doFini method in the derived class and
-	 *	deletes the singleton object if the reference count reaches 0.
-	 *
-	 *	@return		True if it was succesful, false otherwise.
-	 */
-	static bool fini()
-	{
-		MF_ASSERT_DEV( !s_finalised_ );
+        --s_initedCount_;
 
-		IF_NOT_MF_ASSERT_DEV( s_initedCount_ > 0 )
-		{
-			return true;
-		}
+        bool result = true;
 
-		--s_initedCount_;
+        if (s_initedCount_ == 0) {
+            // Do fini
+            InitSingleton<T>* baseInstance = Singleton<T>::pInstance();
 
-		bool result = true;
+            result = baseInstance->doFini();
 
-		if ( s_initedCount_ == 0 )
-		{
-			// Do fini
-			InitSingleton<T>* baseInstance = Singleton<T>::pInstance();
+            // We don't have a pointer to it, delete using the pInstance
+            // directly.
+            delete Singleton<T>::pInstance();
 
-			result = baseInstance->doFini();
+            s_finalised_ = true;
+        }
 
-			// We don't have a pointer to it, delete using the pInstance directly.
-			delete Singleton<T>::pInstance();
+        return result;
+    }
 
-			s_finalised_ = true;
-		}
+    /**
+     *	This method allows checking if the class has been finalised, to avoid
+     *	trying to access it after finalisation.
+     *
+     *	@return		True if the fini has been called until the refcount is 0.
+     */
+    static bool finalised() { return s_finalised_; }
 
-		return result;
-	}
+  protected:
+    static bool s_finalised_;
+    static int  s_initedCount_;
 
-
-	/**
-	 *	This method allows checking if the class has been finalised, to avoid
-	 *	trying to access it after finalisation.
-	 *
-	 *	@return		True if the fini has been called until the refcount is 0.
-	 */
-	static bool finalised() { return s_finalised_; }
-
-protected:
-	static bool s_finalised_;
-	static int s_initedCount_;
-
-	virtual ~InitSingleton() {}
-	virtual bool doInit() { return true; }
-	virtual bool doFini() { return true; }
+    virtual ~InitSingleton() {}
+    virtual bool doInit() { return true; }
+    virtual bool doFini() { return true; }
 };
-
 
 /**
  *	This macro should appear in the cpp of the derived singleton class.
  */
-#define BW_INIT_SINGLETON_STORAGE( TYPE )					\
-BW_SINGLETON_STORAGE( TYPE )								\
-template <>													\
-bool InitSingleton< TYPE >::s_finalised_ = false;			\
-template <>													\
-int InitSingleton< TYPE >::s_initedCount_ = 0;
+#define BW_INIT_SINGLETON_STORAGE(TYPE)                                        \
+    BW_SINGLETON_STORAGE(TYPE)                                                 \
+    template <>                                                                \
+    bool InitSingleton<TYPE>::s_finalised_ = false;                            \
+    template <>                                                                \
+    int InitSingleton<TYPE>::s_initedCount_ = 0;
 
 BW_END_NAMESPACE
 

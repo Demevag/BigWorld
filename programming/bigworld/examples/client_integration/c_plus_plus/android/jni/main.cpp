@@ -17,7 +17,7 @@
 
 #include "app.hpp"
 
-//BEGIN_INCLUDE(all)
+// BEGIN_INCLUDE(all)
 #include <jni.h>
 #include <errno.h>
 
@@ -28,17 +28,21 @@
 #include <android/log.h>
 #include <android_native_app_glue.h>
 
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "native-activity", __VA_ARGS__))
-#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "native-activity", __VA_ARGS__))
-
+#define LOGI(...)                                                              \
+    ((void)__android_log_print(                                                \
+      ANDROID_LOG_INFO, "native-activity", __VA_ARGS__))
+#define LOGW(...)                                                              \
+    ((void)__android_log_print(                                                \
+      ANDROID_LOG_WARN, "native-activity", __VA_ARGS__))
 
 using namespace BW;
 
 /**
  * Our saved state data.
  */
-struct saved_state {
-    float angle;
+struct saved_state
+{
+    float   angle;
     int32_t x;
     int32_t y;
 };
@@ -46,27 +50,29 @@ struct saved_state {
 /**
  * Shared state for our app.
  */
-struct engine {
+struct engine
+{
     struct android_app* app;
 
-    ASensorManager* sensorManager;
-    const ASensor* accelerometerSensor;
+    ASensorManager*    sensorManager;
+    const ASensor*     accelerometerSensor;
     ASensorEventQueue* sensorEventQueue;
 
-    int animating;
-    int touched;
-    EGLDisplay display;
-    EGLSurface surface;
-    EGLContext context;
-    int32_t width;
-    int32_t height;
+    int                animating;
+    int                touched;
+    EGLDisplay         display;
+    EGLSurface         surface;
+    EGLContext         context;
+    int32_t            width;
+    int32_t            height;
     struct saved_state state;
 };
 
 /**
  * Initialize an EGL context for the current display.
  */
-static int engine_init_display(struct engine* engine) {
+static int engine_init_display(struct engine* engine)
+{
     // initialize OpenGL ES and EGL
 
     /*
@@ -74,18 +80,16 @@ static int engine_init_display(struct engine* engine) {
      * Below, we select an EGLConfig with at least 8 bits per color
      * component compatible with on-screen windows
      */
-    const EGLint attribs[] = {
-            EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-            EGL_BLUE_SIZE, 8,
-            EGL_GREEN_SIZE, 8,
-            EGL_RED_SIZE, 8,
-            EGL_NONE
-    };
-    EGLint w, h, dummy, format;
-    EGLint numConfigs;
-    EGLConfig config;
-    EGLSurface surface;
-    EGLContext context;
+    const EGLint attribs[] = { EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+                               EGL_BLUE_SIZE,    8,
+                               EGL_GREEN_SIZE,   8,
+                               EGL_RED_SIZE,     8,
+                               EGL_NONE };
+    EGLint       w, h, dummy, format;
+    EGLint       numConfigs;
+    EGLConfig    config;
+    EGLSurface   surface;
+    EGLContext   context;
 
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
@@ -104,7 +108,8 @@ static int engine_init_display(struct engine* engine) {
 
     ANativeWindow_setBuffersGeometry(engine->app->window, 0, 0, format);
 
-    surface = eglCreateWindowSurface(display, config, engine->app->window, NULL);
+    surface =
+      eglCreateWindowSurface(display, config, engine->app->window, NULL);
     context = eglCreateContext(display, config, NULL, NULL);
 
     if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
@@ -115,11 +120,11 @@ static int engine_init_display(struct engine* engine) {
     eglQuerySurface(display, surface, EGL_WIDTH, &w);
     eglQuerySurface(display, surface, EGL_HEIGHT, &h);
 
-    engine->display = display;
-    engine->context = context;
-    engine->surface = surface;
-    engine->width = w;
-    engine->height = h;
+    engine->display     = display;
+    engine->context     = context;
+    engine->surface     = surface;
+    engine->width       = w;
+    engine->height      = h;
     engine->state.angle = 0;
 
     // Initialize GL state.
@@ -134,15 +139,18 @@ static int engine_init_display(struct engine* engine) {
 /**
  * Just the current frame in the display.
  */
-static void engine_draw_frame(struct engine* engine) {
+static void engine_draw_frame(struct engine* engine)
+{
     if (engine->display == NULL) {
         // No display.
         return;
     }
 
     // Just fill the screen with a color.
-    glClearColor(((float)engine->state.x)/engine->width, engine->state.angle,
-            ((float)engine->state.y)/engine->height, 1);
+    glClearColor(((float)engine->state.x) / engine->width,
+                 engine->state.angle,
+                 ((float)engine->state.y) / engine->height,
+                 1);
     glClear(GL_COLOR_BUFFER_BIT);
 
     eglSwapBuffers(engine->display, engine->surface);
@@ -151,9 +159,11 @@ static void engine_draw_frame(struct engine* engine) {
 /**
  * Tear down the EGL context currently associated with the display.
  */
-static void engine_term_display(struct engine* engine) {
+static void engine_term_display(struct engine* engine)
+{
     if (engine->display != EGL_NO_DISPLAY) {
-        eglMakeCurrent(engine->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+        eglMakeCurrent(
+          engine->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
         if (engine->context != EGL_NO_CONTEXT) {
             eglDestroyContext(engine->display, engine->context);
         }
@@ -163,21 +173,22 @@ static void engine_term_display(struct engine* engine) {
         eglTerminate(engine->display);
     }
     engine->animating = 0;
-    engine->display = EGL_NO_DISPLAY;
-    engine->context = EGL_NO_CONTEXT;
-    engine->surface = EGL_NO_SURFACE;
+    engine->display   = EGL_NO_DISPLAY;
+    engine->context   = EGL_NO_CONTEXT;
+    engine->surface   = EGL_NO_SURFACE;
 }
 
 /**
  * Process the next input event.
  */
-static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) {
+static int32_t engine_handle_input(struct android_app* app, AInputEvent* event)
+{
     struct engine* engine = (struct engine*)app->userData;
     if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
         engine->animating = 1;
-        engine->touched = 1;
-        engine->state.x = AMotionEvent_getX(event, 0);
-        engine->state.y = AMotionEvent_getY(event, 0);
+        engine->touched   = 1;
+        engine->state.x   = AMotionEvent_getX(event, 0);
+        engine->state.y   = AMotionEvent_getY(event, 0);
         return 1;
     }
     return 0;
@@ -186,7 +197,8 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) 
 /**
  * Process the next main command.
  */
-static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
+static void engine_handle_cmd(struct android_app* app, int32_t cmd)
+{
     struct engine* engine = (struct engine*)app->userData;
     switch (cmd) {
         case APP_CMD_SAVE_STATE:
@@ -210,10 +222,11 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
             // When our app gains focus, we start monitoring the accelerometer.
             if (engine->accelerometerSensor != NULL) {
                 ASensorEventQueue_enableSensor(engine->sensorEventQueue,
-                        engine->accelerometerSensor);
+                                               engine->accelerometerSensor);
                 // We'd like to get 60 events per second (in us).
                 ASensorEventQueue_setEventRate(engine->sensorEventQueue,
-                        engine->accelerometerSensor, (1000L/60)*1000);
+                                               engine->accelerometerSensor,
+                                               (1000L / 60) * 1000);
             }
             break;
         case APP_CMD_LOST_FOCUS:
@@ -221,7 +234,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
             // This is to avoid consuming battery while not being used.
             if (engine->accelerometerSensor != NULL) {
                 ASensorEventQueue_disableSensor(engine->sensorEventQueue,
-                        engine->accelerometerSensor);
+                                                engine->accelerometerSensor);
             }
             // Also stop animating.
             engine->animating = 0;
@@ -235,24 +248,25 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
  * android_native_app_glue.  It runs in its own thread, with its own
  * event loop for receiving input events and doing other things.
  */
-void android_main(struct android_app* state) {
+void android_main(struct android_app* state)
+{
     struct engine engine;
 
     // Make sure glue isn't stripped.
     app_dummy();
 
     memset(&engine, 0, sizeof(engine));
-    state->userData = &engine;
-    state->onAppCmd = engine_handle_cmd;
+    state->userData     = &engine;
+    state->onAppCmd     = engine_handle_cmd;
     state->onInputEvent = engine_handle_input;
-    engine.app = state;
+    engine.app          = state;
 
     // Prepare to monitor accelerometer
-    engine.sensorManager = ASensorManager_getInstance();
-    engine.accelerometerSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
-            ASENSOR_TYPE_ACCELEROMETER);
-    engine.sensorEventQueue = ASensorManager_createEventQueue(engine.sensorManager,
-            state->looper, LOOPER_ID_USER, NULL, NULL);
+    engine.sensorManager       = ASensorManager_getInstance();
+    engine.accelerometerSensor = ASensorManager_getDefaultSensor(
+      engine.sensorManager, ASENSOR_TYPE_ACCELEROMETER);
+    engine.sensorEventQueue = ASensorManager_createEventQueue(
+      engine.sensorManager, state->looper, LOOPER_ID_USER, NULL, NULL);
 
     if (state->savedState != NULL) {
         // We are starting with a previous saved state; restore from it.
@@ -261,57 +275,55 @@ void android_main(struct android_app* state) {
 
     // loop waiting for stuff to do.
 
-	LOGI( "Waiting for a touch..." );
-	{
+    LOGI("Waiting for a touch...");
+    {
         // Read all pending events.
-        int ident;
-        int events;
+        int                         ident;
+        int                         events;
         struct android_poll_source* source;
 
         // If not animating, we will block forever waiting for events.
         // If animating, we loop until all events are read, then continue
         // to draw the next frame of animation.
-		while ((ident=ALooper_pollAll(engine.animating ? 0 : -1, NULL, &events,
-				(void**)&source)) >= 0)
-		{
-			if (source != NULL) {
-				source->process(state, source);
-			}
-			engine_draw_frame(&engine);
-			if (engine.touched)
-			{
-				LOGI( "Touched!.." );
-				break;
-			}
-		}
+        while ((ident = ALooper_pollAll(
+                  engine.animating ? 0 : -1, NULL, &events, (void**)&source)) >=
+               0) {
+            if (source != NULL) {
+                source->process(state, source);
+            }
+            engine_draw_frame(&engine);
+            if (engine.touched) {
+                LOGI("Touched!..");
+                break;
+            }
+        }
     }
-	LOGI( "Creating the App..." );
+    LOGI("Creating the App...");
 
-	App app;
+    App app;
 
-	LOGI( "Initialising the App..." );
+    LOGI("Initialising the App...");
 
-    if (!app.init())
-    {
-    	LOGW( "Failed to initialise the App!" );
+    if (!app.init()) {
+        LOGW("Failed to initialise the App!");
         engine_term_display(&engine);
         return;
     }
 
-	LOGI( "Running the App..." );
+    LOGI("Running the App...");
 
-	while (1)
-	{
+    while (1) {
         // Read all pending events.
-        int ident;
-        int events;
+        int                         ident;
+        int                         events;
         struct android_poll_source* source;
 
         // If not animating, we will block forever waiting for events.
         // If animating, we loop until all events are read, then continue
         // to draw the next frame of animation.
-        while ((ident=ALooper_pollAll(engine.animating ? 0 : -1, NULL, &events,
-                (void**)&source)) >= 0) {
+        while ((ident = ALooper_pollAll(
+                  engine.animating ? 0 : -1, NULL, &events, (void**)&source)) >=
+               0) {
 
             // Process this event.
             if (source != NULL) {
@@ -322,26 +334,24 @@ void android_main(struct android_app* state) {
             if (ident == LOOPER_ID_USER) {
                 if (engine.accelerometerSensor != NULL) {
                     ASensorEvent event;
-                    while (ASensorEventQueue_getEvents(engine.sensorEventQueue,
-                            &event, 1) > 0) {
-                        //LOGI("accelerometer: x=%f y=%f z=%f",
-                        //        event.acceleration.x, event.acceleration.y,
-                        //        event.acceleration.z);
+                    while (ASensorEventQueue_getEvents(
+                             engine.sensorEventQueue, &event, 1) > 0) {
+                        // LOGI("accelerometer: x=%f y=%f z=%f",
+                        //         event.acceleration.x, event.acceleration.y,
+                        //         event.acceleration.z);
                     }
                 }
             }
 
             // Check if we are exiting.
-            if (state->destroyRequested != 0)
-            {
-            	app.fini();
+            if (state->destroyRequested != 0) {
+                app.fini();
                 engine_term_display(&engine);
                 return;
             }
 
-            if (!app.update())
-            {
-            	app.fini();
+            if (!app.update()) {
+                app.fini();
                 engine_term_display(&engine);
                 exit(0);
                 return;
@@ -350,17 +360,14 @@ void android_main(struct android_app* state) {
 
         if (engine.animating) {
             // Done with events; draw next animation frame.
-            if (app.isOnline() || app.isLoggingIn())
-            {
-				engine.state.angle += .01f;
-				if (app.isLoggingIn())
-				{
-					engine.state.angle += .1f;
-				}
-				if (engine.state.angle > 1)
-				{
-					engine.state.angle = 0;
-				}
+            if (app.isOnline() || app.isLoggingIn()) {
+                engine.state.angle += .01f;
+                if (app.isLoggingIn()) {
+                    engine.state.angle += .1f;
+                }
+                if (engine.state.angle > 1) {
+                    engine.state.angle = 0;
+                }
             }
 
             // Drawing is throttled to the screen update rate, so there
@@ -369,4 +376,4 @@ void android_main(struct android_app* state) {
         }
     }
 }
-//END_INCLUDE(all)
+// END_INCLUDE(all)

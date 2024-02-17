@@ -3,7 +3,6 @@
 
 #include "db_storage_mysql/tasks/put_entity_task.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -12,17 +11,17 @@ BW_BEGIN_NAMESPACE
  */
 class ConsolidateEntityTask : public PutEntityTask
 {
-public:
-	ConsolidateEntityTask( const EntityTypeMapping * pEntityTypeMapping,
-							DatabaseID databaseID,
-							BinaryIStream & stream,
-							GameTime time,
-							IDatabase::IPutEntityHandler & handler );
+  public:
+    ConsolidateEntityTask(const EntityTypeMapping*      pEntityTypeMapping,
+                          DatabaseID                    databaseID,
+                          BinaryIStream&                stream,
+                          GameTime                      time,
+                          IDatabase::IPutEntityHandler& handler);
 
-	virtual void performBackgroundTask( MySql & conn );
+    virtual void performBackgroundTask(MySql& conn);
 
-private:
-	GameTime time_;
+  private:
+    GameTime time_;
 };
 
 BW_END_NAMESPACE

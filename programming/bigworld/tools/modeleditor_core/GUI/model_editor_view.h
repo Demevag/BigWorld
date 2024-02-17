@@ -7,45 +7,46 @@
 BW_BEGIN_NAMESPACE
 
 class CModelEditorView
-	: public CView
-	, public GLView
+  : public CView
+  , public GLView
 {
-protected: // create from serialization only
-	CModelEditorView();
-	DECLARE_DYNCREATE(CModelEditorView)
+  protected: // create from serialization only
+    CModelEditorView();
+    DECLARE_DYNCREATE(CModelEditorView)
 
-	CRect lastRect_;
+    CRect lastRect_;
 
-	CModelEditorDoc* GetDocument() const;
+    CModelEditorDoc* GetDocument() const;
 
-	void OnSize(UINT nType, int cx, int cy);
+    void OnSize(UINT nType, int cx, int cy);
 
-	void OnPaint();
+    void OnPaint();
 
-	void OnKillFocus( CWnd *pNewWnd );
+    void OnKillFocus(CWnd* pNewWnd);
 
-	virtual ~CModelEditorView();
+    virtual ~CModelEditorView();
 #ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+    virtual void AssertValid() const;
+    virtual void Dump(CDumpContext& dc) const;
 #endif
 
-// Generated message map functions
-protected:
-	// Overrides
-	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+    // Generated message map functions
+  protected:
+    // Overrides
+    virtual void OnDraw(CDC* pDC); // overridden to draw this view
+    virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 
-	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
-	void resizeWindow();
+    virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+    void            resizeWindow();
 
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 };
 
-#ifndef _DEBUG  // debug version in ModelEditorView.cpp
+#ifndef _DEBUG // debug version in ModelEditorView.cpp
 inline CModelEditorDoc* CModelEditorView::GetDocument() const
-   { return reinterpret_cast<CModelEditorDoc*>(m_pDocument); }
+{
+    return reinterpret_cast<CModelEditorDoc*>(m_pDocument);
+}
 #endif
 
 BW_END_NAMESPACE
-

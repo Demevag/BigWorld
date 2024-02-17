@@ -3,16 +3,12 @@
 
 BW_BEGIN_NAMESPACE
 
-/*virtual*/ ImportCodec::~ImportCodec()
-{
-}
-
+/*virtual*/ ImportCodec::~ImportCodec() {}
 
 /*virtual*/ bool ImportCodec::canLoad() const
 {
     return false;
 }
-
 
 /*virtual*/ bool ImportCodec::canSave() const
 {
@@ -20,4 +16,3 @@ BW_BEGIN_NAMESPACE
 }
 
 BW_END_NAMESPACE
-

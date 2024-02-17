@@ -15,7 +15,7 @@ class TreeControl;
 //
 class TreeNode
 {
-public:
+  public:
     //
     // Default constructor.
     //
@@ -26,7 +26,7 @@ public:
     //
     // @param label     The item's label.
     //
-    explicit TreeNode(char const *label);
+    explicit TreeNode(char const* label);
 
     //
     // Destructor.
@@ -34,13 +34,13 @@ public:
     virtual ~TreeNode();
 
     //
-    // Get the underlying HTREEITEM. 
+    // Get the underlying HTREEITEM.
     //
-    // @returns         The underlying HTREEITEM.   This will be NULL if 
+    // @returns         The underlying HTREEITEM.   This will be NULL if
     //                  the node is hidden.
     //
     operator HTREEITEM() const;
-    
+
     //
     // Can the label be edited?
     //
@@ -54,14 +54,14 @@ public:
     //
     // @param label     The new label.
     //
-    virtual void SetLabel(BW::string const &label);
+    virtual void SetLabel(BW::string const& label);
 
     //
     // Get the label.
     //
     // @returns         The label.
     //
-    BW::string const &GetLabel() const;
+    BW::string const& GetLabel() const;
 
     //
     // Is the node virtual (will OnExpand add in new nodes).
@@ -88,16 +88,16 @@ public:
     //
     // Get the parent node.
     //
-    // @returns         The parent node. 
+    // @returns         The parent node.
     //
-    TreeNode *GetParent();
+    TreeNode* GetParent();
 
     //
     // Get the parent node.
     //
-    // @returns         The parent node. 
+    // @returns         The parent node.
     //
-    TreeNode const *GetParent() const;
+    TreeNode const* GetParent() const;
 
     //
     // Get the number of children.
@@ -112,7 +112,7 @@ public:
     // @param idx       The index of the children nodes to get.
     // @returns         The idx'th child node.
     //
-    TreeNode *GetChild(size_t idx);
+    TreeNode* GetChild(size_t idx);
 
     //
     // Get a child node.
@@ -120,9 +120,9 @@ public:
     // @param idx       The index of the children nodes to get.
     // @returns         The idx'th child node.
     //
-    TreeNode const *GetChild(size_t idx) const;
+    TreeNode const* GetChild(size_t idx) const;
 
-	//
+    //
     // Is the node checked?
     //
     // @returns         True if the node is checked.
@@ -148,20 +148,14 @@ public:
     // @param load      True if loading.
     // @returns         The selected child (can be NULL).
     //
-    virtual TreeNode *
-    Serialise
-    (
-        DataSectionPtr  data, 
-        bool            load
-    );
+    virtual TreeNode* Serialise(DataSectionPtr data, bool load);
 
     //
     // The default name for a TreeNode when serializing.
     //
     // @returns         The default name for a tree node.
     //
-    static BW::string const &
-    DefaultSerializeName();
+    static BW::string const& DefaultSerializeName();
 
     //
     // Copy the expansion state from other as much as possible.
@@ -170,18 +164,18 @@ public:
     // @returns         The selected (sub) node of this that corresponds to
     //                  any selected node in other.
     //
-    TreeNode *CopyExpandState(TreeNode const*other);
+    TreeNode* CopyExpandState(TreeNode const* other);
 
-	//
+    //
     // Copy the CheckBox state from other as much as possible.
     //
     // @param other     The other node.
     // @returns         The selected (sub) node of this that corresponds to
     //                  any selected node in other.
     //
-    void CopyCheckBoxState(TreeNode const*other);
+    void CopyCheckBoxState(TreeNode const* other);
 
-protected:
+  protected:
     //
     // Called when a node is hidden.  Derived classes should call the
     // base class version.  The base class calls this on children.
@@ -209,7 +203,7 @@ protected:
     //
     // @param newLabel      The new label.
     //
-    virtual void OnEditLabel(BW::string const &newLabel);
+    virtual void OnEditLabel(BW::string const& newLabel);
 
     //
     // Synchronize the control's label with our internal one.
@@ -219,7 +213,7 @@ protected:
     //
     // The parent tree control.
     //
-    TreeControl *GetTreeControl();
+    TreeControl* GetTreeControl();
 
     //
     // Find the subnode (or this node) that has the given htreeitem.
@@ -228,7 +222,7 @@ protected:
     // @returns             The corresponding TreeNode or NULL if there
     //                      is no such TreeNode.
     //
-    TreeNode *Find(HTREEITEM hitem);
+    TreeNode* Find(HTREEITEM hitem);
 
     //
     // Find the subnode (or this node) that has the given htreeitem.
@@ -237,22 +231,23 @@ protected:
     // @returns             The corresponding TreeNode or NULL if there
     //                      is no such TreeNode.
     //
-    TreeNode const *Find(HTREEITEM hitem) const;
+    TreeNode const* Find(HTREEITEM hitem) const;
 
-private:
+  private:
     // Not permitted:
-    TreeNode(TreeNode const &);
-    TreeNode &operator=(TreeNode const &);
+    TreeNode(TreeNode const&);
+    TreeNode& operator=(TreeNode const&);
 
-private:
+  private:
     friend class TreeControl;
 
-    TreeNode                *parent_;       // The parent node.
-    BW::vector<TreeNode *> children_;      // Children nodes.
-    HTREEITEM               htreeitem_;     // HTREEITEM for this node.  NULL is node is hidden.
-    mutable BW::string     label_;         // The text label.  This can be out of sync unless SyncLabels is called.
-    TreeControl             *tree_;         // The parent tree control.
-    mutable bool            expanded_;      // Expanded at point of being hidden?
+    TreeNode*             parent_;   // The parent node.
+    BW::vector<TreeNode*> children_; // Children nodes.
+    HTREEITEM htreeitem_; // HTREEITEM for this node.  NULL is node is hidden.
+    mutable BW::string label_; // The text label.  This can be out of sync
+                               // unless SyncLabels is called.
+    TreeControl* tree_;        // The parent tree control.
+    mutable bool expanded_;    // Expanded at point of being hidden?
 };
 
 //
@@ -263,7 +258,7 @@ private:
 //
 class TreeControl : public CTreeCtrl
 {
-public:
+  public:
     //
     // Constructor.
     //
@@ -279,14 +274,14 @@ public:
     //
     // @returns             A TreeNode used to denote insertion at the end.
     //
-    static TreeNode *AtStart();
+    static TreeNode* AtStart();
 
     //
     // A "TreeNode" used to denote insertion at the end.
     //
     // @returns             A TreeNode used to denote insertion at the end.
     //
-    static TreeNode *AtEnd();
+    static TreeNode* AtEnd();
 
     //
     // Insert a new TreeNode.
@@ -294,7 +289,7 @@ public:
     // @param   newNode     The new node to use.  You can provide your own
     //                      TreeNode derived class here.  If this is null then
     //                      a TreeNode is created for you.
-    // @param   parent      The parent node.  If this is NULL then we insert 
+    // @param   parent      The parent node.  If this is NULL then we insert
     //                      into the root node.
     // @param   prevSibling The previous sibling to insert after.  If this is
     //                      AtStart() then we add at the start of the parent.
@@ -302,20 +297,16 @@ public:
     //                      parent.
     // @returns             newNode.
     //
-    TreeNode * 
-    AddNode
-    (
-        TreeNode            *newNode, 
-        TreeNode            *parent         = NULL,
-        TreeNode            *prevSibling    = TreeControl::AtEnd()
-    );
+    TreeNode* AddNode(TreeNode* newNode,
+                      TreeNode* parent      = NULL,
+                      TreeNode* prevSibling = TreeControl::AtEnd());
 
     //
     // Remove the given node and all of its subchildren.
     //
     // @param node          The node to remove.
     //
-    void RemoveNode(TreeNode *node);
+    void RemoveNode(TreeNode* node);
 
     //
     // Return the parent TreeNode of the given node.
@@ -324,7 +315,7 @@ public:
     // @returns             The parent node.  This will be null if the
     //                      parent is the root.
     //
-    TreeNode *GetParent(TreeNode *node);
+    TreeNode* GetParent(TreeNode* node);
 
     //
     // Get the number of child nodes of the given node.
@@ -333,7 +324,7 @@ public:
     //                      root node is used.
     // @returns             The number of children.
     //
-    size_t NumberChildren(TreeNode *node) const;
+    size_t NumberChildren(TreeNode* node) const;
 
     //
     // Get the idx'th child node.
@@ -343,7 +334,7 @@ public:
     // @param idx           The index of the child to get.
     // @returns             The idx'th child of the given node.
     //
-    TreeNode *GetChild(TreeNode *node, size_t idx);
+    TreeNode* GetChild(TreeNode* node, size_t idx);
 
     //
     // Get the idx'th child node.
@@ -353,7 +344,7 @@ public:
     // @param idx           The index of the child to get.
     // @returns             The idx'th child of the given node.
     //
-    TreeNode const *GetChild(TreeNode const *node, size_t idx) const;
+    TreeNode const* GetChild(TreeNode const* node, size_t idx) const;
 
     //
     // Hide/show the given node.
@@ -361,7 +352,7 @@ public:
     // @param node          The node to show/hide.
     // @param show          If true the given node is shown.
     //
-    void ShowNode(TreeNode *node, bool show);
+    void ShowNode(TreeNode* node, bool show);
 
     //
     // Is the node shown?
@@ -371,12 +362,12 @@ public:
     //                      may be scrolled off the screen and not actually
     //                      visible.
     //
-    bool IsShown(TreeNode *node);
+    bool IsShown(TreeNode* node);
 
     //
     // Make the user edit the node's label.
     //
-    void EditNodeLabel(TreeNode *node);
+    void EditNodeLabel(TreeNode* node);
 
     //
     // Expand the given node.
@@ -384,7 +375,7 @@ public:
     // @param node          The node to expand, collapse.
     // @param code          The expansion code.
     //
-    void ExpandNode(TreeNode *node, UINT code);
+    void ExpandNode(TreeNode* node, UINT code);
 
     //
     // Find the TreeNode with the given HTREEITEM.
@@ -392,7 +383,7 @@ public:
     // @param hitem         The item to seach for.
     // @returns             The corresponding TreeNode.
     //
-    TreeNode *Find(HTREEITEM hitem);
+    TreeNode* Find(HTREEITEM hitem);
 
     //
     // Find the TreeNode with the given HTREEITEM.
@@ -400,28 +391,28 @@ public:
     // @param hitem         The item to seach for.
     // @returns             The corresponding TreeNode.
     //
-    TreeNode const *Find(HTREEITEM hitem) const;
+    TreeNode const* Find(HTREEITEM hitem) const;
 
     //
     // Get the selected node.
     //
     // @returns             The selected node or NULL if nothing is selected.
     //
-    TreeNode *GetSelectedNode();
+    TreeNode* GetSelectedNode();
 
     //
     // Get the selected node.
     //
     // @returns             The selected node or NULL if nothing is selected.
     //
-    TreeNode const *GetSelectedNode() const;
+    TreeNode const* GetSelectedNode() const;
 
     //
     // Set the selected node.
     //
     // @param sel           The newly selected node.
     //
-    void SetSelectedNode(TreeNode *sel);
+    void SetSelectedNode(TreeNode* sel);
 
     //
     // Perform a hit-test.
@@ -430,12 +421,12 @@ public:
     // @param flags         Optional flags returning TVHT_ABOVE etc.
     // @returns             The TreeNode that was hit.  This can be NULL.
     //
-    TreeNode *HitTest(CPoint const &point, UINT *flags = NULL);
+    TreeNode* HitTest(CPoint const& point, UINT* flags = NULL);
 
     //
     // Return the item being dragged.  This can be NULL.
     //
-    TreeNode *GetDraggedNode();
+    TreeNode* GetDraggedNode();
 
     //
     // Get the format id for drag and drop operations.
@@ -445,14 +436,14 @@ public:
     static UINT GetDragDropID();
 
     //
-    // Call this before a drag operation onto the control. 
+    // Call this before a drag operation onto the control.
     //
     // @param timerID       The id of a timer to use for scrolling.
     //
     void BeginDrag(UINT_PTR timerID);
 
     //
-    // Call this after a drag operation onto the control. 
+    // Call this after a drag operation onto the control.
     //
     void EndDrag();
 
@@ -473,7 +464,7 @@ public:
     //
     bool InLargeOperation() const;
 
-protected:
+  protected:
     //
     // Add node at the point of parent and prevSibling.  We assume that
     // node is already inserted into our local tree structure.  Children
@@ -484,13 +475,8 @@ protected:
     // @param prevSibling   The previous sibling HTREEITEM.
     // @returns             The newly inserted item.
     //
-    HTREEITEM 
-    CreateHTreeItems
-    (
-        TreeNode            *node, 
-        HTREEITEM           parent,
-        HTREEITEM           prevSibling
-    );
+    HTREEITEM
+    CreateHTreeItems(TreeNode* node, HTREEITEM parent, HTREEITEM prevSibling);
 
     //
     // Called upon item expansion.  This helper deals with virtual nodes.
@@ -511,7 +497,7 @@ protected:
 
     //
     // Called when node label editing is done.  This helper allows nodes that
-    // are not editable and validates the label edit for those that are 
+    // are not editable and validates the label edit for those that are
     // editable.
     //
     // @param nmhdr         The notification data.
@@ -541,14 +527,14 @@ protected:
 
     DECLARE_MESSAGE_MAP()
 
-    void ExpandInternal(TreeNode *node);
+    void ExpandInternal(TreeNode* node);
 
-private:
-    TreeNode                *root_;
-    TreeNode                *dragItem_;
-    UINT_PTR                scrollTimerID_;
-    size_t                  timerticks_;
-    size_t                  largeOpCnt_;
+  private:
+    TreeNode* root_;
+    TreeNode* dragItem_;
+    UINT_PTR  scrollTimerID_;
+    size_t    timerticks_;
+    size_t    largeOpCnt_;
 };
 
 BW_END_NAMESPACE

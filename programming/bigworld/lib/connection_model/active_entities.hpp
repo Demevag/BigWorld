@@ -13,64 +13,64 @@ class BWEntities;
 
 class ActiveEntities
 {
-	typedef BW::map< EntityID, BWEntityPtr > Collection;
+    typedef BW::map<EntityID, BWEntityPtr> Collection;
 
-public:
-	/// C++ Housekeeping
-	ActiveEntities( BWEntities & entities );
-	~ActiveEntities();
+  public:
+    /// C++ Housekeeping
+    ActiveEntities(BWEntities& entities);
+    ~ActiveEntities();
 
-	/// Entity List Management
-	BWEntity * findEntity( EntityID entityID ) const;
+    /// Entity List Management
+    BWEntity* findEntity(EntityID entityID) const;
 
-	/**
-	 *	This method indicates that there are no entities pending in our list
-	 */
-	bool empty() const { return collection_.empty(); }
+    /**
+     *	This method indicates that there are no entities pending in our list
+     */
+    bool empty() const { return collection_.empty(); }
 
-	/**
-	 *	This method returns the number of entities pending in our list
-	 */
-	size_t size() const { return collection_.size(); }
+    /**
+     *	This method returns the number of entities pending in our list
+     */
+    size_t size() const { return collection_.size(); }
 
-	void addEntityToWorld( BWEntity * pEntity );
+    void addEntityToWorld(BWEntity* pEntity);
 
-	bool removeEntityFromWorld( EntityID entityID,
-		PassengersVector * pFormerPassengers );
+    bool removeEntityFromWorld(EntityID          entityID,
+                               PassengersVector* pFormerPassengers);
 
-	void clearEntities( bool keepLocalEntities = false );
-	BWEntityPtr clearEntitiesWithException( EntityID exceptEntityID );
+    void        clearEntities(bool keepLocalEntities = false);
+    BWEntityPtr clearEntitiesWithException(EntityID exceptEntityID);
 
-	void processEntityFilters( double gameTime,
-		BW::list< BWEntity * > & inconsistentEntities );
+    void processEntityFilters(double               gameTime,
+                              BW::list<BWEntity*>& inconsistentEntities);
 
-	void sendControlledEntitiesUpdates( double gameTime );
+    void sendControlledEntitiesUpdates(double gameTime);
 
-	typedef Collection::const_iterator const_iterator;
+    typedef Collection::const_iterator const_iterator;
 
-	const_iterator begin() const	{ return collection_.begin(); }
-	const_iterator end() const	{ return collection_.end(); }
+    const_iterator begin() const { return collection_.begin(); }
+    const_iterator end() const { return collection_.end(); }
 
-	/// BWEntitiesListener registration
-	void addListener( BWEntitiesListener * pListener );
-	bool removeListener( BWEntitiesListener * pListener );
-	void notifyListenersOfEntitiesReset() const;
+    /// BWEntitiesListener registration
+    void addListener(BWEntitiesListener* pListener);
+    bool removeListener(BWEntitiesListener* pListener);
+    void notifyListenersOfEntitiesReset() const;
 
-private:
-	void doRemoveEntityFromWorld( Collection::iterator iter,
-		PassengersVector * pFormerPassengers = NULL );
+  private:
+    void doRemoveEntityFromWorld(Collection::iterator iter,
+                                 PassengersVector*    pFormerPassengers = NULL);
 
-	BWEntities & entities_;
+    BWEntities& entities_;
 
-	/// BWEntitiesListener support
-	typedef void (BWEntitiesListener::*ListenerFunc)( BWEntity * );
-	void callListeners( ListenerFunc func, BWEntity * pEntity ) const;
+    /// BWEntitiesListener support
+    typedef void (BWEntitiesListener::*ListenerFunc)(BWEntity*);
+    void callListeners(ListenerFunc func, BWEntity* pEntity) const;
 
-	typedef BW::vector< BWEntitiesListener * > Listeners;
-	Listeners listeners_;
+    typedef BW::vector<BWEntitiesListener*> Listeners;
+    Listeners                               listeners_;
 
-	/// Entity List Management
-	Collection collection_;
+    /// Entity List Management
+    Collection collection_;
 };
 
 BW_END_NAMESPACE

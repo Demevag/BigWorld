@@ -6,7 +6,6 @@
 #include "cstdmf/debug_filter.hpp"
 #include "app.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -14,44 +13,45 @@ BW_BEGIN_NAMESPACE
  */
 MessageTimePrefix::MessageTimePrefix()
 {
-	DebugFilter::instance().addMessageCallback( this );
+    DebugFilter::instance().addMessageCallback(this);
 }
-
 
 /**
  *	Destructor
  */
 MessageTimePrefix::~MessageTimePrefix()
 {
-	DebugFilter::instance().deleteMessageCallback( this );
+    DebugFilter::instance().deleteMessageCallback(this);
 }
 
 /*
  *	Override from DebugMessageCallback.
  */
-bool MessageTimePrefix::handleMessage(
-	DebugMessagePriority messagePriority, const char * /*pCategory*/,
-	DebugMessageSource /*messageSource*/, const LogMetaData & /*metaData*/,
-	const char * pFormat, va_list /*argPtr*/ )
+bool MessageTimePrefix::handleMessage(DebugMessagePriority messagePriority,
+                                      const char* /*pCategory*/,
+                                      DebugMessageSource /*messageSource*/,
+                                      const LogMetaData& /*metaData*/,
+                                      const char* pFormat,
+                                      va_list /*argPtr*/)
 {
-	static THREADLOCAL( bool ) newLine = true;
+    static THREADLOCAL(bool) newLine = true;
 
-	if (DebugFilter::shouldAccept( messagePriority ))
-	{
-		if (newLine && (&App::instance()) != NULL)
-		{
-			PROFILER_SCOPED( OutputDebugString );
-			wchar_t wbuf[ 256 ];
-			bw_snwprintf( wbuf, ARRAY_SIZE( wbuf ),
-				L"%.3f ", float( App::instance().getRenderTimeNow() ) );
-			OutputDebugString( wbuf );
-		}
+    if (DebugFilter::shouldAccept(messagePriority)) {
+        if (newLine && (&App::instance()) != NULL) {
+            PROFILER_SCOPED(OutputDebugString);
+            wchar_t wbuf[256];
+            bw_snwprintf(wbuf,
+                         ARRAY_SIZE(wbuf),
+                         L"%.3f ",
+                         float(App::instance().getRenderTimeNow()));
+            OutputDebugString(wbuf);
+        }
 
-		int len = static_cast< int >( strlen( pFormat ) );
-		newLine = (len && pFormat[ len - 1 ] == '\n');
-	}
+        int len = static_cast<int>(strlen(pFormat));
+        newLine = (len && pFormat[len - 1] == '\n');
+    }
 
-	return false;
+    return false;
 }
 
 BW_END_NAMESPACE

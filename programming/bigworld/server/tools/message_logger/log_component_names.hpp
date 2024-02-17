@@ -3,7 +3,6 @@
 
 #include "types.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -12,10 +11,9 @@ BW_BEGIN_NAMESPACE
  */
 class LogComponentsVisitor
 {
-public:
-	virtual bool onComponent( const BW::string &componentName ) = 0;
+  public:
+    virtual bool onComponent(const BW::string& componentName) = 0;
 };
-
 
 /**
  * Handles the mapping between ids and component names, i.e. 0 -> cellapp,
@@ -24,30 +22,34 @@ public:
  */
 class LogComponentNames
 {
-public:
-	virtual bool writeComponentNameToDB( const BW::string & componentName ) = 0;
+  public:
+    virtual bool writeComponentNameToDB(const BW::string& componentName) = 0;
 
-	MessageLogger::AppTypeID getAppTypeIDFromName(
-		const BW::string & componentName );
+    MessageLogger::AppTypeID getAppTypeIDFromName(
+      const BW::string& componentName);
 
-	const char * getNameFromID( int componentID ) const;
+    const char* getNameFromID(int componentID) const;
 
-	bool visitAllWith( LogComponentsVisitor &visitor ) const;
+    bool visitAllWith(LogComponentsVisitor& visitor) const;
 
-protected:
-	void clear();
+  protected:
+    void clear();
 
-	MessageLogger::AppTypeID getComponentNameSize()
-		{ return componentNames_.size(); }
+    MessageLogger::AppTypeID getComponentNameSize()
+    {
+        return componentNames_.size();
+    }
 
-	void pushbackComponentName( BW::string & name )
-		{ componentNames_.push_back( name ); }
+    void pushbackComponentName(BW::string& name)
+    {
+        componentNames_.push_back(name);
+    }
 
-	// TODO: Why is this artificially limited?
-	static const MessageLogger::AppTypeID MAX_COMPONENTS = 31;
+    // TODO: Why is this artificially limited?
+    static const MessageLogger::AppTypeID MAX_COMPONENTS = 31;
 
-private:
-	MessageLogger::StringList componentNames_;
+  private:
+    MessageLogger::StringList componentNames_;
 };
 
 BW_END_NAMESPACE

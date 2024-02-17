@@ -13,90 +13,90 @@
 #include "cstdmf/command_line.hpp"
 
 BW_BEGIN_NAMESPACE
-DECLARE_WATCHER_DATA( NULL )
-DECLARE_COPY_STACK_INFO( false )
+DECLARE_WATCHER_DATA(NULL)
+DECLARE_COPY_STACK_INFO(false)
 BW_END_NAMESPACE
 
-namespace
-{
-	bool init()
-	{
-		WTL::AtlInitCommonControls(ICC_COOL_CLASSES | ICC_BAR_CLASSES);
+namespace {
+    bool init()
+    {
+        WTL::AtlInitCommonControls(ICC_COOL_CLASSES | ICC_BAR_CLASSES);
 
-		// Initialise the file systems
-		if (!BW::BWResource::init( BW::BWResource::appDirectory(), false ))
-		{
-			return false;
-		}
-		BW::BWResource::instance().enableModificationMonitor( true ); 
+        // Initialise the file systems
+        if (!BW::BWResource::init(BW::BWResource::appDirectory(), false)) {
+            return false;
+        }
+        BW::BWResource::instance().enableModificationMonitor(true);
 
-		return true;
-	}
+        return true;
+    }
 
-	void fini()
-	{
-		// Cleanup the file systems
-		BW::BWResource::fini();
+    void fini()
+    {
+        // Cleanup the file systems
+        BW::BWResource::fini();
 
-		::CoUninitialize();
-	}
+        ::CoUninitialize();
+    }
 }
 
-#pragma comment(linker,"\"/manifestdependency:type='win32' \
+#pragma comment(linker, "\"/manifestdependency:type='win32' \
 name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
 processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
-
-int WINAPI WinMain( HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showCmd )
+int WINAPI WinMain(HINSTANCE instance,
+                   HINSTANCE prevInstance,
+                   LPSTR     commandLine,
+                   int       showCmd)
 {
-	BW_SYSTEMSTAGE_MAIN();
+    BW_SYSTEMSTAGE_MAIN();
 #ifdef ENABLE_MEMTRACKER
-	MemTracker::instance().setCrashOnLeak( true );
+    MemTracker::instance().setCrashOnLeak(true);
 #endif
 
-	int exitCode = 1;
-	if (init())
-	{
-		BW::AssetCompilerOptions options;
-		options.parseCommandLine( BW::bw_wtoutf8( GetCommandLineW() ) );
+    int exitCode = 1;
+    if (init()) {
+        BW::AssetCompilerOptions options;
+        options.parseCommandLine(BW::bw_wtoutf8(GetCommandLineW()));
 
-		BW::TaskStore store;
-		BW::MainMessageLoop messageLoop;
-		BW::JITCompiler jitCompiler(store);
-		BW::MainWindow mainWindow(store, messageLoop, jitCompiler, jitCompiler);
-		options.apply(jitCompiler);
-		jitCompiler.initPlugins();
-		jitCompiler.initCompiler();
+        BW::TaskStore       store;
+        BW::MainMessageLoop messageLoop;
+        BW::JITCompiler     jitCompiler(store);
+        BW::MainWindow mainWindow(store, messageLoop, jitCompiler, jitCompiler);
+        options.apply(jitCompiler);
+        jitCompiler.initPlugins();
+        jitCompiler.initCompiler();
 
-		if (mainWindow.init())
-		{
-			// Spawn another thread to do the disk scanning for the JIT Compiler
-			auto scanningThreadFunc = [](void * arg)
-			{
-				BW::JITCompiler * jitCompiler = static_cast< BW::JITCompiler *>( arg );
-				jitCompiler->scanningThreadMain();
-			};
-			BW::SimpleThread jitScanningThread(scanningThreadFunc, &jitCompiler, "JITCompiler Scanning Thread");
+        if (mainWindow.init()) {
+            // Spawn another thread to do the disk scanning for the JIT Compiler
+            auto scanningThreadFunc = [](void* arg) {
+                BW::JITCompiler* jitCompiler =
+                  static_cast<BW::JITCompiler*>(arg);
+                jitCompiler->scanningThreadMain();
+            };
+            BW::SimpleThread jitScanningThread(
+              scanningThreadFunc, &jitCompiler, "JITCompiler Scanning Thread");
 
-			auto managingThreadFunc = [](void * arg)
-			{
-				BW::JITCompiler * jitCompiler = static_cast< BW::JITCompiler *>( arg );
-				jitCompiler->managingThreadMain();
-			};
-			BW::SimpleThread jitManagingThread(managingThreadFunc, &jitCompiler, "JITCompiler Process Thread");
+            auto managingThreadFunc = [](void* arg) {
+                BW::JITCompiler* jitCompiler =
+                  static_cast<BW::JITCompiler*>(arg);
+                jitCompiler->managingThreadMain();
+            };
+            BW::SimpleThread jitManagingThread(
+              managingThreadFunc, &jitCompiler, "JITCompiler Process Thread");
 
-			exitCode = messageLoop.run();
+            exitCode = messageLoop.run();
 
-			jitCompiler.stop();
-		}
+            jitCompiler.stop();
+        }
 
-		mainWindow.fini();
+        mainWindow.fini();
 
-		jitCompiler.finiCompiler();
-		jitCompiler.finiPlugins();
-	}
+        jitCompiler.finiCompiler();
+        jitCompiler.finiPlugins();
+    }
 
-	fini();
+    fini();
 
-	return exitCode;
+    return exitCode;
 }

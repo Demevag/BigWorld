@@ -5,7 +5,6 @@
 
 #include "string_like_mapping.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -13,16 +12,18 @@ BW_BEGIN_NAMESPACE
  */
 class BlobMapping : public StringLikeMapping
 {
-public:
-	BlobMapping( const Namer & namer, const BW::string & propName,
-			ColumnIndexType indexType, int length, 
-			DataSectionPtr pDefaultValue );
+  public:
+    BlobMapping(const Namer&      namer,
+                const BW::string& propName,
+                ColumnIndexType   indexType,
+                int               length,
+                DataSectionPtr    pDefaultValue);
 
-	virtual bool isBinary() const	{ return true; }
+    virtual bool isBinary() const { return true; }
 
-	// This method gets the section data as a base64 encoded string
-	// and decodes it, placing the result in output.
-	static void decodeSection( BW::string & output, DataSectionPtr pSection );
+    // This method gets the section data as a base64 encoded string
+    // and decodes it, placing the result in output.
+    static void decodeSection(BW::string& output, DataSectionPtr pSection);
 };
 
 BW_END_NAMESPACE

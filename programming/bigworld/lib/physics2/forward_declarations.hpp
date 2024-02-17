@@ -1,4 +1,4 @@
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 #pragma once
 #endif
 
@@ -12,5 +12,3 @@ class BSPTree;
 BW_END_NAMESPACE
 
 #endif // PHYSICS_2_FORWARD_DECLARATIONS_HPP
-
-

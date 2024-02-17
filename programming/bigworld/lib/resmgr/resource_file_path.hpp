@@ -6,7 +6,6 @@
 
 BW_BEGIN_NAMESPACE
 
-
 /**
  *	This class is used to supply resource paths to BackgroundFileWriter that
  *	require file system resolution in the background thread before the file is
@@ -14,18 +13,17 @@ BW_BEGIN_NAMESPACE
  */
 class ResourceFilePath : public BackgroundFilePath
 {
-public:
-	static BackgroundFilePathPtr create( const BW::string & resourcePath );
+  public:
+    static BackgroundFilePathPtr create(const BW::string& resourcePath);
 
-	/** Destructor. */
-	virtual ~ResourceFilePath() {}
+    /** Destructor. */
+    virtual ~ResourceFilePath() {}
 
-	// Override from BackgroundFilePath.
-	virtual bool resolve();
+    // Override from BackgroundFilePath.
+    virtual bool resolve();
 
-
-private:
-	ResourceFilePath( const BW::string & resourcePath );
+  private:
+    ResourceFilePath(const BW::string& resourcePath);
 };
 
 BW_END_NAMESPACE

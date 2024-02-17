@@ -6,17 +6,11 @@ BW_BEGIN_NAMESPACE
 /**
  *  LinkProxy constructor.
  */
-LinkProxy::LinkProxy()
-{
-}
-
+LinkProxy::LinkProxy() {}
 
 /**
  *  LinkProxy destructor.
  */
-/*virtual*/ LinkProxy::~LinkProxy()
-{
-}
+/*virtual*/ LinkProxy::~LinkProxy() {}
 
 BW_END_NAMESPACE
-

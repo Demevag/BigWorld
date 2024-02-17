@@ -4,7 +4,6 @@
 #include "db_storage/idatabase.hpp"
 #include "entity_task.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -13,16 +12,16 @@ BW_BEGIN_NAMESPACE
  */
 class EntityTaskWithID : public EntityTask
 {
-public:
-	EntityTaskWithID( const EntityTypeMapping & entityTypeMapping,
-							DatabaseID databaseID,
-							EntityID entityID,
-							const char * taskName );
+  public:
+    EntityTaskWithID(const EntityTypeMapping& entityTypeMapping,
+                     DatabaseID               databaseID,
+                     EntityID                 entityID,
+                     const char*              taskName);
 
-	virtual EntityID entityID() const	{ return entityID_; }
+    virtual EntityID entityID() const { return entityID_; }
 
-private:
-	EntityID						entityID_;
+  private:
+    EntityID entityID_;
 };
 
 BW_END_NAMESPACE

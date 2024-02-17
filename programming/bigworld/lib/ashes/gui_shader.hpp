@@ -5,7 +5,6 @@
 #include "cstdmf/smartpointer.hpp"
 #include "pyscript/pyobject_plus.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 typedef SmartPointer<class DataSection> DataSectionPtr;
@@ -16,16 +15,21 @@ class GUIShader;
 /**
  *	This class keeps the factory methods for all types of GUIShaders
  */
-typedef NamedObject<GUIShader * (*)()> GUIShaderFactory;
+typedef NamedObject<GUIShader* (*)()> GUIShaderFactory;
 
-#define SHADER_FACTORY_DECLARE( CONSTRUCT )								\
-	static GUIShaderFactory s_factory;									\
-	virtual GUIShaderFactory & factory() { return s_factory; }			\
-	static GUIShader * s_create() { return new CONSTRUCT; }				\
+#define SHADER_FACTORY_DECLARE(CONSTRUCT)                                      \
+    static GUIShaderFactory   s_factory;                                       \
+    virtual GUIShaderFactory& factory()                                        \
+    {                                                                          \
+        return s_factory;                                                      \
+    }                                                                          \
+    static GUIShader* s_create()                                               \
+    {                                                                          \
+        return new CONSTRUCT;                                                  \
+    }
 
-#define SHADER_FACTORY( CLASS )											\
-	GUIShaderFactory CLASS::s_factory( #CLASS, CLASS::s_create );		\
-
+#define SHADER_FACTORY(CLASS)                                                  \
+    GUIShaderFactory CLASS::s_factory(#CLASS, CLASS::s_create);
 
 /*~ class GUI.GUIShader
  *	@components{ client, tools }
@@ -46,33 +50,31 @@ typedef NamedObject<GUIShader * (*)()> GUIShaderFactory;
  */
 class GUIShader : public PyObjectPlus
 {
-	Py_Header( GUIShader, PyObjectPlus )
+    Py_Header(GUIShader, PyObjectPlus)
 
-public:
-	GUIShader( PyTypeObject * pType );
-	virtual ~GUIShader();
+      public : GUIShader(PyTypeObject* pType);
+    virtual ~GUIShader();
 
-	//modifies verts - so use a temporary buffer
-	//return true to continue processing children,
-	//else false to return.
-	virtual bool	processComponent( SimpleGUIComponent& component, float dTime );
+    // modifies verts - so use a temporary buffer
+    // return true to continue processing children,
+    // else false to return.
+    virtual bool processComponent(SimpleGUIComponent& component, float dTime);
 
-	//All GUI shaders have at least one constant, a value.
-	virtual void	value( float v ) = 0;
+    // All GUI shaders have at least one constant, a value.
+    virtual void value(float v) = 0;
 
-	virtual bool	load( DataSectionPtr pSect ) { return true; }
-	virtual void	save( DataSectionPtr pSect ) { }
+    virtual bool load(DataSectionPtr pSect) { return true; }
+    virtual void save(DataSectionPtr pSect) {}
 
-private:
-	GUIShader(const GUIShader&);
-	GUIShader& operator=(const GUIShader&);
+  private:
+    GUIShader(const GUIShader&);
+    GUIShader& operator=(const GUIShader&);
 
-	virtual GUIShaderFactory & factory() = 0;
-	friend class SimpleGUIComponent;
+    virtual GUIShaderFactory& factory() = 0;
+    friend class SimpleGUIComponent;
 };
 
 typedef SmartPointer<GUIShader> GUIShaderPtr;
-
 
 BW_END_NAMESPACE
 

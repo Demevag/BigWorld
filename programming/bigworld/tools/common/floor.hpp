@@ -25,41 +25,46 @@ BW_BEGIN_NAMESPACE
 
 class Floor
 {
-public:
-	explicit Floor( const BW::string& textureName = "" );
-	~Floor();
+  public:
+    explicit Floor(const BW::string& textureName = "");
+    ~Floor();
 
-    void			render( Moo::ERenderingPassType renderingPassType = Moo::RENDERING_PASS_COLOR );
+    void render(
+      Moo::ERenderingPassType renderingPassType = Moo::RENDERING_PASS_COLOR);
 
-    void			setTextureName( const BW::string &textureFileName );
-    BW::string&	getTextureName( void );
+    void        setTextureName(const BW::string& textureFileName);
+    BW::string& getTextureName(void);
 
-    void			visible( bool state )	{ visible_ = state; }
-    bool			visible() const			{ return visible_; }
+    void visible(bool state) { visible_ = state; }
+    bool visible() const { return visible_; }
 
-    void			location( const Vector3 & l );
-    const Vector3&	location() const;
+    void           location(const Vector3& l);
+    const Vector3& location() const;
 
-private:
-    void drawSquare( Moo::VertexXYZNUVC& v, float x, float z, float step, float scale );
+  private:
+    void drawSquare(Moo::VertexXYZNUVC& v,
+                    float               x,
+                    float               z,
+                    float               step,
+                    float               scale);
 
-	//private methods
-    void	updateMaterial( void );
-    void	updateMesh( void );
-    void	cleanupMaterial( void );
+    // private methods
+    void updateMaterial(void);
+    void updateMesh(void);
+    void cleanupMaterial(void);
 
-    //serializable options
-    BW::string		textureName_;
-    bool			visible_;
-    Matrix			transform_;
+    // serializable options
+    BW::string textureName_;
+    bool       visible_;
+    Matrix     transform_;
 
-    //transient variables
-    CustomMesh< Moo::VertexXYZNUVC >	mesh_;
-	Moo::VertexDeclaration*				pMeshDclr_;
-    bool								meshDirty_;
+    // transient variables
+    CustomMesh<Moo::VertexXYZNUVC> mesh_;
+    Moo::VertexDeclaration*        pMeshDclr_;
+    bool                           meshDirty_;
 
-    Moo::ComplexEffectMaterialPtr	material_;
-    bool					materialDirty_;
+    Moo::ComplexEffectMaterialPtr material_;
+    bool                          materialDirty_;
 };
 
 BW_END_NAMESPACE

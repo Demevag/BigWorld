@@ -1,7 +1,6 @@
 #ifndef CONTROLS_MEMDC_HPP
 #define CONTROLS_MEMDC_HPP
 
- 
 //////////////////////////////////////////////////
 // CMemDC - memory DC
 //
@@ -29,41 +28,40 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace controls
-{ 
-    class MemDC : public CDC 
+namespace controls {
+    class MemDC : public CDC
     {
-    public:       
-        MemDC();        
+      public:
+        MemDC();
         ~MemDC();
 
-		void begin(CDC &dc, const CRect *pRect = NULL);
-		void end();
+        void begin(CDC& dc, const CRect* pRect = NULL);
+        void end();
 
-	protected:
-		void cleanup();
-  
-    private:       
-        CBitmap     m_bitmap;		// Offscreen bitmap
-		CBitmap		*m_oldBitmap;	// Old bitmap selected into DC.
-        CDC*        m_pDC;          // Saves CDC passed in constructor
-        CRect       m_rect;         // Rectangle of drawing area.
-        BOOL        m_bMemDC;       // TRUE if CDC really is a Memory DC.
+      protected:
+        void cleanup();
+
+      private:
+        CBitmap  m_bitmap;    // Offscreen bitmap
+        CBitmap* m_oldBitmap; // Old bitmap selected into DC.
+        CDC*     m_pDC;       // Saves CDC passed in constructor
+        CRect    m_rect;      // Rectangle of drawing area.
+        BOOL     m_bMemDC;    // TRUE if CDC really is a Memory DC.
     };
 
-	class MemDCScope 
-	{
-	public:
-		MemDCScope(MemDC &memDC, CDC &dc, const CRect* pRect = NULL);
-		~MemDCScope();
+    class MemDCScope
+    {
+      public:
+        MemDCScope(MemDC& memDC, CDC& dc, const CRect* pRect = NULL);
+        ~MemDCScope();
 
-	private:
-		MemDCScope(MemDCScope const &);
-		MemDCScope &operator=(MemDCScope &);
+      private:
+        MemDCScope(MemDCScope const&);
+        MemDCScope& operator=(MemDCScope&);
 
-	private:
-		MemDC		*memDC_;
-	};
+      private:
+        MemDC* memDC_;
+    };
 }
 
 BW_END_NAMESPACE

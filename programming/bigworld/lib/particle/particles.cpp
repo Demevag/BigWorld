@@ -1,7 +1,6 @@
 #include "pch.hpp"
 #include "particles.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 #ifndef CODE_INLINE

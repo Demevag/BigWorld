@@ -8,16 +8,16 @@ BW_BEGIN_NAMESPACE
 
 class EntityEntryBlocker
 {
-public: /// C++ Housekeeping
-	EntityEntryBlocker();
+  public: /// C++ Housekeeping
+    EntityEntryBlocker();
 
-public: /// Entity entry blocker interface
-	EntityEntryBlockingCondition blockEntry() const;
+  public: /// Entity entry blocker interface
+    EntityEntryBlockingCondition blockEntry() const;
 
-	EntityEntryBlockingConditionImplPtr getImpl();
+    EntityEntryBlockingConditionImplPtr getImpl();
 
-private:
-	mutable EntityEntryBlockingConditionImplPtr pImpl_;
+  private:
+    mutable EntityEntryBlockingConditionImplPtr pImpl_;
 };
 
 BW_END_NAMESPACE

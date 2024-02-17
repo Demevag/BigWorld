@@ -3,7 +3,6 @@
 
 #include "string_like_mapping.hpp"
 
-
 BW_BEGIN_NAMESPACE
 
 /**
@@ -12,11 +11,14 @@ BW_BEGIN_NAMESPACE
  */
 class BlobbedSequenceMapping : public StringLikeMapping
 {
-public:
-	BlobbedSequenceMapping( const Namer & namer, const BW::string & propName,
-				PropertyMappingPtr child, int size, int dbLen );
+  public:
+    BlobbedSequenceMapping(const Namer&       namer,
+                           const BW::string&  propName,
+                           PropertyMappingPtr child,
+                           int                size,
+                           int                dbLen);
 
-	virtual bool isBinary() const	{ return true; }
+    virtual bool isBinary() const { return true; }
 };
 
 BW_END_NAMESPACE

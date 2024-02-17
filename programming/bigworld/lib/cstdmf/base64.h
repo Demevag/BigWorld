@@ -22,15 +22,15 @@ BW_BEGIN_NAMESPACE
  */
 class CSTDMF_DLL Base64
 {
-public:
-	static BW::string encode(const char* data, size_t len);
-	static BW::string encode( const BW::string & data )
-	{
-		return encode( data.data(), data.size() );
-	}
+  public:
+    static BW::string encode(const char* data, size_t len);
+    static BW::string encode(const BW::string& data)
+    {
+        return encode(data.data(), data.size());
+    }
 
-	static int decode(const BW::string & data, char* results, size_t bufSize);
-	static bool decode( const BW::string & inData, BW::string & outData );
+    static int  decode(const BW::string& data, char* results, size_t bufSize);
+    static bool decode(const BW::string& inData, BW::string& outData);
 };
 
 BW_END_NAMESPACE

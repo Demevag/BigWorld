@@ -15,46 +15,43 @@ BW_BEGIN_NAMESPACE
 class AssetClient;
 class HierarchicalConfig;
 
-namespace Moo
-{
-class TextureDetailLevel;
-typedef SmartPointer< TextureDetailLevel > TextureDetailLevelPtr;
+namespace Moo {
+    class TextureDetailLevel;
+    typedef SmartPointer<TextureDetailLevel> TextureDetailLevelPtr;
 
-class TextureDetailLevelManager
-{
-public:
-	TextureDetailLevelManager();
-	~TextureDetailLevelManager();
-	void init();
-	void init( const BW::StringRef & textureDetailsName );
-	void fini();
-	TextureDetailLevelPtr detailLevel( const BW::StringRef & originalName );
-	void setFormat( const BW::StringRef & fileName, D3DFORMAT format );
-	bool isSourceFile( BW::StringRef filename );
+    class TextureDetailLevelManager
+    {
+      public:
+        TextureDetailLevelManager();
+        ~TextureDetailLevelManager();
+        void                  init();
+        void                  init(const BW::StringRef& textureDetailsName);
+        void                  fini();
+        TextureDetailLevelPtr detailLevel(const BW::StringRef& originalName);
+        void setFormat(const BW::StringRef& fileName, D3DFORMAT format);
+        bool isSourceFile(BW::StringRef filename);
 
-	const BW::string & getTextureDetailLevelsName();
+        const BW::string& getTextureDetailLevelsName();
 
 #if ENABLE_ASSET_PIPE
-	void setAssetClient( AssetClient * pAssetClient );
+        void setAssetClient(AssetClient* pAssetClient);
 #endif
 
-private:
-	void loadDetailLevels( const BW::StringRef & textureDetailsName );
+      private:
+        void loadDetailLevels(const BW::StringRef& textureDetailsName);
 
-	std::auto_ptr< HierarchicalConfig >	pTextureDetails_;
+        std::auto_ptr<HierarchicalConfig> pTextureDetails_;
 #if ENABLE_ASSET_PIPE
-	AssetClient * pAssetClient_;
+        AssetClient* pAssetClient_;
 #endif
 
-	typedef StringRefMap<TextureDetailLevelPtr> DetailLevelsCache;
-	DetailLevelsCache detailLevelsOverrides_;
-	DetailLevelsCache detailLevelsCache_;
-};
-
+        typedef StringRefMap<TextureDetailLevelPtr> DetailLevelsCache;
+        DetailLevelsCache                           detailLevelsOverrides_;
+        DetailLevelsCache                           detailLevelsCache_;
+    };
 
 } // namespace Moo
 
 BW_END_NAMESPACE
-
 
 #endif // TEXTURE_DETAIL_LEVEL_MANAGER_HPP

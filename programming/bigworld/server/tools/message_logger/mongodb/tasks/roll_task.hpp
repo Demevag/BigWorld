@@ -9,18 +9,17 @@
 
 BW_BEGIN_NAMESPACE
 
-namespace MongoDB
-{
+namespace MongoDB {
 
-class RollTask : public MongoDBBackgroundTask
-{
-public:
-	RollTask();
+    class RollTask : public MongoDBBackgroundTask
+    {
+      public:
+        RollTask();
 
-protected:
-	void performBackgroundTask( TaskManager & mgr,
-		ConnectionThreadData & connectionData );
-};
+      protected:
+        void performBackgroundTask(TaskManager&          mgr,
+                                   ConnectionThreadData& connectionData);
+    };
 
 } // namespace MongoDB
 

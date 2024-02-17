@@ -1,10 +1,9 @@
 #import "cocos2d.h"
 
-@interface BlankMenuLayer : CCLayer <UITextFieldDelegate, UITextFieldDelegate>
-{
+@interface BlankMenuLayer : CCLayer<UITextFieldDelegate, UITextFieldDelegate> {
 }
 
-+ (CCScene *) scene;
-+ (void) activate;
++ (CCScene*)scene;
++ (void)activate;
 
 @end

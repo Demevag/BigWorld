@@ -1,7 +1,6 @@
 #ifndef LINK_PROXY_HPP
 #define LINK_PROXY_HPP
 
-
 #include "gizmo/general_properties.hpp"
 #include "gizmo/tool_locator.hpp"
 #include "cstdmf/bw_string.hpp"
@@ -9,26 +8,26 @@
 BW_BEGIN_NAMESPACE
 
 /**
- *  This is base class for objects that can link together or create new 
+ *  This is base class for objects that can link together or create new
  *  linkable objects.
  */
 class LinkProxy : public ReferenceCount
 {
-public:
+  public:
     /**
      *  This bitfield determines the allowed link types.
      */
     enum LinkType
     {
-        LT_ADD  = 1,    // Add a new node for linking
-        LT_LINK = 2     // Link nodes, entities etc
+        LT_ADD  = 1, // Add a new node for linking
+        LT_LINK = 2  // Link nodes, entities etc
     };
 
     enum TargetState
     {
-        TS_NO_TARGET = 0,   // No linkable object under the cursor
-        TS_CAN_LINK  = 1,   // There's an object, and can link to it
-        TS_CANT_LINK = 2    // There's an object, but can't link to it
+        TS_NO_TARGET = 0, // No linkable object under the cursor
+        TS_CAN_LINK  = 1, // There's an object, and can link to it
+        TS_CANT_LINK = 2  // There's an object, but can't link to it
     };
 
     LinkProxy();
@@ -71,14 +70,12 @@ public:
      *  Create the locator appropriate for the linker.
      */
     virtual ToolLocatorPtr createLocator() const = 0;
-    
-	BW::wstring& linkValue() {
-		return linkValue_;
-	}
-	protected:
-		BW::wstring linkValue_;
-};
 
+    BW::wstring& linkValue() { return linkValue_; }
+
+  protected:
+    BW::wstring linkValue_;
+};
 
 typedef SmartPointer<LinkProxy> LinkProxyPtr;
 

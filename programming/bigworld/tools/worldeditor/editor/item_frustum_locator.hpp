@@ -1,7 +1,6 @@
 #ifndef ITEM_FRUSTUM_LOCATOR_HPP
 #define ITEM_FRUSTUM_LOCATOR_HPP
 
-
 #include "worldeditor/config.hpp"
 #include "worldeditor/forward.hpp"
 #include "gizmo/tool_locator.hpp"
@@ -25,75 +24,77 @@ BW_BEGIN_NAMESPACE
  */
 class ChunkItemFrustumLocator : public ToolLocator
 {
-	Py_Header( ChunkItemFrustumLocator, ToolLocator )
-public:
-	ChunkItemFrustumLocator( ToolLocatorPtr pSubLoc = NULL,
-		PyTypeObject * pType = &s_type_ );
-	~ChunkItemFrustumLocator();
+    Py_Header(ChunkItemFrustumLocator, ToolLocator) public
+      : ChunkItemFrustumLocator(ToolLocatorPtr pSubLoc = NULL,
+                                PyTypeObject*  pType   = &s_type_);
+    ~ChunkItemFrustumLocator();
 
-	static void fini();
+    static void fini();
 
-	virtual void calculatePosition( const Vector3& worldRay, Tool& tool );
+    virtual void calculatePosition(const Vector3& worldRay, Tool& tool);
 
-	PY_RW_ATTRIBUTE_DECLARE( subLocator_, subLocator )
+    PY_RW_ATTRIBUTE_DECLARE(subLocator_, subLocator)
 
-	PyObject * pyGet_revealer();
-	PY_RO_ATTRIBUTE_SET( revealer )
+    PyObject* pyGet_revealer();
+    PY_RO_ATTRIBUTE_SET(revealer)
 
-	PY_RW_ATTRIBUTE_DECLARE( enabled_, enabled )
+    PY_RW_ATTRIBUTE_DECLARE(enabled_, enabled)
 
-	PY_FACTORY_DECLARE()
+    PY_FACTORY_DECLARE()
 
-	BW::vector<ChunkItemPtr> items;
-	
-private:
-	ChunkItemFrustumLocator( const ChunkItemFrustumLocator& );
-	ChunkItemFrustumLocator& operator=( const ChunkItemFrustumLocator& );
+    BW::vector<ChunkItemPtr> items;
 
-	void enterSelectionMode();
-	void leaveSelectionMode();
+  private:
+    ChunkItemFrustumLocator(const ChunkItemFrustumLocator&);
+    ChunkItemFrustumLocator& operator=(const ChunkItemFrustumLocator&);
 
-	ToolLocatorPtr	subLocator_;
-	bool			enabled_;
+    void enterSelectionMode();
+    void leaveSelectionMode();
 
-	POINT startPosition_;
-	POINT currentPosition_;
+    ToolLocatorPtr subLocator_;
+    bool           enabled_;
 
-	Matrix oldView_;
-	Matrix oldProjection_;
+    POINT startPosition_;
+    POINT currentPosition_;
 
-	bool oldDrawReflection_;
+    Matrix oldView_;
+    Matrix oldProjection_;
 
-	friend class DragBoxView;
+    bool oldDrawReflection_;
+
+    friend class DragBoxView;
 };
 
 typedef SmartPointer<ChunkItemFrustumLocator> ChunkItemFrustumLocatorPtr;
 
-PY_SCRIPT_CONVERTERS_DECLARE( ChunkItemFrustumLocator )
-
+PY_SCRIPT_CONVERTERS_DECLARE(ChunkItemFrustumLocator)
 
 class DragBoxView : public ToolView
 {
-	Py_Header( DragBoxView, ToolView )
+    Py_Header(DragBoxView, ToolView)
 
-public:
-	DragBoxView( ChunkItemFrustumLocatorPtr locator, Moo::Colour colour,
-		PyTypeObject * pType = &s_type_ );
-	~DragBoxView();
+      public
+      : DragBoxView(ChunkItemFrustumLocatorPtr locator,
+                    Moo::Colour                colour,
+                    PyTypeObject*              pType = &s_type_);
+    ~DragBoxView();
 
-	virtual void viewResource( const BW::string& resourceID )
-		{ resourceID_ = resourceID; }
-	virtual void updateAnimations( const Tool& tool );
-	virtual void render( Moo::DrawContext& drawContext, const Tool& tool );
+    virtual void viewResource(const BW::string& resourceID)
+    {
+        resourceID_ = resourceID;
+    }
+    virtual void updateAnimations(const Tool& tool);
+    virtual void render(Moo::DrawContext& drawContext, const Tool& tool);
 
-	PY_AUTO_CONSTRUCTOR_FACTORY_DECLARE( DragBoxView,
-		NZARG( ChunkItemFrustumLocatorPtr, ARG( uint, END ) ) )
-private:
-	DragBoxView( const DragBoxView& );
-	DragBoxView& operator=( const DragBoxView& );
+    PY_AUTO_CONSTRUCTOR_FACTORY_DECLARE(DragBoxView,
+                                        NZARG(ChunkItemFrustumLocatorPtr,
+                                              ARG(uint, END)))
+  private:
+    DragBoxView(const DragBoxView&);
+    DragBoxView& operator=(const DragBoxView&);
 
-	ChunkItemFrustumLocatorPtr locator_;
-	Moo::Colour colour_;
+    ChunkItemFrustumLocatorPtr locator_;
+    Moo::Colour                colour_;
 };
 
 BW_END_NAMESPACE

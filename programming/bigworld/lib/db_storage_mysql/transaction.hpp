@@ -13,21 +13,21 @@ class MySql;
  */
 class MySqlTransaction
 {
-public:
-	MySqlTransaction( MySql & sql );
-	// MySqlTransaction( MySql & sql, int & errorNum );
-	~MySqlTransaction();
+  public:
+    MySqlTransaction(MySql& sql);
+    // MySqlTransaction( MySql & sql, int & errorNum );
+    ~MySqlTransaction();
 
-	bool shouldRetry() const;
+    bool shouldRetry() const;
 
-	void commit();
+    void commit();
 
-private:
-	MySqlTransaction( const MySqlTransaction& );
-	void operator=( const MySqlTransaction& );
+  private:
+    MySqlTransaction(const MySqlTransaction&);
+    void operator=(const MySqlTransaction&);
 
-	MySql & sql_;
-	bool committed_;
+    MySql& sql_;
+    bool   committed_;
 };
 
 BW_END_NAMESPACE

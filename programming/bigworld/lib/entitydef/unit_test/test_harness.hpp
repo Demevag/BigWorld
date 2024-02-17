@@ -10,18 +10,18 @@ BW_BEGIN_NAMESPACE
 
 class EntityDefUnitTestHarness : public BaseResMgrUnitTestHarness
 {
-public:
-	EntityDefUnitTestHarness() : BaseResMgrUnitTestHarness( "entitydef" ) 
-	{
-		PyImportPaths importPaths;
-		importPaths.addNonResPath( "." );
-		importPaths.addResPath( "." );
-		
-		if (!Script::init( importPaths ))
-		{
-			BWUnitTest::unitTestError( "Could not initialise Script module\n" );
-		}
-	}
+  public:
+    EntityDefUnitTestHarness()
+      : BaseResMgrUnitTestHarness("entitydef")
+    {
+        PyImportPaths importPaths;
+        importPaths.addNonResPath(".");
+        importPaths.addResPath(".");
+
+        if (!Script::init(importPaths)) {
+            BWUnitTest::unitTestError("Could not initialise Script module\n");
+        }
+    }
 };
 
 BW_END_NAMESPACE

@@ -9,12 +9,11 @@
 
 #include "script/init_time_job.hpp"
 
-DECLARE_DEBUG_COMPONENT2( "UserDataObjectDescriptionMap", 0 )
-
+DECLARE_DEBUG_COMPONENT2("UserDataObjectDescriptionMap", 0)
 
 BW_BEGIN_NAMESPACE
 
-int UserDataObjectDescriptionMap_Token =1;
+int UserDataObjectDescriptionMap_Token = 1;
 
 /*
  *	This class is used to clear entity description state before PyFinalize is
@@ -22,29 +21,21 @@ int UserDataObjectDescriptionMap_Token =1;
  */
 class UserDataObjectDefFiniTimeJob : public Script::FiniTimeJob
 {
-protected:
-	void fini()
-	{
-		DataType::clearAllScript();
-	}
+  protected:
+    void fini() { DataType::clearAllScript(); }
 };
 
 static UserDataObjectDefFiniTimeJob s_udoDefFiniTimeJob;
 
-
 /**
  *	Constructor.
  */
-UserDataObjectDescriptionMap::UserDataObjectDescriptionMap()
-{
-}
+UserDataObjectDescriptionMap::UserDataObjectDescriptionMap() {}
 
 /**
  *	Destructor.
  */
-UserDataObjectDescriptionMap::~UserDataObjectDescriptionMap()
-{
-}
+UserDataObjectDescriptionMap::~UserDataObjectDescriptionMap() {}
 
 /**
  *	This method parses the udo description map from a datasection.
@@ -53,38 +44,34 @@ UserDataObjectDescriptionMap::~UserDataObjectDescriptionMap()
  *
  *	@return true if successful, false otherwise.
  */
-bool UserDataObjectDescriptionMap::parse( DataSectionPtr pSection )
+bool UserDataObjectDescriptionMap::parse(DataSectionPtr pSection)
 {
-	if (!pSection)
-	{
-		ERROR_MSG( "UserDataObjectDescriptionMap::parse: pSection is NULL\n" );
-		return false;
-	}
+    if (!pSection) {
+        ERROR_MSG("UserDataObjectDescriptionMap::parse: pSection is NULL\n");
+        return false;
+    }
 
-	bool isOkay = true;
-	int size = pSection->countChildren();
+    bool isOkay = true;
+    int  size   = pSection->countChildren();
 
-	for (int i = 0; i < size; i++)
-	{
-		DataSectionPtr pSubSection = pSection->openChild( i );
-		UserDataObjectDescription desc;
+    for (int i = 0; i < size; i++) {
+        DataSectionPtr            pSubSection = pSection->openChild(i);
+        UserDataObjectDescription desc;
 
-		BW::string typeName = pSubSection->sectionName();
+        BW::string typeName = pSubSection->sectionName();
 
-		if (!desc.parse( typeName ))
-		{
-			ERROR_MSG( "UserDataObjectDescriptionMap: "
-				"Failed to load or parse def for UserDataObject %s\n",
-				typeName.c_str() );
+        if (!desc.parse(typeName)) {
+            ERROR_MSG("UserDataObjectDescriptionMap: "
+                      "Failed to load or parse def for UserDataObject %s\n",
+                      typeName.c_str());
 
-			isOkay = false;
-			continue;
-		}
-		map_[ desc.name() ] = desc ;
-	}
-	return isOkay;
+            isOkay = false;
+            continue;
+        }
+        map_[desc.name()] = desc;
+    }
+    return isOkay;
 }
-
 
 /**
  *	This method returns the number of UserDataObjects.
@@ -93,62 +80,57 @@ bool UserDataObjectDescriptionMap::parse( DataSectionPtr pSection )
  */
 int UserDataObjectDescriptionMap::size() const
 {
-	return static_cast<int>(map_.size());
+    return static_cast<int>(map_.size());
 }
-
 
 /**
  *	This method returns the entity description with the given index.
  */
 const UserDataObjectDescription& UserDataObjectDescriptionMap::udoDescription(
-		BW::string name ) const
+  BW::string name) const
 {
-	DescriptionMap::const_iterator result = map_.find(name);
-	IF_NOT_MF_ASSERT_DEV( result != map_.end() )
-	{
-		MF_EXIT( "can't find UDO description" );
-	}
+    DescriptionMap::const_iterator result = map_.find(name);
+    IF_NOT_MF_ASSERT_DEV(result != map_.end())
+    {
+        MF_EXIT("can't find UDO description");
+    }
 
     return result->second;
 }
-
-
 
 /**
  *	This method clears all the entity descriptions stored in this object.
  */
 void UserDataObjectDescriptionMap::clear()
 {
-	map_.clear();
+    map_.clear();
 }
-
 
 /**
- *	
+ *
  */
-bool UserDataObjectDescriptionMap::isUserDataObject( const BW::string& name ) const
+bool UserDataObjectDescriptionMap::isUserDataObject(
+  const BW::string& name) const
 {
-	return map_.find( name ) != map_.end();
+    return map_.find(name) != map_.end();
 }
-
 
 /**
  *	This method gets the names of all the UDO types.
  *
  *	@param names The vector that receives the names.
  */
-void UserDataObjectDescriptionMap::getNames( BW::vector< BW::string > & names ) const
+void UserDataObjectDescriptionMap::getNames(BW::vector<BW::string>& names) const
 {
-	names.reserve( map_.size() );
+    names.reserve(map_.size());
 
-	DescriptionMap::const_iterator iter = map_.begin();
+    DescriptionMap::const_iterator iter = map_.begin();
 
-	while (iter != map_.end())
-	{
-		names.push_back( iter->first );
+    while (iter != map_.end()) {
+        names.push_back(iter->first);
 
-		++iter;
-	}
+        ++iter;
+    }
 }
 
 BW_END_NAMESPACE

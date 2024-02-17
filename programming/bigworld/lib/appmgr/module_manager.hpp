@@ -10,7 +10,7 @@
 BW_BEGIN_NAMESPACE
 
 class Module;
-typedef SmartPointer< class Module> ModulePtr;
+typedef SmartPointer<class Module> ModulePtr;
 
 /**
  * The ModuleManager class manages a stack of application modules,
@@ -19,28 +19,28 @@ typedef SmartPointer< class Module> ModulePtr;
 
 class ModuleManager : public Factory<Module>
 {
-public:
-	ModuleManager();
-	~ModuleManager();
+  public:
+    ModuleManager();
+    ~ModuleManager();
 
-	static ModuleManager& instance();
-	static void fini();
-	void	popAll();
+    static ModuleManager& instance();
+    static void           fini();
+    void                  popAll();
 
-	bool	push( const BW::string & moduleIdentifier );
-	void	push( ModulePtr module );
-	ModulePtr currentModule();
-	void	pop();
+    bool      push(const BW::string& moduleIdentifier);
+    void      push(ModulePtr module);
+    ModulePtr currentModule();
+    void      pop();
 
-private:
-	ModuleManager(const ModuleManager&);
-	ModuleManager& operator=(const ModuleManager&);
+  private:
+    ModuleManager(const ModuleManager&);
+    ModuleManager& operator=(const ModuleManager&);
 
-	// Modules
-	typedef std::stack< ModulePtr >	ModuleStack;
-	ModuleStack			modules_;
+    // Modules
+    typedef std::stack<ModulePtr> ModuleStack;
+    ModuleStack                   modules_;
 
-	friend std::ostream& operator<<(std::ostream&, const ModuleManager&);
+    friend std::ostream& operator<<(std::ostream&, const ModuleManager&);
 };
 
 BW_END_NAMESPACE

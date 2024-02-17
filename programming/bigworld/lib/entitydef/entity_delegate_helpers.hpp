@@ -5,17 +5,16 @@
 
 BW_BEGIN_NAMESPACE
 
-ScriptDict createDictWithAllProperties( 
-		const EntityDescription & entityDesription,
-		const ScriptObject & entity,
-		IEntityDelegate * pEntityDelegate, 
-		int dataDomains );
+ScriptDict createDictWithAllProperties(
+  const EntityDescription& entityDesription,
+  const ScriptObject&      entity,
+  IEntityDelegate*         pEntityDelegate,
+  int                      dataDomains);
 
-bool populateDelegateWithDict( 
-		const EntityDescription & entityDesription,
-		IEntityDelegate * pEntityDelegate, 
-		const ScriptDict & dict,
-		int dataDomains );
+bool populateDelegateWithDict(const EntityDescription& entityDesription,
+                              IEntityDelegate*         pEntityDelegate,
+                              const ScriptDict&        dict,
+                              int                      dataDomains);
 
 BW_END_NAMESPACE
 
