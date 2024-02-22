@@ -1,5 +1,9 @@
-# IDE folders
+# IDE directories
 **/.idea
 
 # build directories
 build*
+
+# generated
+venv
+vpython
