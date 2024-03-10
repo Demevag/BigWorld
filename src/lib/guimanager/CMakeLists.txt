@@ -1,9 +1,9 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 2.8 )
 PROJECT( guimanager )
 
-INCLUDE( BWStandardProject )
-INCLUDE( BWStandardMFCProject )
-INCLUDE( BWStandardLibrary )
+#INCLUDE( BWStandardProject )
+#INCLUDE( BWStandardMFCProject )
+#INCLUDE( BWStandardLibrary )
 
 SET( SOURCE_FILES_SRCS
 	gui_bitmap.cpp

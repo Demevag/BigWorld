@@ -1,8 +1,8 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 2.8 )
 PROJECT( post_processing )
 
-INCLUDE( BWStandardProject )
-INCLUDE( BWStandardLibrary )
+#INCLUDE( BWStandardProject )
+#INCLUDE( BWStandardLibrary )
 
 # TODO: Remove this once virtual hiding warnings fixed
 BW_REMOVE_COMPILE_FLAGS( /w34263 )

@@ -1,4 +1,7 @@
 # Additional include directories
+
+message(FATAL_ERROR "DEPRECATED")
+
 INCLUDE_DIRECTORIES( ${BW_SOURCE_DIR}/lib )
 INCLUDE_DIRECTORIES( ${BW_SOURCE_DIR}/third_party )
 INCLUDE_DIRECTORIES( $ENV{DXSDK_DIR}/Include )

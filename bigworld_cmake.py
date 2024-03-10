@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!./vpython
 from __future__ import print_function
 
 import argparse
@@ -11,11 +11,11 @@ import sys
 if sys.version_info.major > 2:
     raw_input = input
 
-BUILD_DIRECTORY = os.path.dirname(os.path.join(os.getcwd(), __file__))
-VC_XP_VARS_BAT = os.path.join(BUILD_DIRECTORY, 'vcxpvarsall.bat')
-ROOT_DIRECTORY = os.path.join(BUILD_DIRECTORY, "..")
+ROOT_DIRECTORY = os.path.dirname(os.path.join(os.getcwd(), __file__))
+VC_XP_VARS_BAT = os.path.join(ROOT_DIRECTORY, 'vcxpvarsall.bat')
 SRC_DIRECTORY = os.path.normpath(os.path.join(ROOT_DIRECTORY, "src"))
-os.chdir(BUILD_DIRECTORY)
+CMAKE_DIR = os.path.normpath(os.path.join(ROOT_DIRECTORY, "cmake"))
+os.chdir(ROOT_DIRECTORY)
 CMAKE_RUN_BAT = 'rerun_cmake.bat'
 PLINK_EXE = os.path.join(SRC_DIRECTORY, 'third_party', 'putty', 'plink.exe')
 
@@ -163,6 +163,7 @@ CMAKE_GENERATORS = [
         label='MacOS',
         generator='Xcode',
         dirsuffix='macos',
+        cmake_config_dir='MacOS',
         configs=['Debug', 'Hybrid']
     )
 ]
@@ -417,7 +418,6 @@ def generate(targetName, generator, cmakeExe, cmakeOpts, dryRun):
     cmd = [
         cmakeExe,
         f"{SRC_DIRECTORY}",
-        '-Wno-dev',  # disable CMakeLists.txt developer warnings
         f"-G\"{generator['generator']}\"",
         f"-DBW_CMAKE_TARGET={targetName}",
         f"-B {outputDir}"
@@ -450,6 +450,52 @@ def generate(targetName, generator, cmakeExe, cmakeOpts, dryRun):
     # execute the cmake command
     subprocess.call(args=' '.join(cmd), shell=True)
 
+def generate_client(generator, cmakeExe, cmakeOpts):
+    # create output directory
+    outputDir = os.path.normpath(os.path.join(ROOT_DIRECTORY,
+                                              f"build_client_{generator['dirsuffix']}".lower()))
+    if not os.path.isdir(outputDir):
+        os.makedirs(outputDir)
+
+    clientCmakeDir = os.path.normpath(os.path.join(CMAKE_DIR, f"client/{generator['cmake_config_dir']}"))
+
+    # generate cmake command list
+    cmd = [
+        cmakeExe,
+        f"{clientCmakeDir}",
+        f"-G\"{generator['generator']}\"",
+        f"-DBW_SOURCE_DIR={SRC_DIRECTORY}",
+        f"-DCMAKE_MODULE_PATH={CMAKE_DIR}",
+        f"-DBW_GAME_DIR={outputDir}",
+        #"--trace",
+        f"-B {outputDir}"
+    ]
+
+    # optionally append toolset
+    if ('toolset' in generator):
+        cmd.append('-T')
+        cmd.append(generator['toolset'])
+
+    # optionally append arch
+    if ('architecture' in generator):
+        cmd.append('-A')
+        cmd.append(generator['architecture'])
+
+    # append server build options
+    if cmakeOpts:
+        cmd = cmd + cmakeOpts
+
+    # configs to build for single config builders
+    if ('configs' in generator):
+        configs = generator['configs']
+        # hardcode consumer release for client configs...
+        configs.append('Consumer_Release')
+
+    # output out command
+    print('>>>', ' '.join(cmd))
+
+    # execute the cmake command
+    subprocess.call(args=' '.join(cmd), shell=True)
 
 def main():
     # parse command line options
@@ -505,7 +551,10 @@ def main():
     for generator in generators:
         for target in targets:
             cmakeOpts = serverOpts(target, generator, args)
-            generate(target, generator, cmakeExe, cmakeOpts, args.dry_run);
+            if target == "client":
+                generate_client(generator, cmakeExe, cmakeOpts)
+            else:
+                generate(target, generator, cmakeExe, cmakeOpts, args.dry_run)
 
 
 if __name__ == '__main__':

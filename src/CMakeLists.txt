@@ -4,7 +4,7 @@
 #
 # cmake -DBW_CMAKE_TARGET=client
 # 
-CMAKE_MINIMUM_REQUIRED( VERSION 2.8.12 )
+CMAKE_MINIMUM_REQUIRED( VERSION 3.23 )
 
 # Set the BigWorld source directory
 SET( BW_SOURCE_DIR ${CMAKE_SOURCE_DIR} )

@@ -13,8 +13,8 @@ endif()
 
 # BW change start
 SET(BW_NO_UNICODE ON)
-INCLUDE( BWStandardProject )
-INCLUDE( BWStandardLibrary )
+#INCLUDE( BWStandardProject )
+#INCLUDE( BWStandardLibrary )
 SET(BW_NO_UNICODE OFF)
 ADD_DEFINITIONS( -DCOMPILED_FROM_DSP )
 ADD_DEFINITIONS( -DXML_STATIC )
@@ -112,7 +112,7 @@ endif()
 #message(STATUS "SRC_DIR: ${SRC_DIR}")
 
 # Proceed to the configure checks
-include(cmake/ConfigureChecks.cmake)
+#include(cmake/ConfigureChecks.cmake)
 
 if(NOT BUILD_SHARED AND NOT BUILD_STATIC)
     message(FATAL_ERROR "One or both of BUILD_SHARED or BUILD_STATIC must be set")
@@ -207,9 +207,9 @@ endif(UNIX AND NOT APPLE)
 file(WRITE ${CONFIG_BUILD_DIR}/PythonTargets.cmake "")
 
 # BigWorld: Override path to OpenSSL
-FIND_PACKAGE(BWOpenSSL)
-SET(OPENSSL_INCLUDE_DIR ${BWOPENSSL_INCLUDE_DIRS})
-SET(OPENSSL_LIBRARIES ${BWOPENSSL_LIBRARIES})
+#FIND_PACKAGE(BWOpenSSL)
+#SET(OPENSSL_INCLUDE_DIR ${BWOPENSSL_INCLUDE_DIRS})
+#SET(OPENSSL_LIBRARIES ${BWOPENSSL_LIBRARIES})
 # BigWorld: Override path to zlib
 # since we include zlib as source we only need to define zlib
 # so it exists

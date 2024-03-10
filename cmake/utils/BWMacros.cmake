@@ -210,7 +210,17 @@ MACRO( BW_LINK_LIBRARY_PROJECTS _PROJNAME )
 			ARRAY2D_ADVANCE()
 		ENDWHILE()
 	ARRAY2D_END_LOOP()
-ENDMACRO( BW_LINK_LIBRARY_PROJECTS )
+ENDMACRO()
+
+MACRO( BW_LINK_PROJECTS _TARGET _LIBS )
+	ARRAY2D_BEGIN_LOOP( _islooping "${_LIBS}" 2 "libname;libpath" )
+		WHILE( _islooping )
+		    ADD_SUBDIRECTORY( ${BW_SOURCE_DIR}/${libpath} ${BW_GAME_DIR}/${libname} )
+			TARGET_LINK_LIBRARIES ( ${_TARGET} ${libname} )
+			ARRAY2D_ADVANCE()
+		ENDWHILE()
+	ARRAY2D_END_LOOP()
+ENDMACRO()
 
 # Set the output directory for the given executable target name to 
 # the given location.

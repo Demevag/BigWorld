@@ -5,8 +5,8 @@ ADD_DEFINITIONS(
 	-DBW_ASSET_PIPELINE
 )
 
-INCLUDE( BWStandardProject )
-INCLUDE( BWStandardLibrary )
+#INCLUDE( BWStandardProject )
+#INCLUDE( BWStandardLibrary )
 
 SET( ALL_SRCS
 	dependency.cpp

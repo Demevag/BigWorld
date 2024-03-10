@@ -1,8 +1,8 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 2.8 )
 PROJECT( space )
 
-INCLUDE( BWStandardProject )
-INCLUDE( BWStandardLibrary )
+#INCLUDE( BWStandardProject )
+#INCLUDE( BWStandardLibrary )
 
 SET( ALL_SRCS
 	pch.hpp

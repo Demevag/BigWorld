@@ -5,8 +5,8 @@ IF( NOT BW_SCALEFORM_SUPPORT )
 	MESSAGE( FATAL_ERROR "Scaleform CMakeLists.txt was added but BW_SCALEFORM_SUPPORT is OFF" )
 ENDIF()
 
-INCLUDE( BWStandardProject )
-INCLUDE( BWStandardLibrary )
+#INCLUDE( BWStandardProject )
+#INCLUDE( BWStandardLibrary )
 
 SET( ALL_SRCS
 	config.hpp

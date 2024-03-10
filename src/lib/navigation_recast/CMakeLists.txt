@@ -1,8 +1,8 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 2.8 )
 PROJECT( navigation_recast )
 
-INCLUDE( BWStandardProject )
-INCLUDE( BWStandardLibrary )
+#INCLUDE( BWStandardProject )
+#INCLUDE( BWStandardLibrary )
 
 INCLUDE_DIRECTORIES( ${BW_SOURCE_DIR}/third_party/recastnavigation/Recast/Include )
 INCLUDE_DIRECTORIES( ${BW_SOURCE_DIR}/third_party/recastnavigation/Detour/Include )

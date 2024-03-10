@@ -1,9 +1,9 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 2.8 )
 PROJECT( guitabs )
 
-INCLUDE( BWStandardProject )
-INCLUDE( BWStandardMFCProject )
-INCLUDE( BWStandardLibrary )
+#INCLUDE( BWStandardProject )
+#INCLUDE( BWStandardMFCProject )
+#INCLUDE( BWStandardLibrary )
 
 SET( ALL_SRCS
 	content.hpp

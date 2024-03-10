@@ -1,9 +1,9 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 2.8 )
 PROJECT( editor_shared )
 
-INCLUDE( BWStandardProject )
-INCLUDE( BWStandardMFCProject )
-INCLUDE( BWStandardLibrary )
+#INCLUDE( BWStandardProject )
+#INCLUDE( BWStandardMFCProject )
+#INCLUDE( BWStandardLibrary )
 
 SET( SOURCE_FILES_SRCS
 	mfc/app/i_editor_app.cpp

@@ -1,9 +1,9 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 2.8 )
 PROJECT( ual )
 
-INCLUDE( BWStandardProject )
-INCLUDE( BWStandardMFCProject )
-INCLUDE( BWStandardLibrary )
+#INCLUDE( BWStandardProject )
+#INCLUDE( BWStandardMFCProject )
+#INCLUDE( BWStandardLibrary )
 
 INCLUDE_DIRECTORIES( ${BW_SOURCE_DIR}/tools )
 

@@ -5,8 +5,8 @@ IF( NOT BW_FMOD_SUPPORT )
 	MESSAGE( FATAL_ERROR "FMOD CMakeLists.txt was added but BW_FMOD_SUPPORT is OFF" )
 ENDIF()
 
-INCLUDE( BWStandardProject )
-INCLUDE( BWStandardLibrary )
+#INCLUDE( BWStandardProject )
+#INCLUDE( BWStandardLibrary )
 
 SET( ALL_SRCS
 	fmod_config.hpp

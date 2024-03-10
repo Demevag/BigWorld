@@ -1,7 +1,7 @@
-CMAKE_MINIMUM_REQUIRED( VERSION 2.8 )
-PROJECT( bwclient )
+CMAKE_MINIMUM_REQUIRED( VERSION 3.23 )
+PROJECT( BWClient )
 
-INCLUDE( BWStandardProject )
+INCLUDE( utils/BWMacros )
 
 INCLUDE_DIRECTORIES( ${BW_SOURCE_DIR} )
 INCLUDE_DIRECTORIES( ${BW_SOURCE_DIR}/lib/emptyvoip )
@@ -20,15 +20,11 @@ ENDIF()
 # TODO: Remove dependancy on curl headers from bwclient
 # EntityManager holds a URL::Request pointer, which is a very thin
 # wrapper around a curl handle.
-FIND_PACKAGE( BWcurl REQUIRED )
-IF( BWCURL_FOUND )
-	ADD_DEFINITIONS( -DCURL_STATICLIB )
-	INCLUDE_DIRECTORIES( ${BWCURL_INCLUDE_DIRS} )
-ENDIF()
-
-IF( BW_AWESOMIUM_SUPPORT )
-	LINK_DIRECTORIES( ${BW_SOURCE_DIR}/third_party/awesomium/build/lib )
-ENDIF()
+#FIND_PACKAGE( BWcurl REQUIRED )
+#IF( BWCURL_FOUND )
+#	ADD_DEFINITIONS( -DCURL_STATICLIB )
+#	INCLUDE_DIRECTORIES( ${BWCURL_INCLUDE_DIRS} )
+#ENDIF()
 
 SET( ALL_SRCS
 	critical_handler.cpp
@@ -256,97 +252,35 @@ SET( VOIP_SRCS
 )
 SOURCE_GROUP( "VOIP" FILES ${VOIP_SRCS} )
 
+LIST (APPEND ALL_SRCS ${PLAYER_SRCS}
+                      ${APP_SRCS}
+                      ${ENTITIES_SRCS}
+                      ${FILTERS_SRCS}
+                      ${MAINLOOPTASKS_SRCS}
+                      ${MODEL_SRCS}
+                      ${PLAYER_SRCS}
+                      ${SCRIPT_SRCS}
+                      ${SERVER_SRCS}
+                      ${UI_SRCS}
+                      ${VOIP_SRCS}
+                      ${WINMAIN_SRCS})
 
+BW_ADD_EXECUTABLE( BWClient ${ALL_SRCS})
 
-
-BW_BLOB_SOURCES( BLOB_SRCS
-	${ALL_SRCS}
-	${PLAYER_SRCS}
-	${APP_SRCS}
-	${SCRIPT_SRCS}
-	${SERVER_SRCS}
-	${ENTITIES_SRCS}
-	${UI_SRCS}
-	${FILTERS_SRCS}
-	${MODEL_SRCS}
-	${MAINLOOPTASKS_SRCS}
-	${WINMAIN_SRCS}
-	${VOIP_SRCS}
-	)
-
-BW_ADD_EXECUTABLE( bwclient WIN32
-	${BLOB_SRCS}
-	)
-
-
-BW_TARGET_LINK_LIBRARIES( bwclient
-	ashes
-	camera
-	chunk
-	chunk_scene_adapter
-	compiled_space
-	connection
-	connection_model
-	cstdmf
-	duplo
-	entitydef
-	input
-	math
-	model
-	moo
-	network
-	open_automate
-	particle
-	physics2
-	post_processing
-	pyscript
-	resmgr
-	romp
-	scene
-	space
-	terrain
-	urlrequest
-	waypoint
-	web_render
-
-	emptyvoip
-	# external libraries
-	winmm	
-	wtsapi32
-)
-
-IF( BW_FMOD_SUPPORT )
-	BW_TARGET_LINK_LIBRARIES( bwclient
-		fmodsound
-	)
-ENDIF()
-
-IF( BW_SCALEFORM_SUPPORT )
-	BW_TARGET_LINK_LIBRARIES( bwclient
-		scaleform
-	)
-ENDIF()
-
-SET_TARGET_PROPERTIES( bwclient PROPERTIES
+SET_TARGET_PROPERTIES( BWClient PROPERTIES
 		DEBUG_OUTPUT_NAME
 		"bwclient_d" )
 
-SET_TARGET_PROPERTIES( bwclient PROPERTIES
+SET_TARGET_PROPERTIES( BWClient PROPERTIES
 		HYBRID_OUTPUT_NAME
 		"bwclient_h" )
 
-SET_TARGET_PROPERTIES( bwclient PROPERTIES
+SET_TARGET_PROPERTIES( BWClient PROPERTIES
 		CONSUMER_RELEASE_OUTPUT_NAME
 		"bwclient" )
 
-BW_SET_BINARY_DIR( bwclient "${BW_GAME_DIR}/client/${BW_PLATFORM}" )
+BW_SET_BINARY_DIR( BWClient "${BW_GAME_DIR}/client/${BW_PLATFORM}" )
 
-BW_PRECOMPILED_HEADER( bwclient pch.hpp )
-BW_PROJECT_CATEGORY( bwclient "Executables" )
-
-# Delay load Awesomium
-IF( BW_AWESOMIUM_SUPPORT AND MSVC )
-	BW_APPEND_TARGET_PROPERTIES( bwclient LINK_FLAGS "/DELAYLOAD:awesomium.dll" )
-	BW_TARGET_LINK_LIBRARIES( bwclient DelayImp )
-ENDIF()
+BW_PRECOMPILED_HEADER( BWClient pch.hpp )
+BW_PROJECT_CATEGORY( BWClient "Executables" )
 

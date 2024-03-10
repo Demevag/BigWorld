@@ -1,8 +1,8 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 2.8 )
 PROJECT( moo )
 
-INCLUDE( BWStandardProject )
-INCLUDE( BWStandardLibrary )
+#INCLUDE( BWStandardProject )
+#INCLUDE( BWStandardLibrary )
 
 INCLUDE_DIRECTORIES( . )
 INCLUDE_DIRECTORIES( ${BW_SOURCE_DIR}/third_party/nvtt/src )

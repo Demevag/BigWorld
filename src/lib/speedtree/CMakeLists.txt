@@ -5,8 +5,8 @@ IF( NOT BW_SPEEDTREE_SUPPORT )
 	MESSAGE( FATAL_ERROR "Speedtree CMakeLists.txt was added but BW_SPEEDTREE_SUPPORT is OFF" )
 ENDIF()
 
-INCLUDE( BWStandardProject )
-INCLUDE( BWStandardLibrary )
+#INCLUDE( BWStandardProject )
+#INCLUDE( BWStandardLibrary )
 
 INCLUDE_DIRECTORIES( ${BW_SOURCE_DIR}/third_party/speedtree/include )
 
